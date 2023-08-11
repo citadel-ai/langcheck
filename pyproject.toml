@@ -1,0 +1,23 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "langcheck"
+version = "0.0.3"
+description = "Simple, Pythonic building blocks to evaluate LLM-based applications"
+readme = "README.md"
+authors = [{ name = "Citadel AI", email = "info@citadel.co.jp" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["llm",  "ai", "nlp", "evaluation", "validation", "testing"]
+dependencies = [
+    'tomli; python_version < "3.11"',
+]
+requires-python = ">=3.8"
+
+[project.urls]
+repository    = "https://github.com/citadel-ai/langcheck"

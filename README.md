@@ -1,2 +1,3 @@
-# langcheck
-Simple, Pythonic building blocks to evaluate LLM-based applications
+# LangCheck
+
+Simple, Pythonic building blocks to evaluate LLM-based applications.

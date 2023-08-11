@@ -1,0 +1,9 @@
+{
+  "python.formatting.provider": "yapf",
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    },
+    "editor.formatOnSave": true
+  }
+}
