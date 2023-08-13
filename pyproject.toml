@@ -16,6 +16,8 @@ classifiers = [
 keywords = ["llm",  "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'tomli; python_version < "3.11"',
+    'torch >= 2',
+    'transformers >= 4'
 ]
 requires-python = ">=3.8"
 
