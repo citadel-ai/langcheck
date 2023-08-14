@@ -12,6 +12,14 @@ To use the package:
 EvalValue(metric_name='is_float', prompts=None, generated_outputs=['1', '-2', '3.14', '999', 'asdf'], metric_values=[1, 0, 1, 0, 0])
 ```
 
+To make documentation:
+
+```
+> sphinx-apidoc --no-toc --separate --module-first -o docs src/langcheck/
+> cd docs && make html
+> cd _build/html && python -m http.server
+```
+
 To publish the package:
 
 ```
