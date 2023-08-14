@@ -12,10 +12,6 @@ from langcheck.eval import (contains_all_strings, contains_any_strings,
 # Utility functions
 ################################################################################
 
-################################################################################
-# Utility functions
-################################################################################
-
 
 def is_close(a: List, b: List) -> bool:
     '''Returns True if two lists of numbers are element-wise close.'''
