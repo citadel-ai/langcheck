@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from langcheck.eval.text_structure import is_float, is_int
+from langcheck.eval import is_float, is_int
 
 
 def is_close(a: List, b: List) -> bool:
