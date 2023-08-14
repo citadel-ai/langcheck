@@ -1,8 +1,8 @@
 To use the package:
 
 ```
-# Install the langcheck package in editable mode
-> python -m pip install -e .
+# Install the langcheck package in editable mode with dev dependencies
+> python -m pip install -e .[dev]
 
 # Try using langcheck
 # (If you edit the package, just restart the Python REPL to reflect your changes)

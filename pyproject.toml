@@ -13,11 +13,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
-keywords = ["llm",  "ai", "nlp", "evaluation", "validation", "testing"]
+keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'tomli; python_version < "3.11"',
 ]
 requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = ["yapf==0.40.1", "isort", "pytest"]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
