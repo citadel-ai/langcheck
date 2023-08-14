@@ -4,6 +4,7 @@ from typing import Generic, List, Optional, TypeVar
 # Metrics usually take on float, int, or bool values
 MetricValue = TypeVar('MetricValue')
 
+
 @dataclass
 class EvalValue(Generic[MetricValue]):
     '''A rich object that is the output of any langcheck.eval function.'''
