@@ -10,6 +10,9 @@ To use the package:
 >>> from langcheck.eval import is_float
 >>> is_float(['1', '-2', '3.14', '999', 'asdf'], min=0, max=10)
 EvalValue(metric_name='is_float', prompts=None, generated_outputs=['1', '-2', '3.14', '999', 'asdf'], metric_values=[1, 0, 1, 0, 0])
+
+# Run tests
+> python -m pytest -s -vv
 ```
 
 To publish the package:
