@@ -23,9 +23,16 @@ def sentiment(generated_outputs: List[str]) -> EvalValue:
     Returns:
         An EvalValue object
     '''
+    global _sentiment_tokenizer, _sentiment_model
+
     if _sentiment_tokenizer is None or _sentiment_model is None:
-        raise RuntimeError(
-            'reference_free_text_quality module is not initialized')
+        _sentiment_tokenizer = AutoTokenizer.from_pretrained(
+            _sentiment_model_path)
+
+        # There is a "Some weights are not used warning" but we ignore it because
+        # that is intended.
+        _sentiment_model = AutoModelForSequenceClassification.from_pretrained(
+            _sentiment_model_path)
 
     input_tokens = _sentiment_tokenizer(generated_outputs,
                                         return_tensors='pt',
@@ -42,18 +49,3 @@ def sentiment(generated_outputs: List[str]) -> EvalValue:
                      prompts=None,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
-
-
-def _init():
-    '''Setup pretrained models required for reference free text quality analysis.
-    '''
-    global _sentiment_tokenizer, _sentiment_model
-    _sentiment_tokenizer = AutoTokenizer.from_pretrained(_sentiment_model_path)
-
-    # There is a "Some weights are not used warning" but we ignore it because
-    # that is intended.
-    _sentiment_model = AutoModelForSequenceClassification.from_pretrained(
-        _sentiment_model_path)
-
-
-_init()
