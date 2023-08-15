@@ -11,11 +11,11 @@ _sentiment_model = None
 
 
 def sentiment(generated_outputs: List[str]) -> EvalValue:
-    '''Calculates the sentient scores of the generated outputs between
-    0 (Negative) and 1 (Positive) based on Twitter-roBERTa-base moel.
+    '''Calculates the sentiment scores of the generated outputs between
+    0 (Negative) and 1 (Positive) based on the Twitter-roBERTa-base model.
 
     Ref:
-    https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest
+        https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -45,7 +45,7 @@ def sentiment(generated_outputs: List[str]) -> EvalValue:
 
 
 def _init():
-    '''Setup pretrained models required for reference free text qualitry analysis.
+    '''Setup pretrained models required for reference free text quality analysis.
     '''
     global _sentiment_tokenizer, _sentiment_model
     _sentiment_tokenizer = AutoTokenizer.from_pretrained(_sentiment_model_path)
