@@ -10,7 +10,7 @@ from langcheck.eval.eval_value import EvalValue
 def is_int(
         generated_outputs: List[str],
         domain: Iterable[int] | Container[int] | None = None
-) -> EvalValue[bool]:
+) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as integers, optionally within
     a domain of integers like `range(1, 11)` or `{1, 3, 5}`. This metric takes
     on binary 0 or 1 values.
@@ -42,7 +42,7 @@ def is_int(
 
 def is_float(generated_outputs: List[str],
              min: Optional[float] = None,
-             max: Optional[float] = None) -> EvalValue[bool]:
+             max: Optional[float] = None) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as floating point numbers,
     optionally within a min/max range. This metric takes on binary 0 or 1
     values.
@@ -77,7 +77,7 @@ def is_float(generated_outputs: List[str],
                      metric_values=metric_values)
 
 
-def is_json_object(generated_outputs: List[str]) -> EvalValue[bool]:
+def is_json_object(generated_outputs: List[str]) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as JSON objects. This metric
     takes on binary 0 or 1 values.
 
@@ -105,7 +105,7 @@ def is_json_object(generated_outputs: List[str]) -> EvalValue[bool]:
                      metric_values=metric_values)
 
 
-def is_json_array(generated_outputs: List[str]) -> EvalValue[bool]:
+def is_json_array(generated_outputs: List[str]) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as JSON arrays. This metric
     takes on binary 0 or 1 values.
 
@@ -133,7 +133,7 @@ def is_json_array(generated_outputs: List[str]) -> EvalValue[bool]:
                      metric_values=metric_values)
 
 
-def matches_regex(generated_outputs: List[str], regex: str) -> EvalValue[bool]:
+def matches_regex(generated_outputs: List[str], regex: str) -> EvalValue[int]:
     '''Checks if generated outputs fully match a given regular expression. This
     metric takes on binary 0 or 1 values.
 
@@ -158,8 +158,7 @@ def matches_regex(generated_outputs: List[str], regex: str) -> EvalValue[bool]:
                      metric_values=metric_values)
 
 
-def contains_regex(generated_outputs: List[str],
-                   regex: str) -> EvalValue[bool]:
+def contains_regex(generated_outputs: List[str], regex: str) -> EvalValue[int]:
     '''Checks if generated outputs partially contain a given regular expression.
     This metric takes on binary 0 or 1 values.
 
@@ -186,7 +185,7 @@ def contains_regex(generated_outputs: List[str],
 
 def contains_all_strings(generated_outputs: List[str],
                          strings: List[str],
-                         case_sensitive: bool = False) -> EvalValue[bool]:
+                         case_sensitive: bool = False) -> EvalValue[int]:
     '''Checks if generated outputs contain all strings in of a given list. This
     metric takes on binary 0 or 1 values.
 
@@ -222,7 +221,7 @@ def contains_all_strings(generated_outputs: List[str],
 
 def contains_any_strings(generated_outputs: List[str],
                          strings: List[str],
-                         case_sensitive: bool = False) -> EvalValue[bool]:
+                         case_sensitive: bool = False) -> EvalValue[int]:
     '''Checks if generated outputs contain any strings in a given list. This
     metric takes on binary 0 or 1 values.
 
@@ -257,7 +256,7 @@ def contains_any_strings(generated_outputs: List[str],
 
 
 def run_valid_fn(generated_outputs: List[str],
-                 valid_fn: Callable[[str], bool]) -> EvalValue[bool]:
+                 valid_fn: Callable[[str], bool]) -> EvalValue[int]:
     '''Checks if generated outputs are valid according to an arbitrary function.
     This metric takes on binary 0 or 1 values.
 
