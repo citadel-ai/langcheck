@@ -35,15 +35,3 @@ def semantic_sim(generated_outputs, reference_outputs):
                      prompts=None,
                      generated_outputs=generated_outputs,
                      metric_values=similarities)
-
-
-# Example usage
-generated_outputs = [
-    "The cat sat on the mat.", "Dogs are friendly.",
-    "I went to the park today with my dog"
-]
-reference_outputs = [
-    "A cat is on a mat.", "Dogs are usually amiable.",
-    "I work at an AI startup in Tokyo"
-]
-print(semantic_sim(generated_outputs, reference_outputs))

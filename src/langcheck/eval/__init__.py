@@ -1,2 +1,3 @@
+from langcheck.eval.reference_based_text_quality import semantic_sim
 from langcheck.eval.reference_free_text_quality import sentiment
 from langcheck.eval.text_structure import is_float
