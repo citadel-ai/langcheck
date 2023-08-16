@@ -33,7 +33,10 @@ def semantic_sim(generated_outputs: List[str],
                          generated_outputs=[],
                          reference_outputs=[],
                          metric_values=[])
-    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    # The 'all-mpnet-base-v2' model has the highest average performance out of
+    # all the existing sentence-transformer models that have been evaluated.
+    # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
+    model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
     cosine_scores = util.pairwise_cos_sim(generated_embeddings,
