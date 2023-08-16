@@ -1,9 +1,12 @@
+from typing import List
+
 from sentence_transformers import SentenceTransformer, util
 
 from langcheck.eval.eval_value import EvalValue
 
 
-def semantic_sim(generated_outputs, reference_outputs):
+def semantic_sim(generated_outputs: List[str],
+                 reference_outputs: List[str]) -> EvalValue:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings.
