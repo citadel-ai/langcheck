@@ -13,6 +13,7 @@ def semantic_sim(generated_outputs: List[str],
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity
+        https://www.sbert.net/docs/usage/semantic_textual_similarity.html
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -22,20 +23,13 @@ def semantic_sim(generated_outputs: List[str],
         An EvalValue object
     '''
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    generated_embeddings = [
-        model.encode(sentence) for sentence in generated_outputs
-    ]
-    reference_embeddings = [
-        model.encode(sentence) for sentence in reference_outputs
-    ]
-
-    similarities = []
-    for gen_emb, ref_emb in zip(generated_embeddings, reference_embeddings):
-        sim = util.pytorch_cos_sim(gen_emb, ref_emb)
-        similarities.append(sim.item())
+    generated_embeddings = model.encode(generated_outputs)
+    reference_embeddings = model.encode(reference_outputs)
+    cosine_scores = util.pairwise_cos_sim(generated_embeddings,
+                                          reference_embeddings)
 
     return EvalValue(metric_name='semantic_sim',
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
-                     metric_values=similarities)
+                     metric_values=cosine_scores.tolist())
