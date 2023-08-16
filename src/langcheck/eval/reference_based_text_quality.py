@@ -1,5 +1,7 @@
 from sentence_transformers import SentenceTransformer, util
 
+from langcheck.eval.eval_value import EvalValue
+
 
 # Compute semantic similarity
 def semantic_sim(generated_outputs, reference_outputs):
@@ -14,9 +16,12 @@ def semantic_sim(generated_outputs, reference_outputs):
     similarities = []
     for gen_emb, ref_emb in zip(generated_embeddings, reference_embeddings):
         sim = util.pytorch_cos_sim(gen_emb, ref_emb)
-        similarities.append(sim)
+        similarities.append(sim.item())
 
-    return similarities
+    return EvalValue(metric_name='semantic_sim',
+                     prompts=None,
+                     generated_outputs=generated_outputs,
+                     metric_values=similarities)
 
 
 # Example usage
