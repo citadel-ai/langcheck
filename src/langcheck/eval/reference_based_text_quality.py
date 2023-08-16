@@ -34,4 +34,5 @@ def semantic_sim(generated_outputs, reference_outputs):
     return EvalValue(metric_name='semantic_sim',
                      prompts=None,
                      generated_outputs=generated_outputs,
+                     reference_outputs=reference_outputs,
                      metric_values=similarities)

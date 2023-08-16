@@ -7,4 +7,5 @@ class EvalValue:
     metric_name: str
     prompts: Optional[List[str]]
     generated_outputs: List[str]
+    reference_outputs: Optional[List[str]]
     metric_values: List[float]

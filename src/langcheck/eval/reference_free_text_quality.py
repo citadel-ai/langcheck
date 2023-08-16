@@ -48,4 +48,5 @@ def sentiment(generated_outputs: List[str]) -> EvalValue:
     return EvalValue(metric_name='sentiment',
                      prompts=None,
                      generated_outputs=generated_outputs,
+                     reference_outputs=None,
                      metric_values=scores)

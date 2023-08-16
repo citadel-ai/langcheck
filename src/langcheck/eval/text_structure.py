@@ -35,4 +35,5 @@ def is_float(generated_outputs: List[str], min: Optional[float],
     return EvalValue(metric_name='is_float',
                      prompts=None,
                      generated_outputs=generated_outputs,
+                     reference_outputs=None,
                      metric_values=metric_values)
