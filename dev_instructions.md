@@ -1,8 +1,8 @@
 To use the package:
 
 ```
-# Install the langcheck package in editable mode
-> python -m pip install -e .
+# Install the langcheck package in editable mode with dev dependencies
+> python -m pip install -e .[dev]
 
 # Try using langcheck
 # (If you edit the package, just restart the Python REPL to reflect your changes)
@@ -10,6 +10,9 @@ To use the package:
 >>> from langcheck.eval import is_float
 >>> is_float(['1', '-2', '3.14', '999', 'asdf'], min=0, max=10)
 EvalValue(metric_name='is_float', prompts=None, generated_outputs=['1', '-2', '3.14', '999', 'asdf'], metric_values=[1, 0, 1, 0, 0])
+
+# Run tests
+> python -m pytest -s -vv
 ```
 
 To publish the package:
