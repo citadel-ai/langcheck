@@ -22,7 +22,7 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "isort", "pytest"]
+dev = ["yapf==0.40.1", "isort", "pytest", "sphinx", "furo"]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
