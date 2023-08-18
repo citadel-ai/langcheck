@@ -15,6 +15,16 @@ EvalValue(metric_name='is_float', prompts=None, generated_outputs=['1', '-2', '3
 > python -m pytest -s -vv
 ```
 
+To make documentation:
+
+```
+# Generate .rst files (use autodoc to generate .rst files at the file-level)
+> sphinx-apidoc --no-toc --separate --module-first -o docs src/langcheck/
+# Generate .html files from the .rst files (use autodoc to populate .html files at the function-level)
+> cd docs && make html
+> cd _build/html && python -m http.server
+```
+
 To publish the package:
 
 ```

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Generic, List, Optional, TypeVar
 
-# Metrics usually take on float, int, or bool values
+# Metrics usually take on float or integer values
 MetricValue = TypeVar('MetricValue')
 
 
