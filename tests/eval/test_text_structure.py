@@ -1,23 +1,11 @@
 import json
-import math
-from typing import List
 
 import pytest
 
 from langcheck.eval import (contains_all_strings, contains_any_strings,
                             contains_regex, is_float, is_int, is_json_array,
                             is_json_object, matches_regex, run_valid_fn)
-
-################################################################################
-# Utility functions
-################################################################################
-
-
-def is_close(a: List, b: List) -> bool:
-    '''Returns True if two lists of numbers are element-wise close.'''
-    assert len(a) == len(b)
-    return all(math.isclose(x, y) for x, y in zip(a, b))
-
+from tests.utils import is_close
 
 ################################################################################
 # Tests
