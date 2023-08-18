@@ -5,6 +5,7 @@ from detoxify import Detoxify
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck.eval.eval_value import EvalValue
+from langcheck.stats import compute_stats
 
 _sentiment_model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 _sentiment_tokenizer = None
@@ -117,6 +118,59 @@ def toxicity(generated_outputs: List[str]) -> EvalValue:
     scores = _toxicity_model.predict(generated_outputs)['toxicity']
 
     return EvalValue(metric_name='toxicity',
+                     prompts=None,
+                     generated_outputs=generated_outputs,
+                     metric_values=scores)
+
+
+def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue:
+    '''
+    Tests the readability of the generated texts based on the number of
+    sentences & words & syllables in the text. The score is typically between
+    0 and 100 (that is not guaranteed). If the score is high, it means the input
+    text is difficult to read.
+
+    See "How to Write Plain English" by Rudolf Franz Flesch for more details.
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+
+    Returns:
+        An EvalValue object
+    '''
+    output_stats = [compute_stats(output) for output in generated_outputs]
+    scores = [
+        206.835 - 1.015 * (stat.num_words / stat.num_sentences) - 84.6 *
+        (stat.num_syllables / stat.num_words) for stat in output_stats
+    ]
+    return EvalValue(metric_name='flesch_reading_ease',
+                     prompts=None,
+                     generated_outputs=generated_outputs,
+                     metric_values=scores)
+
+
+def flesch_kincaid_grade(generated_outputs: List[str]) -> EvalValue:
+    '''
+    Rates the readability of the generated texts in relation to U.S. grade
+    levels. The returned value suggests the grade level required to understand
+    the text. As Flesch reading ease, the score is cacluated based on the number
+    of sentences & words & syllables in the text.
+
+    See also:
+        https://apps.dtic.mil/sti/citations/ADA006655
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+
+    Returns:
+        An EvalValue object
+    '''
+    output_stats = [compute_stats(output) for output in generated_outputs]
+    scores = [
+        0.39 * (stat.num_words / stat.num_sentences) + 11.8 *
+        (stat.num_syllables / stat.num_words) - 15.59 for stat in output_stats
+    ]
+    return EvalValue(metric_name='flesch_kincaid_grade',
                      prompts=None,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
