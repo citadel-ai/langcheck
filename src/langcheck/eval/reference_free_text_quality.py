@@ -1,6 +1,7 @@
 from typing import List
 
 import torch
+from detoxify import Detoxify
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck.eval.eval_value import EvalValue
@@ -8,6 +9,8 @@ from langcheck.eval.eval_value import EvalValue
 _sentiment_model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 _sentiment_tokenizer = None
 _sentiment_model = None
+
+_toxicity_model = None
 
 
 def sentiment(generated_outputs: List[str]) -> EvalValue:
@@ -46,6 +49,30 @@ def sentiment(generated_outputs: List[str]) -> EvalValue:
     scores = (probs[:, 1] / 2 + probs[:, 2]).tolist()
 
     return EvalValue(metric_name='sentiment',
+                     prompts=None,
+                     generated_outputs=generated_outputs,
+                     metric_values=scores)
+
+
+def toxicity(generated_outputs: List[str]) -> EvalValue:
+    '''Calculates the toxicity scores of the generated outputs between
+    0 (Negative) and 1 (Positive) based on the "original" model of detxify.
+
+    Ref:
+        https://github.com/unitaryai/detoxify
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+
+    Returns:
+        An EvalValue object
+    '''
+    global _toxicity_model
+    if _toxicity_model is None:
+        _toxicity_model = Detoxify('original')
+    scores = _toxicity_model.predict(generated_outputs)['toxicity']
+
+    return EvalValue(metric_name='toxicity',
                      prompts=None,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
