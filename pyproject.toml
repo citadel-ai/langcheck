@@ -18,7 +18,8 @@ dependencies = [
     'tomli; python_version < "3.11"',
     'torch >= 2',
     'transformers >= 4',
-    'detoxify >= 0.5'
+    'detoxify >= 0.5',
+    'nltk >= 3'
 ]
 requires-python = ">=3.8"
 
