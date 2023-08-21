@@ -48,9 +48,10 @@ def compute_stats(input_text: str) -> TextStats:
     syllable_dict = cmudict.dict()
 
     def _count_syllables(word):
-        if word.lower() in syllable_dict:
+        word = word.lower()
+        if word in syllable_dict:
             return len([
-                phoneme for phoneme in syllable_dict[word.lower()][0]
+                phoneme for phoneme in syllable_dict[word][0]
                 if phoneme[-1] in ['0', '1', '2']
             ])
         else:
