@@ -18,9 +18,10 @@ _fluency_model = None
 _toxicity_model = None
 
 
-def sentiment(generated_outputs: List[str]) -> EvalValue:
-    '''Calculates the sentiment scores of the generated outputs between
-    0 (Negative) and 1 (Positive) based on the Twitter-roBERTa-base model.
+def sentiment(generated_outputs: List[str]) -> EvalValue[float]:
+    '''Calculates the sentiment scores of generated outputs using the
+    Twitter-roBERTa-base model. This metric takes on float values between
+    [0, 1], where 0 is negative sentiment and 1 is positive sentiment.
 
     Ref:
         https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest
@@ -59,12 +60,13 @@ def sentiment(generated_outputs: List[str]) -> EvalValue:
                      metric_values=scores)
 
 
-def fluency(generated_outputs: List[str]) -> EvalValue:
-    '''Calculates the fluency scores of the generated outputs between
-    0 (Negative) and 1 (Positive) based on the parrot_fluency_model.
+def fluency(generated_outputs: List[str]) -> EvalValue[float]:
+    '''Calculates the fluency scores of generated outputs using the Parrot
+    fluency model. This metric takes on float values between [0, 1], where 0 is
+    low fluency and 1 is high fluency.
 
     Ref:
-    https://huggingface.co/prithivida/parrot_fluency_model
+        https://huggingface.co/prithivida/parrot_fluency_model
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -99,9 +101,10 @@ def fluency(generated_outputs: List[str]) -> EvalValue:
                      metric_values=scores)
 
 
-def toxicity(generated_outputs: List[str]) -> EvalValue:
-    '''Calculates the toxicity scores of the generated outputs between
-    0 (Negative) and 1 (Positive) based on the "original" model of detxify.
+def toxicity(generated_outputs: List[str]) -> EvalValue[float]:
+    '''Calculates the toxicity scores of generated outputs using the Detoxify
+    model. This metric takes on float values between [0, 1], where 0 is low
+    toxicity and 1 is high toxicity.
 
     Ref:
         https://github.com/unitaryai/detoxify
@@ -123,14 +126,14 @@ def toxicity(generated_outputs: List[str]) -> EvalValue:
                      metric_values=scores)
 
 
-def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue:
-    '''
-    Tests the readability of the generated texts based on the number of
-    sentences & words & syllables in the text. The score is typically between
-    0 and 100 (that is not guaranteed). If the score is high, it means the input
-    text is difficult to read.
-
-    See "How to Write Plain English" by Rudolf Franz Flesch for more details.
+def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue[float]:
+    '''Calculates the readability of generated outputs using the Flesch Reading
+    Ease Score. This metric takes on float values between (-∞, 121.22], but
+    typically ranges between 0 and 100, where higher scores mean the text is
+    easier to read.
+    The score is based on the number of sentences, words, and syllables in the
+    text. See "How to Write Plain English" by Rudolf Franz Flesch for more
+    details.
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -149,14 +152,14 @@ def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue:
                      metric_values=scores)
 
 
-def flesch_kincaid_grade(generated_outputs: List[str]) -> EvalValue:
-    '''
-    Rates the readability of the generated texts in relation to U.S. grade
-    levels. The returned value suggests the grade level required to understand
-    the text. As Flesch reading ease, the score is cacluated based on the number
-    of sentences & words & syllables in the text.
-
-    See also:
+def flesch_kincaid_grade(generated_outputs: List[str]) -> EvalValue[float]:
+    '''Calculates the readability of generated outputs using the Flesch-Kincaid
+    Grade Level metric. This metric takes on float values between [-3.40, ∞),
+    but typically ranges between 0 and 12 (corresponding to U.S. grade levels),
+    where lower scores mean the text is easier to read.
+    Like the Flesch Reading Ease Score, this metric is based on the number of
+    sentences, words, and syllables in the text.
+    Ref:
         https://apps.dtic.mil/sti/citations/ADA006655
 
     Args:

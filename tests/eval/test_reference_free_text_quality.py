@@ -26,9 +26,10 @@ def test_fluency(generated_outputs):
     assert all(0 <= v <= 1 for v in eval_value.metric_values)
 
 
-@pytest.mark.parametrize('generated_outputs', [[
-    'I hate you. Shut your mouth up!', 'Thank you so much for coming today!!'
-], ['foo bar']])
+@pytest.mark.parametrize(
+    'generated_outputs',
+    [['I hate you. Shut your mouth!', 'Thank you so much for coming today!!'],
+     ['foo bar']])
 def test_toxicity(generated_outputs):
     eval_value = toxicity(generated_outputs)
     assert all(0 <= v <= 1 for v in eval_value.metric_values)
