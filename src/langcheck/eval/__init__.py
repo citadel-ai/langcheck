@@ -1,4 +1,7 @@
-from langcheck.eval.reference_free_text_quality import sentiment
+from langcheck.eval.reference_free_text_quality import (flesch_kincaid_grade,
+                                                        flesch_reading_ease,
+                                                        fluency, sentiment,
+                                                        toxicity)
 from langcheck.eval.text_structure import (contains_all_strings,
                                            contains_any_strings,
                                            contains_regex, is_float, is_int,
