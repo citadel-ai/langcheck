@@ -131,6 +131,7 @@ def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue[float]:
     Ease Score. This metric takes on float values between (-∞, 121.22], but
     typically ranges between 0 and 100, where higher scores mean the text is
     easier to read.
+
     The score is based on the number of sentences, words, and syllables in the
     text. See "How to Write Plain English" by Rudolf Franz Flesch for more
     details.
@@ -157,6 +158,7 @@ def flesch_kincaid_grade(generated_outputs: List[str]) -> EvalValue[float]:
     Grade Level metric. This metric takes on float values between [-3.40, ∞),
     but typically ranges between 0 and 12 (corresponding to U.S. grade levels),
     where lower scores mean the text is easier to read.
+
     Like the Flesch Reading Ease Score, this metric is based on the number of
     sentences, words, and syllables in the text.
     Ref:

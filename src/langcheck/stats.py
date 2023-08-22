@@ -47,6 +47,8 @@ def compute_stats(input_text: str) -> TextStats:
     tokenizer = SyllableTokenizer()
     syllable_dict = cmudict.dict()
 
+    # Count syllables in a word by checking a dictionary first, and falling back
+    # to best-effort SyllableTokenizer
     def _count_syllables(word):
         word = word.lower()
         if word in syllable_dict:
