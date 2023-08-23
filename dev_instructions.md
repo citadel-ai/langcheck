@@ -19,7 +19,7 @@ To make documentation:
 
 ```
 # Generate .rst files (use autodoc to generate .rst files at the file-level)
-> sphinx-apidoc --no-toc --separate --module-first -o docs src/langcheck/
+> sphinx-apidoc -f --no-toc --separate --module-first -o docs src/langcheck/
 # Generate .html files from the .rst files (use autodoc to populate .html files at the function-level)
 > cd docs && make html
 > cd _build/html && python -m http.server
