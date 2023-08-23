@@ -1,5 +1,5 @@
-langcheck package
-=================
+LangCheck API Docs
+==================
 
 .. automodule:: langcheck
    :members:
