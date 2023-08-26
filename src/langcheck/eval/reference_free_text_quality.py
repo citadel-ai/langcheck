@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import torch
 from detoxify import Detoxify
@@ -18,7 +18,8 @@ _fluency_model = None
 _toxicity_model = None
 
 
-def sentiment(generated_outputs: List[str]) -> EvalValue[float]:
+def sentiment(generated_outputs: List[str],
+              prompts: Optional[List[str]] = None) -> EvalValue[float]:
     '''Calculates the sentiment scores of generated outputs using the
     Twitter-roBERTa-base model. This metric takes on float values between
     [0, 1], where 0 is negative sentiment and 1 is positive sentiment.
@@ -28,6 +29,8 @@ def sentiment(generated_outputs: List[str]) -> EvalValue[float]:
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An EvalValue object
@@ -60,7 +63,8 @@ def sentiment(generated_outputs: List[str]) -> EvalValue[float]:
                      metric_values=scores)
 
 
-def fluency(generated_outputs: List[str]) -> EvalValue[float]:
+def fluency(generated_outputs: List[str],
+            prompts: Optional[List[str]] = None) -> EvalValue[float]:
     '''Calculates the fluency scores of generated outputs using the Parrot
     fluency model. This metric takes on float values between [0, 1], where 0 is
     low fluency and 1 is high fluency.
@@ -70,6 +74,8 @@ def fluency(generated_outputs: List[str]) -> EvalValue[float]:
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An EvalValue object
@@ -101,7 +107,8 @@ def fluency(generated_outputs: List[str]) -> EvalValue[float]:
                      metric_values=scores)
 
 
-def toxicity(generated_outputs: List[str]) -> EvalValue[float]:
+def toxicity(generated_outputs: List[str],
+             prompts: Optional[List[str]] = None) -> EvalValue[float]:
     '''Calculates the toxicity scores of generated outputs using the Detoxify
     model. This metric takes on float values between [0, 1], where 0 is low
     toxicity and 1 is high toxicity.
@@ -111,6 +118,8 @@ def toxicity(generated_outputs: List[str]) -> EvalValue[float]:
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An EvalValue object
@@ -126,7 +135,9 @@ def toxicity(generated_outputs: List[str]) -> EvalValue[float]:
                      metric_values=scores)
 
 
-def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue[float]:
+def flesch_reading_ease(
+        generated_outputs: List[str],
+        prompts: Optional[List[str]] = None) -> EvalValue[float]:
     '''Calculates the readability of generated outputs using the Flesch Reading
     Ease Score. This metric takes on float values between (-∞, 121.22], but
     typically ranges between 0 and 100, where higher scores mean the text is
@@ -138,6 +149,8 @@ def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue[float]:
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An EvalValue object
@@ -153,7 +166,9 @@ def flesch_reading_ease(generated_outputs: List[str]) -> EvalValue[float]:
                      metric_values=scores)
 
 
-def flesch_kincaid_grade(generated_outputs: List[str]) -> EvalValue[float]:
+def flesch_kincaid_grade(
+        generated_outputs: List[str],
+        prompts: Optional[List[str]] = None) -> EvalValue[float]:
     '''Calculates the readability of generated outputs using the Flesch-Kincaid
     Grade Level metric. This metric takes on float values between [-3.40, ∞),
     but typically ranges between 0 and 12 (corresponding to U.S. grade levels),
@@ -161,11 +176,14 @@ def flesch_kincaid_grade(generated_outputs: List[str]) -> EvalValue[float]:
 
     Like the Flesch Reading Ease Score, this metric is based on the number of
     sentences, words, and syllables in the text.
+
     Ref:
         https://apps.dtic.mil/sti/citations/ADA006655
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An EvalValue object
