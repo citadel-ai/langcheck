@@ -77,7 +77,7 @@ def is_float(generated_outputs: List[str],
             metric_values.append(0)
 
     return EvalValue(metric_name='is_float',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)
 
@@ -108,7 +108,7 @@ def is_json_object(generated_outputs: List[str],
             metric_values.append(0)
 
     return EvalValue(metric_name='is_json_object',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)
 
@@ -139,7 +139,7 @@ def is_json_array(generated_outputs: List[str],
             metric_values.append(0)
 
     return EvalValue(metric_name='is_json_array',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)
 
@@ -168,7 +168,7 @@ def matches_regex(generated_outputs: List[str],
             metric_values.append(0)
 
     return EvalValue(metric_name='matches_regex',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)
 
@@ -197,7 +197,7 @@ def contains_regex(generated_outputs: List[str],
             metric_values.append(0)
 
     return EvalValue(metric_name='contains_regex',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)
 
@@ -237,7 +237,7 @@ def contains_all_strings(
             metric_values.append(0)
 
     return EvalValue(metric_name='contains_all_strings',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)
 
@@ -277,7 +277,7 @@ def contains_any_strings(
             metric_values.append(0)
 
     return EvalValue(metric_name='contains_any_strings',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)
 
@@ -311,6 +311,6 @@ def run_valid_fn(generated_outputs: List[str],
             metric_values.append(0)
 
     return EvalValue(metric_name='run_valid_fn',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=metric_values)

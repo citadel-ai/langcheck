@@ -58,7 +58,7 @@ def sentiment(generated_outputs: List[str],
     scores = (probs[:, 1] / 2 + probs[:, 2]).tolist()
 
     return EvalValue(metric_name='sentiment',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
 
@@ -102,7 +102,7 @@ def fluency(generated_outputs: List[str],
     scores = probs[:, 1].tolist()
 
     return EvalValue(metric_name='fluency',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
 
@@ -130,7 +130,7 @@ def toxicity(generated_outputs: List[str],
     scores = _toxicity_model.predict(generated_outputs)['toxicity']
 
     return EvalValue(metric_name='toxicity',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
 
@@ -161,7 +161,7 @@ def flesch_reading_ease(
         (stat.num_syllables / stat.num_words) for stat in output_stats
     ]
     return EvalValue(metric_name='flesch_reading_ease',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
 
@@ -194,6 +194,6 @@ def flesch_kincaid_grade(
         (stat.num_syllables / stat.num_words) - 15.59 for stat in output_stats
     ]
     return EvalValue(metric_name='flesch_kincaid_grade',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      metric_values=scores)
