@@ -1,5 +1,3 @@
-import pytest
-
 from langcheck.eval import is_float
 
 
