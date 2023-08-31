@@ -167,10 +167,17 @@ class EvalValueWithThreshold(EvalValue):
                 f'{self.to_df()._repr_html_()}'  # type: ignore
                 )
 
+    def all(self) -> bool:
+        '''Returns True if all data points pass the threshold.'''
+        return all(self.threshold_results)
+
+    def any(self) -> bool:
+        '''Returns True if any data points pass the threshold.'''
+        return any(self.threshold_results)
+
     def __bool__(self) -> bool:
         '''Allows the user to write an `assert eval_value > 0.5` or
-        `if eval_value > 0.5:` expression.
-
-        Returns True if the pass rate is exactly 1.0.
+        `if eval_value > 0.5:` expression. This is shorthand for
+        `assert (eval_value > 0.5).all()`.
         '''
-        return self.pass_rate == 1.0
+        return self.all()
