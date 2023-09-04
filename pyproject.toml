@@ -19,12 +19,13 @@ dependencies = [
     'torch >= 2',
     'transformers >= 4',
     'detoxify >= 0.5',
-    'nltk >= 3'
+    'nltk >= 3',
+    'pandas >= 1'
 ]
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "isort", "pytest", "sphinx", "furo"]
+dev = ["yapf==0.40.1", "isort", "pytest", "sphinx", "furo", "ipykernel"]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"

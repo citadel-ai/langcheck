@@ -13,13 +13,14 @@
     "vscode": {
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "ms-python.isort",
-        "GitHub.vscode-pull-request-github",
-        "ms-azuretools.vscode-docker",
-        "shardulm94.trailing-spaces"
-      ]
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"ms-python.isort",
+		"GitHub.vscode-pull-request-github",
+		"ms-azuretools.vscode-docker",
+		"shardulm94.trailing-spaces",
+		"ms-toolsai.jupyter"
+	]
     }
   }
 
