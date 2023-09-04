@@ -16,6 +16,7 @@ class EvalValue(Generic[NumericType]):
     metric_name: str
     prompts: Optional[List[str]]
     generated_outputs: List[str]
+    reference_outputs: Optional[List[str]]
     metric_values: List[NumericType]
 
     def to_df(self) -> pd.DataFrame:
