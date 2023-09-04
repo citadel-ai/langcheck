@@ -13,3 +13,11 @@ Subpackages
    :maxdepth: 4
 
    langcheck.eval
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   langcheck.stats

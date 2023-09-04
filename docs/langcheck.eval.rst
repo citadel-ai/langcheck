@@ -13,4 +13,5 @@ Submodules
    :maxdepth: 4
 
    langcheck.eval.eval_value
+   langcheck.eval.reference_free_text_quality
    langcheck.eval.text_structure
