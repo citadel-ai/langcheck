@@ -20,7 +20,9 @@ dependencies = [
     'transformers >= 4',
     'detoxify >= 0.5',
     'nltk >= 3',
-    'pandas >= 1'
+    'pandas >= 1',
+    'plotly >= 5',
+    'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
 ]
 requires-python = ">=3.8"
 

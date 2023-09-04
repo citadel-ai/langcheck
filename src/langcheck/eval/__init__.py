@@ -1,3 +1,4 @@
+from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.reference_free_text_quality import (flesch_kincaid_grade,
                                                         flesch_reading_ease,
                                                         fluency, sentiment,
