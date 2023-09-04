@@ -10,7 +10,9 @@ def semantic_sim(generated_outputs: List[str],
                  reference_outputs: List[str]) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
-    similarities between the generated and reference embeddings.
+    similarities between the generated and reference embeddings. This metric
+	takes on float values between [-1, 1], but typically ranges between 0 and 1
+    where 0 is minimum similariy and 1 is maximum similarity.
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity
