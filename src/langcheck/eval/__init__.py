@@ -1,5 +1,9 @@
+from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.reference_based_text_quality import semantic_sim
-from langcheck.eval.reference_free_text_quality import sentiment
+from langcheck.eval.reference_free_text_quality import (flesch_kincaid_grade,
+                                                        flesch_reading_ease,
+                                                        fluency, sentiment,
+                                                        toxicity)
 from langcheck.eval.text_structure import (contains_all_strings,
                                            contains_any_strings,
                                            contains_regex, is_float, is_int,
