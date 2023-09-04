@@ -51,26 +51,26 @@ def scatter(eval_value: EvalValue):
         filtered_df = df
         if filter_generated_outputs:
             filtered_df = filtered_df[
-                filtered_df['generated_output'].str.lower().contains(
+                filtered_df['generated_output'].str.lower().str.contains(
                     filter_generated_outputs.lower())]
         if filter_prompts:
             filtered_df = filtered_df[
-                filtered_df['prompt'].str.lower().contains(
+                filtered_df['prompt'].str.lower().str.contains(
                     filter_prompts.lower())]
 
         # Configure the actual scatter plot
         fig = px.scatter(filtered_df,
-                         x=eval_value.metric_name,
-                         y=filtered_df.index,
+                         x=filtered_df.index,
+                         y=eval_value.metric_name,
                          hover_data=filtered_df.columns)
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
-        fig.update_xaxes(range=[
+        fig.update_xaxes(range=[-0.1, len(df)])
+        fig.update_yaxes(range=[
             min(-0.1, math.floor(df[eval_value.metric_name].min())),
             max(1.1, math.ceil(df[eval_value.metric_name].max()))
         ])
-        fig.update_yaxes(range=[-0.1, len(df)])
 
         # However, if the user manually zoomed in, keep that zoom level even
         # when update_figure() re-runs
