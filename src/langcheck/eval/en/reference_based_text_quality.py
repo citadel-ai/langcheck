@@ -34,7 +34,8 @@ def semantic_sim(generated_outputs: List[str],
                          prompts=None,
                          generated_outputs=[],
                          reference_outputs=[],
-                         metric_values=[])
+                         metric_values=[],
+                         locale='en')
     # The 'all-mpnet-base-v2' model has the highest average performance out of
     # all the existing sentence-transformer models that have been evaluated.
     # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
@@ -51,4 +52,5 @@ def semantic_sim(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
-                     metric_values=cosine_scores.tolist())
+                     metric_values=cosine_scores.tolist(),
+                     locale='en')
