@@ -1,7 +1,7 @@
 import pytest
 
-from langcheck.eval import (flesch_kincaid_grade, flesch_reading_ease, fluency,
-                            sentiment, toxicity)
+from langcheck.eval.en import (flesch_kincaid_grade, flesch_reading_ease,
+                               fluency, sentiment, toxicity)
 from tests.utils import is_close
 
 ################################################################################

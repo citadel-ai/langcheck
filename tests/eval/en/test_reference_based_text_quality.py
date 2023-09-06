@@ -1,6 +1,6 @@
 import pytest
 
-from langcheck.eval import semantic_sim
+from langcheck.eval.en import semantic_sim
 
 ################################################################################
 # Tests
