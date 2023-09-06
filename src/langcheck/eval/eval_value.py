@@ -18,6 +18,7 @@ class EvalValue(Generic[NumericType]):
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
     metric_values: List[NumericType]
+    language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
         '''Returns a DataFrame of metric values for each data point.'''
