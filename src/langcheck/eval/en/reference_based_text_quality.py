@@ -1,11 +1,10 @@
 from typing import List
 
 import torch
+from rouge_score import rouge_scorer
 from sentence_transformers import SentenceTransformer, util
 
 from langcheck.eval.eval_value import EvalValue
-
-from rouge_score import rouge_scorer
 
 
 def semantic_sim(generated_outputs: List[str],
