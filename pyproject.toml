@@ -24,6 +24,7 @@ dependencies = [
     'pandas >= 1',
     'plotly >= 5',
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
+    'rouge_score >= 0.1.2',
 ]
 requires-python = ">=3.8"
 
