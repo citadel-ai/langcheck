@@ -1,7 +1,6 @@
 import pytest
 
 from langcheck.eval.ja import sentiment
-from tests.utils import is_close
 
 ################################################################################
 # Tests
