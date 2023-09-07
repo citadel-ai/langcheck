@@ -1,4 +1,6 @@
-from langcheck.eval.en.reference_based_text_quality import semantic_sim
+from langcheck.eval.en.reference_based_text_quality import (rouge1, rouge2,
+                                                            rougeL,
+                                                            semantic_sim)
 from langcheck.eval.en.reference_free_text_quality import (
     flesch_kincaid_grade, flesch_reading_ease, fluency, sentiment, toxicity)
 from langcheck.eval.eval_value import EvalValue

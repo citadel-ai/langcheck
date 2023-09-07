@@ -1,6 +1,7 @@
 import pytest
 
-from langcheck.eval.en import semantic_sim
+from langcheck.eval.en import rouge1, rouge2, rougeL, semantic_sim
+from tests.utils import is_close
 
 ################################################################################
 # Tests
@@ -32,3 +33,47 @@ def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
     assert 0.0 <= semantic_sim_value <= 0.1
+
+
+@pytest.mark.parametrize(
+    'generated_outputs,reference_outputs',
+    [(["The cat sat on the mat."], ["The cat sat on the mat."])])
+def test_rouge_identical(generated_outputs, reference_outputs):
+    rouge1_eval_value = rouge1(generated_outputs, reference_outputs)
+    rouge2_eval_value = rouge2(generated_outputs, reference_outputs)
+    rougeL_eval_value = rougeL(generated_outputs, reference_outputs)
+
+    # All ROUGE scores are 1 if the generated and reference outputs are
+    # identical
+    assert rouge1_eval_value.metric_values[0] == 1
+    assert rouge2_eval_value.metric_values[0] == 1
+    assert rougeL_eval_value.metric_values[0] == 1
+
+
+@pytest.mark.parametrize(
+    'generated_outputs,reference_outputs',
+    [(["The cat sat on the mat."], ["I like to eat ice cream."])])
+def test_rouge_no_overlap(generated_outputs, reference_outputs):
+    rouge1_eval_value = rouge1(generated_outputs, reference_outputs)
+    rouge2_eval_value = rouge2(generated_outputs, reference_outputs)
+    rougeL_eval_value = rougeL(generated_outputs, reference_outputs)
+
+    # All ROUGE scores are 0 if the generated and reference outputs have no
+    # overlapping words
+    assert rouge1_eval_value.metric_values[0] == 0
+    assert rouge2_eval_value.metric_values[0] == 0
+    assert rougeL_eval_value.metric_values[0] == 0
+
+
+@pytest.mark.parametrize(
+    'generated_outputs,reference_outputs',
+    [(["The cat is sitting on the mat."], ["The cat sat on the mat."])])
+def test_rouge_some_overlap(generated_outputs, reference_outputs):
+    rouge1_eval_value = rouge1(generated_outputs, reference_outputs)
+    rouge2_eval_value = rouge2(generated_outputs, reference_outputs)
+    rougeL_eval_value = rougeL(generated_outputs, reference_outputs)
+
+    # The ROUGE-2 score is lower than the ROUGE-1 and ROUGE-L scores
+    assert is_close(rouge1_eval_value.metric_values, [0.7692307692307692])
+    assert is_close(rouge2_eval_value.metric_values, [0.5454545454545454])
+    assert is_close(rougeL_eval_value.metric_values, [0.7692307692307692])
