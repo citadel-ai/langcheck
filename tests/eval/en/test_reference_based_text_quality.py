@@ -1,6 +1,6 @@
 import pytest
 
-from langcheck.eval import rouge1, rouge2, rougeL, semantic_sim
+from langcheck.eval.en import rouge1, rouge2, rougeL, semantic_sim
 from tests.utils import is_close
 
 ################################################################################
