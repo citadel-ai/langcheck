@@ -188,10 +188,12 @@ def _scatter_two_eval_values(eval_value: EvalValue,
                     filter_prompts.lower())]
 
         # Configure the actual scatter plot
+        hover_data = {'index': filtered_df.index}  # #xplicitly add the index
+        hover_data.update({col: True for col in filtered_df.columns})
         fig = px.scatter(filtered_df,
                          x=eval_value.metric_name,
                          y=other_eval_value.metric_name,
-                         hover_data=filtered_df.columns)
+                         hover_data=hover_data)
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
