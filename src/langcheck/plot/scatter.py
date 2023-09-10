@@ -188,10 +188,10 @@ def _scatter_two_eval_values(eval_value: EvalValue,
                     filter_prompts.lower())]
 
         # Configure the actual scatter plot
-        # We need to explicitly add the index column into hover_data here.
+        # (We need to explicitly add the index column into hover_data here.
         # Unfortunately it's not possible to make "index" show up at the top of
-        # the tooltip like _scatter_one_eval_value() does since Plotly always
-        # displays the x and y values at the top of the tooltip.
+        # the tooltip like _scatter_one_eval_value() since Plotly always
+        # displays the x and y values at the top.)
         hover_data = {col: True for col in filtered_df.columns}
         hover_data['index'] = filtered_df.index
         fig = px.scatter(filtered_df,
