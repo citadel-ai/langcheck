@@ -13,7 +13,7 @@ _sentiment_model = None
 def sentiment(generated_outputs: List[str],
               prompts: Optional[List[str]] = None) -> EvalValue[float]:
     '''Calculates the sentiment scores of generated outputs in Japanese
-    using the Twitter-roBERTa-base model. This metric takes on float values 
+    using the Twitter-roBERTa-base model. This metric takes on float values
     between [0, 1], where 0 is negative sentiment and 1 is positive sentiment.
 
     Ref:
