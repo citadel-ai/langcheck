@@ -16,7 +16,7 @@ __all__ = [
     'contains_any_strings',
     'contains_regex',
     'EvalValue',
-    'exact_match'
+    'exact_match',
     'flesch_kincaid_grade',
     'flesch_reading_ease',
     'fluency',
