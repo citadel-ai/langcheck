@@ -32,7 +32,7 @@ def is_int(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except ValueError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_int',
@@ -75,7 +75,7 @@ def is_float(generated_outputs: List[str],
                 metric_values.append(0)
             else:
                 metric_values.append(1)
-        except:
+        except ValueError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_float',
@@ -108,7 +108,7 @@ def is_json_object(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except json.JSONDecodeError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_json_object',
@@ -141,7 +141,7 @@ def is_json_array(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except json.JSONDecodeError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_json_array',
@@ -323,7 +323,7 @@ def run_valid_fn(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except Exception:
             metric_values.append(0)
 
     return EvalValue(metric_name='run_valid_fn',
