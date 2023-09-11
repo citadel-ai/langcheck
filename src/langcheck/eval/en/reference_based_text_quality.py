@@ -28,33 +28,39 @@ def semantic_sim(generated_outputs: List[str],
     '''
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(
-            'The generated and reference outputs lists must be of the same length'
+            'The generated and reference outputs lists must be of the same '
+            'length'
         )
     if len(generated_outputs) == 0:
-        return EvalValue(metric_name='semantic_sim',
-                         prompts=None,
-                         generated_outputs=[],
-                         reference_outputs=[],
-                         metric_values=[],
-                         language='en')
+        return EvalValue(
+            metric_name='semantic_sim',
+            prompts=None,
+            generated_outputs=[],
+            reference_outputs=[],
+            metric_values=[],
+            language='en'
+        )
     # The 'all-mpnet-base-v2' model has the highest average performance out of
     # all the existing sentence-transformer models that have been evaluated.
     # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
     model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
-    cosine_scores = util.pairwise_cos_sim(generated_embeddings,
-                                          reference_embeddings)
+    cosine_scores = util.pairwise_cos_sim(
+        generated_embeddings, reference_embeddings
+    )
     # Numerical instability can cause the dot product of almost identical
     # vectors to exceed 1.0 slightly, so we clip the outputs
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
 
-    return EvalValue(metric_name='semantic_sim',
-                     prompts=None,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     metric_values=cosine_scores.tolist(),
-                     language='en')
+    return EvalValue(
+        metric_name='semantic_sim',
+        prompts=None,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        metric_values=cosine_scores.tolist(),
+        language='en'
+    )
 
 
 def rouge1(generated_outputs: List[str],
@@ -76,12 +82,14 @@ def rouge1(generated_outputs: List[str],
         An EvalValue object
     '''
     scores = _rouge(generated_outputs, reference_outputs, 'rouge1')
-    return EvalValue(metric_name='rouge1',
-                     prompts=None,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     metric_values=scores,
-                     language='en')
+    return EvalValue(
+        metric_name='rouge1',
+        prompts=None,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        metric_values=scores,
+        language='en'
+    )
 
 
 def rouge2(generated_outputs: List[str],
@@ -103,12 +111,14 @@ def rouge2(generated_outputs: List[str],
         An EvalValue object
     '''
     scores = _rouge(generated_outputs, reference_outputs, 'rouge2')
-    return EvalValue(metric_name='rouge2',
-                     prompts=None,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     metric_values=scores,
-                     language='en')
+    return EvalValue(
+        metric_name='rouge2',
+        prompts=None,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        metric_values=scores,
+        language='en'
+    )
 
 
 def rougeL(generated_outputs: List[str],
@@ -140,16 +150,19 @@ def rougeL(generated_outputs: List[str],
     #
     # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA E501
     scores = _rouge(generated_outputs, reference_outputs, 'rougeLsum')
-    return EvalValue(metric_name='rougeL',
-                     prompts=None,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     metric_values=scores,
-                     language='en')
+    return EvalValue(
+        metric_name='rougeL',
+        prompts=None,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        metric_values=scores,
+        language='en'
+    )
 
 
-def _rouge(generated_outputs: List[str], reference_outputs: List[str],
-           rouge_type: str) -> List[float]:
+def _rouge(
+    generated_outputs: List[str], reference_outputs: List[str], rouge_type: str
+) -> List[float]:
     '''Helper function for computing the rouge1, rouge2, and rougeL metrics.
     This uses Google Research's implementation of ROUGE:
     https://github.com/google-research/google-research/tree/master/rouge

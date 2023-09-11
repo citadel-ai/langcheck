@@ -35,8 +35,9 @@ def compute_stats(input_text: str) -> TextStats:
 
     sentences = nltk.tokenize.sent_tokenize(input_text)
 
-    words = sum(
-        [nltk.tokenize.word_tokenize(sentence) for sentence in sentences], [])
+    words = sum([
+        nltk.tokenize.word_tokenize(sentence) for sentence in sentences
+    ], [])
 
     # Filter out "words" like "!", ".", ... etc
     def _all_punctuations(input_str: str) -> bool:
@@ -65,6 +66,8 @@ def compute_stats(input_text: str) -> TextStats:
 
     num_syllables = sum([_count_syllables(word) for word in words])
 
-    return TextStats(num_sentences=len(sentences),
-                     num_words=len(words),
-                     num_syllables=num_syllables)
+    return TextStats(
+        num_sentences=len(sentences),
+        num_words=len(words),
+        num_syllables=num_syllables
+    )

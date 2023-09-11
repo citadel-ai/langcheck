@@ -7,9 +7,11 @@ from typing import Callable, Container, Iterable, List, Optional
 from langcheck.eval.eval_value import EvalValue
 
 
-def is_int(generated_outputs: List[str],
-           domain: Iterable[int] | Container[int] | None = None,
-           prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def is_int(
+    generated_outputs: List[str],
+    domain: Iterable[int] | Container[int] | None = None,
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as integers, optionally within
     a domain of integers like `range(1, 11)` or `{1, 3, 5}`. This metric takes
     on binary 0 or 1 values.
@@ -35,18 +37,22 @@ def is_int(generated_outputs: List[str],
         except ValueError:
             metric_values.append(0)
 
-    return EvalValue(metric_name='is_int',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='is_int',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def is_float(generated_outputs: List[str],
-             min: Optional[float] = None,
-             max: Optional[float] = None,
-             prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def is_float(
+    generated_outputs: List[str],
+    min: Optional[float] = None,
+    max: Optional[float] = None,
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as floating point numbers,
     optionally within a min/max range. This metric takes on binary 0 or 1
     values.
@@ -78,16 +84,20 @@ def is_float(generated_outputs: List[str],
         except ValueError:
             metric_values.append(0)
 
-    return EvalValue(metric_name='is_float',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='is_float',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def is_json_object(generated_outputs: List[str],
-                   prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def is_json_object(
+    generated_outputs: List[str],
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as JSON objects. This metric
     takes on binary 0 or 1 values.
 
@@ -111,16 +121,20 @@ def is_json_object(generated_outputs: List[str],
         except json.JSONDecodeError:
             metric_values.append(0)
 
-    return EvalValue(metric_name='is_json_object',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='is_json_object',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def is_json_array(generated_outputs: List[str],
-                  prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def is_json_array(
+    generated_outputs: List[str],
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs can be parsed as JSON arrays. This metric
     takes on binary 0 or 1 values.
 
@@ -144,17 +158,21 @@ def is_json_array(generated_outputs: List[str],
         except json.JSONDecodeError:
             metric_values.append(0)
 
-    return EvalValue(metric_name='is_json_array',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='is_json_array',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def matches_regex(generated_outputs: List[str],
-                  regex: str,
-                  prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def matches_regex(
+    generated_outputs: List[str],
+    regex: str,
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs fully match a given regular expression. This
     metric takes on binary 0 or 1 values.
 
@@ -175,17 +193,21 @@ def matches_regex(generated_outputs: List[str],
         else:
             metric_values.append(0)
 
-    return EvalValue(metric_name='matches_regex',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='matches_regex',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def contains_regex(generated_outputs: List[str],
-                   regex: str,
-                   prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def contains_regex(
+    generated_outputs: List[str],
+    regex: str,
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs partially contain a given regular expression.
     This metric takes on binary 0 or 1 values.
 
@@ -206,18 +228,22 @@ def contains_regex(generated_outputs: List[str],
         else:
             metric_values.append(0)
 
-    return EvalValue(metric_name='contains_regex',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='contains_regex',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def contains_all_strings(generated_outputs: List[str],
-                         strings: List[str],
-                         case_sensitive: bool = False,
-                         prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def contains_all_strings(
+    generated_outputs: List[str],
+    strings: List[str],
+    case_sensitive: bool = False,
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs contain all strings in of a given list. This
     metric takes on binary 0 or 1 values.
 
@@ -247,18 +273,22 @@ def contains_all_strings(generated_outputs: List[str],
         else:
             metric_values.append(0)
 
-    return EvalValue(metric_name='contains_all_strings',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='contains_all_strings',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def contains_any_strings(generated_outputs: List[str],
-                         strings: List[str],
-                         case_sensitive: bool = False,
-                         prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def contains_any_strings(
+    generated_outputs: List[str],
+    strings: List[str],
+    case_sensitive: bool = False,
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs contain any strings in a given list. This
     metric takes on binary 0 or 1 values.
 
@@ -288,17 +318,21 @@ def contains_any_strings(generated_outputs: List[str],
         else:
             metric_values.append(0)
 
-    return EvalValue(metric_name='contains_any_strings',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='contains_any_strings',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
 
 
-def run_valid_fn(generated_outputs: List[str],
-                 valid_fn: Callable[[str], bool],
-                 prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def run_valid_fn(
+    generated_outputs: List[str],
+    valid_fn: Callable[[str], bool],
+    prompts: Optional[List[str]] = None
+) -> EvalValue[int]:
     '''Checks if generated outputs are valid according to an arbitrary function.
     This metric takes on binary 0 or 1 values.
 
@@ -324,9 +358,11 @@ def run_valid_fn(generated_outputs: List[str],
         except Exception:
             metric_values.append(0)
 
-    return EvalValue(metric_name='run_valid_fn',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     metric_values=metric_values,
-                     language=None)
+    return EvalValue(
+        metric_name='run_valid_fn',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        metric_values=metric_values,
+        language=None
+    )
