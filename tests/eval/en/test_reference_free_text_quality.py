@@ -40,20 +40,23 @@ def test_toxicity(generated_outputs):
 
 
 @pytest.mark.parametrize(
-    'generated_outputs,metric_values', [
-        ([
-            '''
-    My Friend. Welcome to the Carpathians. I am anxiously expecting you.
-    Sleep well to-night. At three to-morrow the diligence will start for Bukovina;
-    a place on it is kept for you.
-    '''
-        ], [75.00651612903226]),
-        ([
-            '''
-    How slowly the time passes here, encompassed as I am by frost and snow!
-    Yet a second step is taken towards my enterprise.
-    '''
-        ], [77.45815217391308]),
+    'generated_outputs,metric_values',
+    [
+        (
+            [
+                'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
+                'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+                'a place on it is kept for you.'
+            ],
+            [75.00651612903226]
+        ),
+        (
+            [
+                'How slowly the time passes here, encompassed as I am by frost and snow!\n'  # NOQA E501
+                'Yet a second step is taken towards my enterprise.'
+            ],
+            [77.45815217391308]
+        )
     ]
 )
 def test_flesch_reading_ease(generated_outputs, metric_values):
@@ -62,20 +65,23 @@ def test_flesch_reading_ease(generated_outputs, metric_values):
 
 
 @pytest.mark.parametrize(
-    'generated_outputs,metric_values', [
-        ([
-            '''
-    My Friend. Welcome to the Carpathians. I am anxiously expecting you.
-    Sleep well to-night. At three to-morrow the diligence will start for Bukovina;
-    a place on it is kept for you.
-    '''
-        ], [4.33767741935484]),
-        ([
-            '''
-    How slowly the time passes here, encompassed as I am by frost and snow!
-    Yet a second step is taken towards my enterprise.
-    '''
-        ], [5.312391304347827]),
+    'generated_outputs,metric_values',
+    [
+        (
+            [
+                'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
+                'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+                'a place on it is kept for you.'
+            ],
+            [4.33767741935484]
+        ),
+        (
+            [
+                'How slowly the time passes here, encompassed as I am by frost and snow!\n'  # NOQA E501
+                'Yet a second step is taken towards my enterprise.'
+            ],
+            [5.312391304347827]
+        ),
     ]
 )
 def test_flesch_kincaid_grade(generated_outputs, metric_values):
