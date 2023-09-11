@@ -27,8 +27,8 @@ jobs:
 
       # Install the langcheck package with dev dependencies
       - run: |
-          pip install --upgrade pip
-          pip install .[dev]
+          pip install -U --upgrade pip
+          pip install -U .[dev]
 
       # Run the yapf format test
       - run: yapf --diff -r .
