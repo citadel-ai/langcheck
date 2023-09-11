@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import operator
 from dataclasses import dataclass, fields
+from statistics import mean
 from typing import Generic, List, Optional, TypeVar
 
 import pandas as pd
@@ -126,8 +127,7 @@ class EvalValueWithThreshold(EvalValue):
             for x in self.metric_values
         ]
 
-        self._pass_rate = sum(self._threshold_results
-                             ) / len(self._threshold_results)
+        self._pass_rate = mean(self._threshold_results)
 
     @property
     def pass_rate(self) -> float:
@@ -145,8 +145,9 @@ class EvalValueWithThreshold(EvalValue):
         '''Returns a DataFrame of metric values for each data point.'''
         dataframe = super().to_df()
 
-        dataframe['threshold_test'] = [f'{self.threshold_op} {self.threshold}'
-                                      ] * len(self.metric_values)
+        dataframe['threshold_test'] = [
+            f'{self.threshold_op} {self.threshold}' for _ in self.metric_values
+        ]
         dataframe['threshold_result'] = self.threshold_results
 
         return dataframe
