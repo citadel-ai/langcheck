@@ -38,6 +38,11 @@ repository    = "https://github.com/citadel-ai/langcheck"
 based_on_style = "google"
 column_limit = 80
 
+[tool.yapfignore]
+ignore_patterns = [
+  "venv/*",
+]
+
 [tool.isort]
 multi_line_output = 0
 line_length = 80
