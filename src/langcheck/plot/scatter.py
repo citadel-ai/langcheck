@@ -1,8 +1,7 @@
 import math
 
-import pandas as pd
 import plotly.express as px
-from dash import Dash, Input, Output, callback, dcc, html
+from dash import Dash, Input, Output, dcc, html
 
 from langcheck.eval import EvalValue
 
