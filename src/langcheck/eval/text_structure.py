@@ -214,11 +214,10 @@ def contains_regex(generated_outputs: List[str],
                      language=None)
 
 
-def contains_all_strings(
-        generated_outputs: List[str],
-        strings: List[str],
-        case_sensitive: bool = False,
-        prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def contains_all_strings(generated_outputs: List[str],
+                         strings: List[str],
+                         case_sensitive: bool = False,
+                         prompts: Optional[List[str]] = None) -> EvalValue[int]:
     '''Checks if generated outputs contain all strings in of a given list. This
     metric takes on binary 0 or 1 values.
 
@@ -256,11 +255,10 @@ def contains_all_strings(
                      language=None)
 
 
-def contains_any_strings(
-        generated_outputs: List[str],
-        strings: List[str],
-        case_sensitive: bool = False,
-        prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def contains_any_strings(generated_outputs: List[str],
+                         strings: List[str],
+                         case_sensitive: bool = False,
+                         prompts: Optional[List[str]] = None) -> EvalValue[int]:
     '''Checks if generated outputs contain any strings in a given list. This
     metric takes on binary 0 or 1 values.
 

@@ -45,7 +45,7 @@ class EvalValue(Generic[NumericType]):
         '''
         return (f'Metric: {self.metric_name}<br>'
                 f'{self.to_df()._repr_html_()}'  # type: ignore
-                )
+               )
 
     def __lt__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value < 0.5` expression.'''
@@ -116,8 +116,7 @@ class EvalValueWithThreshold(EvalValue):
         }
 
         if self.threshold_op not in operators:
-            raise ValueError(
-                f'Invalid threshold operator: {self.threshold_op}')
+            raise ValueError(f'Invalid threshold operator: {self.threshold_op}')
 
         self._threshold_results = [
             operators[self.threshold_op](x, self.threshold)
@@ -143,9 +142,8 @@ class EvalValueWithThreshold(EvalValue):
         '''Returns a DataFrame of metric values for each data point.'''
         dataframe = super().to_df()
 
-        dataframe['threshold_test'] = [
-            f'{self.threshold_op} {self.threshold}'
-        ] * len(self.metric_values)
+        dataframe['threshold_test'] = [f'{self.threshold_op} {self.threshold}'
+                                      ] * len(self.metric_values)
         dataframe['threshold_result'] = self.threshold_results
 
         return dataframe
@@ -167,7 +165,7 @@ class EvalValueWithThreshold(EvalValue):
         return (f'Metric: {self.metric_name}<br>'
                 f'Pass Rate: {round(self.pass_rate*100, 2)}%<br>'
                 f'{self.to_df()._repr_html_()}'  # type: ignore
-                )
+               )
 
     def all(self) -> bool:
         '''Returns True if all data points pass the threshold.'''

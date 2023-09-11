@@ -26,18 +26,17 @@ def scatter(eval_value: EvalValue):
                       placeholder='Type to search...'),
         ]),
         html.Div([
-            html.Label('Filter prompts: ', style={'background-color':
-                                                  'white'}),
+            html.Label('Filter prompts: ', style={'background-color': 'white'}),
             dcc.Input(id='filter_prompts',
                       type='text',
                       placeholder='Type to search...'),
         ]),
-        dcc.Graph(id='scatter_plot',
-                  config={
-                      'displaylogo': False,
-                      'modeBarButtonsToRemove':
-                      ['select', 'lasso2d', 'resetScale']
-                  })
+        dcc.Graph(
+            id='scatter_plot',
+            config={
+                'displaylogo': False,
+                'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
+            })
     ])
 
     # This function gets called whenever the user types in the search boxes
