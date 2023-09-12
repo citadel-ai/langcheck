@@ -10,8 +10,7 @@ from tests.utils import is_close
 
 @pytest.mark.parametrize(
     'generated_outputs,reference_outputs',
-    [(["The cat sat on the mat."], ["The cat sat on the mat."])]
-)
+    [(["The cat sat on the mat."], ["The cat sat on the mat."])])
 def test_semantic_sim_identical(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
@@ -20,8 +19,7 @@ def test_semantic_sim_identical(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     'generated_outputs,reference_outputs',
-    [(["The CAT sat on the MAT."], ["The cat sat on the mat."])]
-)
+    [(["The CAT sat on the MAT."], ["The cat sat on the mat."])])
 def test_semantic_sim_case_sensitivity(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
@@ -30,8 +28,7 @@ def test_semantic_sim_case_sensitivity(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     'generated_outputs,reference_outputs',
-    [(["The cat sat on the mat."], ["I like to eat ice cream."])]
-)
+    [(["The cat sat on the mat."], ["I like to eat ice cream."])])
 def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
@@ -40,8 +37,7 @@ def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     'generated_outputs,reference_outputs',
-    [(["The cat sat on the mat."], ["The cat sat on the mat."])]
-)
+    [(["The cat sat on the mat."], ["The cat sat on the mat."])])
 def test_rouge_identical(generated_outputs, reference_outputs):
     rouge1_eval_value = rouge1(generated_outputs, reference_outputs)
     rouge2_eval_value = rouge2(generated_outputs, reference_outputs)
@@ -56,8 +52,7 @@ def test_rouge_identical(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     'generated_outputs,reference_outputs',
-    [(["The cat sat on the mat."], ["I like to eat ice cream."])]
-)
+    [(["The cat sat on the mat."], ["I like to eat ice cream."])])
 def test_rouge_no_overlap(generated_outputs, reference_outputs):
     rouge1_eval_value = rouge1(generated_outputs, reference_outputs)
     rouge2_eval_value = rouge2(generated_outputs, reference_outputs)
@@ -72,8 +67,7 @@ def test_rouge_no_overlap(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     'generated_outputs,reference_outputs',
-    [(["The cat is sitting on the mat."], ["The cat sat on the mat."])]
-)
+    [(["The cat is sitting on the mat."], ["The cat sat on the mat."])])
 def test_rouge_some_overlap(generated_outputs, reference_outputs):
     rouge1_eval_value = rouge1(generated_outputs, reference_outputs)
     rouge2_eval_value = rouge2(generated_outputs, reference_outputs)

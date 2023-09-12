@@ -44,58 +44,55 @@ class EvalValue(Generic[NumericType]):
         '''Returns an HTML representation of an EvalValue object, which is
         automatically called by Jupyter notebooks.
         '''
-        return (
-            f'Metric: {self.metric_name}<br>'
-            f'{self.to_df()._repr_html_()}'  # type: ignore
-        )
+        return (f'Metric: {self.metric_name}<br>'
+                f'{self.to_df()._repr_html_()}'  # type: ignore
+               )
 
     def __lt__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value < 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(
-            **all_fields, threshold=threshold, threshold_op='<'
-        )
+        return EvalValueWithThreshold(**all_fields,
+                                      threshold=threshold,
+                                      threshold_op='<')
 
     def __le__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value <= 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(
-            **all_fields, threshold=threshold, threshold_op='<='
-        )
+        return EvalValueWithThreshold(**all_fields,
+                                      threshold=threshold,
+                                      threshold_op='<=')
 
     def __gt__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value > 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(
-            **all_fields, threshold=threshold, threshold_op='>'
-        )
+        return EvalValueWithThreshold(**all_fields,
+                                      threshold=threshold,
+                                      threshold_op='>')
 
     def __ge__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value >= 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(
-            **all_fields, threshold=threshold, threshold_op='>='
-        )
+        return EvalValueWithThreshold(**all_fields,
+                                      threshold=threshold,
+                                      threshold_op='>=')
 
     def __eq__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value == 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(
-            **all_fields, threshold=threshold, threshold_op='=='
-        )
+        return EvalValueWithThreshold(**all_fields,
+                                      threshold=threshold,
+                                      threshold_op='==')
 
     def __ne__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value != 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(
-            **all_fields, threshold=threshold, threshold_op='!='
-        )
+        return EvalValueWithThreshold(**all_fields,
+                                      threshold=threshold,
+                                      threshold_op='!=')
 
     def __bool__(self):
-        raise ValueError(
-            'An EvalValue cannot be used as a boolean. '
-            'Try an expression like `eval_value > 0.5` instead.'
-        )
+        raise ValueError('An EvalValue cannot be used as a boolean. '
+                         'Try an expression like `eval_value > 0.5` instead.')
 
 
 @dataclass
@@ -154,11 +151,9 @@ class EvalValueWithThreshold(EvalValue):
 
     def __str__(self) -> str:
         '''Returns a string representation of an EvalValue object.'''
-        return (
-            f'Metric: {self.metric_name}\n'
-            f'Pass Rate: {round(self.pass_rate*100, 2)}%\n'
-            f'{self.to_df()}'
-        )
+        return (f'Metric: {self.metric_name}\n'
+                f'Pass Rate: {round(self.pass_rate*100, 2)}%\n'
+                f'{self.to_df()}')
 
     def __repr__(self) -> str:
         '''Returns a string representation of an EvalValue object.'''
@@ -168,11 +163,10 @@ class EvalValueWithThreshold(EvalValue):
         '''Returns an HTML representation of an EvalValue object, which is
         automatically called by Jupyter notebooks.
         '''
-        return (
-            f'Metric: {self.metric_name}<br>'
-            f'Pass Rate: {round(self.pass_rate*100, 2)}%<br>'
-            f'{self.to_df()._repr_html_()}'  # type: ignore
-        )
+        return (f'Metric: {self.metric_name}<br>'
+                f'Pass Rate: {round(self.pass_rate*100, 2)}%<br>'
+                f'{self.to_df()._repr_html_()}'  # type: ignore
+               )
 
     def all(self) -> bool:
         '''Returns True if all data points pass the threshold.'''

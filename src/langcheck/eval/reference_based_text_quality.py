@@ -23,11 +23,9 @@ def exact_match(generated_outputs: List[str],
         else:
             metric_values.append(0)
 
-    return EvalValue(
-        metric_name='exact_match',
-        prompts=None,
-        generated_outputs=generated_outputs,
-        reference_outputs=reference_outputs,
-        metric_values=metric_values,
-        language=None
-    )
+    return EvalValue(metric_name='exact_match',
+                     prompts=None,
+                     generated_outputs=generated_outputs,
+                     reference_outputs=reference_outputs,
+                     metric_values=metric_values,
+                     language=None)

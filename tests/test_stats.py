@@ -16,17 +16,14 @@ from langcheck.stats import compute_stats
             'a place on it is kept for you.',
             5,
             31,
-            46
-        ),
+            46),
         (
             'How slowly the time passes here, encompassed as I am by frost and snow!\n'  # NOQA E501
             'Yet a second step is taken towards my enterprise.',
             2,
             23,
-            32
-        ),
-    ]
-)
+            32),
+    ])
 def test_compute_stats(input_text, num_sentences, num_words, num_syllables):
     print(input_text)
     stats = compute_stats(input_text)
