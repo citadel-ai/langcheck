@@ -1,6 +1,7 @@
+import math
+
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
-from plotly.graph_objects import Figure, Histogram
 
 from langcheck.eval import EvalValue
 
@@ -17,8 +18,8 @@ def histogram(eval_value: EvalValue) -> None:
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Max number of bins: ',
-                       style={'background-color': 'white'}),
+            html.Label('Number of bins: ', style={'background-color':
+                                                  'white'}),
             dcc.Slider(id='num_bins',
                        min=1,
                        max=50,
@@ -51,10 +52,20 @@ def histogram(eval_value: EvalValue) -> None:
         Input('num_bins', 'value'),
     )
     def update_figure(num_bins):
-        # Configure the actual histogram plot
-        # TODO: nbins is just a suggestion and not enforced. Figure out how to
-        # force it to use the exact number of bins the user selected.
-        fig = px.histogram(df, nbins=int(num_bins), x=eval_value.metric_name)
+        # Plot the histogram
+        fig = px.histogram(df, x=eval_value.metric_name)
+
+        # Manually set the number of bins in the histogram. We can't use the
+        # nbins parameter of px.histogram() since it's just a suggested number
+        # of bins. See: https://community.plotly.com/t/histogram-bin-size-with-plotly-express/38927/5
+        start = math.floor(df[eval_value.metric_name].min())
+        end = math.ceil(df[eval_value.metric_name].max())
+        step_size = (end - start) / int(num_bins)
+        fig.update_traces(xbins={
+            'start': start,
+            'end': end,
+            'size': step_size
+        })
 
         # If the user manually zoomed in, keep that zoom level even when
         # update_figure() re-runs
