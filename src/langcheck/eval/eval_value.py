@@ -14,10 +14,10 @@ NumericType = TypeVar('NumericType', float, int)
 class EvalValue(Generic[NumericType]):
     '''A rich object that is the output of any langcheck.eval function.'''
     metric_name: str
+    metric_values: List[NumericType]
     prompts: Optional[List[str]]
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
-    metric_values: List[NumericType]
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
