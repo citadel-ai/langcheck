@@ -2,12 +2,9 @@ import math
 from typing import Optional
 
 import plotly.express as px
-import plotly.io as pio
 from dash import Dash, Input, Output, dcc, html
 
 from langcheck.eval import EvalValue
-
-pio.renderers = 'notebook_connected'
 
 
 def scatter(eval_value: EvalValue,
