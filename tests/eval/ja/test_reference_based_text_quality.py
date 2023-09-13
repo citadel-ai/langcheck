@@ -21,7 +21,7 @@ def test_semantic_sim_character_sensitivity(generated_outputs,
                                             reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
-    assert 0.5 <= semantic_sim_value <= 1
+    assert 0.75 <= semantic_sim_value <= 1
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
@@ -29,4 +29,4 @@ def test_semantic_sim_character_sensitivity(generated_outputs,
 def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
-    assert 0.0 <= semantic_sim_value <= 0.5
+    assert 0.0 <= semantic_sim_value <= 0.25
