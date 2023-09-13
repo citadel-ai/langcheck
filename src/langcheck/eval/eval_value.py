@@ -25,6 +25,7 @@ class EvalValue(Generic[NumericType]):
         dataframe_cols = {
             'prompt': self.prompts,
             'generated_output': self.generated_outputs,
+            'reference_output': self.reference_outputs,
             'metric_value': self.metric_values,
         }
 
