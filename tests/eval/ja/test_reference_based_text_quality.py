@@ -1,7 +1,6 @@
 import pytest
 
 from langcheck.eval.ja import semantic_sim
-from tests.utils import is_close
 
 ################################################################################
 # Tests
