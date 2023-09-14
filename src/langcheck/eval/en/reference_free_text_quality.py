@@ -41,8 +41,8 @@ def sentiment(generated_outputs: List[str],
         _sentiment_tokenizer = AutoTokenizer.from_pretrained(
             _sentiment_model_path)
 
-        # There is a "Some weights are not used warning" but we ignore it because
-        # that is intended.
+        # There is a "Some weights are not used warning" but we ignore it
+        # because that is intended.
         _sentiment_model = AutoModelForSequenceClassification.from_pretrained(
             _sentiment_model_path)
 
@@ -87,8 +87,8 @@ def fluency(generated_outputs: List[str],
     if _fluency_tokenizer is None or _fluency_model is None:
         _fluency_tokenizer = AutoTokenizer.from_pretrained(_fluency_model_path)
 
-        # There is a "Some weights are not used warning" but we ignore it because
-        # that is intended.
+        # There is a "Some weights are not used warning" but we ignore it
+        # because that is intended.
         _fluency_model = AutoModelForSequenceClassification.from_pretrained(
             _fluency_model_path)
 

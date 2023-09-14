@@ -5,7 +5,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck.eval.eval_value import EvalValue
 
-_sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"
+_sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA E501
 _sentiment_tokenizer = None
 _sentiment_model = None
 
@@ -13,7 +13,7 @@ _sentiment_model = None
 def sentiment(generated_outputs: List[str],
               prompts: Optional[List[str]] = None) -> EvalValue[float]:
     '''Calculates the sentiment scores of generated outputs in Japanese
-    using the Twitter-roBERTa-base model. This metric takes on float values 
+    using the Twitter-roBERTa-base model. This metric takes on float values
     between [0, 1], where 0 is negative sentiment and 1 is positive sentiment.
 
     Ref:
@@ -33,8 +33,8 @@ def sentiment(generated_outputs: List[str],
         _sentiment_tokenizer = AutoTokenizer.from_pretrained(
             _sentiment_model_path)
 
-        # There is a "Some weights are not used warning" but we ignore it because
-        # that is intended.
+        # There is a "Some weights are not used warning" but we ignore it
+        # because that is intended.
         _sentiment_model = AutoModelForSequenceClassification.from_pretrained(
             _sentiment_model_path)
 

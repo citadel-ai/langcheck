@@ -29,7 +29,21 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "isort", "pytest", "sphinx", "furo", "ipykernel"]
+dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "furo", "ipykernel"]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
+
+[tool.yapf]
+based_on_style = "google"
+column_limit = 80
+
+[tool.yapfignore]
+ignore_patterns = [
+  "venv/*",
+]
+
+[tool.isort]
+multi_line_output = 0
+line_length = 80
+include_trailing_comma = false

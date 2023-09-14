@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import operator
 from dataclasses import dataclass, fields
+from statistics import mean
 from typing import Generic, List, Optional, TypeVar
 
 import pandas as pd
@@ -46,7 +47,7 @@ class EvalValue(Generic[NumericType]):
         '''
         return (f'Metric: {self.metric_name}<br>'
                 f'{self.to_df()._repr_html_()}'  # type: ignore
-                )
+               )
 
     def __lt__(self, threshold: float | int) -> EvalValueWithThreshold:
         '''Allows the user to write a `eval_value < 0.5` expression.'''
@@ -117,16 +118,14 @@ class EvalValueWithThreshold(EvalValue):
         }
 
         if self.threshold_op not in operators:
-            raise ValueError(
-                f'Invalid threshold operator: {self.threshold_op}')
+            raise ValueError(f'Invalid threshold operator: {self.threshold_op}')
 
         self._threshold_results = [
             operators[self.threshold_op](x, self.threshold)
             for x in self.metric_values
         ]
 
-        self._pass_rate = sum(self._threshold_results) / len(
-            self._threshold_results)
+        self._pass_rate = mean(self._threshold_results)
 
     @property
     def pass_rate(self) -> float:
@@ -145,8 +144,8 @@ class EvalValueWithThreshold(EvalValue):
         dataframe = super().to_df()
 
         dataframe['threshold_test'] = [
-            f'{self.threshold_op} {self.threshold}'
-        ] * len(self.metric_values)
+            f'{self.threshold_op} {self.threshold}' for _ in self.metric_values
+        ]
         dataframe['threshold_result'] = self.threshold_results
 
         return dataframe
@@ -168,7 +167,7 @@ class EvalValueWithThreshold(EvalValue):
         return (f'Metric: {self.metric_name}<br>'
                 f'Pass Rate: {round(self.pass_rate*100, 2)}%<br>'
                 f'{self.to_df()._repr_html_()}'  # type: ignore
-                )
+               )
 
     def all(self) -> bool:
         '''Returns True if all data points pass the threshold.'''
