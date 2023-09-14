@@ -1,6 +1,6 @@
 import pytest
 
-from langcheck.eval.ja import rouge1, rouge2, rougeL
+from langcheck.eval.ja import rouge1, rouge2, rougeL, semantic_sim
 from tests.utils import is_close
 from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.ja._tokenizers import _JapaneseTokenizer
@@ -73,3 +73,27 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
         tokenizer=tokenizer() if tokenizer else None)
     is_close(actual_eval_value.metric_values, expected_value[rouge_function])
     assert actual_eval_value.language == 'ja'
+
+@pytest.mark.parametrize('generated_outputs,reference_outputs',
+                         [(["猫が座っています。"], ["猫が座っています。"])])
+def test_semantic_sim_identical(generated_outputs, reference_outputs):
+    eval_value = semantic_sim(generated_outputs, reference_outputs)
+    semantic_sim_value = eval_value.metric_values[0]
+    assert 0.99 <= semantic_sim_value <= 1
+
+
+@pytest.mark.parametrize('generated_outputs,reference_outputs',
+                         [(["猫が座っています。"], ["ネコがすわっています。"])])
+def test_semantic_sim_character_sensitivity(generated_outputs,
+                                            reference_outputs):
+    eval_value = semantic_sim(generated_outputs, reference_outputs)
+    semantic_sim_value = eval_value.metric_values[0]
+    assert 0.75 <= semantic_sim_value <= 1
+
+
+@pytest.mark.parametrize('generated_outputs,reference_outputs',
+                         [(["猫が座っています。"], ["僕はアイスクリームを食べるのが好きです。"])])
+def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
+    eval_value = semantic_sim(generated_outputs, reference_outputs)
+    semantic_sim_value = eval_value.metric_values[0]
+    assert 0.0 <= semantic_sim_value <= 0.25

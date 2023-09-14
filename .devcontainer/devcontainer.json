@@ -15,6 +15,7 @@
       "extensions": [
 		"ms-python.python",
 		"ms-python.vscode-pylance",
+		"ms-python.flake8",
 		"ms-python.isort",
 		"GitHub.vscode-pull-request-github",
 		"ms-azuretools.vscode-docker",
