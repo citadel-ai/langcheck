@@ -103,7 +103,8 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
         fig.update_layout(dragmode=False)
 
         # Display a message about how many data points are hidden
-        num_results_message = f'Showing {len(filtered_df)} of {len(df)} data points.'
+        num_results_message = (
+            f'Showing {len(filtered_df)} of {len(df)} data points.')
 
         return fig, num_results_message
 
@@ -211,11 +212,13 @@ def _scatter_two_eval_values(eval_value: EvalValue,
         # when update_figure() re-runs
         fig.update_layout(uirevision='constant')
 
-        # Disable drag-to-zoom by default (the user can still enable it in the modebar)
+        # Disable drag-to-zoom by default (the user can still enable it in the
+        # modebar)
         fig.update_layout(dragmode=False)
 
         # Display a message about how many data points are hidden
-        num_results_message = f'Showing {len(filtered_df)} of {len(df)} data points.'
+        num_results_message = (
+            f'Showing {len(filtered_df)} of {len(df)} data points.')
 
         return fig, num_results_message
 
