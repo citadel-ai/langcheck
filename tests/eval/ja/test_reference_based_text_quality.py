@@ -14,8 +14,10 @@ from tests.utils import is_close
 
 parametrize_rouge_function = pytest.mark.parametrize("rouge_function",
                                                      [rouge1, rouge2, rougeL])
-parametrize_tokenizer = pytest.mark.parametrize(
-    'tokenizer', [None, JanomeTokenizer, MecabTokeninzer])
+parametrize_tokenizer = pytest.mark.parametrize('tokenizer', [
+    None, JanomeTokenizer,
+    pytest.param(MecabTokeninzer, marks=pytest.mark.optional)
+])
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
