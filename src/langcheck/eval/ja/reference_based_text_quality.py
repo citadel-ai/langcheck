@@ -21,6 +21,13 @@ def semantic_sim(generated_outputs: List[str],
         https://huggingface.co/tasks/sentence-similarity
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
 
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        reference_outputs: A list of reference outputs
+    Returns:
+        An EvalValue object
+    '''
+
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(
             'The generated and reference outputs lists must be of the same '
