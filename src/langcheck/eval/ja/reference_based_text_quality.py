@@ -1,9 +1,9 @@
 from typing import List, Optional
 
 import torch
-from sentence_transformers import SentenceTransformer, util
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
+from sentence_transformers import SentenceTransformer, util
 
 from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.ja._tokenizers import JanomeTokenizer

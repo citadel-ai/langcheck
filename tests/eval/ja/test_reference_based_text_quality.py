@@ -1,11 +1,12 @@
+from typing import Callable, Optional
+
 import pytest
 
-from langcheck.eval.ja import rouge1, rouge2, rougeL, semantic_sim
-from tests.utils import is_close
 from langcheck.eval.eval_value import EvalValue
+from langcheck.eval.ja import (JanomeTokenizer, MecabTokeninzer, rouge1, rouge2,
+                               rougeL, semantic_sim)
 from langcheck.eval.ja._tokenizers import _JapaneseTokenizer
-from langcheck.eval.ja import JanomeTokenizer, MecabTokeninzer
-from typing import Optional, Callable
+from tests.utils import is_close
 
 ################################################################################
 # Tests

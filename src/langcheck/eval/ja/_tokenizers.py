@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 from collections.abc import Iterator
+
 from rouge_score.tokenizers import Tokenizer
 
 # Japanese punctuation characters
