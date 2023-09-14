@@ -15,17 +15,17 @@ classifiers = [
 ]
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
-    'tomli; python_version < "3.11"',
-    'torch >= 2',
-    'transformers >= 4.6',
-    'sentence_transformers >= 2',
+    'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'detoxify >= 0.5',
+    'janome',
     'nltk >= 3',
     'pandas >= 1',
     'plotly >= 5',
-    'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'rouge_score >= 0.1.2',
-    'janome'
+    'sentence_transformers >= 2',
+    'tomli; python_version < "3.11"',
+    'torch >= 2',
+    'transformers >= 4.6'
 ]
 requires-python = ">=3.8"
 
