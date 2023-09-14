@@ -2,8 +2,8 @@ from typing import List
 
 import pytest
 
-from langcheck.eval.ja._tokenizers import (JanomeTokenizer, MecabTokeninzer,
-                                           _JapaneseTokenizer)
+from langcheck.eval.ja._tokenizers import _JapaneseTokenizer
+from langcheck.eval.ja import JanomeTokenizer, MecabTokeninzer
 
 
 @pytest.mark.parametrize('text,expected_tokens', [
