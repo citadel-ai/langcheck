@@ -22,8 +22,7 @@ parametrize_tokenizer = pytest.mark.parametrize(
 @parametrize_rouge_function
 @parametrize_tokenizer
 def test_rouge_identical(generated_outputs: str, reference_outputs: str,
-                         rouge_function: Callable[[str, str],
-                                                  EvalValue[float]],
+                         rouge_function: Callable[[str, str], EvalValue[float]],
                          tokenizer: Optional[_JapaneseTokenizer]) -> None:
     # All ROUGE scores are 1 if the generated and reference outputs are
     # identical
@@ -73,6 +72,7 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
         tokenizer=tokenizer() if tokenizer else None)
     is_close(actual_eval_value.metric_values, expected_value[rouge_function])
     assert actual_eval_value.language == 'ja'
+
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
                          [(["猫が座っています。"], ["猫が座っています。"])])

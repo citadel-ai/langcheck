@@ -154,7 +154,7 @@ def rougeL(generated_outputs: List[str],
     # the ROUGE-L score (https://github.com/bheinzerling/pyrouge), which is a
     # Python wrapper around original perl script implementation.
     #
-    # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l
+    # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA E501
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rougeLsum',
