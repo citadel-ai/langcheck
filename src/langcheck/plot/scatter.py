@@ -55,12 +55,12 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
                           'font-style': 'italic'
                       })
         ]),
-        dcc.Graph(id='scatter_plot',
-                  config={
-                      'displaylogo': False,
-                      'modeBarButtonsToRemove':
-                      ['select', 'lasso2d', 'resetScale']
-                  })
+        dcc.Graph(
+            id='scatter_plot',
+            config={
+                'displaylogo': False,
+                'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
+            })
     ])
 
     # This function gets called whenever the user types in the search boxes
@@ -120,13 +120,11 @@ def _scatter_two_eval_values(eval_value: EvalValue,
     '''
     # Validate that the two EvalValues have the same data points
     if eval_value.generated_outputs != other_eval_value.generated_outputs:
-        raise ValueError(
-            'Both EvalValues must have the same generated_outputs')
+        raise ValueError('Both EvalValues must have the same generated_outputs')
     if eval_value.prompts != other_eval_value.prompts:
         raise ValueError('Both EvalValues must have the same prompts')
     if eval_value.reference_outputs != other_eval_value.reference_outputs:
-        raise ValueError(
-            'Both EvalValues must have the same reference_outputs')
+        raise ValueError('Both EvalValues must have the same reference_outputs')
     if eval_value.language != other_eval_value.language:
         raise ValueError('Both EvalValues must have the same language')
     if eval_value.metric_name == other_eval_value.metric_name:
@@ -149,8 +147,7 @@ def _scatter_two_eval_values(eval_value: EvalValue,
                       placeholder='Type to search...'),
         ]),
         html.Div([
-            html.Label('Filter prompts: ', style={'background-color':
-                                                  'white'}),
+            html.Label('Filter prompts: ', style={'background-color': 'white'}),
             dcc.Input(id='filter_prompts',
                       type='text',
                       placeholder='Type to search...'),
@@ -162,12 +159,12 @@ def _scatter_two_eval_values(eval_value: EvalValue,
                           'font-style': 'italic'
                       })
         ]),
-        dcc.Graph(id='scatter_plot',
-                  config={
-                      'displaylogo': False,
-                      'modeBarButtonsToRemove':
-                      ['select', 'lasso2d', 'resetScale']
-                  })
+        dcc.Graph(
+            id='scatter_plot',
+            config={
+                'displaylogo': False,
+                'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
+            })
     ])
 
     # This function gets called whenever the user types in the search boxes
