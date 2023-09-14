@@ -1,7 +1,7 @@
+from __future__ import annotations
+
 import abc
 from collections.abc import Iterator
-from typing import List
-from typing import Iterator
 from rouge_score.tokenizers import Tokenizer
 
 # Japanese punctuation characters
@@ -15,7 +15,7 @@ class _JapaneseTokenizer(Tokenizer):
         raise NotImplementedError(
             "Tokenizer for Japanese must override `_tokenize()` method")
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, text: str) -> list[str]:
         tokens = self._tokenize(text)
         return [
             token for token in tokens if (token and token not in _PUNCTUATIONS)
