@@ -18,8 +18,7 @@ def histogram(eval_value: EvalValue) -> None:
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Number of bins: ', style={'background-color':
-                                                  'white'}),
+            html.Label('Number of bins: ', style={'background-color': 'white'}),
             dcc.Slider(id='num_bins',
                        min=1,
                        max=50,
@@ -38,12 +37,12 @@ def histogram(eval_value: EvalValue) -> None:
                            "always_visible": True
                        })
         ]),
-        dcc.Graph(id='histogram',
-                  config={
-                      'displaylogo': False,
-                      'modeBarButtonsToRemove':
-                      ['select', 'lasso2d', 'resetScale']
-                  })
+        dcc.Graph(
+            id='histogram',
+            config={
+                'displaylogo': False,
+                'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
+            })
     ])
 
     # This function gets called whenever the user changes the num_bins value
@@ -61,11 +60,7 @@ def histogram(eval_value: EvalValue) -> None:
         start = math.floor(df[eval_value.metric_name].min())
         end = math.ceil(df[eval_value.metric_name].max())
         step_size = (end - start) / int(num_bins)
-        fig.update_traces(xbins={
-            'start': start,
-            'end': end,
-            'size': step_size
-        })
+        fig.update_traces(xbins={'start': start, 'end': end, 'size': step_size})
 
         # If the user manually zoomed in, keep that zoom level even when
         # update_figure() re-runs
