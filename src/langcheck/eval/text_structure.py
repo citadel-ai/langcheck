@@ -32,7 +32,7 @@ def is_int(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except ValueError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_int',
@@ -75,7 +75,7 @@ def is_float(generated_outputs: List[str],
                 metric_values.append(0)
             else:
                 metric_values.append(1)
-        except:
+        except ValueError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_float',
@@ -108,7 +108,7 @@ def is_json_object(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except json.JSONDecodeError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_json_object',
@@ -141,7 +141,7 @@ def is_json_array(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except json.JSONDecodeError:
             metric_values.append(0)
 
     return EvalValue(metric_name='is_json_array',
@@ -214,11 +214,10 @@ def contains_regex(generated_outputs: List[str],
                      language=None)
 
 
-def contains_all_strings(
-        generated_outputs: List[str],
-        strings: List[str],
-        case_sensitive: bool = False,
-        prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def contains_all_strings(generated_outputs: List[str],
+                         strings: List[str],
+                         case_sensitive: bool = False,
+                         prompts: Optional[List[str]] = None) -> EvalValue[int]:
     '''Checks if generated outputs contain all strings in of a given list. This
     metric takes on binary 0 or 1 values.
 
@@ -256,11 +255,10 @@ def contains_all_strings(
                      language=None)
 
 
-def contains_any_strings(
-        generated_outputs: List[str],
-        strings: List[str],
-        case_sensitive: bool = False,
-        prompts: Optional[List[str]] = None) -> EvalValue[int]:
+def contains_any_strings(generated_outputs: List[str],
+                         strings: List[str],
+                         case_sensitive: bool = False,
+                         prompts: Optional[List[str]] = None) -> EvalValue[int]:
     '''Checks if generated outputs contain any strings in a given list. This
     metric takes on binary 0 or 1 values.
 
@@ -323,7 +321,7 @@ def run_valid_fn(generated_outputs: List[str],
                 metric_values.append(1)
             else:
                 metric_values.append(0)
-        except:
+        except Exception:
             metric_values.append(0)
 
     return EvalValue(metric_name='run_valid_fn',
