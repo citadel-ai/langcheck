@@ -91,9 +91,22 @@ class EvalValue(Generic[NumericType]):
                                       threshold=threshold,
                                       threshold_op='!=')
 
+    def all(self) -> bool:
+        '''Equivalent to all(eval_value.metric_values). This is mostly useful
+        for binary metric functions.
+        '''
+        return all(self.metric_values)
+
+    def any(self) -> bool:
+        '''Equivalent to any(eval_value.metric_values). This is mostly useful
+        for binary metric functions.
+        '''
+        return any(self.metric_values)
+
     def __bool__(self):
         raise ValueError('An EvalValue cannot be used as a boolean. '
-                         'Try an expression like `eval_value > 0.5` instead.')
+                         'Try an expression like `eval_value > 0.5`, '
+                         '`eval_value.all()`, or `eval_value.any()` instead.')
 
 
 @dataclass
