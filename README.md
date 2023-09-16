@@ -7,7 +7,7 @@ Simple, Pythonic building blocks to evaluate LLM applications.
 [Install](#install) •
 [Examples](#examples) •
 [Docs](#docs)  •
-[日本語](#examples)
+[日本語](README_ja.md)
 
 </div>
 
@@ -117,7 +117,7 @@ LangCheck isn't just for testing, it can be used to monitor production LLM outpu
 ```python
 from langcheck.utils import load_json
 
-recorded_outputs = load_json('llm_output_logs_2023_07_18.json')
+recorded_outputs = load_json('llm_output_logs_2023_10_02.json')
 langcheck.eval.toxicity(recorded_outputs) < 0.25
 langcheck.eval.is_json_array(generated_outputs)
 ```
