@@ -15,19 +15,21 @@ _factual_consistency_model = None
 
 def factual_consistency(generated_outputs: List[str],
                         sources: List[str]) -> EvalValue[float]:
-    '''Calculates the semantic similarities between the generated outputs and
-    the reference outputs. The similarities are computed as the cosine
-    similarities between the generated and reference embeddings. This metric
-    takes on float values between [-1, 1], but typically ranges between 0 and 1
-    where 0 is minimum similarity and 1 is maximum similarity.
+    '''Calculates the factual consistency between the generated outputs and
+    the sources. The factual consistency score for one generated output is
+    computed as the average of the per-sentence consistencies of the generated
+    output with the source text, where the consistency is computed by querying
+    the UniEval-fact model that has been pre-trained to evaluate factual
+    consistency. This metric takes on float values between [0, 1], where 0 means
+    that the output is not at all consistent with the source text, and 1 means
+    that the output is fully consistent with the source text.
 
     Ref:
-        https://huggingface.co/tasks/sentence-similarity
-        https://www.sbert.net/docs/usage/semantic_textual_similarity.html
+        https://github.com/maszhongming/UniEval
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        sources: A list of source texts
 
     Returns:
         An EvalValue object
@@ -56,9 +58,10 @@ def factual_consistency(generated_outputs: List[str],
             _factual_consistency_model_path, config=_factual_consistency_config)
         _factual_consistency_model.eval()
 
-    # Split the generated outputs into individual sentences. UniEval calculates
-    # the factual consistency score by averaging the factual consistencies of
-    # each generated sentence
+    # Prepare the inputs to the model. Note that we split the generated outputs
+    # into individual sentences, because UniEval calculates the factual
+    # consistency score by averaging the factual consistencies of each generated
+    # sentence
     # (https://github.com/maszhongming/UniEval/blob/509075cc87bb64f239180ece460025466b260383/metric/evaluator.py#L261)
     model_input_list = []
     num_sentences_list = []
@@ -73,11 +76,11 @@ def factual_consistency(generated_outputs: List[str],
     neg_id = _factual_consistency_tokenizer('No')['input_ids'][0]
     softmax = nn.Softmax(dim=1)
 
-    batch_size = 8
-    # Specifying the targets is required to run the model, but has no effect on the
-    # score
+    # Specifying the targets is required to run the model, but has no effect on
+    # the score
     target_list = ["No" for _ in range(len(model_input_list))]
 
+    batch_size = 8
     score_list = []
     for i in range(0, len(model_input_list), batch_size):
         inputs = model_input_list[i:i + batch_size]
