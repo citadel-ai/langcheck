@@ -47,7 +47,8 @@ def factual_consistency(generated_outputs: List[str],
                          metric_values=[],
                          language='en')
 
-    global _factual_consistency_config, _factual_consistency_tokenizer, _factual_consistency_model
+    global _factual_consistency_config, _factual_consistency_tokenizer, \
+        _factual_consistency_model
     if _factual_consistency_config is None:
         _factual_consistency_config = AutoConfig.from_pretrained(
             _factual_consistency_model_path)
@@ -70,7 +71,11 @@ def factual_consistency(generated_outputs: List[str],
         gen_sentences = sent_tokenize(gen)
         num_sentences_list.append(len(gen_sentences))
         for gen_sent in gen_sentences:
-            model_input = f'question: Is this claim consistent with the document? </s> claim: {gen_sent} </s> document: {src}'
+            model_input = (
+                f'question: Is this claim consistent with the document? </s> '
+                f'claim: {gen_sent} </s> '
+                f'document: {src}')
+
             model_input_list.append(model_input)
 
     pos_id = _factual_consistency_tokenizer('Yes')['input_ids'][0]
