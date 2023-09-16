@@ -4,6 +4,7 @@ import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
 from langcheck.eval import EvalValue
+from langcheck.plot.css import GLOBAL_CSS
 
 
 def histogram(eval_value: EvalValue) -> None:
@@ -43,7 +44,8 @@ def histogram(eval_value: EvalValue) -> None:
                 'displaylogo': False,
                 'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
             })
-    ])
+    ],
+                          style=GLOBAL_CSS)
 
     # This function gets called whenever the user changes the num_bins value
     @app.callback(
