@@ -43,6 +43,7 @@ def factual_consistency(generated_outputs: List[str],
                          prompts=None,
                          generated_outputs=[],
                          reference_outputs=[],
+                         sources=[],
                          metric_values=[],
                          language='en')
 
@@ -118,5 +119,6 @@ def factual_consistency(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=sources,
                      metric_values=score_per_output,
                      language='en')

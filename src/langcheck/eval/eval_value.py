@@ -19,6 +19,7 @@ class EvalValue(Generic[NumericType]):
     prompts: Optional[List[str]]
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
+    sources: Optional[List[str]]
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
