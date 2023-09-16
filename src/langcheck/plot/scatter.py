@@ -137,6 +137,7 @@ def _scatter_two_eval_values(eval_value: EvalValue,
     df.rename(columns={'metric_value': eval_value.metric_name}, inplace=True)
     df[other_eval_value.metric_name] = other_eval_value.to_df()['metric_value']
     df['prompt'] = df['prompt'].fillna('None')
+    df['reference_output'] = df['reference_output'].fillna('None')
 
     # Define layout of the Dash app (chart + search boxes)
     app = Dash(__name__)
