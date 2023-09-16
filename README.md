@@ -124,7 +124,7 @@ langcheck.eval.is_json_array(generated_outputs)
 
 ### Building Blocks for Guardrails
 
-LangCheck isn't just for testing, it can be used as guardrails for LLM outputs as well. Just filter candidate outputs through LangCheck.
+LangCheck isn't just for testing, it can be used to provide guardrails on LLM outputs as well. Just filter candidate outputs through LangCheck.
 
 ```python
 raw_output = predict(random_user_prompt)
