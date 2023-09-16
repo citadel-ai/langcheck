@@ -56,7 +56,7 @@ def histogram(eval_value: EvalValue) -> None:
 
         # Manually set the number of bins in the histogram. We can't use the
         # nbins parameter of px.histogram() since it's just a suggested number
-        # of bins. See: https://community.plotly.com/t/histogram-bin-size-with-plotly-express/38927/5
+        # of bins. See: https://community.plotly.com/t/histogram-bin-size-with-plotly-express/38927/5  # NOQA E501
         start = math.floor(df[eval_value.metric_name].min())
         end = math.ceil(df[eval_value.metric_name].max())
         step_size = (end - start) / int(num_bins)
@@ -66,7 +66,8 @@ def histogram(eval_value: EvalValue) -> None:
         # update_figure() re-runs
         fig.update_layout(uirevision='constant')
 
-        # Disable drag-to-zoom by default (the user can still enable it in the modebar)
+        # Disable drag-to-zoom by default (the user can still enable it in the
+        # modebar)
         fig.update_layout(dragmode=False)
 
         return fig
