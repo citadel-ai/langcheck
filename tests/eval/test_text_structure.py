@@ -4,7 +4,7 @@ import pytest
 
 from langcheck.eval import (contains_all_strings, contains_any_strings,
                             contains_regex, is_float, is_int, is_json_array,
-                            is_json_object, matches_regex, run_valid_fn)
+                            is_json_object, matches_regex, validation_fn)
 from tests.utils import is_close
 
 ################################################################################
@@ -239,9 +239,9 @@ def test_contains_any_strings(generated_outputs, strings, case_sensitive,
     (['''"myKey": 123'''], lambda x: 'myKey' in json.loads(x), [0]),
     (['lorem ipsum'], lambda x: x / 0, [0]),
 ])
-def test_run_valid_fn(generated_outputs, valid_fn, metric_values):
-    eval_value = run_valid_fn(generated_outputs, valid_fn)
-    assert eval_value.metric_name == 'run_valid_fn'
+def test_validation_fn(generated_outputs, valid_fn, metric_values):
+    eval_value = validation_fn(generated_outputs, valid_fn)
+    assert eval_value.metric_name == 'validation_fn'
     assert eval_value.prompts is None
     assert eval_value.generated_outputs == generated_outputs
     assert is_close(eval_value.metric_values, metric_values)
