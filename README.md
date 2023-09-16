@@ -128,7 +128,7 @@ LangCheck isn't just for testing, it can be used as guardrails for LLM outputs a
 
 ```python
 raw_output = predict(random_user_prompt)
-while langcheck.eval.contains_any_strings(raw_output, blacklist_words):
+while langcheck.eval.contains_any_strings(raw_output, blacklist_words).all():
     raw_output = predict(random_user_prompt)
 ```
 
