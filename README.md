@@ -21,15 +21,15 @@ pip install langcheck
 
 ### Evaluate Text
 
-Use LangCheck to evaluate LLM-generated text in Python scripts, notebooks, and test suites.
+Use LangCheck's suite of metrics to evaluate LLM-generated text.
 
 ```python
 import langcheck
 
-# Generate text with your favorite LLM library
+# Generate text with any LLM library
 generated_outputs = ['Black cat the', 'The black cat is sitting', 'The big black cat is sitting on the fence']
 
-# Measure text quality and get the result as a DataFrame (the threshold is optional)
+# Check text quality and get results as a DataFrame (threshold is optional)
 langcheck.eval.fluency(generated_outputs) > 0.5
 ```
 
@@ -41,22 +41,22 @@ It's easy to turn LangCheck metrics into unit tests, just use `assert`:
 assert langcheck.eval.fluency(generated_outputs) > 0.5
 ```
 
-LangCheck supports many types of metrics to evaluate LLM applications. Some examples:
+LangCheck includes several types of metrics to evaluate LLM applications. Some examples:
 
 ```python
-# Reference-Free Text Quality Metrics
+# 1. Reference-Free Text Quality Metrics
 langcheck.eval.toxicity(generated_outputs)
 langcheck.eval.fluency(generated_outputs)
 langcheck.eval.sentiment(generated_outputs)
 langcheck.eval.flesch_kincaid_grade(generated_outputs)
 
-# Reference-Based Text Quality Metrics
+# 2. Reference-Based Text Quality Metrics
 langcheck.eval.factual_consistency(generated_outputs, reference_outputs)
 langcheck.eval.semantic_sim(generated_outputs, reference_outputs)
 langcheck.eval.rouge2(generated_outputs, reference_outputs)
 langcheck.eval.exact_match(generated_outputs, reference_outputs)
 
-# Text Structure Metrics
+# 3. Text Structure Metrics
 langcheck.eval.is_int(generated_outputs, domain=range(1, 6))
 langcheck.eval.is_float(generated_outputs, min=0, max=None)
 langcheck.eval.is_json_array(generated_outputs)
@@ -69,7 +69,7 @@ langcheck.eval.validation_fn(generated_outputs, lambda x: 'myKey' in json.loads(
 
 ### Visualize Metrics
 
-LangCheck has built-in interactive visualizations for metrics.
+LangCheck comes with built-in, interactive visualizations of metrics.
 
 ```python
 # Choose some metrics
@@ -112,7 +112,7 @@ more_prompts += langcheck.augment.gpt35_rewrite(prompts)
 
 ### Building Blocks for Monitoring
 
-LangCheck isn't just for testing, it can be used to monitor production LLM outputs as well. Just record the outputs and pass them into LangCheck.
+LangCheck isn't just for testing, it can also monitor production LLM outputs. Just save the outputs and pass them into LangCheck.
 
 ```python
 from langcheck.utils import load_json
@@ -124,7 +124,7 @@ langcheck.eval.is_json_array(generated_outputs)
 
 ### Building Blocks for Guardrails
 
-LangCheck isn't just for testing, it can be used to provide guardrails on LLM outputs as well. Just filter candidate outputs through LangCheck.
+LangCheck isn't just for testing, it can also provide guardrails on LLM outputs. Just filter candidate outputs through LangCheck.
 
 ```python
 raw_output = predict(random_user_prompt)
