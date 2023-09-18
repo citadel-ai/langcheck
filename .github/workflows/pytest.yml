@@ -39,4 +39,4 @@ jobs:
       - name: Test (Optional)
         run: |
           pip install .[optional]
-          python -m pytest -s -vv --durations=0 -m "not optional"
+          python -m pytest -s -vv --durations=0 -m "optional"
