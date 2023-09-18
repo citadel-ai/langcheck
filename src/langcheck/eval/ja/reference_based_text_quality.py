@@ -185,6 +185,8 @@ def _rouge(generated_outputs: List[str],
         A list of F1 values of the ROUGE scores
     '''
     assert rouge_type in ['rouge1', 'rouge2', 'rougeLsum']
+
+    # The tokenizer is default to JanomeTokenizer
     tokenizer = tokenizer or JanomeTokenizer()
     scorer = rouge_scorer.RougeScorer([rouge_type],
                                       use_stemmer=True,
