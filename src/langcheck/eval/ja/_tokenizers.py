@@ -4,13 +4,13 @@ import abc
 from collections.abc import Iterator
 from janome.tokenizer import Tokenizer
 
-from rouge_score.tokenizers import Tokenizer
+from rouge_score.tokenizers import Tokenizer as BaseTokenizer
 
 # Japanese punctuation characters
 _PUNCTUATIONS = ['、', '。', '，', '．', ',', '.', "?", "!", "？", "！"]
 
 
-class _JapaneseTokenizer(Tokenizer):
+class _JapaneseTokenizer(BaseTokenizer):
 
     @abc.abstractmethod
     def _tokenize(self, text: str) -> Iterator[str]:
