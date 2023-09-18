@@ -8,10 +8,10 @@ LangCheck provides simple, Pythonic building blocks to evaluate LLM applications
    :caption: Contents:
 
    Home <self>
-   installation
-   tutorial
+   installation.md
+   tutorial.md
    langcheck
-   contributing
+   contributing.md
    GitHub <https://github.com/citadel-ai/langcheck>
 
 Indices
