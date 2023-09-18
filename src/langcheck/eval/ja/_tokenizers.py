@@ -52,7 +52,7 @@ class JanomeTokenizer(_JapaneseTokenizer):
     '''Janome based Tokenizer for Japanese.
 
     The default tokenizer for caliculating rouge score.
-    Janome is a pure python library and introduces no additional dependency when instollation.
+    Janome is a pure python library and introduces no additional dependency.
     '''
 
     def __init__(self):
