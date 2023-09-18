@@ -41,8 +41,15 @@ To make documentation:
     # files at the package/module-level)
     > sphinx-apidoc -f --no-toc --separate --module-first -t docs/_templates/ -o docs src/langcheck/ src/langcheck/stats.py src/langcheck/plot/css.py
 
-    # Re-generate all docs/_build/*.html files from the .rst files. (This uses
-    # autodoc to populate .html files at the function-level)
+    # Re-generate all docs/_build/*.html files from the .rst files. Note that
+    # you'll see warnings like "duplicate object description of
+    # langcheck.plot.histogram" and "more than one target found for
+    # cross-reference 'EvalValue'". Sphinx seems to get confused when we import
+    # a module's functions/classes into its parent package's __init__.py. This
+    # seems to be harmless and there doesn't seem to be a way to suppress these.
+    # https://groups.google.com/g/sphinx-users/c/vuW6OOb96Yo
+    # https://github.com/sphinx-doc/sphinx/issues/11050
+    # (This uses autodoc to populate .html files at the function-level)
     > make -C docs clean html
 
     # View documentation locally
