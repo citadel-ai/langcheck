@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from langcheck.eval.ja import JanomeTokenizer, MecabTokenizer
+from langcheck.eval.ja import JanomeTokenizer, MeCabTokenizer
 from langcheck.eval.ja._tokenizers import _JapaneseTokenizer
 
 
@@ -12,7 +12,7 @@ from langcheck.eval.ja._tokenizers import _JapaneseTokenizer
 ])
 @pytest.mark.parametrize('tokenizer', [
     JanomeTokenizer,
-    pytest.param(MecabTokenizer, marks=pytest.mark.optional)
+    pytest.param(MeCabTokenizer, marks=pytest.mark.optional)
 ])
 def test_janome_tokenizer(text: str, expected_tokens: List[str],
                           tokenizer: _JapaneseTokenizer) -> None:

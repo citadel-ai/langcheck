@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 from collections.abc import Iterator
+from janome.tokenizer import Tokenizer
 
 from rouge_score.tokenizers import Tokenizer
 
@@ -23,9 +24,9 @@ class _JapaneseTokenizer(Tokenizer):
         ]
 
 
-class MecabTokenizer(_JapaneseTokenizer):
+class MeCabTokenizer(_JapaneseTokenizer):
 
-    class _MecabNodeSurfaceIterator(Iterator):
+    class _MeCabNodeSurfaceIterator(Iterator):
 
         def __init__(self, node) -> None:
             self._node = node
@@ -43,14 +44,18 @@ class MecabTokenizer(_JapaneseTokenizer):
         self.tokenizer = MeCab.Tagger()
 
     def _tokenize(self, text):
-        return MecabTokenizer._MecabNodeSurfaceIterator(
+        return MeCabTokenizer._MeCabNodeSurfaceIterator(
             self.tokenizer.parseToNode(text))
 
 
 class JanomeTokenizer(_JapaneseTokenizer):
+    '''Janome based Tokenizer for Japanese.
+
+    The default tokenizer for caliculating rouge score.
+    Janome is a pure python library and introduces no additional dependency when instollation.
+    '''
 
     def __init__(self):
-        from janome.tokenizer import Tokenizer
         self.tokenizer = Tokenizer()
 
     def _tokenize(self, text: str):
