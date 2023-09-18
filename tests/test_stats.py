@@ -25,7 +25,6 @@ from langcheck.stats import compute_stats
             32),
     ])
 def test_compute_stats(input_text, num_sentences, num_words, num_syllables):
-    print(input_text)
     stats = compute_stats(input_text)
     assert (stats.num_sentences == num_sentences)
     assert (stats.num_words == num_words)
