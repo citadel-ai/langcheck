@@ -44,8 +44,8 @@ def sentiment(generated_outputs: List[str],
         # There is a "Some weights are not used warning" but we ignore it
         # because that is intended.
         with _handle_logging_level():
-            _sentiment_model = AutoModelForSequenceClassification.from_pretrained(
-                _sentiment_model_path)
+            _sentiment_model = (AutoModelForSequenceClassification.
+                                from_pretrained(_sentiment_model_path))
 
     input_tokens = _sentiment_tokenizer(generated_outputs,
                                         return_tensors='pt',

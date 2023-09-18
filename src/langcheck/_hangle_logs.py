@@ -4,7 +4,7 @@ import logging
 
 @contextmanager
 def _handle_logging_level(muximum_level=logging.WARNING):
-    '''A context manager which surpress any logging messages under specified level.
+    '''Context manager to surpress any logging messages under specified level.
 
     Args:
         The highest logging level to be disabled. Defalut to logging.WARNING.
