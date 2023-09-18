@@ -35,3 +35,9 @@ jobs:
       - name: Test
         run: |
           python -m pytest -s -vv --durations=0 -m "not optional"
+
+      - name: Test (Optional)
+        run: |
+          pip install mecab
+          pip install .[optional]
+          python -m pytest -s -vv --durations=0 -m "not optional"
