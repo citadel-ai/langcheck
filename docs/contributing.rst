@@ -35,8 +35,10 @@ To make documentation:
 .. code-block:: text
 
     # Re-generate all docs/langcheck*.rst files. This leaves index.rst and other
-    # .rst files untouched. (This uses autodoc to generate .rst files at the
-    # package/module-level)
+    # .rst files untouched. Since this overwrites all of our custom edits to
+    # the .rst files, you must check the code diffs for UPDATE_AFTER_SPHINX_APIDOC
+    # comments and manually re-apply them. (This uses autodoc to generate .rst
+    # files at the package/module-level)
     > sphinx-apidoc -f --no-toc --separate --module-first -t docs/_templates/ -o docs src/langcheck/ src/langcheck/stats.py src/langcheck/plot/css.py
 
     # Re-generate all docs/_build/*.html files from the .rst files. (This uses
