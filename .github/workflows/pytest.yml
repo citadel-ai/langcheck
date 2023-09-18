@@ -38,7 +38,5 @@ jobs:
 
       - name: Test (Optional)
         run: |
-          sudo apt-get install libmecab-dev
-          pip install mecab
           pip install .[optional]
           python -m pytest -s -vv --durations=0 -m "not optional"
