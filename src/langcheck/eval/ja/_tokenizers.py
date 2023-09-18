@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import abc
 from collections.abc import Iterator
-from janome.tokenizer import Tokenizer
 
+from janome.tokenizer import Tokenizer
 from rouge_score.tokenizers import Tokenizer as BaseTokenizer
 
 # Japanese punctuation characters
