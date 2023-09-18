@@ -23,7 +23,7 @@ class _JapaneseTokenizer(Tokenizer):
         ]
 
 
-class MecabTokeninzer(_JapaneseTokenizer):
+class MecabTokenizer(_JapaneseTokenizer):
 
     class _MecabNodeSurfaceIterator(Iterator):
 
@@ -43,7 +43,7 @@ class MecabTokeninzer(_JapaneseTokenizer):
         self.tokenizer = MeCab.Tagger()
 
     def _tokenize(self, text):
-        return MecabTokeninzer._MecabNodeSurfaceIterator(
+        return MecabTokenizer._MecabNodeSurfaceIterator(
             self.tokenizer.parseToNode(text))
 
 

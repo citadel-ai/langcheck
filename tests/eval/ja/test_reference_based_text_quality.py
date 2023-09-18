@@ -3,7 +3,7 @@ from typing import Callable, Optional
 import pytest
 
 from langcheck.eval.eval_value import EvalValue
-from langcheck.eval.ja import (JanomeTokenizer, MecabTokeninzer, rouge1, rouge2,
+from langcheck.eval.ja import (JanomeTokenizer, MecabTokenizer, rouge1, rouge2,
                                rougeL, semantic_sim)
 from langcheck.eval.ja._tokenizers import _JapaneseTokenizer
 from tests.utils import is_close
@@ -16,7 +16,7 @@ parametrize_rouge_function = pytest.mark.parametrize("rouge_function",
                                                      [rouge1, rouge2, rougeL])
 parametrize_tokenizer = pytest.mark.parametrize('tokenizer', [
     None, JanomeTokenizer,
-    pytest.param(MecabTokeninzer, marks=pytest.mark.optional)
+    pytest.param(MecabTokenizer, marks=pytest.mark.optional)
 ])
 
 
