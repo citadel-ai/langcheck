@@ -1,4 +1,6 @@
 
+
+
 langcheck.plot
 ==============
 
@@ -9,12 +11,9 @@ langcheck.plot
 
 
 
-Subpackages & Submodules
-------------------------
-
-
 
 .. toctree::
+   :hidden:
    :maxdepth: 4
 
    langcheck.plot.histogram

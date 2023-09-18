@@ -1,4 +1,6 @@
 
+
+
 langcheck.utils
 ===============
 
@@ -9,12 +11,9 @@ langcheck.utils
 
 
 
-Subpackages & Submodules
-------------------------
-
-
 
 .. toctree::
+   :hidden:
    :maxdepth: 4
 
    langcheck.utils.io

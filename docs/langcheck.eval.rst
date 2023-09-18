@@ -1,4 +1,6 @@
 
+
+
 langcheck.eval
 ==============
 
@@ -9,12 +11,8 @@ langcheck.eval
 
 
 
-Subpackages & Submodules
-------------------------
-
-
-
 .. toctree::
+   :hidden:
    :maxdepth: 4
 
    langcheck.eval.en
@@ -22,7 +20,9 @@ Subpackages & Submodules
 
 
 
+
 .. toctree::
+   :hidden:
    :maxdepth: 4
 
    langcheck.eval.eval_value

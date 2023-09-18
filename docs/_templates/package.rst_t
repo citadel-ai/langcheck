@@ -13,6 +13,21 @@
 {%- endfor %}
 {%- endmacro %}
 
+{# EDITED: Added a toctree_hidden macro.
+"This will still notify Sphinx of the document hierarchy, but not insert links
+into the document at the location of the directive – this makes sense if you
+intend to insert these links yourself, in a different style, or in the HTML
+sidebar."
+#}
+{%- macro toctree_hidden(docnames) -%}
+.. toctree::
+   :hidden:
+   :maxdepth: {{ maxdepth }}
+{% for docname in docnames %}
+   {{ docname }}
+{%- endfor %}
+{%- endmacro %}
+
 {%- if is_namespace %}
 {{- [pkgname, "namespace"] | join(" ") | e | heading }}
 {% else %}
@@ -30,19 +45,14 @@
 {{ automodule(pkgname, automodule_options) }}
 {% endif %}
 
-{# EDITED: Added a #}
-{%- if subpackages or submodules %}
-Subpackages & Submodules
-------------------------
-{% endif %}
-
 {%- if subpackages %}
-{# EDITED: Removed the "Subpackages" heading
+{# EDITED: Removed the "Subpackages" heading and replaced toctree with toctree_hidden
 Subpackages
 -----------
-#}
 
 {{ toctree(subpackages) }}
+#}
+{{ toctree_hidden(subpackages) }}
 {% endif %}
 
 {%- if submodules %}
@@ -51,7 +61,10 @@ Submodules
 ----------
 #}
 {% if separatemodules %}
+{# EDITED: Replaced toctree with toctree_hidden
 {{ toctree(submodules) }}
+#}
+{{ toctree_hidden(submodules) }}
 {% else %}
 {%- for submodule in submodules %}
 {% if show_headings %}

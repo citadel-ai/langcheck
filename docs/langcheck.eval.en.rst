@@ -1,4 +1,6 @@
 
+
+
 langcheck.eval.en
 =================
 
@@ -9,12 +11,9 @@ langcheck.eval.en
 
 
 
-Subpackages & Submodules
-------------------------
-
-
 
 .. toctree::
+   :hidden:
    :maxdepth: 4
 
    langcheck.eval.en.reference_based_text_quality

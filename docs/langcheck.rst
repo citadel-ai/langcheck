@@ -20,12 +20,8 @@ LangCheck consists of a few core sub-packages:
 
 
 
-Subpackages & Submodules
-------------------------
-
-
-
 .. toctree::
+   :hidden:
    :maxdepth: 4
 
    langcheck.eval
