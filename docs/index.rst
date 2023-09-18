@@ -1,15 +1,21 @@
-Welcome to LangCheck's documentation!
-=====================================
+LangCheck Documentation
+=======================
+
+LangCheck provides simple, Pythonic building blocks to evaluate LLM applications.
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 1
    :caption: Contents:
 
+   Home <self>
+   installation
+   tutorial
    langcheck
+   contributing
+   GitHub <https://github.com/citadel-ai/langcheck>
 
-Indices and tables
-==================
+Indices
+=======
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`

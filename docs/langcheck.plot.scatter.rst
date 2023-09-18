@@ -1,7 +1,8 @@
-langcheck.stats module
+
+langcheck.plot.scatter
 ======================
 
-.. automodule:: langcheck.stats
+.. automodule:: langcheck.plot.scatter
    :members:
    :undoc-members:
    :show-inheritance:

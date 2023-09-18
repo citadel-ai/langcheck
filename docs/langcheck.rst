@@ -1,23 +1,23 @@
-LangCheck API Docs
-==================
+..
+    UPDATE_AFTER_SPHINX_APIDOC
+API Reference
+=============
 
 .. automodule:: langcheck
    :members:
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
+
+
+Subpackages & Submodules
+------------------------
+
+
 
 .. toctree::
    :maxdepth: 4
 
    langcheck.eval
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   langcheck.stats
+   langcheck.plot
+   langcheck.utils

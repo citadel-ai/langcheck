@@ -1,0 +1,12 @@
+{%- if show_headings %}
+{# EDITED: Removed the "module" postfix
+{{- [basename, "module"] | join(' ') | e | heading }}
+#}
+{{- basename | e | heading }}
+
+{% endif -%}
+.. automodule:: {{ qualname }}
+{%- for option in automodule_options %}
+   :{{ option }}:
+{%- endfor %}
+
