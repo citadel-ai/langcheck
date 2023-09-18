@@ -30,7 +30,7 @@ prompt generated_output reference_output  metric_value
 To make documentation:
 
 ```text
-# Re-generate all docs/langcheck*.rst files. This leaves index.rst and other
+# Re-generate all docs/langcheck*.rst files. This leaves index.md and other
 # .rst files untouched. Since this overwrites all of our custom edits to
 # the .rst files, you must check the code diffs for UPDATE_AFTER_SPHINX_APIDOC
 # comments and manually re-apply them. (This uses autodoc to generate .rst
