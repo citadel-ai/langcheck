@@ -4,6 +4,18 @@
 langcheck.plot
 ==============
 
+.. <UPDATE_AFTER_SPHINX_APIDOC>
+
+``langcheck.plot`` contains functions to visualize the output of metric functions (``EvalValue`` objects).
+
+For example, run ``langcheck.plot.scatter()`` in a Jupyter notebook to see this interactive scatter plot:
+
+.. image:: _static/scatter_one_metric.gif
+
+----
+
+.. </UPDATE_AFTER_SPHINX_APIDOC>
+
 .. automodule:: langcheck.plot
    :members:
    :undoc-members:
