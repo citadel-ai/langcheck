@@ -57,7 +57,15 @@ class MeCabTokenizer(_JapaneseTokenizer):
             return node.surface
 
     def __init__(self):
-        import MeCab
+        try:
+            import MeCab
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError(
+                "No module named 'MeCab'.\n"
+                "Since 'MeCabTokenizer' is an optional feature, 'MeCab'"
+                "is not installed by default along with langcheck. Please"
+                "set up 'MeCab' on your own.")
+
         self.tokenizer = MeCab.Tagger()
 
     def _tokenize(self, text):
