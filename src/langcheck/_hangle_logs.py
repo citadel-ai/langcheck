@@ -3,7 +3,7 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def _handle_logging_level(muximum_level=logging.WARNING):
+def _handle_logging_level(maximum_level=logging.WARNING):
     '''Context manager to suppress any logging messages under specified level.
 
     Args:
