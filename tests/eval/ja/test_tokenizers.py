@@ -1,3 +1,4 @@
+import sys
 from typing import List
 
 import pytest
@@ -18,3 +19,10 @@ def test_janome_tokenizer(text: str, expected_tokens: List[str],
                           tokenizer: _JapaneseTokenizer) -> None:
     tokenizer = tokenizer()
     assert tokenizer.tokenize(text) == expected_tokens
+
+
+def test_handle_mecab_not_founud() -> None:
+    if "MeCab" in sys.modules:
+        return
+    with pytest.raises(ModuleNotFoundError):
+        MeCabTokenizer()
