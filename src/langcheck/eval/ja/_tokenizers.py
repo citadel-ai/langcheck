@@ -47,7 +47,6 @@ class MeCabTokenizer(_JapaneseTokenizer):
                 self._node = self._node.next
 
         def __next__(self):
-            print(self._node.feature)
             # Stop iteration when the node is EOS.
             if self._node.feature.startswith('BOS/EOS'):
                 raise StopIteration
