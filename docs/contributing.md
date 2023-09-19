@@ -29,28 +29,22 @@ prompt generated_output reference_output  metric_value
 
 To make documentation:
 
-```text
-# Re-generate all docs/langcheck*.rst files. This leaves index.md and other
-# .rst files untouched. Since this overwrites all of our custom edits to
-# the .rst files, you must check the code diffs for UPDATE_AFTER_SPHINX_APIDOC
-# comments and manually re-apply them. (This uses autodoc to generate .rst
-# files at the package/module-level)
-> sphinx-apidoc -f --no-toc --separate --module-first -t docs/_templates/ -o docs src/langcheck/ src/langcheck/stats.py src/langcheck/plot/css.py
+1. **Optional:** Re-generate all `docs/langcheck*.rst` files.
+   - `sphinx-apidoc -f --no-toc --separate --module-first -t docs/_templates/ -o docs src/langcheck/ src/langcheck/stats.py src/langcheck/plot/css.py`
+   - **Warning:** This will overwrite all of our custom text in the `.rst` files, so you must check the code diffs for `UPDATE_AFTER_SPHINX_APIDOC` comments and manually re-apply them.
+   - This is only necessary when you add or remove entire packages/modules. If you only edit existing packages/modules, you can skip this step.
+   - This only modifies the auto-generated `docs/langcheck*.rst` files (the "API Reference" section in the docs). It doesn't touch the `index.md` and other `.md` or `.rst` files.
+   - This uses autodoc to generate `.rst` files at the package/module-level.
 
-# Re-generate all docs/_build/*.html files from the .rst files. Note that
-# you'll see warnings like "duplicate object description of
-# langcheck.plot.histogram" and "more than one target found for
-# cross-reference 'EvalValue'". Sphinx seems to get confused when we import
-# a module's functions/classes into its parent package's __init__.py. This
-# seems to be harmless and there doesn't seem to be a way to suppress these.
-# https://groups.google.com/g/sphinx-users/c/vuW6OOb96Yo
-# https://github.com/sphinx-doc/sphinx/issues/11050
-# (This uses autodoc to populate .html files at the function-level)
-> make -C docs clean html
+2. Re-generate all `docs/_build/*.html` files from the raw `.rst` and `.md` files.
+    - `make -C docs clean html`
+    - This uses autodoc to populate .html files at the function-level.
+    - Note: you'll see warnings like "duplicate object description of langcheck.plot.histogram" and "more than one target found for cross-reference 'EvalValue'". Sphinx seems to get confused when we import a module's functions/classes into its parent package's `__init__.py`. These seem to be harmless and there doesn't seem to be a way to suppress these.
+        - [https://groups.google.com/g/sphinx-users/c/vuW6OOb96Yo](https://groups.google.com/g/sphinx-users/c/vuW6OOb96Yo)
+        - [https://github.com/sphinx-doc/sphinx/issues/11050](https://github.com/sphinx-doc/sphinx/issues/11050)
 
-# View documentation locally
-> python -m http.server -d docs/_build/html
-```
+3. View documentation locally
+    - `python -m http.server -d docs/_build/html`
 
 ## Publishing
 
