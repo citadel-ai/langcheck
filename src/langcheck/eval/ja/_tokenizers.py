@@ -68,7 +68,7 @@ class MeCabTokenizer(_JapaneseTokenizer):
 class JanomeTokenizer(_JapaneseTokenizer):
     '''Janome based Tokenizer for Japanese.
 
-    The default tokenizer for caliculating rouge score base on Janome.
+    The default tokenizer to calculate rouge score base on Janome.
 
     .. note::
         The advantage of using Janome is that it is a pure Python library and
