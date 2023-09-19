@@ -32,9 +32,10 @@ class MeCabTokenizer(_JapaneseTokenizer):
         The advantage of using MeCab is that the core implementation is written
         in a compiled language and runs much faster than Janome. If you are
         processing large data, consider setting up MeCab and using the
-        MeCabTokenizer.
+        :class:`~langcheck.eval.ja.MeCabTokenizer`.
         On the other hand, it takes more effort to install it on some
-        environments and may not work. Please refer to the official page if the
+        environments and may not work. Please refer to the
+        `official page <https://taku910.github.io/mecab/>`_ if the
         Python wrapper, mecab-python3, does not work in your environment.
     '''
 
@@ -77,7 +78,7 @@ class JanomeTokenizer(_JapaneseTokenizer):
         constructing this class since the Janome tokenizer loads the entire
         dictionary during initialization.
         If you are processing large data, consider setting up MeCab and using
-        the MeCabTokenizer.
+        the :class:`~langcheck.eval.ja.MeCabTokenizer`.
     '''
 
     def __init__(self):
