@@ -26,7 +26,7 @@ class _JapaneseTokenizer(BaseTokenizer):
 
 class MeCabTokenizer(_JapaneseTokenizer):
     '''
-    An optional tokenizer for caliculating rouge score base on MeCab.
+    An optional tokenizer to calculate rouge score base on MeCab.
 
     .. note::
         The advantage of using MeCab is that the core implementation is written
