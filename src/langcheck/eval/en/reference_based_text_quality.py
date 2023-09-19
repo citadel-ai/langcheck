@@ -20,11 +20,12 @@ def semantic_sim(generated_outputs: List[str],
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: A :class:`list` of model generated outputs to
+        evaluate
+        reference_outputs: A :class:`list` of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(
@@ -69,11 +70,12 @@ def rouge1(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        reference_outputs: A :class:`list` of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     scores = _rouge(generated_outputs, reference_outputs, 'rouge1')
     return EvalValue(metric_name='rouge1',
@@ -96,11 +98,12 @@ def rouge2(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        reference_outputs: A :class:`list` of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     scores = _rouge(generated_outputs, reference_outputs, 'rouge2')
     return EvalValue(metric_name='rouge2',
@@ -123,11 +126,12 @@ def rougeL(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        reference_outputs: A :class:`list` of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
     # - 1) sentence-level, where newline characters are ignored
@@ -155,12 +159,13 @@ def _rouge(generated_outputs: List[str], reference_outputs: List[str],
     https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: A :class:`list` of model generated outputs to
+        evaluate
+        reference_outputs: A :class:`list` of reference outputs
         rouge_type: rouge1, rouge2, or rougeLsum
 
     Returns:
-        A list of F1 values of the ROUGE scores
+        A :class:`list` of F1 values of the ROUGE scores
     '''
     assert rouge_type in ["rouge1", "rouge2", "rougeLsum"]
     scorer = rouge_scorer.RougeScorer([rouge_type], use_stemmer=True)

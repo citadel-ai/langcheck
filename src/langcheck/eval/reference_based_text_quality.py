@@ -9,11 +9,12 @@ def exact_match(generated_outputs: List[str],
     This metric takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        reference_outputs: A :class:`list` of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     # The values are binary: 1 if it's an exact match and 0 if not
     metric_values = []

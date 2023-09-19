@@ -9,13 +9,14 @@ from langcheck.eval import EvalValue
 
 def scatter(eval_value: EvalValue,
             other_eval_value: Optional[EvalValue] = None) -> None:
-    '''Shows an interactive scatter plot of all data points in an EvalValue.
+    '''Shows an interactive scatter plot of all data points in an
+    :class:`~langcheck.eval.EvalValue`.
     Intended to be used in a Jupyter notebook.
 
     Args:
-        eval_value: The EvalValue to plot.
-        other_eval_value: If provided, another EvalValue to plot on the same
-            chart.
+        eval_value: The :class:`~langcheck.eval.EvalValue` to plot.
+        other_eval_value: If provided, another
+        :class:`~langcheck.eval.EvalValue` to plot on the same schart.
     '''
     if other_eval_value is None:
         _scatter_one_eval_value(eval_value)
@@ -24,7 +25,8 @@ def scatter(eval_value: EvalValue,
 
 
 def _scatter_one_eval_value(eval_value: EvalValue) -> None:
-    '''Shows an interactive scatter plot of all data points in one EvalValue.
+    '''Shows an interactive scatter plot of all data points in one
+    :class:`~langcheck.eval.EvalValue`.
     Intended to be used in a Jupyter notebook.
     '''
     # Rename some EvalValue fields for display
@@ -117,7 +119,8 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
 
 def _scatter_two_eval_values(eval_value: EvalValue,
                              other_eval_value: EvalValue) -> None:
-    '''Shows an interactive scatter plot of all data points in two EvalValues.
+    '''Shows an interactive scatter plot of all data points in two
+    :class:`~langcheck.eval.EvalValue`.
     Intended to be used in a Jupyter notebook.
     '''
     # Validate that the two EvalValues have the same data points

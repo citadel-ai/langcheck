@@ -20,7 +20,7 @@ def compute_stats(input_text: str) -> TextStats:
         input_text: Text you want to compute the stats for
 
     Returns:
-        A TextStats object
+        A :class:`~langcheck.stats.TextStats` object
     '''
 
     try:

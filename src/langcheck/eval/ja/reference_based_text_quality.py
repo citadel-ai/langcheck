@@ -19,11 +19,12 @@ def semantic_sim(generated_outputs: List[str],
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        reference_outputs: A :class:`list` of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object.
     '''
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(

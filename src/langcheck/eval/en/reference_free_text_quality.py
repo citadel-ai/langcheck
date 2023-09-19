@@ -28,12 +28,13 @@ def sentiment(generated_outputs: List[str],
         https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        prompts: An optional :class:`list` of prompts used to generate the
+            outputs. Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     global _sentiment_tokenizer, _sentiment_model
 
@@ -75,12 +76,13 @@ def fluency(generated_outputs: List[str],
         https://huggingface.co/prithivida/parrot_fluency_model
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        prompts: An optional :class:`list` of prompts used to generate the
+            outputs. Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     global _fluency_tokenizer, _fluency_model
 
@@ -121,12 +123,13 @@ def toxicity(generated_outputs: List[str],
         https://github.com/unitaryai/detoxify
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        prompts: An optional :class:`list` of prompts used to generate the
+            outputs. Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     global _toxicity_model
     if _toxicity_model is None:
@@ -154,12 +157,13 @@ def flesch_reading_ease(
     details.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        prompts: An optional :class:`list` of prompts used to generate the
+            outputs. Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     output_stats = [compute_stats(output) for output in generated_outputs]
     scores = [
@@ -189,12 +193,13 @@ def flesch_kincaid_grade(
         https://apps.dtic.mil/sti/citations/ADA006655
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: A :class:`list` of model generated outputs to
+            evaluate
+        prompts: An optional :class:`list` of prompts used to generate the
+            outputs. Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.EvalValue` object
     '''
     output_stats = [compute_stats(output) for output in generated_outputs]
     scores = [
