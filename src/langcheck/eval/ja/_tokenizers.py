@@ -42,14 +42,19 @@ class MeCabTokenizer(_JapaneseTokenizer):
 
         def __init__(self, node) -> None:
             self._node = node
+            # Skip BOS.
+            if node.feature.startswith('BOS/EOS'):
+                self._node = self._node.next
 
         def __next__(self):
-            if self._node is None:
+            print(self._node.feature)
+            # Stop iteration when the node is EOS.
+            if self._node.feature.startswith('BOS/EOS'):
                 raise StopIteration
-            else:
-                node = self._node
-                self._node = self._node.next
-                return node.surface
+
+            node = self._node
+            self._node = self._node.next
+            return node.surface
 
     def __init__(self):
         import MeCab
