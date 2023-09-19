@@ -11,7 +11,7 @@ def _handle_logging_level(maximum_level=logging.WARNING):
     '''
 
     current_logging_level = logging.root.getEffectiveLevel()
-    logging.disable(muximum_level)
+    logging.disable(maximum_level)
 
     try:
         yield
