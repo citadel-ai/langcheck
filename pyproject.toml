@@ -29,7 +29,7 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "furo", "myst-parser", "ipykernel"]
+dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "sphinx-book-theme", "myst-parser", "ipykernel"]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
