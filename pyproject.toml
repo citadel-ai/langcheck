@@ -65,6 +65,16 @@ multi_line_output = 0
 line_length = 80
 include_trailing_comma = false
 
+[tool.pyright]
+autoSearchPaths=false
+extraPaths=[] # Include paths from PYTHONPATH env var and .env definition
+useLibraryCodeForTypes=true
+stubPath="./pylanceStubs"
+typeCheckingMode="basic"
+ignore = [
+    "pylanceStubs", "build", "venv"
+]
+
 [tool.pytest.ini_options]
 markers = [
     "optional: marks tests as optional",
