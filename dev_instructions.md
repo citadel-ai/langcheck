@@ -13,6 +13,11 @@ EvalValue(metric_name='is_float', prompts=None, generated_outputs=['1', '-2', '3
 
 # Run tests
 > python -m pytest -s -vv
+# Run non-optional tests only
+> python -m pytest -s -vv -m "not optional"
+# Run optional tests only
+> pip install .[optional]
+> python -m pytest -s -vv -m "optional"
 ```
 
 To make documentation:
