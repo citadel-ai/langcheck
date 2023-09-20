@@ -29,7 +29,7 @@ extensions = [
     'myst_parser'  # Enable Markdown support
 ]
 myst_enable_extensions = [
-    "colon_fence"  # Enable note/tip/warning "admonition" blocks in Markdown
+    'colon_fence'  # Enable note/tip/warning "admonition" blocks in Markdown
 ]
 
 templates_path = ['_templates']
