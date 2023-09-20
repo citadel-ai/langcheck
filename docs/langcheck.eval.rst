@@ -11,7 +11,7 @@ langcheck.eval
 Since LangCheck has multi-lingual support, language-specific metrics are organized into sub-packages such as ``langcheck.eval.en`` or ``langcheck.eval.ja``.
 
 .. tip::
-    As a shortcut, all English and language-agnostic metrics are also directly accessible from ``langcheck.eval``. For example, you can directly import ``langcheck.eval.sentiment`` instead of ``langcheck.eval.en.sentiment``.
+    As a shortcut, all English and language-agnostic metrics are also directly accessible from ``langcheck.eval``. For example, you can directly run ``langcheck.eval.sentiment()`` instead of ``langcheck.eval.en.reference_free_text_quality.sentiment()``.
 
     Additionally, ``langcheck.eval.EvalValue`` is a shortcut for ``langcheck.eval.eval_value.EvalValue``.
 
