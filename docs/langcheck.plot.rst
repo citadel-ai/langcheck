@@ -23,13 +23,3 @@ For example, run ``langcheck.plot.scatter()`` in a Jupyter notebook to see this 
    :members:
    :undoc-members:
    :show-inheritance:
-
-
-
-
-.. toctree::
-   :hidden:
-   :maxdepth: 4
-
-   langcheck.plot.histogram
-   langcheck.plot.scatter

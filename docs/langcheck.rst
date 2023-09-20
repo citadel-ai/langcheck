@@ -19,7 +19,6 @@ LangCheck consists of a few core sub-packages:
    :show-inheritance:
 
 
-
 .. toctree::
    :hidden:
    :maxdepth: 4
