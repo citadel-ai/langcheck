@@ -74,6 +74,7 @@ def rouge1(generated_outputs: List[str],
 
     Ref:
         https://github.com/google-research/google-research/tree/master/rouge
+
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         reference_outputs: A list of reference outputs
