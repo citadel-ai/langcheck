@@ -5,7 +5,7 @@ import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
 from langcheck.eval import EvalValue
-from langcheck.plot.css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
+from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
 
 
 def scatter(eval_value: EvalValue,

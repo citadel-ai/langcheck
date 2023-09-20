@@ -1,5 +1,6 @@
-langcheck.eval.text\_structure module
-=====================================
+
+langcheck.eval.text\_structure
+==============================
 
 .. automodule:: langcheck.eval.text_structure
    :members:

@@ -4,7 +4,7 @@ import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
 from langcheck.eval import EvalValue
-from langcheck.plot.css import GLOBAL_CSS
+from langcheck.plot._css import GLOBAL_CSS
 
 
 def histogram(eval_value: EvalValue) -> None:

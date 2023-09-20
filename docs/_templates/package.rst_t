@@ -1,0 +1,86 @@
+{%- macro automodule(modname, options) -%}
+.. automodule:: {{ modname }}
+{%- for option in options %}
+   :{{ option }}:
+{%- endfor %}
+{%- endmacro %}
+
+{%- macro toctree(docnames) -%}
+.. toctree::
+   :maxdepth: {{ maxdepth }}
+{% for docname in docnames %}
+   {{ docname }}
+{%- endfor %}
+{%- endmacro %}
+
+{# EDITED: Added a toctree_hidden macro.
+"This will still notify Sphinx of the document hierarchy, but not insert links
+into the document at the location of the directive – this makes sense if you
+intend to insert these links yourself, in a different style, or in the HTML
+sidebar."
+#}
+{%- macro toctree_hidden(docnames) -%}
+.. toctree::
+   :hidden:
+   :maxdepth: {{ maxdepth }}
+{% for docname in docnames %}
+   {{ docname }}
+{%- endfor %}
+{%- endmacro %}
+
+{%- if is_namespace %}
+{{- [pkgname, "namespace"] | join(" ") | e | heading }}
+{% else %}
+{# EDITED: Removed the "package" postfix
+{{- [pkgname, "package"] | join(" ") | e | heading }}
+#}
+{{- pkgname | e | heading }}
+{% endif %}
+
+{%- if is_namespace %}
+.. py:module:: {{ pkgname }}
+{% endif %}
+
+{%- if modulefirst and not is_namespace %}
+{{ automodule(pkgname, automodule_options) }}
+{% endif %}
+
+{%- if subpackages %}
+{# EDITED: Removed the "Subpackages" heading and replaced toctree with toctree_hidden
+Subpackages
+-----------
+
+{{ toctree(subpackages) }}
+#}
+{{ toctree_hidden(subpackages) }}
+{% endif %}
+
+{%- if submodules %}
+{# EDITED: Removed the "Submodules" heading
+Submodules
+----------
+#}
+{% if separatemodules %}
+{# EDITED: Replaced toctree with toctree_hidden
+{{ toctree(submodules) }}
+#}
+{{ toctree_hidden(submodules) }}
+{% else %}
+{%- for submodule in submodules %}
+{% if show_headings %}
+{# EDITED: Removed the "module" postfix
+{{- [submodule, "module"] | join(" ") | e | heading(2) }}
+#}
+{{- submodule | e | heading(2) }}
+{% endif %}
+{{ automodule(submodule, automodule_options) }}
+{% endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if not modulefirst and not is_namespace %}
+Module contents
+---------------
+
+{{ automodule(pkgname, automodule_options) }}
+{% endif %}
