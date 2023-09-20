@@ -34,6 +34,7 @@ def factual_consistency(generated_outputs: List[str],
     Returns:
         An EvalValue object
     '''
+    # TODO: Unify the validation that we do in all of the evaluation functions
     if len(generated_outputs) != len(sources):
         raise ValueError(
             'The generated outputs and sources lists must be of the same '

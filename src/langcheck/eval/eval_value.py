@@ -26,6 +26,7 @@ class EvalValue(Generic[NumericType]):
         '''Returns a DataFrame of metric values for each data point.'''
         dataframe_cols = {
             'prompt': self.prompts,
+            'source': self.sources,
             'generated_output': self.generated_outputs,
             'reference_output': self.reference_outputs,
             'metric_value': self.metric_values,
