@@ -1,5 +1,6 @@
 from typing import List
 
+import openai
 import torch
 from rouge_score import rouge_scorer
 from sentence_transformers import SentenceTransformer, util
@@ -7,8 +8,10 @@ from sentence_transformers import SentenceTransformer, util
 from langcheck.eval.eval_value import EvalValue
 
 
-def semantic_sim(generated_outputs: List[str],
-                 reference_outputs: List[str]) -> EvalValue[float]:
+def semantic_sim(
+        generated_outputs: List[str],
+        reference_outputs: List[str],
+        embedding_model: str = 'all-mpnet-base-v2') -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
@@ -26,6 +29,9 @@ def semantic_sim(generated_outputs: List[str],
     Returns:
         An EvalValue object
     '''
+    assert embedding_model in [
+        'all-mpnet-base-v2', 'openai'
+    ], f'Unsupported embedding model name. The supported ones are ["all-mpnet-base-v2", "openai"]'
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(
             'The generated and reference outputs lists must be of the same '
@@ -37,12 +43,26 @@ def semantic_sim(generated_outputs: List[str],
                          reference_outputs=[],
                          metric_values=[],
                          language='en')
-    # The 'all-mpnet-base-v2' model has the highest average performance out of
-    # all the existing sentence-transformer models that have been evaluated.
-    # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
-    model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
-    generated_embeddings = model.encode(generated_outputs)
-    reference_embeddings = model.encode(reference_outputs)
+
+    if embedding_model == 'all-mpnet-base-v2':
+        # The 'all-mpnet-base-v2' model has the highest average performance out of
+        # all the existing sentence-transformer models that have been evaluated.
+        # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
+        model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+        generated_embeddings = model.encode(generated_outputs)
+        reference_embeddings = model.encode(reference_outputs)
+    else:  # openai
+        gen_embed_response = openai.Embedding.create(
+            input=generated_outputs, model='text-embedding-ada-002')
+        generated_embeddings = [
+            item['embedding'] for item in gen_embed_response['data']
+        ]
+        ref_embed_response = openai.Embedding.create(
+            input=reference_outputs, model='text-embedding-ada-002')
+        reference_embeddings = [
+            item['embedding'] for item in ref_embed_response['data']
+        ]
+
     cosine_scores = util.pairwise_cos_sim(generated_embeddings,
                                           reference_embeddings)
     # Numerical instability can cause the dot product of almost identical
