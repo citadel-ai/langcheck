@@ -19,7 +19,7 @@ def histogram(eval_value: EvalValue) -> None:
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Number of bins: ', style={'background-color': 'white'}),
+            html.Label('Number of bins: '),
             dcc.Slider(id='num_bins',
                        min=1,
                        max=50,
