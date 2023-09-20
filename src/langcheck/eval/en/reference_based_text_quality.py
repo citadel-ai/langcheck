@@ -18,9 +18,23 @@ def semantic_sim(
     takes on float values between [-1, 1], but typically ranges between 0 and 1
     where 0 is minimum similarity and 1 is maximum similarity.
 
+    We currently support two embedding models:
+    - 1) The 'all-mpnet-base-v2' model, which is a model that can be downloaded
+         from HuggingFace and run locally. This is the default model and there
+         is no setup needed to run this.
+    - 2) The 'text-embedding-ada-002' model, which is an embedding model by
+         OpenAI. To use this model, make sure to set the OpenAI API key:
+         ```
+         import openai
+
+         # https://platform.openai.com/account/api-keys
+         openai.api_key = YOUR_OPENAI_API_KEY
+         ```
+
     Ref:
         https://huggingface.co/tasks/sentence-similarity
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
+        https://openai.com/blog/new-and-improved-embedding-model
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
