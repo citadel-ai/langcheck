@@ -119,7 +119,7 @@ from langcheck.utils import load_json
 
 recorded_outputs = load_json('llm_output_logs_2023_10_02.json')
 langcheck.eval.toxicity(recorded_outputs) < 0.25
-langcheck.eval.is_json_array(generated_outputs)
+langcheck.eval.is_json_array(recorded_outputs)
 ```
 
 ### Building Blocks for Guardrails
