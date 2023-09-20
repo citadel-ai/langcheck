@@ -21,8 +21,13 @@ prompt generated_output reference_output  metric_value
 1   None               -2             None             1
 2   None                a             None             0
 
-# Run tests
+# Run all tests
 > python -m pytest -s -vv
+# Run non-optional tests only
+> python -m pytest -s -vv -m "not optional"
+# Run optional tests only (this requires optional Japanese tokenizers like Mecab)
+> pip install .[optional]
+> python -m pytest -s -vv -m "optional"
 ```
 
 ## Documentation
