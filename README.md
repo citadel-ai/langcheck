@@ -127,7 +127,7 @@ langcheck.eval.is_json_array(recorded_outputs)
 LangCheck isn't just for testing, it can also provide guardrails on LLM outputs. Just filter candidate outputs through LangCheck.
 
 ```python
-raw_output = predict(random_user_prompt)
+raw_output = my_llm_application(random_user_prompt)
 while langcheck.eval.contains_any_strings(raw_output, blacklist_words).all():
     raw_output = predict(random_user_prompt)
 ```
