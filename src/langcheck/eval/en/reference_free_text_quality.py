@@ -4,6 +4,7 @@ import torch
 from detoxify import Detoxify
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+from langcheck._hangle_logs import _handle_logging_level
 from langcheck.eval.eval_value import EvalValue
 from langcheck.stats import compute_stats
 
@@ -43,8 +44,9 @@ def sentiment(generated_outputs: List[str],
 
         # There is a "Some weights are not used warning" but we ignore it
         # because that is intended.
-        _sentiment_model = AutoModelForSequenceClassification.from_pretrained(
-            _sentiment_model_path)
+        with _handle_logging_level():
+            _sentiment_model = (AutoModelForSequenceClassification.
+                                from_pretrained(_sentiment_model_path))
 
     input_tokens = _sentiment_tokenizer(generated_outputs,
                                         return_tensors='pt',
@@ -90,8 +92,9 @@ def fluency(generated_outputs: List[str],
 
         # There is a "Some weights are not used warning" but we ignore it
         # because that is intended.
-        _fluency_model = AutoModelForSequenceClassification.from_pretrained(
-            _fluency_model_path)
+        with _handle_logging_level():
+            _fluency_model = AutoModelForSequenceClassification.from_pretrained(
+                _fluency_model_path)
 
     input_tokens = _fluency_tokenizer(generated_outputs,
                                       return_tensors='pt',
