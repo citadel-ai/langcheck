@@ -117,9 +117,9 @@ LangCheck isn't just for testing, it can also monitor production LLM outputs. Ju
 ```python
 from langcheck.utils import load_json
 
-recorded_outputs = load_json('llm_output_logs_2023_10_02.json')
+recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
 langcheck.eval.toxicity(recorded_outputs) < 0.25
-langcheck.eval.is_json_array(generated_outputs)
+langcheck.eval.is_json_array(recorded_outputs)
 ```
 
 ### Building Blocks for Guardrails
@@ -127,9 +127,9 @@ langcheck.eval.is_json_array(generated_outputs)
 LangCheck isn't just for testing, it can also provide guardrails on LLM outputs. Just filter candidate outputs through LangCheck.
 
 ```python
-raw_output = predict(random_user_prompt)
-while langcheck.eval.contains_any_strings(raw_output, blacklist_words).all():
-    raw_output = predict(random_user_prompt)
+raw_output = my_llm_app(random_user_prompt)
+while langcheck.eval.contains_any_strings([raw_output], blacklist_words).any():
+    raw_output = my_llm_app(random_user_prompt)
 ```
 
 ## Docs

@@ -38,23 +38,21 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Filter generated_outputs: ',
-                       style={'background-color': 'white'}),
+            html.Label('Filter generated_outputs: '),
             dcc.Input(id='filter_generated_outputs',
                       type='text',
                       placeholder='Type to search...',
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter reference_outputs: ',
-                       style={'background-color': 'white'}),
+            html.Label('Filter reference_outputs: '),
             dcc.Input(id='filter_reference_outputs',
                       type='text',
                       placeholder='Type to search...',
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter prompts: ', style={'background-color': 'white'}),
+            html.Label('Filter prompts: '),
             dcc.Input(id='filter_prompts',
                       type='text',
                       placeholder='Type to search...',
@@ -155,23 +153,21 @@ def _scatter_two_eval_values(eval_value: EvalValue,
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Filter generated_outputs: ',
-                       style={'background-color': 'white'}),
+            html.Label('Filter generated_outputs: '),
             dcc.Input(id='filter_generated_outputs',
                       type='text',
                       placeholder='Type to search...',
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter reference_outputs: ',
-                       style={'background-color': 'white'}),
+            html.Label('Filter reference_outputs: '),
             dcc.Input(id='filter_reference_outputs',
                       type='text',
                       placeholder='Type to search...',
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter prompts: ', style={'background-color': 'white'}),
+            html.Label('Filter prompts: '),
             dcc.Input(id='filter_prompts',
                       type='text',
                       placeholder='Type to search...',
