@@ -27,5 +27,6 @@ def exact_match(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)

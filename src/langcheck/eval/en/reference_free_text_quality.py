@@ -63,6 +63,7 @@ def sentiment(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -110,6 +111,7 @@ def fluency(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -140,6 +142,7 @@ def toxicity(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -173,6 +176,7 @@ def flesch_reading_ease(
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -208,5 +212,6 @@ def flesch_kincaid_grade(
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=scores,
                      language='en')
