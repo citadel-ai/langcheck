@@ -19,12 +19,14 @@ class EvalValue(Generic[NumericType]):
     prompts: Optional[List[str]]
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
+    sources: Optional[List[str]]
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
         '''Returns a DataFrame of metric values for each data point.'''
         dataframe_cols = {
             'prompt': self.prompts,
+            'source': self.sources,
             'generated_output': self.generated_outputs,
             'reference_output': self.reference_outputs,
             'metric_value': self.metric_values,

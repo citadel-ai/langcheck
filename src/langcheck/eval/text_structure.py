@@ -39,6 +39,7 @@ def is_int(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -82,6 +83,7 @@ def is_float(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -115,6 +117,7 @@ def is_json_object(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -148,6 +151,7 @@ def is_json_array(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -179,6 +183,7 @@ def matches_regex(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -210,6 +215,7 @@ def contains_regex(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -251,6 +257,7 @@ def contains_all_strings(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -292,6 +299,7 @@ def contains_any_strings(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)
 
@@ -328,5 +336,6 @@ def validation_fn(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=metric_values,
                      language=None)

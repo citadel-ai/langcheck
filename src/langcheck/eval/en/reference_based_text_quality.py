@@ -84,6 +84,7 @@ def semantic_sim(
                          prompts=None,
                          generated_outputs=[],
                          reference_outputs=[],
+                         sources=None,
                          metric_values=[],
                          language='en')
 
@@ -123,6 +124,7 @@ def semantic_sim(
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=cosine_scores.tolist(),
                      language='en')
 
@@ -150,6 +152,7 @@ def rouge1(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -177,6 +180,7 @@ def rouge2(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -214,6 +218,7 @@ def rougeL(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
