@@ -139,13 +139,18 @@ def _scatter_two_eval_values(eval_value: EvalValue,
         raise ValueError('Both EvalValues must have the same reference_outputs')
     if eval_value.language != other_eval_value.language:
         raise ValueError('Both EvalValues must have the same language')
-    if eval_value.metric_name == other_eval_value.metric_name:
-        raise ValueError('Both EvalValues must have different metric_names')
 
     # Rename some EvalValue fields for display
     df = eval_value.to_df()
     df.rename(columns={'metric_value': eval_value.metric_name}, inplace=True)
-    df[other_eval_value.metric_name] = other_eval_value.to_df()['metric_value']
+    if eval_value.metric_name != other_eval_value.metric_name:
+        df[other_eval_value.metric_name] = other_eval_value.to_df(
+        )['metric_value']
+    else:
+        # It's possible to plot two EvalValues from the same metric, e.g. if you
+        # compute semantic_sim() with a local model and an OpenAI model
+        df[other_eval_value.metric_name +
+           '(other)'] = other_eval_value.to_df()['metric_value']
     df['prompt'] = df['prompt'].fillna('None')
     df['reference_output'] = df['reference_output'].fillna('None')
 
