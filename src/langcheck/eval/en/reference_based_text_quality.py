@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List, Optional
 
 import openai
 import torch
@@ -11,24 +11,47 @@ from langcheck.eval.eval_value import EvalValue
 def semantic_sim(
         generated_outputs: List[str],
         reference_outputs: List[str],
-        embedding_model: str = 'all-mpnet-base-v2') -> EvalValue[float]:
+        embedding_model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
     takes on float values between [-1, 1], but typically ranges between 0 and 1
     where 0 is minimum similarity and 1 is maximum similarity.
 
-    We currently support two embedding models:
-    - 1) The 'all-mpnet-base-v2' model, which is a model that can be downloaded
-         from HuggingFace and run locally. This is the default model and there
-         is no setup needed to run this.
-    - 2) The 'text-embedding-ada-002' model, which is an embedding model by
-         OpenAI. To use this model, make sure to set the OpenAI API key:
+    We currently support two embedding model types:
+    - 1) The `local` type, where the 'all-mpnet-base-v2' model is downloaded
+         from HuggingFace and run locally. This is the default model type and
+         there is no setup needed to run this.
+    - 2) The `openai` type, where we use OpenAI's embedding model. To use this,
+         make sure to set the OpenAI API key:
          ```
          import openai
+         from langcheck.eval.en import semantic_sim
 
          # https://platform.openai.com/account/api-keys
          openai.api_key = YOUR_OPENAI_API_KEY
+
+         eval_value = semantic_sim(
+            generated_outputs, reference_outputs, embedding_model_type='openai')
+         ```
+
+         Or, if you're using the Azure API type, make sure to set all of the
+         necessary variables:
+         ```
+         import openai
+         from langcheck.eval.en import semantic_sim
+
+         openai.api_type = 'azure'
+         openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
+         openai.api_version = YOUR_API_VERSION
+         openai.api_key = YOUR_OPENAI_API_KEY
+
+         # When using the Azure API type, you need to pass in your model's
+         # deployment name
+         eval_value = semantic_sim(
+            generated_outputs, reference_outputs, embedding_model_type='openai',
+            openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
          ```
 
     Ref:
@@ -39,13 +62,17 @@ def semantic_sim(
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         reference_outputs: A list of reference outputs
+        embedding_model_type: The type of embedding model to use ('local' or
+            'openai'), default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.Embedding.create` function, default None
 
     Returns:
         An EvalValue object
     '''
-    assert embedding_model in [
-        'all-mpnet-base-v2', 'openai'
-    ], f'Unsupported embedding model name. The supported ones are ["all-mpnet-base-v2", "openai"]'
+    assert embedding_model_type in [
+        'local', 'openai'
+    ], f'Unsupported embedding model name. The supported ones are ["local", "openai"]'
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(
             'The generated and reference outputs lists must be of the same '
@@ -58,7 +85,7 @@ def semantic_sim(
                          metric_values=[],
                          language='en')
 
-    if embedding_model == 'all-mpnet-base-v2':
+    if embedding_model_type == 'local':
         # The 'all-mpnet-base-v2' model has the highest average performance out of
         # all the existing sentence-transformer models that have been evaluated.
         # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
@@ -66,13 +93,19 @@ def semantic_sim(
         generated_embeddings = model.encode(generated_outputs)
         reference_embeddings = model.encode(reference_outputs)
     else:  # openai
-        gen_embed_response = openai.Embedding.create(
-            input=generated_outputs, model='text-embedding-ada-002')
+        if openai_args is None:
+            gen_embed_response = openai.Embedding.create(
+                input=generated_outputs, model='text-embedding-ada-002')
+            ref_embed_response = openai.Embedding.create(
+                input=reference_outputs, model='text-embedding-ada-002')
+        else:
+            gen_embed_response = openai.Embedding.create(
+                input=generated_outputs, **openai_args)
+            ref_embed_response = openai.Embedding.create(
+                input=reference_outputs, **openai_args)
         generated_embeddings = [
             item['embedding'] for item in gen_embed_response['data']
         ]
-        ref_embed_response = openai.Embedding.create(
-            input=reference_outputs, model='text-embedding-ada-002')
         reference_embeddings = [
             item['embedding'] for item in ref_embed_response['data']
         ]

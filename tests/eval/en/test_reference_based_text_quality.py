@@ -16,7 +16,7 @@ from tests.utils import is_close
 def test_semantic_sim_identical(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs,
                               reference_outputs,
-                              embedding_model='all-mpnet-base-v2')
+                              embedding_model_type='local')
     semantic_sim_value = eval_value.metric_values[0]
     assert 0.99 <= semantic_sim_value <= 1
 
@@ -27,7 +27,7 @@ def test_semantic_sim_identical(generated_outputs, reference_outputs):
 def test_semantic_sim_case_sensitivity(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs,
                               reference_outputs,
-                              embedding_model='all-mpnet-base-v2')
+                              embedding_model_type='local')
     semantic_sim_value = eval_value.metric_values[0]
     assert 0.9 <= semantic_sim_value <= 1
 
@@ -38,7 +38,7 @@ def test_semantic_sim_case_sensitivity(generated_outputs, reference_outputs):
 def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs,
                               reference_outputs,
-                              embedding_model='all-mpnet-base-v2')
+                              embedding_model_type='local')
     semantic_sim_value = eval_value.metric_values[0]
     assert 0.0 <= semantic_sim_value <= 0.1
 
@@ -54,7 +54,7 @@ def test_semantic_sim_openai(generated_outputs, reference_outputs):
                Mock(return_value=mock_embedding_response)):
         eval_value = semantic_sim(generated_outputs,
                                   reference_outputs,
-                                  embedding_model='openai')
+                                  embedding_model_type='openai')
         semantic_sim_value = eval_value.metric_values[0]
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
