@@ -39,6 +39,9 @@ def factual_consistency(generated_outputs: List[str],
         raise ValueError(
             'The generated outputs and sources lists must be of the same '
             'length')
+
+    # The UniEval-fact model takes quite some time to download, so we early
+    # return here to avoid unnecessarily downloading it
     if len(generated_outputs) == 0:
         return EvalValue(metric_name='factual_consistency',
                          prompts=None,
