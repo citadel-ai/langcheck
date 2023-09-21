@@ -19,12 +19,14 @@ class EvalValue(Generic[NumericType]):
     prompts: Optional[List[str]]
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
+    sources: Optional[List[str]]
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
         '''Returns a DataFrame of metric values for each data point.'''
         dataframe_cols = {
             'prompt': self.prompts,
+            'source': self.sources,
             'generated_output': self.generated_outputs,
             'reference_output': self.reference_outputs,
             'metric_value': self.metric_values,
@@ -96,9 +98,22 @@ class EvalValue(Generic[NumericType]):
                                       threshold=threshold,
                                       threshold_op='!=')
 
+    def all(self) -> bool:
+        '''Equivalent to all(eval_value.metric_values). This is mostly useful
+        for binary metric functions.
+        '''
+        return all(self.metric_values)
+
+    def any(self) -> bool:
+        '''Equivalent to any(eval_value.metric_values). This is mostly useful
+        for binary metric functions.
+        '''
+        return any(self.metric_values)
+
     def __bool__(self):
         raise ValueError('An EvalValue cannot be used as a boolean. '
-                         'Try an expression like `eval_value > 0.5` instead.')
+                         'Try an expression like `eval_value > 0.5`, '
+                         '`eval_value.all()`, or `eval_value.any()` instead.')
 
 
 @dataclass

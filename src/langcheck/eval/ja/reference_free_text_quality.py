@@ -3,6 +3,7 @@ from typing import List, Optional
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+from langcheck._hangle_logs import _handle_logging_level
 from langcheck.eval.eval_value import EvalValue
 
 _sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA E501
@@ -36,8 +37,9 @@ def sentiment(generated_outputs: List[str],
 
         # There is a "Some weights are not used warning" but we ignore it
         # because that is intended.
-        _sentiment_model = AutoModelForSequenceClassification.from_pretrained(
-            _sentiment_model_path)
+        with _handle_logging_level():
+            _sentiment_model = (AutoModelForSequenceClassification.
+                                from_pretrained(_sentiment_model_path))
 
     input_tokens = _sentiment_tokenizer(generated_outputs,
                                         return_tensors='pt',
@@ -54,5 +56,6 @@ def sentiment(generated_outputs: List[str],
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
+                     sources=None,
                      metric_values=scores,
                      language='ja')

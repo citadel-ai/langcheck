@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* Customize the sphinx-book-theme colors */
+:root {
+  --pst-color-primary: #228be6 !important;
+  --pst-color-link-hover: #228be6 !important;
+  --pst-color-secondary: #0f62fe !important;
+  --pst-color-inline-code-links: #228be6 !important;
+  --pst-color-inline-code: #e83e8c !important;
+  --pst-font-family-base-system: 'IBM Plex Sans', sans-serif;
+  --pst-font-family-monospace: 'IBM Plex Mono', monospace;
+}
+
+/* The contents logo doesn't have padding for some reason */
+.svg-inline--fa.fa-list {
+  margin-right: 0.5rem;
+}
+
+/* Make the "LangCheck" logo bigger */
+.navbar-brand .logo__title {
+  font-size: 1.75rem;
+  font-weight: 500;
+}
+
+/* Otherwise some pages with short content are way too narrow on desktop */
+@media (min-width: 992px) {
+  .bd-article-container {
+    min-width: 700px !important;
+  }
+}
+
+.prev-next-footer a .prev-next-title {
+  text-decoration: none !important;
+}
+
+.prev-next-footer a:hover .prev-next-title {
+  text-decoration: underline !important;
+  text-decoration-thickness: 1px !important;
+}
+
+.bd-sidebar a:hover {
+  text-decoration: none !important;
+}
+
+.article-header-buttons button:hover,
+.article-header-buttons .nav-link:hover {
+  box-shadow: none !important;
+}
+
+/* Not all button icons have the same size for some reason */
+.article-header-buttons svg {
+  height: 20px;
+}

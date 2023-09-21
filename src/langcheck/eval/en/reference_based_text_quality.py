@@ -36,6 +36,7 @@ def semantic_sim(generated_outputs: List[str],
                          prompts=None,
                          generated_outputs=[],
                          reference_outputs=[],
+                         sources=None,
                          metric_values=[],
                          language='en')
     # The 'all-mpnet-base-v2' model has the highest average performance out of
@@ -54,6 +55,7 @@ def semantic_sim(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=cosine_scores.tolist(),
                      language='en')
 
@@ -82,6 +84,7 @@ def rouge1(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -110,6 +113,7 @@ def rouge2(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
@@ -148,6 +152,7 @@ def rougeL(generated_outputs: List[str],
                      prompts=None,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
+                     sources=None,
                      metric_values=scores,
                      language='en')
 
