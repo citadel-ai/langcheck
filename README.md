@@ -27,7 +27,11 @@ Use LangCheck's suite of metrics to evaluate LLM-generated text.
 import langcheck
 
 # Generate text with any LLM library
-generated_outputs = ['Black cat the', 'The black cat is sitting', 'The big black cat is sitting on the fence']
+generated_outputs = [
+    'Black cat the',
+    'The black cat is sitting',
+    'The big black cat is sitting on the fence'
+]
 
 # Check text quality and get results as a DataFrame (threshold is optional)
 langcheck.eval.fluency(generated_outputs) > 0.5
