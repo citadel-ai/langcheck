@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 from typing import Optional
 
 import plotly.express as px
@@ -153,17 +154,17 @@ def _scatter_two_eval_values(eval_value: EvalValue,
     if eval_value.language != other_eval_value.language:
         raise ValueError('Both EvalValues must have the same language')
 
+    # Append "(other)" to the metric name of the second EvalValue if necessary.
+    # (It's possible to plot two EvalValues from the same metric, e.g. if you
+    # compute semantic_sim() with a local model and an OpenAI model)
+    if eval_value.metric_name == other_eval_value.metric_name:
+        other_eval_value = deepcopy(other_eval_value)
+        other_eval_value.metric_name += ' (other)'
+
     # Rename some EvalValue fields for display
     df = eval_value.to_df()
     df.rename(columns={'metric_value': eval_value.metric_name}, inplace=True)
-    if eval_value.metric_name != other_eval_value.metric_name:
-        df[other_eval_value.metric_name] = other_eval_value.to_df(
-        )['metric_value']
-    else:
-        # It's possible to plot two EvalValues from the same metric, e.g. if you
-        # compute semantic_sim() with a local model and an OpenAI model
-        df[other_eval_value.metric_name +
-           '(other)'] = other_eval_value.to_df()['metric_value']
+    df[other_eval_value.metric_name] = other_eval_value.to_df()['metric_value']
     df['prompt'] = df['prompt'].fillna('None')
     df['reference_output'] = df['reference_output'].fillna('None')
     df['source'] = df['source'].fillna('None')
