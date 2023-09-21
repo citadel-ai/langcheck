@@ -20,39 +20,43 @@ def semantic_sim(
     where 0 is minimum similarity and 1 is maximum similarity.
 
     We currently support two embedding model types:
-    - 1) The `local` type, where the 'all-mpnet-base-v2' model is downloaded
-         from HuggingFace and run locally. This is the default model type and
-         there is no setup needed to run this.
-    - 2) The `openai` type, where we use OpenAI's embedding model. To use this,
-         make sure to set the OpenAI API key:
-         ```
-         import openai
-         from langcheck.eval.en import semantic_sim
 
-         # https://platform.openai.com/account/api-keys
-         openai.api_key = YOUR_OPENAI_API_KEY
+    1. The 'local' type, where the 'all-mpnet-base-v2' model is downloaded
+    from HuggingFace and run locally. This is the default model type and
+    there is no setup needed to run this.
 
-         eval_value = semantic_sim(
+    2. The 'openai' type, where we use OpenAI's embedding model. To use this,
+    make sure to set the OpenAI API key:
+
+    .. code-block::
+
+        import openai
+        from langcheck.eval.en import semantic_sim
+
+        # https://platform.openai.com/account/api-keys
+        openai.api_key = YOUR_OPENAI_API_KEY
+
+        eval_value = semantic_sim(
             generated_outputs, reference_outputs, embedding_model_type='openai')
-         ```
 
-         Or, if you're using the Azure API type, make sure to set all of the
-         necessary variables:
-         ```
-         import openai
-         from langcheck.eval.en import semantic_sim
+    Or, if you're using the Azure API type, make sure to set all of the
+    necessary variables:
 
-         openai.api_type = 'azure'
-         openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
-         openai.api_version = YOUR_API_VERSION
-         openai.api_key = YOUR_OPENAI_API_KEY
+    .. code-block::
 
-         # When using the Azure API type, you need to pass in your model's
-         # deployment name
-         eval_value = semantic_sim(
+        import openai
+        from langcheck.eval.en import semantic_sim
+
+        openai.api_type = 'azure'
+        openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
+        openai.api_version = YOUR_API_VERSION
+        openai.api_key = YOUR_OPENAI_API_KEY
+
+        # When using the Azure API type, you need to pass in your model's
+        # deployment name
+        eval_value = semantic_sim(
             generated_outputs, reference_outputs, embedding_model_type='openai',
             openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
-         ```
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity
