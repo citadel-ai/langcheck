@@ -31,7 +31,7 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "furo", "ipykernel"]
+dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "sphinx-book-theme", "myst-parser", "ipykernel"]
 optional = ["mecab-python3 >= 1.0.4", "unidic-lite >= 1.0.1"]
 
 [project.urls]

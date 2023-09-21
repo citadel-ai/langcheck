@@ -5,6 +5,7 @@ import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
 from langcheck.eval import EvalValue
+from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
 
 
 def scatter(eval_value: EvalValue,
@@ -37,45 +38,54 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Filter generated_outputs: ',
-                       style={'background-color': 'white'}),
+            html.Label('Filter generated_outputs: '),
             dcc.Input(id='filter_generated_outputs',
                       type='text',
-                      placeholder='Type to search...'),
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter prompts: ', style={'background-color': 'white'}),
+            html.Label('Filter reference_outputs: '),
+            dcc.Input(id='filter_reference_outputs',
+                      type='text',
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
+        ]),
+        html.Div([
+            html.Label('Filter prompts: '),
             dcc.Input(id='filter_prompts',
                       type='text',
-                      placeholder='Type to search...'),
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
         ]),
-        html.Div([
-            html.Span(id='num_results_message',
-                      style={
-                          'background-color': 'white',
-                          'font-style': 'italic'
-                      })
-        ]),
+        html.Div([html.Span(id='num_results_message', style=NUM_RESULTS_CSS)]),
         dcc.Graph(
             id='scatter_plot',
             config={
                 'displaylogo': False,
                 'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
             })
-    ])
+    ],
+                          style=GLOBAL_CSS)
 
     # This function gets called whenever the user types in the search boxes
     @app.callback(Output('scatter_plot', 'figure'),
                   Output('num_results_message', 'children'),
                   Input('filter_generated_outputs', 'value'),
+                  Input('filter_reference_outputs', 'value'),
                   Input('filter_prompts', 'value'))
-    def update_figure(filter_generated_outputs, filter_prompts):
+    def update_figure(filter_generated_outputs, filter_reference_outputs,
+                      filter_prompts):
         # Filter data points based on search boxes, case-insensitive
         filtered_df = df.copy()
         if filter_generated_outputs:
             filtered_df = filtered_df[
                 filtered_df['generated_output'].str.lower().str.contains(
                     filter_generated_outputs.lower())]
+        if filter_reference_outputs:
+            filtered_df = filtered_df[
+                filtered_df['reference_output'].str.lower().str.contains(
+                    filter_reference_outputs.lower())]
         if filter_prompts:
             filtered_df = filtered_df[
                 filtered_df['prompt'].str.lower().str.contains(
@@ -143,45 +153,54 @@ def _scatter_two_eval_values(eval_value: EvalValue,
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Filter generated_outputs: ',
-                       style={'background-color': 'white'}),
+            html.Label('Filter generated_outputs: '),
             dcc.Input(id='filter_generated_outputs',
                       type='text',
-                      placeholder='Type to search...'),
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter prompts: ', style={'background-color': 'white'}),
+            html.Label('Filter reference_outputs: '),
+            dcc.Input(id='filter_reference_outputs',
+                      type='text',
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
+        ]),
+        html.Div([
+            html.Label('Filter prompts: '),
             dcc.Input(id='filter_prompts',
                       type='text',
-                      placeholder='Type to search...'),
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
         ]),
-        html.Div([
-            html.Span(id='num_results_message',
-                      style={
-                          'background-color': 'white',
-                          'font-style': 'italic'
-                      })
-        ]),
+        html.Div([html.Span(id='num_results_message', style=NUM_RESULTS_CSS)]),
         dcc.Graph(
             id='scatter_plot',
             config={
                 'displaylogo': False,
                 'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
             })
-    ])
+    ],
+                          style=GLOBAL_CSS)
 
     # This function gets called whenever the user types in the search boxes
     @app.callback(Output('scatter_plot', 'figure'),
                   Output('num_results_message', 'children'),
                   Input('filter_generated_outputs', 'value'),
+                  Input('filter_reference_outputs', 'value'),
                   Input('filter_prompts', 'value'))
-    def update_figure(filter_generated_outputs, filter_prompts):
+    def update_figure(filter_generated_outputs, filter_reference_outputs,
+                      filter_prompts):
         # Filter data points based on search boxes, case-insensitive
         filtered_df = df.copy()
         if filter_generated_outputs:
             filtered_df = filtered_df[
                 filtered_df['generated_output'].str.lower().str.contains(
                     filter_generated_outputs.lower())]
+        if filter_reference_outputs:
+            filtered_df = filtered_df[
+                filtered_df['reference_output'].str.lower().str.contains(
+                    filter_reference_outputs.lower())]
         if filter_prompts:
             filtered_df = filtered_df[
                 filtered_df['prompt'].str.lower().str.contains(

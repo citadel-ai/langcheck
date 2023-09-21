@@ -1,5 +1,6 @@
-langcheck.eval.eval\_value module
-=================================
+
+langcheck.eval.eval\_value
+==========================
 
 .. automodule:: langcheck.eval.eval_value
    :members:
