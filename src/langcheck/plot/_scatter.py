@@ -58,6 +58,13 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
                       placeholder='Type to search...',
                       style=INPUT_CSS),
         ]),
+        html.Div([
+            html.Label('Filter sources: '),
+            dcc.Input(id='filter_sources',
+                      type='text',
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
+        ]),
         html.Div([html.Span(id='num_results_message', style=NUM_RESULTS_CSS)]),
         dcc.Graph(
             id='scatter_plot',
@@ -73,9 +80,10 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
                   Output('num_results_message', 'children'),
                   Input('filter_generated_outputs', 'value'),
                   Input('filter_reference_outputs', 'value'),
-                  Input('filter_prompts', 'value'))
+                  Input('filter_prompts', 'value'),
+                  Input('filter_sources', 'value'))
     def update_figure(filter_generated_outputs, filter_reference_outputs,
-                      filter_prompts):
+                      filter_prompts, filter_sources):
         # Filter data points based on search boxes, case-insensitive
         filtered_df = df.copy()
         if filter_generated_outputs:
@@ -90,6 +98,10 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
             filtered_df = filtered_df[
                 filtered_df['prompt'].str.lower().str.contains(
                     filter_prompts.lower())]
+        if filter_sources:
+            filtered_df = filtered_df[
+                filtered_df['source'].str.lower().str.contains(
+                    filter_sources.lower())]
 
         # Configure the actual scatter plot
         fig = px.scatter(filtered_df,
@@ -178,6 +190,13 @@ def _scatter_two_eval_values(eval_value: EvalValue,
                       placeholder='Type to search...',
                       style=INPUT_CSS),
         ]),
+        html.Div([
+            html.Label('Filter sources: '),
+            dcc.Input(id='filter_sources',
+                      type='text',
+                      placeholder='Type to search...',
+                      style=INPUT_CSS),
+        ]),
         html.Div([html.Span(id='num_results_message', style=NUM_RESULTS_CSS)]),
         dcc.Graph(
             id='scatter_plot',
@@ -193,9 +212,10 @@ def _scatter_two_eval_values(eval_value: EvalValue,
                   Output('num_results_message', 'children'),
                   Input('filter_generated_outputs', 'value'),
                   Input('filter_reference_outputs', 'value'),
-                  Input('filter_prompts', 'value'))
+                  Input('filter_prompts', 'value'),
+                  Input('filter_sources', 'value'))
     def update_figure(filter_generated_outputs, filter_reference_outputs,
-                      filter_prompts):
+                      filter_prompts, filter_sources):
         # Filter data points based on search boxes, case-insensitive
         filtered_df = df.copy()
         if filter_generated_outputs:
@@ -210,6 +230,10 @@ def _scatter_two_eval_values(eval_value: EvalValue,
             filtered_df = filtered_df[
                 filtered_df['prompt'].str.lower().str.contains(
                     filter_prompts.lower())]
+        if filter_sources:
+            filtered_df = filtered_df[
+                filtered_df['source'].str.lower().str.contains(
+                    filter_sources.lower())]
 
         # Configure the actual scatter plot
         # (We need to explicitly add the index column into hover_data here.
