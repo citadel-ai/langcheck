@@ -28,3 +28,4 @@ langcheck.eval.en
 
    langcheck.eval.en.reference_based_text_quality
    langcheck.eval.en.reference_free_text_quality
+   langcheck.eval.en.source_based_text_quality
