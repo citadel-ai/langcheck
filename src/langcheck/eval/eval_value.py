@@ -114,7 +114,8 @@ class EvalValue(Generic[NumericType]):
         '''Shows an interactive scatter plot of all data points in EvalValue.
         Intended to be used in a Jupyter notebook.
 
-        This is a convenience function that calls langcheck.plot.scatter().
+        This is a convenience function that calls
+        :func:`langcheck.plot.scatter()`.
         '''
         from langcheck.plot import scatter
         return scatter(self)
@@ -123,7 +124,8 @@ class EvalValue(Generic[NumericType]):
         '''Shows an interactive histogram of all data points in EvalValue.
         Intended to be used in a Jupyter notebook.
 
-        This is a convenience function that calls langcheck.plot.histogram().
+        This is a convenience function that calls
+        :func:`langcheck.plot.histogram()`.
         '''
         from langcheck.plot import histogram
         return histogram(self)
