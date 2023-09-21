@@ -72,7 +72,9 @@ def semantic_sim(
     '''
     assert embedding_model_type in [
         'local', 'openai'
-    ], f'Unsupported embedding model name. The supported ones are ["local", "openai"]'
+    ], ('Unsupported embedding model type. '
+        'The supported ones are ["local", "openai"]')
+
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(
             'The generated and reference outputs lists must be of the same '
@@ -86,8 +88,9 @@ def semantic_sim(
                          language='en')
 
     if embedding_model_type == 'local':
-        # The 'all-mpnet-base-v2' model has the highest average performance out of
-        # all the existing sentence-transformer models that have been evaluated.
+        # The 'all-mpnet-base-v2' model has the highest average performance out
+        # of all the existing sentence-transformer models that have been
+        # evaluated.
         # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
         model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         generated_embeddings = model.encode(generated_outputs)
