@@ -19,6 +19,7 @@ dependencies = [
     'detoxify >= 0.5',
     'janome >= 0.3.1',
     'nltk >= 3',
+    'openai >= 0.11.6',
     'pandas >= 1',
     'plotly >= 5',
     'rouge_score >= 0.1.2',
