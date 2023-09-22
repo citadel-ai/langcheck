@@ -81,7 +81,7 @@ fluency_values = langcheck.eval.fluency(generated_outputs)
 sentiment_values = langcheck.eval.sentiment(generated_outputs)
 
 # Interactive scatter plot of one metric
-langcheck.plot.scatter(sentiment_values)
+sentiment_values.scatter()
 ```
 
 ![Scatter plot for one metric](docs/_static/scatter_one_metric.gif)
@@ -97,7 +97,7 @@ langcheck.plot.scatter(fluency_values, sentiment_values)
 
 ```python
 # Interactive histogram of a single metric
-langcheck.plot.histogram(fluency_values)
+fluency_values.histogram()
 ```
 
 ![Histogram for one metric](docs/_static/histogram.png)

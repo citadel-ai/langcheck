@@ -12,6 +12,9 @@ For example, run ``langcheck.plot.scatter()`` in a Jupyter notebook to see this 
 
 .. image:: _static/scatter_one_metric.gif
 
+.. tip::
+    As a shortcut, you can run plotting functions directly on an :class:`~langcheck.eval.eval_value.EvalValue`. For example, ``toxicity_values.scatter()`` is equivalent to ``langcheck.plot.scatter(toxicity_values)``.
+
 ----
 
 .. </UPDATE_AFTER_SPHINX_APIDOC>
