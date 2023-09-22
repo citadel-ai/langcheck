@@ -23,8 +23,9 @@ def semantic_sim(
     - 1) The `local` type, where the 'all-mpnet-base-v2' model is downloaded
          from HuggingFace and run locally. This is the default model type and
          there is no setup needed to run this.
-    - 2) The `openai` type, where we use OpenAI's embedding model. To use this,
-         make sure to set the OpenAI API key:
+    - 2) The `openai` type, where we use OpenAI's 'text-embedding-ada-002'
+         model by default (this is configurable). To use this, make sure to set
+         the OpenAI API key:
          ```
          import openai
          from langcheck.eval.en import semantic_sim
