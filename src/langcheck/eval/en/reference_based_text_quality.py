@@ -17,7 +17,9 @@ def semantic_sim(
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
     takes on float values between [-1, 1], but typically ranges between 0 and 1
-    where 0 is minimum similarity and 1 is maximum similarity.
+    where 0 is minimum similarity and 1 is maximum similarity. (NOTE: when using
+    OpenAI embeddings, the cosine similarities tend to be skewed quite heavily
+    towards higher numbers.)
 
     We currently support two embedding model types:
 
@@ -25,8 +27,9 @@ def semantic_sim(
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
 
-    2. The 'openai' type, where we use OpenAI's embedding model. To use this,
-    make sure to set the OpenAI API key:
+    2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
+    by default (this is configurable). To use this, make sure to set the OpenAI
+    API key:
 
     .. code-block::
 
