@@ -15,11 +15,10 @@ def is_int(generated_outputs: List[str],
     on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
+        generated_outputs: A list of model generated outputs to evaluate
         domain: The optional domain of valid integers
-        prompts: An optional :class:`list` of prompts used to generate the
-        outputs. Prompts are not evaluated and only used as metadata.
+        prompts: An optional list of prompts used to generate the outputs.
+ Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -54,12 +53,11 @@ def is_float(generated_outputs: List[str],
     values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
+        generated_outputs: A list of model generated outputs to evaluate
         min: The optional minimum valid float
         max: The optional maximum valid float
-        prompts: An optional :class:`list` of prompts used to generate the
-        outputs. Prompts are not evaluated and only used as metadata.
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
 
     Returns:
@@ -96,10 +94,9 @@ def is_json_object(generated_outputs: List[str],
     takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        prompts: An optional :class:`list` of prompts used to generate the
-            outputs. Prompts are not evaluated and only used as metadata.
+        generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -131,10 +128,9 @@ def is_json_array(generated_outputs: List[str],
     takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        prompts: An optional :class:`list` of prompts used to generate the
-            outputs. Prompts are not evaluated and only used as metadata.
+        generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -167,11 +163,10 @@ def matches_regex(generated_outputs: List[str],
     metric takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
+        generated_outputs: A list of model generated outputs to evaluate
         regex: The regular expression to match
-        prompts: An optional :class:`list` of prompts used to generate the
-        outputs. Prompts are not evaluated and only used as metadata.
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -200,11 +195,10 @@ def contains_regex(generated_outputs: List[str],
     This metric takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
+        generated_outputs: A list of model generated outputs to evaluate
         regex: The regular expression to match
-        prompts: An optional :class:`list` of prompts used to generate the
-            outputs. Prompts are not evaluated and only used as metadata.
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -234,12 +228,11 @@ def contains_all_strings(generated_outputs: List[str],
     metric takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        strings: A :class:`list` of strings to match
+        generated_outputs: A list of model generated outputs to evaluate
+        strings: A list of strings to match
         case_sensitive: Whether to match case sensitively or not, default False
-        prompts: An optional :class:`list` of prompts used to generate the
-            outputs. Prompts are not evaluated and only used as metadata.
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -277,13 +270,12 @@ def contains_any_strings(generated_outputs: List[str],
     metric takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        strings: A :class:`list` of strings to match
+        generated_outputs: A list of model generated outputs to evaluate
+        strings: A list of strings to match
         case_sensitive: Whether to match case sensitively or not, default to
             :obj:`False`.
-        prompts: An optional :class:`list` of prompts used to generate the
-            outputs. Prompts are not evaluated and only used as metadata.
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -320,13 +312,12 @@ def validation_fn(generated_outputs: List[str],
     This metric takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        valid_fn: A function that takes a single :class:`str` and returns a
-            :class:`bool` determining whether the string is valid or not.
+        generated_outputs: A list of model generated outputs to evaluate
+        valid_fn: A function that takes a single string and returns a
+            bool determining whether the string is valid or not.
             The function can also raise an exception on failure.
-        prompts: An optional :class:`list` of prompts used to generate the
-            outputs. Prompts are not evaluated and only used as metadata.
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object

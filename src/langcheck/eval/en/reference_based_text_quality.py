@@ -20,9 +20,8 @@ def semantic_sim(generated_outputs: List[str],
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-        evaluate
-        reference_outputs: A :class:`list` of reference outputs
+        generated_outputs: A list of model generated outputs to evaluate
+        reference_outputs: A list of reference outputs
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -72,9 +71,8 @@ def rouge1(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        reference_outputs: A :class:`list` of reference outputs
+        generated_outputs: A list of model generated outputs to evaluate
+        reference_outputs: A list of reference outputs
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -101,9 +99,8 @@ def rouge2(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        reference_outputs: A :class:`list` of reference outputs
+        generated_outputs: A list of model generated outputs to evaluate
+        reference_outputs: A list of reference outputs
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -130,9 +127,8 @@ def rougeL(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        reference_outputs: A :class:`list` of reference outputs
+        generated_outputs: A list of model generated outputs to evaluate
+        reference_outputs: A list of reference outputs
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -164,13 +160,12 @@ def _rouge(generated_outputs: List[str], reference_outputs: List[str],
     https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-        evaluate
-        reference_outputs: A :class:`list` of reference outputs
+        generated_outputs: A list of model generated outputs to evaluate
+        reference_outputs: A list of reference outputs
         rouge_type: rouge1, rouge2, or rougeLsum
 
     Returns:
-        A :class:`list` of F1 values of the ROUGE scores
+        A list of F1 values of the ROUGE scores
     '''
     assert rouge_type in ["rouge1", "rouge2", "rougeLsum"]
     scorer = rouge_scorer.RougeScorer([rouge_type], use_stemmer=True)

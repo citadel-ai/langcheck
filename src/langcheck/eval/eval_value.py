@@ -35,14 +35,14 @@ class EvalValue(Generic[NumericType]):
         return pd.DataFrame(dataframe_cols)
 
     def __str__(self) -> str:
-        '''Returns a :class:`str` representation of an
+        '''Returns a string representation of an
         :class:`~langcheck.eval.EvalValue` object.
         '''
         return (f'Metric: {self.metric_name}\n'
                 f'{self.to_df()}')
 
     def __repr__(self) -> str:
-        '''Returns a :class:`str` representation of an
+        '''Returns a string representation of an
         :class:`~langcheck.eval.EvalValue` object.
         '''
         return str(self)
@@ -155,7 +155,7 @@ class EvalValueWithThreshold(EvalValue):
 
     @property
     def threshold_results(self) -> List[bool]:
-        '''Returns a :class:`list` of :class:`bool` indicating whether each data
+        '''Returns a list of bool indicating whether each data
         point passes the threshold.
         '''
         return self._threshold_results
@@ -172,7 +172,7 @@ class EvalValueWithThreshold(EvalValue):
         return dataframe
 
     def __str__(self) -> str:
-        '''Returns a :class:`str` representation of an
+        '''Returns a string representation of an
         :class:`~langcheck.eval.EvalValue`.
         '''
         return (f'Metric: {self.metric_name}\n'
@@ -180,7 +180,7 @@ class EvalValueWithThreshold(EvalValue):
                 f'{self.to_df()}')
 
     def __repr__(self) -> str:
-        '''Returns a :class:`str` representation of an
+        '''Returns a string representation of an
         :class:`~langcheck.eval.EvalValue` object.
         '''
         return str(self)
@@ -196,11 +196,11 @@ class EvalValueWithThreshold(EvalValue):
                )
 
     def all(self) -> bool:
-        '''Returns :obj:`True` if all data points pass the threshold.'''
+        '''Returns True if all data points pass the threshold.'''
         return all(self.threshold_results)
 
     def any(self) -> bool:
-        '''Returns :obj:`True` if any data points pass the threshold.'''
+        '''Returns True if any data points pass the threshold.'''
         return any(self.threshold_results)
 
     def __bool__(self) -> bool:

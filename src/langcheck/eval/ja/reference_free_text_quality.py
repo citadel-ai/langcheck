@@ -21,10 +21,9 @@ def sentiment(generated_outputs: List[str],
         https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
 
     Args:
-        generated_outputs: A :class:`list` of model generated outputs to
-            evaluate
-        prompts: An optional :class:`list` of prompts used to generate the
-            outputs. Prompts are not evaluated and only used as metadata.
+        generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+        Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object.
