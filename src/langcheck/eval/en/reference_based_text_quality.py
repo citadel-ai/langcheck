@@ -17,7 +17,9 @@ def semantic_sim(
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
     takes on float values between [-1, 1], but typically ranges between 0 and 1
-    where 0 is minimum similarity and 1 is maximum similarity.
+    where 0 is minimum similarity and 1 is maximum similarity. (NOTE: when using
+    OpenAI embeddings, the cosine similarities tend to be skewed quite heavily
+    towards higher numbers.)
 
     We currently support two embedding model types:
     - 1) The `local` type, where the 'all-mpnet-base-v2' model is downloaded
