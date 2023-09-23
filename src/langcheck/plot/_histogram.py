@@ -3,7 +3,7 @@ import math
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
-from langcheck.eval import EvalValue
+from langcheck.eval.eval_value import EvalValue
 from langcheck.plot._css import GLOBAL_CSS
 
 
