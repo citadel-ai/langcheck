@@ -26,7 +26,7 @@ def semantic_sim(generated_outputs: List[str],
         reference_outputs: A list of reference outputs
 
     Returns:
-        An :class:`~langcheck.eval.EvalValue` object.
+        An :class:`~langcheck.eval.eval_value.EvalValue` object.
     '''
 
     if len(generated_outputs) != len(reference_outputs):

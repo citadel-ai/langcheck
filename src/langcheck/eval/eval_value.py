@@ -36,20 +36,20 @@ class EvalValue(Generic[NumericType]):
 
     def __str__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.eval.EvalValue` object.
+        :class:`~langcheck.eval.eval_value.EvalValue` object.
         '''
         return (f'Metric: {self.metric_name}\n'
                 f'{self.to_df()}')
 
     def __repr__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.eval.EvalValue` object.
+        :class:`~langcheck.eval.eval_value.EvalValue` object.
         '''
         return str(self)
 
     def _repr_html_(self) -> str:
         '''Returns an HTML representation of an
-        :class:`~langcheck.eval.EvalValue`, which is
+        :class:`~langcheck.eval.eval_value.EvalValue`, which is
         automatically called by Jupyter notebooks.
         '''
         return (f'Metric: {self.metric_name}<br>'
@@ -139,7 +139,7 @@ class EvalValue(Generic[NumericType]):
 @dataclass
 class EvalValueWithThreshold(EvalValue):
     '''A rich object that is the output of comparing an
-    :class:`~langcheck.eval.EvalValue` object,
+    :class:`~langcheck.eval.eval_value.EvalValue` object,
     e.g. `eval_value >= 0.5`.
     '''
     threshold: float | int
@@ -193,7 +193,7 @@ class EvalValueWithThreshold(EvalValue):
 
     def __str__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.eval.EvalValue`.
+        :class:`~langcheck.eval.eval_value.EvalValue`.
         '''
         return (f'Metric: {self.metric_name}\n'
                 f'Pass Rate: {round(self.pass_rate*100, 2)}%\n'
@@ -201,13 +201,13 @@ class EvalValueWithThreshold(EvalValue):
 
     def __repr__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.eval.EvalValue` object.
+        :class:`~langcheck.eval.eval_value.EvalValue` object.
         '''
         return str(self)
 
     def _repr_html_(self) -> str:
         '''Returns an HTML representation of an
-        :class:`~langcheck.eval.EvalValue`, which is
+        :class:`~langcheck.eval.eval_value.EvalValue`, which is
         automatically called by Jupyter notebooks.
         '''
         return (f'Metric: {self.metric_name}<br>'

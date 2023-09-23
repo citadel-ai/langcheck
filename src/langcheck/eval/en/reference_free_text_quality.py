@@ -34,7 +34,7 @@ def sentiment(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An :class:`~langcheck.eval.EvalValue` object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     global _sentiment_tokenizer, _sentiment_model
 
@@ -83,7 +83,7 @@ def fluency(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An :class:`~langcheck.eval.EvalValue` object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     global _fluency_tokenizer, _fluency_model
 
@@ -131,7 +131,7 @@ def toxicity(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An :class:`~langcheck.eval.EvalValue` object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     global _toxicity_model
     if _toxicity_model is None:
@@ -165,7 +165,7 @@ def flesch_reading_ease(
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An :class:`~langcheck.eval.EvalValue` object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     output_stats = [compute_stats(output) for output in generated_outputs]
     scores = [
@@ -201,7 +201,7 @@ def flesch_kincaid_grade(
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An :class:`~langcheck.eval.EvalValue` object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     output_stats = [compute_stats(output) for output in generated_outputs]
     scores = [
