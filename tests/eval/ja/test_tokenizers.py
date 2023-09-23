@@ -21,8 +21,8 @@ def test_janome_tokenizer(text: str, expected_tokens: List[str],
     assert tokenizer.tokenize(text) == expected_tokens
 
 
+@pytest.mark.skipif("MeCab" in sys.modules,
+                    reason="MeCab has already been installed.")
 def test_handle_mecab_not_founud() -> None:
-    if "MeCab" in sys.modules:
-        return
     with pytest.raises(ModuleNotFoundError):
         MeCabTokenizer()

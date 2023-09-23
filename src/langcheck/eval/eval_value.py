@@ -115,6 +115,26 @@ class EvalValue(Generic[NumericType]):
                          'Try an expression like `eval_value > 0.5`, '
                          '`eval_value.all()`, or `eval_value.any()` instead.')
 
+    def scatter(self):
+        '''Shows an interactive scatter plot of all data points in EvalValue.
+        Intended to be used in a Jupyter notebook.
+
+        This is a convenience function that calls
+        :func:`langcheck.plot.scatter()`.
+        '''
+        from langcheck.plot import scatter
+        return scatter(self)
+
+    def histogram(self):
+        '''Shows an interactive histogram of all data points in EvalValue.
+        Intended to be used in a Jupyter notebook.
+
+        This is a convenience function that calls
+        :func:`langcheck.plot.histogram()`.
+        '''
+        from langcheck.plot import histogram
+        return histogram(self)
+
 
 @dataclass
 class EvalValueWithThreshold(EvalValue):

@@ -3,7 +3,7 @@ from typing import List, Optional
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from langcheck._hangle_logs import _handle_logging_level
+from langcheck._handle_logs import _handle_logging_level
 from langcheck.eval.eval_value import EvalValue
 
 _sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA E501
