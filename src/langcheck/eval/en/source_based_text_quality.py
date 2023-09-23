@@ -1,5 +1,6 @@
 from typing import List
 
+import nltk
 import torch
 import torch.nn as nn
 from nltk import sent_tokenize
@@ -34,6 +35,11 @@ def factual_consistency(generated_outputs: List[str],
     Returns:
         An EvalValue object
     '''
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
+
     if len(generated_outputs) != len(sources):
         raise ValueError(
             'The generated outputs and sources lists must be of the same '
