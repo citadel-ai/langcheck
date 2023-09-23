@@ -26,6 +26,7 @@ class EvalValue(Generic[NumericType]):
         '''Returns a DataFrame of metric values for each data point.'''
         dataframe_cols = {
             'prompt': self.prompts,
+            'source': self.sources,
             'generated_output': self.generated_outputs,
             'reference_output': self.reference_outputs,
             'metric_value': self.metric_values,
@@ -92,9 +93,42 @@ class EvalValue(Generic[NumericType]):
                                       threshold=threshold,
                                       threshold_op='!=')
 
+    def all(self) -> bool:
+        '''Equivalent to all(eval_value.metric_values). This is mostly useful
+        for binary metric functions.
+        '''
+        return all(self.metric_values)
+
+    def any(self) -> bool:
+        '''Equivalent to any(eval_value.metric_values). This is mostly useful
+        for binary metric functions.
+        '''
+        return any(self.metric_values)
+
     def __bool__(self):
         raise ValueError('An EvalValue cannot be used as a boolean. '
-                         'Try an expression like `eval_value > 0.5` instead.')
+                         'Try an expression like `eval_value > 0.5`, '
+                         '`eval_value.all()`, or `eval_value.any()` instead.')
+
+    def scatter(self):
+        '''Shows an interactive scatter plot of all data points in EvalValue.
+        Intended to be used in a Jupyter notebook.
+
+        This is a convenience function that calls
+        :func:`langcheck.plot.scatter()`.
+        '''
+        from langcheck.plot import scatter
+        return scatter(self)
+
+    def histogram(self):
+        '''Shows an interactive histogram of all data points in EvalValue.
+        Intended to be used in a Jupyter notebook.
+
+        This is a convenience function that calls
+        :func:`langcheck.plot.histogram()`.
+        '''
+        from langcheck.plot import histogram
+        return histogram(self)
 
 
 @dataclass

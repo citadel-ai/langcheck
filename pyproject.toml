@@ -15,21 +15,24 @@ classifiers = [
 ]
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
-    'tomli; python_version < "3.11"',
-    'torch >= 2',
-    'transformers >= 4.6',
-    'sentence_transformers >= 2',
+    'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'detoxify >= 0.5',
+    'janome >= 0.3.1',
     'nltk >= 3',
+    'openai >= 0.11.6',
     'pandas >= 1',
     'plotly >= 5',
-    'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'rouge_score >= 0.1.2',
+    'sentence_transformers >= 2',
+    'tomli; python_version < "3.11"',
+    'torch >= 2',
+    'transformers >= 4.6'
 ]
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "furo", "ipykernel"]
+dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "sphinx-book-theme", "myst-parser", "ipykernel"]
+optional = ["mecab-python3 >= 1.0.4", "unidic-lite >= 1.0.1"]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
@@ -47,3 +50,8 @@ ignore_patterns = [
 multi_line_output = 0
 line_length = 80
 include_trailing_comma = false
+
+[tool.pytest.ini_options]
+markers = [
+  "optional: marks tests as optional",
+]
