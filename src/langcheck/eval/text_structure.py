@@ -18,7 +18,7 @@ def is_int(generated_outputs: List[str],
         generated_outputs: A list of model generated outputs to evaluate
         domain: The optional domain of valid integers
         prompts: An optional list of prompts used to generate the outputs.
- Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -57,7 +57,7 @@ def is_float(generated_outputs: List[str],
         min: The optional minimum valid float
         max: The optional maximum valid float
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
 
     Returns:
@@ -96,7 +96,7 @@ def is_json_object(generated_outputs: List[str],
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -130,7 +130,7 @@ def is_json_array(generated_outputs: List[str],
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -166,7 +166,7 @@ def matches_regex(generated_outputs: List[str],
         generated_outputs: A list of model generated outputs to evaluate
         regex: The regular expression to match
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -198,7 +198,7 @@ def contains_regex(generated_outputs: List[str],
         generated_outputs: A list of model generated outputs to evaluate
         regex: The regular expression to match
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -232,7 +232,7 @@ def contains_all_strings(generated_outputs: List[str],
         strings: A list of strings to match
         case_sensitive: Whether to match case sensitively or not, default False
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -275,7 +275,7 @@ def contains_any_strings(generated_outputs: List[str],
         case_sensitive: Whether to match case sensitively or not, default to
             :obj:`False`.
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object
@@ -317,7 +317,7 @@ def validation_fn(generated_outputs: List[str],
             bool determining whether the string is valid or not.
             The function can also raise an exception on failure.
         prompts: An optional list of prompts used to generate the outputs.
-        Prompts are not evaluated and only used as metadata.
+            Prompts are not evaluated and only used as metadata.
 
     Returns:
         An :class:`~langcheck.eval.EvalValue` object

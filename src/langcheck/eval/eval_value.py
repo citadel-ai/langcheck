@@ -175,8 +175,8 @@ class EvalValueWithThreshold(EvalValue):
 
     @property
     def threshold_results(self) -> List[bool]:
-        '''Returns a list of bool indicating whether each data
-        point passes the threshold.
+        '''Returns a list of booleans indicating whether each data point passes
+        the threshold.
         '''
         return self._threshold_results
 
