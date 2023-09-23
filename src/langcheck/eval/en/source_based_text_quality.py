@@ -34,6 +34,7 @@ def factual_consistency(generated_outputs: List[str],
     Returns:
         An EvalValue object
     '''
+    # Confirm necessary data for nltk.tokenize.sent_tokenize() exits
     try:
         nltk.data.find('tokenizers/punkt')
     except LookupError:
