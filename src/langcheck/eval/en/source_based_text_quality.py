@@ -3,7 +3,6 @@ from typing import List
 import nltk
 import torch
 import torch.nn as nn
-from nltk import sent_tokenize
 from transformers import AutoConfig, AutoModelForSeq2SeqLM, AutoTokenizer
 
 from langcheck.eval.eval_value import EvalValue
@@ -78,7 +77,7 @@ def factual_consistency(generated_outputs: List[str],
     model_input_list = []
     num_sentences_list = []
     for src, gen in zip(sources, generated_outputs):
-        gen_sentences = sent_tokenize(gen)
+        gen_sentences = nltk.tokenize.sent_tokenize(gen)
         num_sentences_list.append(len(gen_sentences))
         for gen_sent in gen_sentences:
             model_input = (
