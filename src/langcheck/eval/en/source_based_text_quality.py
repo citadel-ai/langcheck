@@ -102,6 +102,22 @@ def factual_consistency(generated_outputs: List[str],
 
 def _factual_consistency_local(srcs_list: List[str],
                                gen_sentences_list: List[str]) -> List[float]:
+    '''Calculates the factual consistency between each generated sentence and
+    its corresponding source text. The consistency is computed by querying the
+    UniEval-fact model that has been pre-trained to evaluate factual
+    consistency.
+
+    Ref:
+        https://github.com/maszhongming/UniEval
+
+    Args:
+        gen_sentences_list: A list of model generated sentences to evaluate
+        srcs_list: The list of source texts for each generated sentence in
+            `gen_sentences_list`
+
+    Returns:
+        A list of scores
+    '''
     global _factual_consistency_config, _factual_consistency_tokenizer, \
             _factual_consistency_model
     if _factual_consistency_config is None:
