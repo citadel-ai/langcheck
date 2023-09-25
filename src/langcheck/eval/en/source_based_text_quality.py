@@ -79,9 +79,9 @@ def factual_consistency(generated_outputs: List[str],
         srcs_list += [src] * len(gen_sentences)
 
     if model_type == 'local':
-        score_list = _factual_consistency_local(srcs_list, gen_sentences_list)
+        score_list = _factual_consistency_local(gen_sentences_list, srcs_list)
     else:  # openai
-        score_list = _factual_consistency_openai(srcs_list, gen_sentences_list)
+        score_list = _factual_consistency_openai(gen_sentences_list, srcs_list)
 
     # The score for each output is the average of the scores of its sentences
     score_per_output = []
@@ -100,8 +100,8 @@ def factual_consistency(generated_outputs: List[str],
                      language='en')
 
 
-def _factual_consistency_local(srcs_list: List[str],
-                               gen_sentences_list: List[str]) -> List[float]:
+def _factual_consistency_local(gen_sentences_list: List[str],
+                               srcs_list: List[str]) -> List[float]:
     '''Calculates the factual consistency between each generated sentence and
     its corresponding source text. The consistency is computed by querying the
     UniEval-fact model that has been pre-trained to evaluate factual
@@ -178,8 +178,23 @@ def _factual_consistency_local(srcs_list: List[str],
     return score_list
 
 
-def _factual_consistency_openai(srcs_list: List[str],
-                                gen_sentences_list: List[str]) -> List[float]:
+def _factual_consistency_openai(gen_sentences_list: List[str],
+                                srcs_list: List[str]) -> List[float]:
+    '''Calculates the factual consistency between each generated sentence and
+    its corresponding source text. The consistency is computed by calling the
+    OpenAI API, with a prompt similar to the one used in OpenAI Evals.
+
+    Ref:
+        https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
+
+    Args:
+        gen_sentences_list: A list of model generated sentences to evaluate
+        srcs_list: The list of source texts for each generated sentence in
+            `gen_sentences_list`
+
+    Returns:
+        A list of scores
+    '''
     prompt = lambda src, gen_output: f'''
     You are evaluating the factual consistency of a submitted claim. Here is the data:
     [BEGIN DATA]
