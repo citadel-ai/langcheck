@@ -3,13 +3,14 @@ import math
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
-from langcheck.eval import EvalValue
+from langcheck.eval.eval_value import EvalValue
 from langcheck.plot._css import GLOBAL_CSS
 
 
 def histogram(eval_value: EvalValue) -> None:
-    '''Shows an interactive histogram of all data points in EvalValue. Intended
-    to be used in a Jupyter notebook.
+    '''Shows an interactive histogram of all data points in
+    :class:`~langcheck.eval.eval_value.EvalValue`.
+    Intended to be used in a Jupyter notebook.
     '''
     # Rename some EvalValue fields for display
     df = eval_value.to_df()

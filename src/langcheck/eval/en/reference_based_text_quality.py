@@ -75,7 +75,7 @@ def semantic_sim(
             `openai.Embedding.create` function, default None
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     assert embedding_model_type in [
         'local', 'openai'
@@ -152,7 +152,7 @@ def rouge1(generated_outputs: List[str],
         reference_outputs: A list of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     scores = _rouge(generated_outputs, reference_outputs, 'rouge1')
     return EvalValue(metric_name='rouge1',
@@ -180,7 +180,7 @@ def rouge2(generated_outputs: List[str],
         reference_outputs: A list of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     scores = _rouge(generated_outputs, reference_outputs, 'rouge2')
     return EvalValue(metric_name='rouge2',
@@ -208,7 +208,7 @@ def rougeL(generated_outputs: List[str],
         reference_outputs: A list of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
     # - 1) sentence-level, where newline characters are ignored

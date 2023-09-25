@@ -26,7 +26,7 @@ def sentiment(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object.
     '''
     global _sentiment_tokenizer, _sentiment_model
 
