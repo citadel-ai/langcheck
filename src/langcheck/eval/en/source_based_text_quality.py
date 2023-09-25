@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import Dict, List, Optional
 
 import nltk
 import openai
@@ -15,9 +15,11 @@ _factual_consistency_tokenizer = None
 _factual_consistency_model = None
 
 
-def factual_consistency(generated_outputs: List[str],
-                        sources: List[str],
-                        model_type: str = 'local') -> EvalValue[float]:
+def factual_consistency(
+        generated_outputs: List[str],
+        sources: List[str],
+        model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. The factual consistency score for one generated output is
     computed as the average of the per-sentence consistencies of the generated
@@ -35,6 +37,8 @@ def factual_consistency(generated_outputs: List[str],
         sources: A list of source texts
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
 
     Returns:
         An EvalValue object
@@ -81,7 +85,8 @@ def factual_consistency(generated_outputs: List[str],
     if model_type == 'local':
         score_list = _factual_consistency_local(gen_sentences_list, srcs_list)
     else:  # openai
-        score_list = _factual_consistency_openai(gen_sentences_list, srcs_list)
+        score_list = _factual_consistency_openai(gen_sentences_list, srcs_list,
+                                                 openai_args)
 
     # The score for each output is the average of the scores of its sentences
     score_per_output = []
@@ -178,8 +183,10 @@ def _factual_consistency_local(gen_sentences_list: List[str],
     return score_list
 
 
-def _factual_consistency_openai(gen_sentences_list: List[str],
-                                srcs_list: List[str]) -> List[float]:
+def _factual_consistency_openai(
+        gen_sentences_list: List[str],
+        srcs_list: List[str],
+        openai_args: Optional[Dict[str, str]] = None) -> List[float]:
     '''Calculates the factual consistency between each generated sentence and
     its corresponding source text. The consistency is computed by calling the
     OpenAI API, with a prompt similar to the one used in OpenAI Evals.
@@ -191,6 +198,8 @@ def _factual_consistency_openai(gen_sentences_list: List[str],
         gen_sentences_list: A list of model generated sentences to evaluate
         srcs_list: The list of source texts for each generated sentence in
             `gen_sentences_list`
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
 
     Returns:
         A list of scores
@@ -253,12 +262,20 @@ def _factual_consistency_openai(gen_sentences_list: List[str],
                 "required": ["factuality"],
             },
         }]
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            functions=functions,
-            function_call={"name": "save_factual_consistency_assessment"},
-        )
+        if openai_args is None:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                functions=functions,
+                function_call={"name": "save_factual_consistency_assessment"},
+            )
+        else:
+            response = openai.ChatCompletion.create(
+                messages=messages,
+                functions=functions,
+                function_call={"name": "save_factual_consistency_assessment"},
+                **openai_args,
+            )
         response_message = response["choices"][0]["message"]
         function_args = json.loads(
             response_message["function_call"]["arguments"])
