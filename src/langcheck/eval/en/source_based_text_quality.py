@@ -33,10 +33,16 @@ def factual_consistency(generated_outputs: List[str],
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         sources: A list of source texts
+        model_type: The type of model to use ('local' or 'openai'),
+            default 'local'
 
     Returns:
         An EvalValue object
     '''
+    assert model_type in ['local', 'openai'
+                         ], ('Unsupported model type. '
+                             'The supported ones are ["local", "openai"]')
+
     # Confirm necessary data for nltk.tokenize.sent_tokenize() exists
     try:
         nltk.data.find('tokenizers/punkt')
