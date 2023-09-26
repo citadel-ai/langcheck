@@ -229,10 +229,13 @@ def _factual_consistency_openai(
         openai_args: Optional[Dict[str, str]] = None) -> List[float]:
     '''Calculates the factual consistency between each generated sentence and
     its corresponding source text. The consistency is computed by calling the
-    OpenAI API, with a prompt similar to the one used in OpenAI Evals.
+    OpenAI API, with a prompt similar to the one used in OpenAI Evals. We
+    leverage the function calling API to make sure that the output is structured
+    such that we can compute a score.
 
     Ref:
         https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
+        https://platform.openai.com/docs/guides/gpt/function-calling
 
     Args:
         gen_sentences_list: A list of model generated sentences to evaluate

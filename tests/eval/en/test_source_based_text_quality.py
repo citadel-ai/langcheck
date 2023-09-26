@@ -43,5 +43,5 @@ def test_factual_consistency_openai(generated_outputs, sources):
         eval_value = factual_consistency(generated_outputs,
                                          sources,
                                          model_type='openai')
-        factual_consistency_high = eval_value.metric_values[0]
-        assert factual_consistency_high == 1
+        # "Fully Consistent" gets a value of 1.0
+        assert eval_value.metric_values[0] == 1
