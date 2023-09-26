@@ -164,7 +164,7 @@ def _factual_consistency_local(gen_sentences_list: List[str],
         A list of scores
     '''
     global _factual_consistency_config, _factual_consistency_tokenizer, \
-            _factual_consistency_model
+        _factual_consistency_model
     if _factual_consistency_config is None:
         _factual_consistency_config = AutoConfig.from_pretrained(
             _factual_consistency_model_path)
@@ -244,22 +244,30 @@ def _factual_consistency_openai(
     Returns:
         A list of scores
     '''
-    prompt = lambda src, gen_output: f'''
-    You are evaluating the factual consistency of a submitted claim. Here is the data:
-    [BEGIN DATA]
-    ************
-    [Source]: {src}
-    ************
-    [Submission]: {gen_output}
-    ************
-    [END DATA]
 
-    Determine whether the submitted claim is factually consistent with the source,
-    and save the resulting assessment. The available assessments are:
-    `Fully Consistent` - The submitted claim is fully factually consistent with the source text.
-    `Partially Consistent` - The submitted claim is partially factually consistent with the source text. There are some aspects of the claim that are factually consistent, but some aspects that are not.
-    `Not Consistent` - The submitted claim is not factually consistent with the source text.
-    '''
+    def _prompt(src: str, gen_output: str) -> str:
+        return f'''
+        You are evaluating the factual consistency of a submitted claim. Here is
+        the data:
+        [BEGIN DATA]
+        ************
+        [Source]: {src}
+        ************
+        [Submission]: {gen_output}
+        ************
+        [END DATA]
+
+        Determine whether the submitted claim is factually consistent with the
+        source, and save the resulting assessment. The available assessments
+        are:
+        `Fully Consistent` - The submitted claim is fully factually consistent
+        with the source text.
+        `Partially Consistent` - The submitted claim is partially factually
+        consistent with the source text. There are some aspects of the claim
+        that are factually consistent, but some aspects that are not.
+        `Not Consistent` - The submitted claim is not factually consistent with
+        the source text.
+        '''
 
     def _factuality_assessment_to_score(assessment: str) -> float:
         if assessment == 'Fully Consistent':
@@ -278,7 +286,7 @@ def _factual_consistency_openai(
     for src, gen in zip(srcs_list, gen_sentences_list):
         messages = [{
             "role": "user",
-            "content": prompt(src=src, gen_output=gen)
+            "content": _prompt(src=src, gen_output=gen)
         }]
         functions = [{
             "name":
