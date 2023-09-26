@@ -31,9 +31,7 @@ def test_factual_consistency_openai(generated_outputs, sources):
         'choices': [{
             'message': {
                 'function_call': {
-                    'arguments': {
-                        'factuality': 1.0
-                    }
+                    'arguments': "{\n  \"factuality\": \"Fully Consistent\"\n}"
                 }
             }
         }]
