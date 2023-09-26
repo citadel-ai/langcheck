@@ -23,14 +23,54 @@ def factual_consistency(
     '''Calculates the factual consistency between the generated outputs and
     the sources. The factual consistency score for one generated output is
     computed as the average of the per-sentence consistencies of the generated
-    output with the source text, where the consistency is computed by querying
-    the UniEval-fact model that has been pre-trained to evaluate factual
-    consistency. This metric takes on float values between [0, 1], where 0 means
-    that the output is not at all consistent with the source text, and 1 means
-    that the output is fully consistent with the source text.
+    output with the source text. This metric takes on float values between
+    [0, 1], where 0 means that the output is not at all consistent with the
+    source text, and 1 means that the output is fully consistent with the source
+    text. (NOTE: when uing the OpenAI model, the factuality score for each
+    sentence is either 0.0, 0.5, or 1.0.)
 
-    Ref:
-        https://github.com/maszhongming/UniEval
+    We currently support two model types:
+
+    1. The 'local' type, where the 'unieval-fact' model is downloaded
+    from HuggingFace and run locally. This is the default model type and
+    there is no setup needed to run this.
+
+    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling).
+
+    To use the 'openai' type, make sure to set the OpenAI API key:
+
+    .. code-block::
+
+        import openai
+        from langcheck.eval.en import factual_consistency
+
+        # https://platform.openai.com/account/api-keys
+        openai.api_key = YOUR_OPENAI_API_KEY
+
+        eval_value = factual_consistency(
+            generated_outputs, sources, model_type='openai')
+
+    Or, if you're using the Azure API type, make sure to set all of the
+    necessary variables:
+
+    .. code-block::
+
+        import openai
+        from langcheck.eval.en import factual_consistency
+
+        openai.api_type = 'azure'
+        openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
+        openai.api_version = YOUR_API_VERSION
+        openai.api_key = YOUR_OPENAI_API_KEY
+
+        # When using the Azure API type, you need to pass in your model's
+        # deployment name
+        eval_value = factual_consistency(
+            generated_outputs, sources, model_type='openai',
+            openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
