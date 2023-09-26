@@ -5,19 +5,21 @@ from typing import Optional
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
-from langcheck.eval import EvalValue
+from langcheck.eval.eval_value import EvalValue
 from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
 
 
 def scatter(eval_value: EvalValue,
             other_eval_value: Optional[EvalValue] = None) -> None:
-    '''Shows an interactive scatter plot of all data points in an EvalValue.
+    '''Shows an interactive scatter plot of all data points in an
+    :class:`~langcheck.eval.eval_value.EvalValue`.
     Intended to be used in a Jupyter notebook.
 
     Args:
-        eval_value: The EvalValue to plot.
-        other_eval_value: If provided, another EvalValue to plot on the same
-            chart.
+        eval_value: The :class:`~langcheck.eval.eval_value.EvalValue` to plot.
+        other_eval_value:
+            If provided, another :class:`~langcheck.eval.eval_value.EvalValue`
+            to plot on the same schart.
     '''
     if other_eval_value is None:
         _scatter_one_eval_value(eval_value)
@@ -26,7 +28,8 @@ def scatter(eval_value: EvalValue,
 
 
 def _scatter_one_eval_value(eval_value: EvalValue) -> None:
-    '''Shows an interactive scatter plot of all data points in one EvalValue.
+    '''Shows an interactive scatter plot of all data points in one
+    :class:`~langcheck.eval.eval_value.EvalValue`.
     Intended to be used in a Jupyter notebook.
     '''
     # Rename some EvalValue fields for display
@@ -141,7 +144,8 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
 
 def _scatter_two_eval_values(eval_value: EvalValue,
                              other_eval_value: EvalValue) -> None:
-    '''Shows an interactive scatter plot of all data points in two EvalValues.
+    '''Shows an interactive scatter plot of all data points in two
+    :class:`~langcheck.eval.eval_value.EvalValue`.
     Intended to be used in a Jupyter notebook.
     '''
     # Validate that the two EvalValues have the same data points

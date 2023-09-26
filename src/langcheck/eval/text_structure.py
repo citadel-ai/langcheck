@@ -21,7 +21,7 @@ def is_int(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
@@ -61,7 +61,7 @@ def is_float(generated_outputs: List[str],
 
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
@@ -99,7 +99,7 @@ def is_json_object(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
@@ -133,7 +133,7 @@ def is_json_array(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
@@ -169,7 +169,7 @@ def matches_regex(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
@@ -201,7 +201,7 @@ def contains_regex(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
@@ -235,7 +235,7 @@ def contains_all_strings(generated_outputs: List[str],
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # Convert everything to lowercase if case insensitive
     if not case_sensitive:
@@ -272,12 +272,13 @@ def contains_any_strings(generated_outputs: List[str],
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         strings: A list of strings to match
-        case_sensitive: Whether to match case sensitively or not, default False
+        case_sensitive: Whether to match case sensitively or not, default to
+            :obj:`False`.
         prompts: An optional list of prompts used to generate the outputs.
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # Convert everything to lowercase if case insensitive
     if not case_sensitive:
@@ -312,14 +313,14 @@ def validation_fn(generated_outputs: List[str],
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        valid_fn: A function that takes a single string and returns a boolean
-            determining whether the string is valid or not. The function can
-            also raise an exception on failure.
+        valid_fn: A function that takes a single string and returns a
+            bool determining whether the string is valid or not.
+            The function can also raise an exception on failure.
         prompts: An optional list of prompts used to generate the outputs.
             Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 for success and 0 for failure
     metric_values = []

@@ -13,7 +13,7 @@ def exact_match(generated_outputs: List[str],
         reference_outputs: A list of reference outputs
 
     Returns:
-        An EvalValue object
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
     # The values are binary: 1 if it's an exact match and 0 if not
     metric_values = []
