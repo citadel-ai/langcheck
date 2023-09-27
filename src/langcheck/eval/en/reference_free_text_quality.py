@@ -25,14 +25,50 @@ def sentiment(generated_outputs: List[str],
               prompts: Optional[List[str]] = None,
               model_type: str = 'local',
               openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
-    '''Calculates the sentiment scores of generated outputs using the
-    Twitter-roBERTa-base model. This metric takes on float values between
-    [0, 1], where 0 is negative sentiment and 1 is positive sentiment.
+    '''Calculates the sentiment scores of generated outputs. This metric takes
+    on float values between [0, 1], where 0 is negative sentiment and 1 is
+    positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
+    are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive).)
+
+    We currently support two model types:
+    1. The 'local' type, where the Twitter-roBERTa-base model is downloaded
+    from HuggingFace and run locally. This is the default model type and
+    there is no setup needed to run this.
+    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling).
+    To use the 'openai' type, make sure to set the OpenAI API key:
+    .. code-block::
+        import openai
+        from langcheck.eval.en import sentiment
+        # https://platform.openai.com/account/api-keys
+        openai.api_key = YOUR_OPENAI_API_KEY
+        eval_value = sentiment(
+            generated_outputs, prompts, model_type='openai')
+    Or, if you're using the Azure API type, make sure to set all of the
+    necessary variables:
+    .. code-block::
+        import openai
+        from langcheck.eval.en import sentiment
+        openai.api_type = 'azure'
+        openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
+        openai.api_version = YOUR_API_VERSION
+        openai.api_key = YOUR_OPENAI_API_KEY
+        # When using the Azure API type, you need to pass in your model's
+        # deployment name
+        eval_value = sentiment(
+            generated_outputs, prompts, model_type='openai',
+            openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         prompts: An optional list of prompts used to generate the outputs.
             Prompts are not evaluated and only used as metadata.
+        model_type: The type of model to use ('local' or 'openai'),
+            default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
@@ -65,8 +101,6 @@ def _sentiment_local(generated_outputs: List[str]) -> List[float]:
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
 
     Returns:
         A list of scores
