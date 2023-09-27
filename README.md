@@ -71,6 +71,43 @@ langcheck.eval.contains_any_strings(generated_outputs, ['contains', 'these', 'wo
 langcheck.eval.validation_fn(generated_outputs, lambda x: 'myKey' in json.loads(x))
 ```
 
+Some LangCheck metrics support using the OpenAI API. To use the OpenAI option,
+make sure to set the API key:
+
+```python
+import openai
+from langcheck.eval.en import semantic_sim
+
+# https://platform.openai.com/account/api-keys
+openai.api_key = YOUR_OPENAI_API_KEY
+
+generated_outputs = ["The cat is sitting on the mat."]
+reference_outputs = ["The cat sat on the mat."]
+eval_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
+```
+
+Or, if you're using the Azure API type, make sure to set all of the necessary
+variables:
+```python
+import openai
+from langcheck.eval.en import semantic_sim
+
+openai.api_type = 'azure'
+openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
+openai.api_version = YOUR_API_VERSION
+openai.api_key = YOUR_OPENAI_API_KEY
+
+generated_outputs = ["The cat is sitting on the mat."]
+reference_outputs = ["The cat sat on the mat."]
+
+# When using the Azure API type, you need to pass in your model's
+# deployment name
+eval_value = semantic_sim(generated_outputs,
+                          reference_outputs,
+                          embedding_model_type='openai',
+                          openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
+```
+
 ### Visualize Metrics
 
 LangCheck comes with built-in, interactive visualizations of metrics.
