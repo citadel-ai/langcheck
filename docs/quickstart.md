@@ -3,7 +3,7 @@
 ## Using LangCheck
 
 :::{tip}
-LangCheck's outputs look best in a notebook (e.g. [Jupyter](https://jupyter.org), [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks), [Colab](https://colab.research.google.com)), but also work in the Python REPL.
+LangCheck runs anywhere, but its built-in visualizations look best in a notebook (e.g. [Jupyter](https://jupyter.org), [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks), [Colab](https://colab.research.google.com)). [Try this quickstart in Colab](https://colab.research.google.com/drive/1FBF-jnFfzExXFLcAjqde4FcF89juS9wI).
 :::
 
 LangCheck evaluates text produced by an LLM.
@@ -69,9 +69,9 @@ Since LangCheck is designed as a library of building blocks, you can easily adap
 
 ### Unit Testing
 
-You can write test cases for your LLM application using LangCheck functions.
+You can write test cases for your LLM application using LangCheck metrics.
 
-For example, if you just have a list of prompts to test against:
+For example, if you only have a list of prompts to test against:
 
 ```python
 from langcheck.utils import load_json
@@ -85,14 +85,14 @@ def test_toxicity(generated_outputs):
     assert langcheck.eval.toxicity(generated_outputs) < 0.1
 
 def test_fluency(generated_outputs):
-    assert langcheck.eval.fluency(generated_outputs) < 0.1
+    assert langcheck.eval.fluency(generated_outputs) > 0.9
 
 def test_json_structure(generated_outputs):
     assert langcheck.eval.validation_fn(
         generated_outputs, lambda x: 'myKey' in json.loads(x)).all()
 ```
 
-If you have reference outputs, you can compare against predictions against ground truth:
+If you also have reference outputs, you can compare against predictions against ground truth:
 
 ```python
 reference_outputs = load_json('reference_outputs.json')
@@ -104,11 +104,11 @@ def test_rouge2_similarity(generated_outputs, reference_outputs):
     assert langcheck.eval.rouge2(generated_outputs, reference_outputs) > 0.9
 ```
 
-Coming soon: LangCheck will also be able to help you create new test cases with `langcheck.augment`!
+Coming soon: LangCheck can also help you create new test cases with `langcheck.augment`!
 
 ### Monitoring
 
-You can use LangCheck to monitor the quality of your LLM outputs in production.
+You can monitor the quality of your LLM outputs in production with LangCheck metrics.
 
 Just save the outputs and pass them into LangCheck.
 
@@ -124,12 +124,12 @@ langcheck.eval.is_json_array(recorded_outputs)
 
 ### Guardrails
 
-You can also use LangCheck to provide guardrails on LLM outputs.
+You can provide guardrails on LLM outputs with LangCheck metrics.
 
 Just filter candidate outputs through LangCheck.
 
 ```python
-# Run the LLM app to generate a candidate output
+# Get a candidate output from the LLM app
 raw_output = my_llm_app(random_user_prompt)
 
 # Filter the output before it reaches the user
@@ -137,10 +137,10 @@ while langcheck.eval.contains_any_strings([raw_output], blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```
 
-Another common use case is to detect hallucinations:
+Another common use case is detecting hallucinations:
 
 ```python
-# Run the RAG app to generate a candidate output and retrieved context
+# Get a candidate output and retrieved context from the RAG app
 raw_output, context = my_rag_app(random_user_prompt)
 
 # Fact check the output against the context before it reaches the user
