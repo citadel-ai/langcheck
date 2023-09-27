@@ -47,7 +47,15 @@
   box-shadow: none !important;
 }
 
+.page-toc a:hover code {
+  color: inherit !important;
+}
+
 /* Not all button icons have the same size for some reason */
 .article-header-buttons svg {
   height: 20px;
+}
+
+a code {
+  font-weight: 400 !important;
 }
