@@ -115,7 +115,7 @@ class EvalValue(Generic[NumericType]):
                          'Try an expression like `eval_value > 0.5`, '
                          '`eval_value.all()`, or `eval_value.any()` instead.')
 
-    def scatter(self):
+    def scatter(self, jupyter_mode: str = 'inline'):
         '''Shows an interactive scatter plot of all data points in EvalValue.
         Intended to be used in a Jupyter notebook.
 
@@ -123,9 +123,9 @@ class EvalValue(Generic[NumericType]):
         :func:`langcheck.plot.scatter()`.
         '''
         from langcheck.plot import scatter
-        return scatter(self)
+        return scatter(self, jupyter_mode=jupyter_mode)
 
-    def histogram(self):
+    def histogram(self, jupyter_mode: str = 'inline'):
         '''Shows an interactive histogram of all data points in EvalValue.
         Intended to be used in a Jupyter notebook.
 
@@ -133,7 +133,7 @@ class EvalValue(Generic[NumericType]):
         :func:`langcheck.plot.histogram()`.
         '''
         from langcheck.plot import histogram
-        return histogram(self)
+        return histogram(self, jupyter_mode=jupyter_mode)
 
 
 @dataclass

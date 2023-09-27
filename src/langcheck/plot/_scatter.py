@@ -10,27 +10,31 @@ from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
 
 
 def scatter(eval_value: EvalValue,
-            other_eval_value: Optional[EvalValue] = None) -> None:
+            other_eval_value: Optional[EvalValue] = None,
+            jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive scatter plot of all data points in an
-    :class:`~langcheck.eval.eval_value.EvalValue`.
-    Intended to be used in a Jupyter notebook.
+    :class:`~langcheck.eval.eval_value.EvalValue`. When run in a notebook, this
+    usually displays the chart inline in the cell output.
 
     Args:
         eval_value: The :class:`~langcheck.eval.eval_value.EvalValue` to plot.
-        other_eval_value:
-            If provided, another :class:`~langcheck.eval.eval_value.EvalValue`
-            to plot on the same schart.
+        other_eval_value: If provided, another
+            :class:`~langcheck.eval.eval_value.EvalValue` to plot on the same
+            chart.
+        jupyter_mode: Defaults to 'inline', which displays the chart in the
+            cell output. For Colab, set this to 'external' instead. See the
+            Dash documentation for more info:
+            https://dash.plotly.com/workspaces/using-dash-in-jupyter-and-workspaces#display-modes
     '''
     if other_eval_value is None:
-        _scatter_one_eval_value(eval_value)
+        _scatter_one_eval_value(eval_value, jupyter_mode)
     else:
-        _scatter_two_eval_values(eval_value, other_eval_value)
+        _scatter_two_eval_values(eval_value, other_eval_value, jupyter_mode)
 
 
-def _scatter_one_eval_value(eval_value: EvalValue) -> None:
+def _scatter_one_eval_value(eval_value: EvalValue, jupyter_mode: str) -> None:
     '''Shows an interactive scatter plot of all data points in one
     :class:`~langcheck.eval.eval_value.EvalValue`.
-    Intended to be used in a Jupyter notebook.
     '''
     # Rename some EvalValue fields for display
     df = eval_value.to_df()
@@ -139,14 +143,13 @@ def _scatter_one_eval_value(eval_value: EvalValue) -> None:
     # Display the Dash app inline in the notebook
     # TODO: This doesn't seem to display inline if you click "Run All" in VSCode
     # instead of running the cell directly
-    app.run(jupyter_mode='inline')
+    app.run(jupyter_mode=jupyter_mode)  # type: ignore
 
 
-def _scatter_two_eval_values(eval_value: EvalValue,
-                             other_eval_value: EvalValue) -> None:
+def _scatter_two_eval_values(eval_value: EvalValue, other_eval_value: EvalValue,
+                             jupyter_mode: str) -> None:
     '''Shows an interactive scatter plot of all data points in two
     :class:`~langcheck.eval.eval_value.EvalValue`.
-    Intended to be used in a Jupyter notebook.
     '''
     # Validate that the two EvalValues have the same data points
     if eval_value.generated_outputs != other_eval_value.generated_outputs:
@@ -282,4 +285,4 @@ def _scatter_two_eval_values(eval_value: EvalValue,
     # Display the Dash app inline in the notebook
     # TODO: This doesn't seem to display inline if you click "Run All" in VSCode
     # instead of running the cell directly
-    app.run(jupyter_mode='inline')
+    app.run(jupyter_mode=jupyter_mode)  # type: ignore

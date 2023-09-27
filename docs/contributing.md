@@ -64,11 +64,22 @@ To publish the package to PyPi:
 
 1. Increment the version in `pyproject.toml`
 
-2. Publish the package to PyPi:
+2. Build the package
 
 ```text
 > python -m pip install build twine
 > python -m build
 > twine check dist/*
+```
+
+3. Publish to PyPi
+
+```text
+# Follow auth token instructions at https://pypi.org/manage/account/token/
+
+# TestPyPi
 > twine upload -r testpypi dist/*
+
+# PyPi
+> twine upload dist/*
 ```
