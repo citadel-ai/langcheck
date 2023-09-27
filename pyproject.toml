@@ -24,6 +24,7 @@ dependencies = [
     'plotly >= 5',
     'rouge_score >= 0.1.2',
     'sentence_transformers >= 2',
+    'sentencepiece>=0.1.95',
     'tomli; python_version < "3.11"',
     'torch >= 2',
     'transformers >= 4.6'
