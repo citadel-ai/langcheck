@@ -30,7 +30,7 @@ The output of {func}`langcheck.eval.fluency()` (and [any metric function](metric
 
 ![EvalValue output](_static/quickstart_EvalValue_output.png)
 
-It's smarter than just a DataFrame, though. Try setting a threshold to view pass/fail results:
+It's more than just a DataFrame, though. Try setting a threshold to view pass/fail results:
 
 ```python
 fluency_values = langcheck.eval.fluency(generated_outputs)
