@@ -1,10 +1,13 @@
-from typing import List, Optional
+import json
+from typing import Dict, List, Optional
 
+import openai
 import torch
 from detoxify import Detoxify
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
+from langcheck.eval.en._openai import OpenAIBasedEvaluator
 from langcheck.eval.eval_value import EvalValue
 from langcheck.stats import compute_stats
 
@@ -20,7 +23,56 @@ _toxicity_model = None
 
 
 def sentiment(generated_outputs: List[str],
-              prompts: Optional[List[str]] = None) -> EvalValue[float]:
+              prompts: Optional[List[str]] = None,
+              model_type: str = 'local',
+              openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+    '''Calculates the sentiment scores of generated outputs. This metric takes
+    on float values between [0, 1], where 0 is negative sentiment and 1 is
+    positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
+    are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive).)
+
+    We currently support two model types:
+    1. The 'local' type, where the Twitter-roBERTa-base model is downloaded
+    from HuggingFace and run locally. This is the default model type and
+    there is no setup needed to run this.
+    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    setting up the OpenAI API key.
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
+        model_type: The type of model to use ('local' or 'openai'),
+            default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
+
+    Returns:
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
+    '''
+    assert model_type in ['local', 'openai'
+                         ], ('Unsupported model type. '
+                             'The supported ones are ["local", "openai"]')
+
+    if model_type == 'local':
+        scores = _sentiment_local(generated_outputs)
+    else:  # openai
+        scores = _sentiment_openai(generated_outputs, openai_args)
+
+    return EvalValue(metric_name='sentiment',
+                     prompts=prompts,
+                     generated_outputs=generated_outputs,
+                     reference_outputs=None,
+                     sources=None,
+                     metric_values=scores,
+                     language='en')
+
+
+def _sentiment_local(generated_outputs: List[str]) -> List[float]:
     '''Calculates the sentiment scores of generated outputs using the
     Twitter-roBERTa-base model. This metric takes on float values between
     [0, 1], where 0 is negative sentiment and 1 is positive sentiment.
@@ -30,11 +82,9 @@ def sentiment(generated_outputs: List[str],
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
 
     Returns:
-        An :class:`~langcheck.eval.eval_value.EvalValue` object
+        A list of scores
     '''
     global _sentiment_tokenizer, _sentiment_model
 
@@ -57,15 +107,68 @@ def sentiment(generated_outputs: List[str],
         probs = torch.nn.functional.softmax(
             _sentiment_model(**input_tokens).logits, dim=1)
 
-    scores = (probs[:, 1] / 2 + probs[:, 2]).tolist()
+    return (probs[:, 1] / 2 + probs[:, 2]).tolist()
 
-    return EvalValue(metric_name='sentiment',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+
+def _sentiment_openai(
+        generated_outputs: List[str],
+        openai_args: Optional[Dict[str, str]] = None) -> List[float]:
+    '''Calculates the sentiment scores of generated outputs using the OpenAI
+    API. This metric takes on float values that are either 0, 0.5, or 1, where 0
+    is negative sentiment, 0.5 is neutral sentiment, and 1 is positive
+    sentiment.  We leverage the function calling API to make sure that the
+    output is structured such that we can compute a score.
+
+    Ref:
+        https://platform.openai.com/docs/guides/gpt/function-calling
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
+
+    Returns:
+        A list of scores
+    '''
+
+    def _prompt(gen_output: str) -> str:
+        return f'''
+        You are evaluating the sentiment of a submitted statement. Here is the
+        data:
+        [BEGIN DATA]
+        ************
+        [Submission]: {gen_output}
+        ************
+        [END DATA]
+
+        Determine the predominant sentiment of the submitted statement. The
+        available assessments are:
+        `Positive` - The submitted statement has a predominantly positive
+        sentiment
+        `Negative` - The submitted statement has a predominantly negative
+        sentiment
+        `Neutral` - The submitted statement has neither a positive nor negative
+        sentiment
+        '''
+
+    sentiment_assessment_to_score = {
+        'Positive': 1.0,
+        'Neutral': 0.5,
+        'Negative': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=sentiment_assessment_to_score,
+        function_name='save_sentiment_assessment',
+        function_description="Saves a statement's sentiment assessment.",
+        argument_name='sentiment',
+        argument_description='The sentiment assessment of the statement',
+        openai_args=openai_args)
+
+    score_list = []
+    for gen in generated_outputs:
+        score = oai_evaluator.get_score(_prompt(gen_output=gen))
+        score_list.append(score)
+    return score_list
 
 
 def fluency(generated_outputs: List[str],

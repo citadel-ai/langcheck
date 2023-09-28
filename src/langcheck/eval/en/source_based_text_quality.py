@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoConfig, AutoModelForSeq2SeqLM, AutoTokenizer
 
+from langcheck.eval.en._openai import OpenAIBasedEvaluator
 from langcheck.eval.eval_value import EvalValue
 
 _factual_consistency_model_path = 'MingZhong/unieval-fact'
@@ -247,65 +248,22 @@ def _factual_consistency_openai(
         the source text.
         '''
 
-    def _factuality_assessment_to_score(assessment: str) -> float:
-        if assessment == 'Fully Consistent':
-            return 1.0
-        elif assessment == 'Partially Consistent':
-            return 0.5
-        elif assessment == 'Not Consistent':
-            return 0.0
-        else:
-            # By leveraging the function calling API, this should be pretty
-            # rare, but we're dealing with LLMs here so nothing is absolute!
-            raise AssertionError(
-                'OpenAI returned an unrecognized factuality assessment :(')
+    factuality_assessment_to_score = {
+        'Fully Consistent': 1.0,
+        'Partially Consistent': 0.5,
+        'Not Consistent': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=factuality_assessment_to_score,
+        function_name='save_factual_consistency_assessment',
+        function_description=(
+            "Saves a submitted claim's factual consistency assessment."),
+        argument_name='factuality',
+        argument_description='The factual consistency assessment of the claim',
+        openai_args=openai_args)
 
     score_list = []
     for src, gen in zip(srcs_list, gen_sentences_list):
-        messages = [{
-            "role": "user",
-            "content": _prompt(src=src, gen_output=gen)
-        }]
-        functions = [{
-            "name":
-                "save_factual_consistency_assessment",
-            "description":
-                "Save's a submitted claim's factual consistency assessment.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "factuality": {
-                        "type":
-                            "string",
-                        "enum": [
-                            "Fully Consistent", "Partially Consistent",
-                            "Not Consistent"
-                        ],
-                        "description":
-                            "The factual consistency assessment of the claim",
-                    },
-                },
-                "required": ["factuality"],
-            },
-        }]
-        if openai_args is None:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                functions=functions,
-                function_call={"name": "save_factual_consistency_assessment"},
-            )
-        else:
-            response = openai.ChatCompletion.create(
-                messages=messages,
-                functions=functions,
-                function_call={"name": "save_factual_consistency_assessment"},
-                **openai_args,
-            )
-        response_message = response["choices"][0]["message"]
-        function_args = json.loads(
-            response_message["function_call"]["arguments"])
-        factuality_assessment = function_args.get("factuality")
-        score_list.append(
-            _factuality_assessment_to_score(factuality_assessment))
+        score = oai_evaluator.get_score(_prompt(src=src, gen_output=gen))
+        score_list.append(score)
     return score_list
