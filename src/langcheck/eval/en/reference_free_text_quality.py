@@ -7,6 +7,7 @@ from detoxify import Detoxify
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
+from langcheck.eval.en._openai import OpenAIBasedEvaluator
 from langcheck.eval.eval_value import EvalValue
 from langcheck.stats import compute_stats
 
@@ -150,58 +151,23 @@ def _sentiment_openai(
         sentiment
         '''
 
-    def _sentiment_assessment_to_score(assessment: str) -> float:
-        if assessment == 'Positive':
-            return 1.0
-        elif assessment == 'Neutral':
-            return 0.5
-        elif assessment == 'Negative':
-            return 0.0
-        else:
-            # By leveraging the function calling API, this should be pretty
-            # rare, but we're dealing with LLMs here so nothing is absolute!
-            raise AssertionError(
-                'OpenAI returned an unrecognized sentiment assessment :(')
+    sentiment_assessment_to_score = {
+        'Positive': 1.0,
+        'Neutral': 0.5,
+        'Negative': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=sentiment_assessment_to_score,
+        function_name='save_sentiment_assessment',
+        function_description="Saves a statement's sentiment assessment.",
+        argument_name='sentiment',
+        argument_description='The sentiment assessment of the statement',
+        openai_args=openai_args)
 
     score_list = []
     for gen in generated_outputs:
-        messages = [{"role": "user", "content": _prompt(gen_output=gen)}]
-        functions = [{
-            "name": "save_sentiment_assessment",
-            "description": "Save's a statement's sentiment assessment.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "sentiment": {
-                        "type":
-                            "string",
-                        "enum": ["Positive", "Negative", "Neutral"],
-                        "description":
-                            "The sentiment assessment of the statement",
-                    },
-                },
-                "required": ["sentiment"],
-            },
-        }]
-        if openai_args is None:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                functions=functions,
-                function_call={"name": "save_sentiment_assessment"},
-            )
-        else:
-            response = openai.ChatCompletion.create(
-                messages=messages,
-                functions=functions,
-                function_call={"name": "save_sentiment_assessment"},
-                **openai_args,
-            )
-        response_message = response["choices"][0]["message"]
-        function_args = json.loads(
-            response_message["function_call"]["arguments"])
-        sentiment_assessment = function_args.get("sentiment")
-        score_list.append(_sentiment_assessment_to_score(sentiment_assessment))
+        score = oai_evaluator.get_score(_prompt(gen_output=gen))
+        score_list.append(score)
     return score_list
 
 
