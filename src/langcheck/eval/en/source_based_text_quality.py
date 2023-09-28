@@ -256,8 +256,8 @@ def _factual_consistency_openai(
     oai_evaluator = OpenAIBasedEvaluator(
         assessment_to_score_mapping=factuality_assessment_to_score,
         function_name='save_factual_consistency_assessment',
-        function_description=
-        "Saves a submitted claim's factual consistency assessment.",
+        function_description=(
+            "Saves a submitted claim's factual consistency assessment."),
         argument_name='factuality',
         argument_description='The factual consistency assessment of the claim',
         openai_args=openai_args)
