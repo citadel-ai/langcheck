@@ -28,38 +28,9 @@ def semantic_sim(
     there is no setup needed to run this.
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
-    by default (this is configurable). To use this, make sure to set the OpenAI
-    API key:
-
-    .. code-block::
-
-        import openai
-        from langcheck.eval.en import semantic_sim
-
-        # https://platform.openai.com/account/api-keys
-        openai.api_key = YOUR_OPENAI_API_KEY
-
-        eval_value = semantic_sim(
-            generated_outputs, reference_outputs, embedding_model_type='openai')
-
-    Or, if you're using the Azure API type, make sure to set all of the
-    necessary variables:
-
-    .. code-block::
-
-        import openai
-        from langcheck.eval.en import semantic_sim
-
-        openai.api_type = 'azure'
-        openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
-        openai.api_version = YOUR_API_VERSION
-        openai.api_key = YOUR_OPENAI_API_KEY
-
-        # When using the Azure API type, you need to pass in your model's
-        # deployment name
-        eval_value = semantic_sim(
-            generated_outputs, reference_outputs, embedding_model_type='openai',
-            openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
+    by default (this is configurable). See
+    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    setting up the OpenAI API key.
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity
