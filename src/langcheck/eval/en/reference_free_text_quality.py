@@ -37,29 +37,9 @@ def sentiment(generated_outputs: List[str],
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
-    (https://platform.openai.com/docs/guides/gpt/function-calling).
-    To use the 'openai' type, make sure to set the OpenAI API key:
-    .. code-block::
-        import openai
-        from langcheck.eval.en import sentiment
-        # https://platform.openai.com/account/api-keys
-        openai.api_key = YOUR_OPENAI_API_KEY
-        eval_value = sentiment(
-            generated_outputs, prompts, model_type='openai')
-    Or, if you're using the Azure API type, make sure to set all of the
-    necessary variables:
-    .. code-block::
-        import openai
-        from langcheck.eval.en import sentiment
-        openai.api_type = 'azure'
-        openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
-        openai.api_version = YOUR_API_VERSION
-        openai.api_key = YOUR_OPENAI_API_KEY
-        # When using the Azure API type, you need to pass in your model's
-        # deployment name
-        eval_value = sentiment(
-            generated_outputs, prompts, model_type='openai',
-            openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    setting up the OpenAI API key.
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
