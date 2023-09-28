@@ -218,6 +218,11 @@ def _factual_consistency_openai(
         A list of scores
     '''
 
+    # TODO: The prompt formation, and the scoring system, can do with some
+    # improvement. There are some cases where consistent outputs get incorrectly
+    # assessed as "Partially Consistent", and there's no differentiation
+    # between an output that is unrelated to the source and an output that is
+    # straight up contradictory.
     def _prompt(src: str, gen_output: str) -> str:
         return f'''
         You are evaluating the factual consistency of a submitted claim. Here is
