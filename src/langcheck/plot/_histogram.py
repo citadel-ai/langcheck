@@ -7,10 +7,20 @@ from langcheck.eval.eval_value import EvalValue
 from langcheck.plot._css import GLOBAL_CSS
 
 
-def histogram(eval_value: EvalValue) -> None:
+def histogram(eval_value: EvalValue, jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive histogram of all data points in
-    :class:`~langcheck.eval.eval_value.EvalValue`.
-    Intended to be used in a Jupyter notebook.
+    :class:`~langcheck.eval.eval_value.EvalValue`. When run in a notebook, this
+    usually displays the chart inline in the cell output.
+
+    Args:
+        eval_value: The :class:`~langcheck.eval.eval_value.EvalValue` to plot.
+        other_eval_value: If provided, another
+            :class:`~langcheck.eval.eval_value.EvalValue` to plot on the same
+            chart.
+        jupyter_mode: Defaults to 'inline', which displays the chart in the
+            cell output. For Colab, set this to 'external' instead. See the
+            Dash documentation for more info:
+            https://dash.plotly.com/workspaces/using-dash-in-jupyter-and-workspaces#display-modes
     '''
     # Rename some EvalValue fields for display
     df = eval_value.to_df()
@@ -76,4 +86,4 @@ def histogram(eval_value: EvalValue) -> None:
         return fig
 
     # Display the Dash app inline in the notebook
-    app.run(jupyter_mode='inline')
+    app.run(jupyter_mode=jupyter_mode)  # type: ignore

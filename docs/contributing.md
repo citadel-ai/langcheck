@@ -2,7 +2,7 @@
 
 This page contains instructions for contributing to LangCheck.
 
-## Running LangCheck
+## Installing LangCheck from Source
 
 To install and run the LangCheck package from your local git repo:
 
@@ -20,11 +20,19 @@ prompt generated_output reference_output  metric_value
 0   None                1             None             1
 1   None               -2             None             1
 2   None                a             None             0
+```
 
+## Running Tests
+
+To run tests:
+
+```text
 # Run all tests
 > python -m pytest -s -vv
+
 # Run non-optional tests only
 > python -m pytest -s -vv -m "not optional"
+
 # Run optional tests only (this requires optional Japanese tokenizers like Mecab)
 > pip install .[optional]
 > python -m pytest -s -vv -m "optional"
@@ -54,9 +62,24 @@ To make documentation:
 
 To publish the package to PyPi:
 
+1. Increment the version in `pyproject.toml`
+
+2. Build the package
+
 ```text
 > python -m pip install build twine
 > python -m build
 > twine check dist/*
+```
+
+3. Publish to PyPi
+
+```text
+# Follow auth token instructions at https://pypi.org/manage/account/token/
+
+# TestPyPi
 > twine upload -r testpypi dist/*
+
+# PyPi
+> twine upload dist/*
 ```
