@@ -31,6 +31,11 @@ def factual_consistency(
     1. The 'local' type, where the 'unieval-fact' model is downloaded
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
+    This function wraps :func:`~langcheck.eval.en.en_factual_consistency`
+    using the translation model ``staka/fugumt-ja-en`` to translate the
+    Japanese texts to English before computing the factual consistency
+    scores. This is because the UniEval-fact model is trained on English
+    text.
 
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
