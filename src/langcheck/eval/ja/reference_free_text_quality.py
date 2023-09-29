@@ -23,15 +23,18 @@ def sentiment(generated_outputs: List[str],
     are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive).)
 
     We currently support two model types:
-    1. The 'local' type, where the Twitter-roBERTa-base model is downloaded
-    from HuggingFace and run locally. This is the default model type and
-    there is no setup needed to run this.
+    1. The 'local' type, where the Twitter-roBERTa-base-sentiment-multilingual
+    model is downloaded from HuggingFace and run locally. This is the default
+    model type and there is no setup needed to run this.
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
     https://github.com/citadel-ai/langcheck#evaluate-text for examples on
     setting up the OpenAI API key.
+
+    Ref:
+        https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate

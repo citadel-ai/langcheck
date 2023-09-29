@@ -26,9 +26,9 @@ def semantic_sim(
 
     We currently support two embedding model types:
 
-    1. The 'local' type, where the 'all-mpnet-base-v2' model is downloaded
-    from HuggingFace and run locally. This is the default model type and
-    there is no setup needed to run this.
+    1. The 'local' type, where the 'paraphrase-multilingual-mpnet-base-v2' model
+    is downloaded from HuggingFace and run locally. This is the default model
+    type and there is no setup needed to run this.
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
