@@ -1,6 +1,6 @@
 <div align="center">
 
-# LangCheck ✅
+<img src="docs/_static/LangCheck-Logo-horizontal.png" alt="LangCheck Logo" width="500">
 
 Simple, Pythonic building blocks to evaluate LLM applications.
 
