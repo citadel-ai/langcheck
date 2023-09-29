@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="docs/_static/LangCheck-Logo-horizontal.png" alt="LangCheck Logo" width="500">
+<img src="docs/_static/LangCheck-Logo-square.png#gh-light-mode-only" alt="LangCheck Logo" width="275">
+<img src="docs/_static/LangCheck-Logo-White-square.png#gh-dark-mode-only" alt="LangCheck Logo" width="275">
 
 Simple, Pythonic building blocks to evaluate LLM applications.
 
