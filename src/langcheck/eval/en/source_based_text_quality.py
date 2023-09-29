@@ -1,8 +1,6 @@
-import json
 from typing import Dict, List, Optional
 
 import nltk
-import openai
 import torch
 import torch.nn as nn
 from transformers import AutoConfig, AutoModelForSeq2SeqLM, AutoTokenizer

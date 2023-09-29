@@ -1,33 +1,69 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import torch
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 from sentence_transformers import SentenceTransformer, util
 
+from langcheck.eval.en.reference_based_text_quality import \
+    semantic_sim as en_semantic_sim
 from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.ja._tokenizers import JanomeTokenizer
 
 
-def semantic_sim(generated_outputs: List[str],
-                 reference_outputs: List[str]) -> EvalValue[float]:
+def semantic_sim(
+        generated_outputs: List[str],
+        reference_outputs: List[str],
+        embedding_model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
     takes on float values between [-1, 1], but typically ranges between 0 and 1
-    where 0 is minimum similariy and 1 is maximum similarity.
+    where 0 is minimum similarity and 1 is maximum similarity. (NOTE: when using
+    OpenAI embeddings, the cosine similarities tend to be skewed quite heavily
+    towards higher numbers.)
+
+    We currently support two embedding model types:
+
+    1. The 'local' type, where the 'paraphrase-multilingual-mpnet-base-v2' model
+    is downloaded from HuggingFace and run locally. This is the default model
+    type and there is no setup needed to run this.
+
+    2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
+    by default (this is configurable). See
+    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    setting up the OpenAI API key.
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
+        https://openai.com/blog/new-and-improved-embedding-model
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         reference_outputs: A list of reference outputs
+        embedding_model_type: The type of embedding model to use ('local' or
+            'openai'), default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.Embedding.create` function, default None
 
     Returns:
-        An :class:`~langcheck.eval.eval_value.EvalValue` object.
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+
+    assert embedding_model_type in [
+        'local', 'openai'
+    ], ('Unsupported embedding model type. '
+        'The supported ones are ["local", "openai"]')
+
+    if embedding_model_type == 'openai':
+        # We can use the same API as english semantic_sim to compare the
+        # similarity
+        eval_value = en_semantic_sim(generated_outputs, reference_outputs,
+                                     embedding_model_type, openai_args)
+        eval_value.language = 'ja'
+        return eval_value
 
     if len(generated_outputs) != len(reference_outputs):
         raise ValueError(

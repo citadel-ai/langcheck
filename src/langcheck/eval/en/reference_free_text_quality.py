@@ -1,7 +1,5 @@
-import json
 from typing import Dict, List, Optional
 
-import openai
 import torch
 from detoxify import Detoxify
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
