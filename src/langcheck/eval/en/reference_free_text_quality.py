@@ -173,12 +173,19 @@ def fluency(generated_outputs: List[str],
             prompts: Optional[List[str]] = None,
             model_type: str = 'local',
             openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
-    '''Calculates the fluency scores of generated outputs using the Parrot
-    fluency model. This metric takes on float values between [0, 1], where 0 is
-    low fluency and 1 is high fluency.
+    '''Calculates the fluency scores of generated outputs. This metric takes on
+    float values between [0, 1], where 0 is low fluency and 1 is high fluency.
 
-    Ref:
-        https://huggingface.co/prithivida/parrot_fluency_model
+    We currently support two model types:
+    1. The 'local' type, where the Parrot fluency model is downloaded from
+    HuggingFace and run locally. This is the default model type and there is no
+    setup needed to run this.
+    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    setting up the OpenAI API key.
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -250,6 +257,22 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
 def _fluency_openai(
         generated_outputs: List[str],
         openai_args: Optional[Dict[str, str]] = None) -> List[float]:
+    '''Calculates the fluency scores of generated outputs using the OpenAI
+    API. This metric takes on float values that are either 0 or 1, where 0
+    is low fluency and 1 is high fluency. We leverage the function calling API
+    to make sure that the output is structured such that we can compute a score.
+
+    Ref:
+        https://platform.openai.com/docs/guides/gpt/function-calling
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
+
+    Returns:
+        A list of scores
+    '''
 
     def _prompt(gen_output: str) -> str:
         return f'''
