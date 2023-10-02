@@ -1,4 +1,5 @@
 from typing import Callable, Optional
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -100,3 +101,20 @@ def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
     assert 0.0 <= semantic_sim_value <= 0.25
+
+
+@pytest.mark.parametrize('generated_outputs,reference_outputs',
+                         [(["猫が座っています。"], ["猫が座っています。"])])
+def test_semantic_sim_openai(generated_outputs, reference_outputs):
+    mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
+    # Calling the openai.Embedding.create method requires an OpenAI API key, so
+    # we mock the return value instead
+    with patch('openai.Embedding.create',
+               Mock(return_value=mock_embedding_response)):
+        eval_value = semantic_sim(generated_outputs,
+                                  reference_outputs,
+                                  embedding_model_type='openai')
+        semantic_sim_value = eval_value.metric_values[0]
+        # Since the mock embeddings are the same for the generated and reference
+        # outputs, the semantic similarity should be 1.
+        assert 0.99 <= semantic_sim_value <= 1
