@@ -170,7 +170,9 @@ def _sentiment_openai(
 
 
 def fluency(generated_outputs: List[str],
-            prompts: Optional[List[str]] = None) -> EvalValue[float]:
+            prompts: Optional[List[str]] = None,
+            model_type: str = 'local',
+            openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the fluency scores of generated outputs using the Parrot
     fluency model. This metric takes on float values between [0, 1], where 0 is
     low fluency and 1 is high fluency.
@@ -182,9 +184,45 @@ def fluency(generated_outputs: List[str],
         generated_outputs: A list of model generated outputs to evaluate
         prompts: An optional list of prompts used to generate the outputs.
             Prompts are not evaluated and only used as metadata.
+        model_type: The type of model to use ('local' or 'openai'),
+            default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
+    '''
+    assert model_type in ['local', 'openai'
+                         ], ('Unsupported model type. '
+                             'The supported ones are ["local", "openai"]')
+
+    if model_type == 'local':
+        scores = _fluency_local(generated_outputs)
+    else:  # openai
+        scores = _fluency_openai(generated_outputs, openai_args)
+
+    return EvalValue(metric_name='fluency',
+                     prompts=prompts,
+                     generated_outputs=generated_outputs,
+                     reference_outputs=None,
+                     sources=None,
+                     metric_values=scores,
+                     language='en')
+
+
+def _fluency_local(generated_outputs: List[str]) -> List[float]:
+    '''Calculates the fluency scores of generated outputs using the Parrot
+    fluency model. This metric takes on float values between [0, 1], where 0 is
+    low fluency and 1 is high fluency.
+
+    Ref:
+        https://huggingface.co/prithivida/parrot_fluency_model
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+
+    Returns:
+        A list of scores
     '''
     global _fluency_tokenizer, _fluency_model
 
@@ -206,15 +244,43 @@ def fluency(generated_outputs: List[str],
         probs = torch.nn.functional.softmax(
             _fluency_model(**input_tokens).logits, dim=1)
 
-    scores = probs[:, 1].tolist()
+    return probs[:, 1].tolist()
 
-    return EvalValue(metric_name='fluency',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+
+def _fluency_openai(
+        generated_outputs: List[str],
+        openai_args: Optional[Dict[str, str]] = None) -> List[float]:
+
+    def _prompt(gen_output: str) -> str:
+        return f'''
+        You are evaluating the fluency of a submitted statement. Here is the
+        data:
+        [BEGIN DATA]
+        ************
+        [Submission]: {gen_output}
+        ************
+        [END DATA]
+
+        Determine the fluency of the submitted statement. The
+        available assessments are:
+        `Fluent` - The submitted statement is fluent
+        `Not Fluent` - The submitted statement is not fluent
+        '''
+
+    fluency_assessment_to_score = {'Fluent': 1.0, 'Not Fluent': 0.0}
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=fluency_assessment_to_score,
+        function_name='save_fluency_assessment',
+        function_description="Saves a statement's fluency assessment.",
+        argument_name='fluency',
+        argument_description='The fluency assessment of the statement',
+        openai_args=openai_args)
+
+    score_list = []
+    for gen in generated_outputs:
+        score = oai_evaluator.get_score(_prompt(gen_output=gen))
+        score_list.append(score)
+    return score_list
 
 
 def toxicity(generated_outputs: List[str],
