@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from langcheck.eval.ja import sentiment
+from langcheck.eval.ja import sentiment, toxicity
 
 ################################################################################
 # Tests
@@ -33,3 +33,11 @@ def test_sentiment_openai(generated_outputs):
         eval_value = sentiment(generated_outputs, model_type='openai')
         # "Positive" gets a value of 1.0
         assert eval_value.metric_values[0] == 1
+
+
+@pytest.mark.parametrize('generated_outputs',
+                         [['このハゲー！', '今日はりんごを食べました。'], ['猫']])
+def test_toxicity(generated_outputs):
+    eval_value = toxicity(generated_outputs)
+    print(eval_value.metric_values)
+    assert all(0 <= v <= 1 for v in eval_value.metric_values)
