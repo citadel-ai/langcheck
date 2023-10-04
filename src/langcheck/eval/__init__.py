@@ -1,3 +1,4 @@
+from langcheck.eval import en, ja
 from langcheck.eval.en.reference_based_text_quality import (rouge1, rouge2,
                                                             rougeL,
                                                             semantic_sim)
@@ -15,6 +16,8 @@ from langcheck.eval.text_structure import (contains_all_strings,
                                            validation_fn)
 
 __all__ = [
+    'en',
+    'ja',
     'contains_all_strings',
     'contains_any_strings',
     'contains_regex',
