@@ -17,6 +17,7 @@ keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'detoxify >= 0.5',
+    'fugashi', # For tokenizer of eval.ja.toxicity()
     'janome >= 0.3.1',
     'nltk >= 3',
     'openai >= 0.11.6',
@@ -27,13 +28,14 @@ dependencies = [
     'sentencepiece>=0.1.95',
     'tomli; python_version < "3.11"',
     'torch >= 2',
-    'transformers >= 4.6'
+    'transformers >= 4.6',
+    "unidic-lite >= 1.0.1"  # For tokenizer of eval.ja.toxicity()
 ]
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
 dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "sphinx-book-theme", "myst-parser", "ipykernel"]
-optional = ["mecab-python3 >= 1.0.4", "unidic-lite >= 1.0.1"]
+optional = ["mecab-python3 >= 1.0.4"]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
