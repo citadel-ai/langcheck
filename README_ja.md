@@ -6,9 +6,9 @@
 
 LLMアプリケーションの評価のためのシンプルなPythonライブラリです。
 
-[Install](#install) •
-[Examples](#examples) •
-[Docs](#docs)  •
+[インストール](#インストール) •
+[利用例](#利用例) •
+[ドキュメント](#ドキュメント)  •
 [English](README.md)
 
 </div>
