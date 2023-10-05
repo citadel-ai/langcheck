@@ -139,15 +139,23 @@ def tateishi_ono_yamada_reading_ease(
         return sum(lens) / len(lens)
 
     def _get_reading_ease(text: str) -> float:
+        '''Computes reading ease for each example
+        '''
         # Preprocess the text: Delete all blanks
         text = re.sub(blank_re, '', text)
-        # Computes reading ease for each example
+
+        # Get each term
         hiragana_runs = re.findall(hiragana_run_re, text)
         katakana_runs = re.findall(katakana_run_re, text)
         alphanumeric_runs = re.findall(alphanumeric_run_re, text)
         kanji_runs = re.findall(kanji_run_re, text)
         sentences = re.split(delimiters_re, text)
-        comma_period_ratio = text.count('、') / text.count('。')
+        period_count = text.count('。')
+        if period_count == 0:
+            # Just ignore the term
+            comma_period_ratio = 0
+        else:
+            comma_period_ratio = text.count('、') / period_count
 
         return -0.12 * _mean_str_length(sentences)\
             - 1.37 * _mean_str_length(alphanumeric_runs)\
