@@ -119,7 +119,7 @@ fluency_values = langcheck.eval.fluency(generated_outputs)
 sentiment_values = langcheck.eval.sentiment(generated_outputs)
 
 # Interactive scatter plot of one metric
-sentiment_values.scatter()
+fluency_values.scatter()
 ```
 
 ![Scatter plot for one metric](docs/_static/scatter_one_metric.gif)
