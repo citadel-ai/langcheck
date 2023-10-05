@@ -33,35 +33,35 @@ from langcheck.eval import is_json_array  # Language-agnostic metric
 
 LangCheck metrics are categorized by metric type, which correspond to the kind of ground truth data that's required.
 
-| Type of Metric                      | Examples                                               | Languages     |
-|-------------------------------------|--------------------------------------------------------|---------------|
-| Reference-Free Text Quality Metrics | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`                          | EN, JA        |
-| Reference-Based Text Quality Metrics| `semantic_sim(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA        |
-| Source-Based Text Quality Metrics   | `factual_consistency(generated_outputs, sources)`      | EN, JA        |
-| Text Structure Metrics              | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`        | All Languages |
+| Type of Metric                                                                | Examples                                                                                               | Languages     |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------- |
+| [Reference-Free Text Quality Metrics](#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`                                        | EN, JA        |
+| [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_sim(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)` | EN, JA        |
+| [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                      | EN, JA        |
+| [Text Structure Metrics](#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                  | All Languages |
 
-:::{note}
-Some metrics require downloading open source models (usually from HuggingFace). These model files are lazily downloaded the first time you run a metric function. For example, the first time you run the `langcheck.eval.sentiment()` function, LangCheck will automatically download the Twitter-roBERTa-base model.
-:::
-
+(reference-free-text-quality-metrics)=
 ### Reference-Free Text Quality Metrics
 
 Reference-free metrics are the simplest – they require no ground truth, and directly evaluate the quality of the generated text by itself.
 
 An example metric is {func}`~langcheck.eval.en.reference_free_text_quality.toxicity`, which directly evaluates the level of toxicity in some text as a score between 0 and 1.
 
+(reference-based-text-quality-metrics)=
 ### Reference-Based Text Quality Metrics
 
 Reference-based metrics require a ground truth output (a "reference") to compare LLM outputs against. For example, in a Q&A application, you might have human written answers as references.
 
 An example metric is {func}`~langcheck.eval.en.reference_based_text_quality.semantic_sim`, which compares the semantic similarity between the LLM-generated text and the reference text as a score between -1 and 1.
 
+(source-based-text-quality-metrics)=
 ### Source-Based Text Quality Metrics
 
 Source-based metrics require a "source" text. Sources are inputs, but references are outputs. For example, in a Q&A application, the source might be relevant documents that are concatenated to the question and passed into the LLM's context window (this is called Retrieval Augmented Generation or RAG).
 
 An example metric is {func}`~langcheck.eval.en.source_based_text_quality.factual_consistency`, which compares the factual consistency between the LLM's generated text and the source text as a score between 0 and 1.
 
+(text-structure-metrics)=
 ### Text Structure Metrics
 
 Text structure metrics validate the format of the text (e.g. is the text valid JSON, an email address, an integer in a specified range). Compared to other metric types which can return floats, these metrics only return 0 or 1.
