@@ -1,6 +1,8 @@
 <div align="center">
 
-# LangCheck ✅
+<img src="docs/_static/LangCheck-Logo-square.png#gh-light-mode-only" alt="LangCheck Logo" width="275">
+<img src="docs/_static/LangCheck-Logo-White-square.png#gh-dark-mode-only" alt="LangCheck Logo" width="275">
+
 
 LLMアプリケーションの評価のためのシンプルなPythonライブラリです。
 
@@ -128,8 +130,7 @@ toxicity_values = langcheck.eval.ja.toxicity(generated_outputs)
 sentiment_values.scatter()
 ```
 
-//TODO: Replace
-![Scatter plot for one metric](docs/_static/scatter_one_metric.gif)
+![Scatter plot for one metric](docs/_static/scatter_one_metric_ja.gif)
 
 
 ```python
@@ -137,16 +138,15 @@ sentiment_values.scatter()
 langcheck.plot.scatter(sentiment_values, toxicity_values)
 ```
 
-//TODO: Replace
-![Scatter plot for two metrics](docs/_static/scatter_two_metrics.png)
+![Scatter plot for two metrics](docs/_static/scatter_two_metrics_ja.png)
 
 
 ```python
 # インタラクティブなヒストグラム
-fluency_values.histogram()
+toxicity_values.histogram()
 ```
 
-![Histogram for one metric](docs/_static/histogram.png)
+![Histogram for one metric](docs/_static/histogram_ja.png)
 
 
 ### データの拡張 (近日公開)
