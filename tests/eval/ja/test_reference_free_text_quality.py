@@ -35,8 +35,7 @@ def test_sentiment_openai(generated_outputs):
         assert eval_value.metric_values[0] == 1
 
 
-@pytest.mark.parametrize('generated_outputs',
-                         [['このハゲー！', '今日はりんごを食べました。'], ['猫']])
+@pytest.mark.parametrize('generated_outputs', [['馬鹿', '今日はりんごを食べました。'], ['猫']])
 def test_toxicity(generated_outputs):
     eval_value = toxicity(generated_outputs)
     print(eval_value.metric_values)
