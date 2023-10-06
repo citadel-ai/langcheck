@@ -52,7 +52,7 @@ An example metric is {func}`~langcheck.eval.en.reference_free_text_quality.toxic
 
 Reference-based metrics require a ground truth output (a "reference") to compare LLM outputs against. For example, in a Q&A application, you might have human written answers as references.
 
-An example metric is {func}`~langcheck.eval.en.reference_based_text_quality.semantic_sim`, which compares the semantic similarity between the LLM-generated text and the reference text as a score between -1 and 1.
+An example metric is {func}`~langcheck.eval.en.reference_based_text_quality.semantic_sim`, which computes the semantic similarity between the LLM-generated text and the reference text as a score between -1 and 1.
 
 (source-based-text-quality-metrics)=
 ### Source-Based Text Quality Metrics
