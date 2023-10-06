@@ -43,7 +43,7 @@ LangCheck metrics are categorized by metric type, which correspond to the kind o
 (reference-free-text-quality-metrics)=
 ### Reference-Free Text Quality Metrics
 
-Reference-free metrics are the simplest – they require no ground truth, and directly evaluate the quality of the generated text by itself.
+Reference-free metrics require no ground truth, and directly evaluate the quality of the generated text by itself.
 
 An example metric is {func}`~langcheck.eval.en.reference_free_text_quality.toxicity`, which directly evaluates the level of toxicity in some text as a score between 0 and 1.
 
