@@ -40,6 +40,10 @@ LangCheck metrics are categorized by metric type, which correspond to the kind o
 | [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                      | EN, JA        |
 | [Text Structure Metrics](#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                  | All Languages |
 
+Several text quality metrics are computed using a model (e.g. `toxicity`, `sentiment`, `semantic_sim`, `factual_consistency`). By default, LangCheck will download and use a model that can run locally on your machine (often from HuggingFace) so that the metric function works with no additional setup.
+
+However, if you have an OpenAI API key, you can also configure these metrics to use an OpenAI model, which may provide more accurate results for more complex use cases. See the documentation of each function to see how to do this.
+
 (reference-free-text-quality-metrics)=
 ### Reference-Free Text Quality Metrics
 
