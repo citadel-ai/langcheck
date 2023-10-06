@@ -17,23 +17,23 @@ Since LangCheck has multi-lingual support, language-specific metrics are organiz
 
 There are several different types of metrics:
 
-+-------------------------------------+--------------------------------------------------------+---------------+
-| Type of Metric                      | Examples                                               | Languages     |
-+=====================================+========================================================+===============+
-| Reference-Free Text Quality Metrics | ``toxicity(generated_outputs)``                        |               |
-|                                     |                                                        | EN, JA        |
-|                                     | ``sentiment(generated_outputs)``                       |               |
-+-------------------------------------+--------------------------------------------------------+---------------+
-| Reference-Based Text Quality Metrics| ``semantic_sim(generated_outputs, reference_outputs)`` | EN, JA        |
-|                                     |                                                        |               |
-|                                     | ``rouge2(generated_outputs, reference_outputs)``       |               |
-+-------------------------------------+--------------------------------------------------------+---------------+
-| Source-Based Text Quality Metrics   | ``factual_consistency(generated_outputs, sources)``    | EN, JA        |
-+-------------------------------------+--------------------------------------------------------+---------------+
-| Text Structure Metrics              | ``is_float(generated_outputs, min=0, max=None)``       | All Languages |
-|                                     |                                                        |               |
-|                                     | ``is_json_object(generated_outputs)``                  |               |
-+-------------------------------------+--------------------------------------------------------+---------------+
++---------------------------------------------+--------------------------------------------------------+---------------+
+|               Type of Metric                |                        Examples                        |   Languages   |
++=============================================+========================================================+===============+
+| :ref:`reference-based-text-quality-metrics` | ``toxicity(generated_outputs)``                        | EN, JA        |
+|                                             |                                                        |               |
+|                                             | ``sentiment(generated_outputs)``                       |               |
++---------------------------------------------+--------------------------------------------------------+---------------+
+| :ref:`reference-free-text-quality-metrics`  | ``semantic_sim(generated_outputs, reference_outputs)`` | EN, JA        |
+|                                             |                                                        |               |
+|                                             | ``rouge2(generated_outputs, reference_outputs)``       |               |
++---------------------------------------------+--------------------------------------------------------+---------------+
+| :ref:`source-based-text-quality-metrics`    | ``factual_consistency(generated_outputs, sources)``    | EN, JA        |
++---------------------------------------------+--------------------------------------------------------+---------------+
+| :ref:`text-structure-metrics`               | ``is_float(generated_outputs, min=0, max=None)``       | All Languages |
+|                                             |                                                        |               |
+|                                             | ``is_json_object(generated_outputs)``                  |               |
++---------------------------------------------+--------------------------------------------------------+---------------+
 
 
 ----
