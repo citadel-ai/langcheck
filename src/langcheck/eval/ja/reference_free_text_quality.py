@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 
+import regex as re
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -116,7 +117,7 @@ def toxicity(generated_outputs: List[str],
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
     https://github.com/citadel-ai/langcheck#evaluate-text for examples on
     setting up the OpenAI API key.
-
+    
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         prompts: An optional list of prompts used to generate the outputs.
@@ -129,6 +130,7 @@ def toxicity(generated_outputs: List[str],
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -178,3 +180,82 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     toxicity_scores = torch.sigmoid(output.logits[:, 0]).tolist()
 
     return toxicity_scores
+
+
+def tateishi_ono_yamada_reading_ease(
+        generated_outputs: List[str],
+        prompts: Optional[List[str]] = None) -> EvalValue[float]:
+    '''Calculates the readability of generated Japanese outputs using the
+    reading ease score introduced in "日本文の読みやすさの評価式 (A Computer
+    Readability Formula of Japanese Texts for Machine Scoring)". This metric
+    takes on float values between (-∞, ∞), but in the paper it is reported that
+    the average & the standard deviation of the scores obtained for 77 texts
+    used for the experiment are 50 and 10 respectively.  Higher scores mean the
+    text is easier to read.
+
+    The score is based on the number of "run"s, which are sequences of
+    characters with the same type (hiragana, katakana, kanji... etc). See the
+    original paper for details.
+
+    Ref:
+        https://www.jstage.jst.go.jp/article/nihongokyoiku/158/0/158_49/_pdf/-char/ja (Japanese) # NOQA E501
+        https://ipsj.ixsq.nii.ac.jp/ej/?action=pages_view_main&active_action=repository_view_main_item_detail&item_id=37773&item_no=1&page_id=13&block_id=8 (Japanese) # NOQA E501
+        https://aclanthology.org/C88-2135/ (English)
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
+
+    Returns:
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
+    '''
+    # Regular expressions used to compute the reading ease score
+    blank_re = r'[ |　|\n]'
+    hiragana_run_re = r'[\u3041-\u309F]+'
+    katakana_run_re = r'[\u30A1-\u30FE]+'
+    alphanumeric_run_re = r'[a-zA-Zａ-ｚＡ-Ｚ0-9０-９]+'
+    kanji_run_re = r'[\u4E00-\u9FFF]+'
+    delimiters_re = r'[、|。|!|？|!|?|「|」|,|，|.|．|…|『|』]'
+
+    # Aux function to compute the average length of strings in the list
+    def _mean_str_length(ls: List[str]) -> float:
+        if len(ls) == 0:
+            return 0
+        lens = [len(el) for el in ls]
+        return sum(lens) / len(lens)
+
+    def _get_reading_ease(text: str) -> float:
+        '''Computes reading ease for each example
+        '''
+        # Preprocess the text: Delete all blanks
+        text = re.sub(blank_re, '', text)
+
+        # Get each term
+        hiragana_runs = re.findall(hiragana_run_re, text)
+        katakana_runs = re.findall(katakana_run_re, text)
+        alphanumeric_runs = re.findall(alphanumeric_run_re, text)
+        kanji_runs = re.findall(kanji_run_re, text)
+        sentences = re.split(delimiters_re, text)
+        period_count = text.count('。')
+        if period_count == 0:
+            # Just ignore the term
+            comma_period_ratio = 0
+        else:
+            comma_period_ratio = text.count('、') / period_count
+
+        return -0.12 * _mean_str_length(sentences)\
+            - 1.37 * _mean_str_length(alphanumeric_runs)\
+            + 7.4 * _mean_str_length(hiragana_runs)\
+            - 23.18 * _mean_str_length(kanji_runs)\
+            - 5.3 * _mean_str_length(katakana_runs)\
+            - 4.6 * comma_period_ratio + 115.79
+
+    scores = [_get_reading_ease(text) for text in generated_outputs]
+    return EvalValue(metric_name='tateishi_ono_yamada_reading_ease',
+                     prompts=prompts,
+                     generated_outputs=generated_outputs,
+                     reference_outputs=None,
+                     sources=None,
+                     metric_values=scores,
+                     language='ja')
