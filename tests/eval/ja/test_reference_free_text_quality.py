@@ -2,8 +2,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from langcheck.eval.ja import (sentiment, tateishi_ono_yamada_reading_ease,
-                               toxicity)
+from langcheck.eval.ja import (fluency, sentiment,
+                               tateishi_ono_yamada_reading_ease, toxicity)
 from tests.utils import is_close
 
 ################################################################################
@@ -60,6 +60,33 @@ def test_toxicity_openai(generated_outputs):
                Mock(return_value=mock_chat_response)):
         eval_value = toxicity(generated_outputs, model_type='openai')
         # "5" gets a value of 1.0
+        assert eval_value.metric_values[0] == 1
+
+
+@pytest.mark.parametrize('generated_outputs',
+                         [['ご機嫌いかがですか？私はとても元気です。', '機嫌いかが？私はとても元気人です。'], ['猫']])
+def test_fluency(generated_outputs):
+    eval_value = fluency(generated_outputs)
+    assert all(0 <= v <= 1 for v in eval_value.metric_values)
+
+
+@pytest.mark.parametrize('generated_outputs', ['ご機嫌いかがですか？私はとても元気です。'])
+def test_fluency_openai(generated_outputs):
+    mock_chat_response = {
+        'choices': [{
+            'message': {
+                'function_call': {
+                    'arguments': "{\n  \"fluency\": \"Good\"\n}"
+                }
+            }
+        }]
+    }
+    # Calling the openai.ChatCompletion.create method requires an OpenAI API
+    # key, so we mock the return value instead
+    with patch('openai.ChatCompletion.create',
+               Mock(return_value=mock_chat_response)):
+        eval_value = fluency(generated_outputs, model_type='openai')
+        # "Good" gets a value of 1.0
         assert eval_value.metric_values[0] == 1
 
 
