@@ -11,7 +11,8 @@ from langcheck.eval.en import factual_consistency
 
 @pytest.mark.parametrize(
     'generated_outputs,sources',
-    [(['Tokyo is the capital of Japan.', 'The Earth is flat.'
+    [('Tokyo is the capital of Japan.', "Tokyo is Japan's capital city."),
+     (['Tokyo is the capital of Japan.', 'The Earth is flat.'
       ], ["Tokyo is Japan's capital city.", 'The Earth is round.'])])
 def test_factual_consistency(generated_outputs, sources):
     eval_value = factual_consistency(generated_outputs,
@@ -25,7 +26,8 @@ def test_factual_consistency(generated_outputs, sources):
 
 @pytest.mark.parametrize(
     'generated_outputs,sources',
-    [(['Tokyo is the capital of Japan.'], ["Tokyo is Japan's capital city."])])
+    [('Tokyo is the capital of Japan.', "Tokyo is Japan's capital city."),
+     (['Tokyo is the capital of Japan.'], ["Tokyo is Japan's capital city."])])
 def test_factual_consistency_openai(generated_outputs, sources):
     mock_chat_response = {
         'choices': [{
