@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 import nltk
@@ -5,6 +7,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoConfig, AutoModelForSeq2SeqLM, AutoTokenizer
 
+from langcheck.eval._validation import validate_parameters_source_based
 from langcheck.eval.en._openai import OpenAIBasedEvaluator
 from langcheck.eval.eval_value import EvalValue
 
@@ -15,8 +18,8 @@ _factual_consistency_model = None
 
 
 def factual_consistency(
-        generated_outputs: List[str],
-        sources: List[str],
+        generated_outputs: List[str] | str,
+        sources: List[str] | str,
         model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the factual consistency between the generated outputs and
@@ -42,8 +45,8 @@ def factual_consistency(
     setting up the OpenAI API key.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        sources: A list of source texts
+        generated_outputs: The model generated output(s) to evaluate
+        sources: The source text(s), one string per generated output
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -52,6 +55,8 @@ def factual_consistency(
     Returns:
         An EvalValue object
     '''
+    generated_outputs, sources = validate_parameters_source_based(
+        generated_outputs, sources)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
