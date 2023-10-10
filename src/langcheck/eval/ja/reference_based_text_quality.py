@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 import torch
@@ -5,6 +7,7 @@ from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 from sentence_transformers import SentenceTransformer, util
 
+from langcheck.eval._validation import validate_parameters_reference_based
 from langcheck.eval.en.reference_based_text_quality import \
     semantic_sim as en_semantic_sim
 from langcheck.eval.eval_value import EvalValue
@@ -12,8 +15,8 @@ from langcheck.eval.ja._tokenizers import JanomeTokenizer
 
 
 def semantic_sim(
-        generated_outputs: List[str],
-        reference_outputs: List[str],
+        generated_outputs: List[str] | str,
+        reference_outputs: List[str] | str,
         embedding_model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
@@ -41,8 +44,8 @@ def semantic_sim(
         https://openai.com/blog/new-and-improved-embedding-model
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
         embedding_model_type: The type of embedding model to use ('local' or
             'openai'), default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -51,7 +54,8 @@ def semantic_sim(
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-
+    generated_outputs, reference_outputs = validate_parameters_reference_based(
+        generated_outputs, reference_outputs)
     assert embedding_model_type in [
         'local', 'openai'
     ], ('Unsupported embedding model type. '
@@ -101,12 +105,11 @@ def semantic_sim(
                      language='ja')
 
 
-def rouge1(generated_outputs: List[str],
-           reference_outputs: List[str],
+def rouge1(generated_outputs: List[str] | str,
+           reference_outputs: List[str] | str,
            *,
            tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
-    outputs and the reference outputs. It evaluates the overlap of unigrams
     (single tokens) between the generated outputs and the reference outputs.
     This metric takes on float values between [0, 1], where 0 is no overlap and
     1 is complete overlap.
@@ -115,12 +118,15 @@ def rouge1(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
 
     Returns:
         An EvalValue object
     '''
+    generated_outputs, reference_outputs = validate_parameters_reference_based(
+        generated_outputs, reference_outputs)
+
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rouge1',
@@ -134,8 +140,8 @@ def rouge1(generated_outputs: List[str],
                      language='ja')
 
 
-def rouge2(generated_outputs: List[str],
-           reference_outputs: List[str],
+def rouge2(generated_outputs: List[str] | str,
+           reference_outputs: List[str] | str,
            *,
            tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
@@ -148,12 +154,15 @@ def rouge2(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
 
     Returns:
         An EvalValue object
     '''
+    generated_outputs, reference_outputs = validate_parameters_reference_based(
+        generated_outputs, reference_outputs)
+
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rouge2',
@@ -167,8 +176,8 @@ def rouge2(generated_outputs: List[str],
                      language='ja')
 
 
-def rougeL(generated_outputs: List[str],
-           reference_outputs: List[str],
+def rougeL(generated_outputs: List[str] | str,
+           reference_outputs: List[str] | str,
            *,
            tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-L scores between the generated
@@ -181,12 +190,15 @@ def rougeL(generated_outputs: List[str],
         https://github.com/google-research/google-research/tree/master/rouge
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
 
     Returns:
         An EvalValue object
     '''
+    generated_outputs, reference_outputs = validate_parameters_reference_based(
+        generated_outputs, reference_outputs)
+
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
     # - 1) sentence-level, where newline characters are ignored
     # - 2) summary-level, where newline characters are interpreted as sentence

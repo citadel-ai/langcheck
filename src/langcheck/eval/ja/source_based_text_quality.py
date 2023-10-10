@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 from transformers import pipeline
 
+from langcheck.eval._validation import validate_parameters_source_based
 from langcheck.eval.en.source_based_text_quality import \
     factual_consistency as en_factual_consistency
 from langcheck.eval.eval_value import EvalValue
@@ -13,8 +14,8 @@ _factual_consistency_translation_pipeline = None
 
 
 def factual_consistency(
-        generated_outputs: List[str],
-        sources: List[str],
+        generated_outputs: List[str] | str,
+        sources: List[str] | str,
         model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the factual consistency between the generated outputs and
@@ -45,8 +46,8 @@ def factual_consistency(
     setting up the OpenAI API key.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        sources: A list of source texts
+        generated_outputs: The model generated output(s) to evaluate
+        sources: The source text(s), one string per generated output
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -55,6 +56,8 @@ def factual_consistency(
     Returns:
         An EvalValue object
     '''
+    generated_outputs, sources = validate_parameters_source_based(
+        generated_outputs, sources)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -66,23 +69,6 @@ def factual_consistency(
                                             model_type, openai_args)
         eval_value.language = 'ja'
         return eval_value
-
-    # TODO: Unify the validation that we do in all of the evaluation functions
-    if len(generated_outputs) != len(sources):
-        raise ValueError(
-            'The generated outputs and sources lists must be of the same '
-            'length')
-
-    # The UniEval-fact model takes quite some time to download, so we early
-    # return here to avoid unnecessarily downloading it
-    if len(generated_outputs) == 0:
-        return EvalValue(metric_name='factual_consistency',
-                         prompts=None,
-                         generated_outputs=[],
-                         reference_outputs=[],
-                         sources=[],
-                         metric_values=[],
-                         language='ja')
 
     global _factual_consistency_translation_pipeline
     if _factual_consistency_translation_pipeline is None:
