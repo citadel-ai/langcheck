@@ -263,8 +263,11 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     # and "DistilBertJapaneseTokenizer", which is suggested by the warning,
     # is not exposed to transformers.
     with _handle_logging_level():
-        _fluency_tokenizer = _fluency_tokenizer or AutoTokenizer.from_pretrained(
-            _fluency_tokenizer_path, trust_remote_code=True, revision='main')
+        _fluency_tokenizer = (_fluency_tokenizer or
+                              AutoTokenizer.from_pretrained(
+                                  _fluency_tokenizer_path,
+                                  trust_remote_code=True,
+                                  revision='main'))
 
     input_tokens = _fluency_tokenizer(generated_outputs,
                                       return_tensors='pt',
