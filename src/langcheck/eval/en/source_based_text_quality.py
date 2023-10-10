@@ -67,23 +67,6 @@ def factual_consistency(
     except LookupError:
         nltk.download('punkt')
 
-    # TODO: Unify the validation that we do in all of the evaluation functions
-    if len(generated_outputs) != len(sources):
-        raise ValueError(
-            'The generated outputs and sources lists must be of the same '
-            'length')
-
-    # The UniEval-fact model takes quite some time to download, so we early
-    # return here to avoid unnecessarily downloading it
-    if len(generated_outputs) == 0:
-        return EvalValue(metric_name='factual_consistency',
-                         prompts=None,
-                         generated_outputs=[],
-                         reference_outputs=[],
-                         sources=[],
-                         metric_values=[],
-                         language='en')
-
     # Split the generated outputs into individual sentences. This is consistent
     # with how UniEval calculates factual consistency, where the factual
     # consistency of each generated sentence gets averaged.

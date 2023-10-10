@@ -69,18 +69,6 @@ def semantic_sim(
         eval_value.language = 'ja'
         return eval_value
 
-    if len(generated_outputs) != len(reference_outputs):
-        raise ValueError(
-            'The generated and reference outputs lists must be of the same '
-            'length')
-    if len(generated_outputs) == 0:
-        return EvalValue(metric_name='semantic_sim',
-                         prompts=None,
-                         generated_outputs=[],
-                         reference_outputs=[],
-                         sources=None,
-                         metric_values=[],
-                         language='ja')
     # According to the blog post,
     # 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2' has the best
     # performance on Japanese dataset.
