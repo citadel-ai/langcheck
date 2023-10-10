@@ -20,8 +20,9 @@ def test_factual_consistency(generated_outputs, sources):
                                      model_type='local')
     factual_consistency_high = eval_value.metric_values[0]
     assert 0.9 <= factual_consistency_high <= 1
-    factual_consistency_low = eval_value.metric_values[1]
-    assert 0.0 <= factual_consistency_low <= 0.1
+    if len(generated_outputs) == 2:
+        factual_consistency_low = eval_value.metric_values[1]
+        assert 0.0 <= factual_consistency_low <= 0.1
 
 
 @pytest.mark.parametrize(

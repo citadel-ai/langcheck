@@ -87,7 +87,7 @@ def validate_parameters_source_based(
         A tuple (generated_outputs, sources) of the parsed parameters. All
         non-None parameters are converted to lists of strings.
     '''
-    _generated_outputs, _, _sources, _ = _validate_parameters(
+    _generated_outputs, _, _, _sources = _validate_parameters(
         generated_outputs, None, None, sources)
 
     # For type checking
