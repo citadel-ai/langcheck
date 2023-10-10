@@ -2,7 +2,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from langcheck.eval.ja import sentiment, tateishi_ono_yamada_reading_ease, toxicity
+from langcheck.eval.ja import (sentiment, tateishi_ono_yamada_reading_ease,
+                               toxicity)
 from tests.utils import is_close
 
 ################################################################################
@@ -60,6 +61,7 @@ def test_toxicity_openai(generated_outputs):
         eval_value = toxicity(generated_outputs, model_type='openai')
         # "5" gets a value of 1.0
         assert eval_value.metric_values[0] == 1
+
 
 @pytest.mark.parametrize('generated_outputs,metric_values', [
     (['吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。'
