@@ -8,7 +8,8 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 
 [インストール](#インストール) •
 [利用例](#利用例) •
-[ドキュメント](#ドキュメント)  •
+[ドキュメント](https://langcheck.readthedocs.io/en/latest/index.html) •
+[クイックスタート](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [English](README.md)
 
 </div>
@@ -184,7 +185,3 @@ raw_output = my_llm_app(random_user_prompt)
 while langcheck.eval.contains_any_strings([raw_output], blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```
-
-## ドキュメント　
-
-Link to ReadTheDocs.
