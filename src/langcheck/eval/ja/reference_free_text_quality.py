@@ -117,7 +117,7 @@ def toxicity(generated_outputs: List[str],
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
     https://github.com/citadel-ai/langcheck#evaluate-text for examples on
     setting up the OpenAI API key.
-    
+
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         prompts: An optional list of prompts used to generate the outputs.
@@ -130,7 +130,7 @@ def toxicity(generated_outputs: List[str],
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-    
+
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
