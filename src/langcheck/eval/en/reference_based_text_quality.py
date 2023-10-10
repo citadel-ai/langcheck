@@ -103,7 +103,7 @@ def semantic_sim(generated_outputs: List[str] | str,
 
 def rouge1(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str]) -> EvalValue[float]:
+           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of unigrams
     (single tokens) between the generated outputs and the reference outputs.
@@ -137,7 +137,7 @@ def rouge1(generated_outputs: List[str] | str,
 
 def rouge2(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str]) -> EvalValue[float]:
+           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of bigrams
     (two adjacent tokens) between the generated outputs and the reference
@@ -170,7 +170,7 @@ def rouge2(generated_outputs: List[str] | str,
 
 def rougeL(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str]) -> EvalValue[float]:
+           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-L scores between the generated
     outputs and the reference outputs. It evaluates the longest common
     subsequence (LCS) between the generated outputs and the reference outputs.
