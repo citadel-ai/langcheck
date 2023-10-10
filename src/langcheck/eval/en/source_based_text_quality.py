@@ -21,7 +21,8 @@ def factual_consistency(
         generated_outputs: List[str] | str,
         sources: List[str] | str,
         model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+        openai_args: Optional[Dict[str, str]] = None,
+        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. The factual consistency score for one generated output is
     computed as the average of the per-sentence consistencies of the generated
@@ -51,12 +52,14 @@ def factual_consistency(
             default 'local'
         openai_args: Dict of additional args to pass in to the
             `openai.ChatCompletion.create` function, default None
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
     '''
-    generated_outputs, sources = validate_parameters_source_based(
-        generated_outputs, sources)
+    generated_outputs, sources, prompts = validate_parameters_source_based(
+        generated_outputs, sources, prompts)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -94,7 +97,7 @@ def factual_consistency(
         start_idx += num
 
     return EvalValue(metric_name='factual_consistency',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
                      sources=sources,

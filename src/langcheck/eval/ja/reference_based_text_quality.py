@@ -14,11 +14,11 @@ from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.ja._tokenizers import JanomeTokenizer
 
 
-def semantic_sim(
-        generated_outputs: List[str] | str,
-        reference_outputs: List[str] | str,
-        embedding_model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+def semantic_sim(generated_outputs: List[str] | str,
+                 reference_outputs: List[str] | str,
+                 embedding_model_type: str = 'local',
+                 openai_args: Optional[Dict[str, str]] = None,
+                 prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
@@ -50,12 +50,14 @@ def semantic_sim(
             'openai'), default 'local'
         openai_args: Dict of additional args to pass in to the
             `openai.Embedding.create` function, default None
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+        generated_outputs, reference_outputs, prompts)
     assert embedding_model_type in [
         'local', 'openai'
     ], ('Unsupported embedding model type. '
@@ -85,7 +87,7 @@ def semantic_sim(
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
 
     return EvalValue(metric_name='semantic_sim',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,
@@ -96,7 +98,8 @@ def semantic_sim(
 def rouge1(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
            *,
-           tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
+           tokenizer: Optional[Tokenizer] = None,
+           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
     (single tokens) between the generated outputs and the reference outputs.
     This metric takes on float values between [0, 1], where 0 is no overlap and
@@ -108,19 +111,21 @@ def rouge1(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+        generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rouge1',
                     tokenizer=tokenizer)
     return EvalValue(metric_name='rouge1',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,
@@ -131,7 +136,8 @@ def rouge1(generated_outputs: List[str] | str,
 def rouge2(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
            *,
-           tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
+           tokenizer: Optional[Tokenizer] = None,
+           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of bigrams
     (two adjacent tokens) between the generated outputs and the reference
@@ -144,19 +150,21 @@ def rouge2(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+        generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rouge2',
                     tokenizer=tokenizer)
     return EvalValue(metric_name='rouge2',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,
@@ -167,7 +175,8 @@ def rouge2(generated_outputs: List[str] | str,
 def rougeL(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
            *,
-           tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
+           tokenizer: Optional[Tokenizer] = None,
+           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-L scores between the generated
     outputs and the reference outputs. It evaluates the longest common
     subsequence (LCS) between the generated outputs and the reference outputs.
@@ -180,12 +189,14 @@ def rougeL(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+        generated_outputs, reference_outputs, prompts)
 
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
     # - 1) sentence-level, where newline characters are ignored
@@ -202,7 +213,7 @@ def rougeL(generated_outputs: List[str] | str,
                     'rougeLsum',
                     tokenizer=tokenizer)
     return EvalValue(metric_name='rougeL',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,
