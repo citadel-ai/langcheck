@@ -155,6 +155,7 @@ def test_flesch_kincaid_grade(generated_outputs, metric_values):
     eval_value = flesch_kincaid_grade(generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
+
 @pytest.mark.parametrize('generated_outputs', [[
     "I don't have personal opinions, emotions, or consciousness.",
     "As an AI language model, I don't have my own beliefs."
