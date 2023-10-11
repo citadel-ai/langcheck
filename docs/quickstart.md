@@ -3,7 +3,7 @@
 ## Using LangCheck
 
 :::{tip}
-LangCheck runs anywhere, but its built-in visualizations look best in a notebook (e.g. [Jupyter](https://jupyter.org), [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks), [Colab](https://colab.research.google.com)). [Try this quickstart in Colab](https://colab.research.google.com/drive/1FBF-jnFfzExXFLcAjqde4FcF89juS9wI).
+LangCheck runs anywhere, but its built-in visualizations look best in a notebook (e.g. [Jupyter](https://jupyter.org), [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks), [Colab](https://colab.research.google.com)). [Try this quickstart in Colab](https://colab.research.google.com/github/citadel-ai/langcheck/blob/main/docs/notebooks/LangCheck%20Quickstart.ipynb).
 :::
 
 LangCheck evaluates text produced by an LLM.
