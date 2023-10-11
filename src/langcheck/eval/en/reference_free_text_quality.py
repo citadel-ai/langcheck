@@ -560,8 +560,7 @@ def ai_disclaimer_language_similarity(
             "I don't have personal opinions, emotions, or consciousness.")
     ai_disclaimer_text_list = [ai_disclaimer_text] * len(generated_outputs)
     semantic_sim_values = semantic_sim(generated_outputs,
-                                       ai_disclaimer_text_list,
-                                       prompts,
+                                       ai_disclaimer_text_list, prompts,
                                        embedding_model_type, openai_args)
     return EvalValue(metric_name='ai_disclaimer_language_similarity',
                      prompts=prompts,
