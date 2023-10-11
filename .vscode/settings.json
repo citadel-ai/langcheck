@@ -1,5 +1,4 @@
 {
-  // Settings from https://marketplace.visualstudio.com/items?itemName=eeyore.yapf
   "python.formatting.provider": "none",
   "[python]": {
     "editor.codeActionsOnSave": {
