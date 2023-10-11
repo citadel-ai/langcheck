@@ -5,7 +5,7 @@ API Reference
 
 LangCheck consists of a few core sub-packages:
 
-* ``langcheck.eval`` for evaluation metrics
+* ``langcheck.metrics`` for evaluation metrics
 * ``langcheck.plot`` for plotting
 * ``langcheck.augment`` for text augmentation (coming soon)
 * ``langcheck.utils`` for utility functions
@@ -23,6 +23,6 @@ LangCheck consists of a few core sub-packages:
    :hidden:
    :maxdepth: 4
 
-   langcheck.eval
+   langcheck.metrics
    langcheck.plot
    langcheck.utils

@@ -1,0 +1,65 @@
+
+
+
+langcheck.metrics
+==============
+
+.. <UPDATE_AFTER_SPHINX_APIDOC>
+
+``langcheck.metrics`` contains all of LangCheck's evaluation metrics.
+
+Since LangCheck has multi-lingual support, language-specific metrics are organized into sub-packages such as ``langcheck.metrics.en`` or ``langcheck.metrics.ja``.
+
+.. tip::
+    As a shortcut, all English and language-agnostic metrics are also directly accessible from ``langcheck.metrics``. For example, you can directly run ``langcheck.metrics.sentiment()`` instead of ``langcheck.metrics.en.reference_free_text_quality.sentiment()``.
+
+    Additionally, ``langcheck.metrics.EvalValue`` is a shortcut for ``langcheck.metrics.eval_value.EvalValue``.
+
+There are several different types of metrics:
+
++---------------------------------------------+--------------------------------------------------------+---------------+
+|               Type of Metric                |                        Examples                        |   Languages   |
++=============================================+========================================================+===============+
+| :ref:`reference-based-text-quality-metrics` | ``toxicity(generated_outputs)``                        | EN, JA        |
+|                                             |                                                        |               |
+|                                             | ``sentiment(generated_outputs)``                       |               |
++---------------------------------------------+--------------------------------------------------------+---------------+
+| :ref:`reference-free-text-quality-metrics`  | ``semantic_sim(generated_outputs, reference_outputs)`` | EN, JA        |
+|                                             |                                                        |               |
+|                                             | ``rouge2(generated_outputs, reference_outputs)``       |               |
++---------------------------------------------+--------------------------------------------------------+---------------+
+| :ref:`source-based-text-quality-metrics`    | ``factual_consistency(generated_outputs, sources)``    | EN, JA        |
++---------------------------------------------+--------------------------------------------------------+---------------+
+| :ref:`text-structure-metrics`               | ``is_float(generated_outputs, min=0, max=None)``       | All Languages |
+|                                             |                                                        |               |
+|                                             | ``is_json_object(generated_outputs)``                  |               |
++---------------------------------------------+--------------------------------------------------------+---------------+
+
+
+----
+
+.. </UPDATE_AFTER_SPHINX_APIDOC>
+
+.. automodule:: langcheck.metrics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. toctree::
+   :hidden:
+   :maxdepth: 4
+
+   langcheck.metrics.en
+   langcheck.metrics.ja
+
+
+
+
+.. toctree::
+   :hidden:
+   :maxdepth: 4
+
+   langcheck.metrics.eval_value
+   langcheck.metrics.reference_based_text_quality
+   langcheck.metrics.text_structure

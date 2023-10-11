@@ -13,7 +13,7 @@ To install and run the LangCheck package from your local git repo:
 # Try using langcheck
 # (If you edit the package, just restart the Python REPL to reflect your changes)
 > python
->>> from langcheck.eval import is_float
+>>> from langcheck.metrics import is_float
 >>> is_float(['1', '-2', 'a'])
 Metric: is_float
 prompt generated_output reference_output  metric_value
