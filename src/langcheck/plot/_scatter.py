@@ -5,40 +5,43 @@ from typing import Optional
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
-from langcheck.eval.eval_value import EvalValue
+from langcheck.metrics.metric_value import MetricValue
 from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
 
 
-def scatter(eval_value: EvalValue,
-            other_eval_value: Optional[EvalValue] = None,
+def scatter(metric_value: MetricValue,
+            other_metric_value: Optional[MetricValue] = None,
             jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive scatter plot of all data points in an
-    :class:`~langcheck.eval.eval_value.EvalValue`. When run in a notebook, this
-    usually displays the chart inline in the cell output.
+    :class:`~langcheck.metrics.metric_value.MetricValue`. When run in a
+    notebook, this usually displays the chart inline in the cell output.
 
     Args:
-        eval_value: The :class:`~langcheck.eval.eval_value.EvalValue` to plot.
-        other_eval_value: If provided, another
-            :class:`~langcheck.eval.eval_value.EvalValue` to plot on the same
-            chart.
+        metric_value: The :class:`~langcheck.metrics.metric_value.MetricValue`
+            to plot.
+        other_metric_value: If provided, another
+            :class:`~langcheck.metrics.metric_value.MetricValue` to plot on the
+            same chart.
         jupyter_mode: Defaults to 'inline', which displays the chart in the
             cell output. For Colab, set this to 'external' instead. See the
             Dash documentation for more info:
             https://dash.plotly.com/workspaces/using-dash-in-jupyter-and-workspaces#display-modes
     '''
-    if other_eval_value is None:
-        _scatter_one_eval_value(eval_value, jupyter_mode)
+    if other_metric_value is None:
+        _scatter_one_metric_value(metric_value, jupyter_mode)
     else:
-        _scatter_two_eval_values(eval_value, other_eval_value, jupyter_mode)
+        _scatter_two_metric_values(metric_value, other_metric_value,
+                                   jupyter_mode)
 
 
-def _scatter_one_eval_value(eval_value: EvalValue, jupyter_mode: str) -> None:
+def _scatter_one_metric_value(metric_value: MetricValue,
+                              jupyter_mode: str) -> None:
     '''Shows an interactive scatter plot of all data points in one
-    :class:`~langcheck.eval.eval_value.EvalValue`.
+    :class:`~langcheck.metrics.metric_value.MetricValue`.
     '''
-    # Rename some EvalValue fields for display
-    df = eval_value.to_df()
-    df.rename(columns={'metric_value': eval_value.metric_name}, inplace=True)
+    # Rename some MetricValue fields for display
+    df = metric_value.to_df()
+    df.rename(columns={'metric_value': metric_value.metric_name}, inplace=True)
     df['prompt'] = df['prompt'].fillna('None')
     df['reference_output'] = df['reference_output'].fillna('None')
     df['source'] = df['source'].fillna('None')
@@ -115,15 +118,15 @@ def _scatter_one_eval_value(eval_value: EvalValue, jupyter_mode: str) -> None:
         # Configure the actual scatter plot
         fig = px.scatter(filtered_df,
                          x=filtered_df.index,
-                         y=eval_value.metric_name,
+                         y=metric_value.metric_name,
                          hover_data=filtered_df.columns)
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
         fig.update_xaxes(range=[-0.1, len(df)])
         fig.update_yaxes(range=[
-            min(-0.1, math.floor(df[eval_value.metric_name].min())),
-            max(1.1, math.ceil(df[eval_value.metric_name].max()))
+            min(-0.1, math.floor(df[metric_value.metric_name].min())),
+            max(1.1, math.ceil(df[metric_value.metric_name].max()))
         ])
 
         # However, if the user manually zoomed in, keep that zoom level even
@@ -146,32 +149,36 @@ def _scatter_one_eval_value(eval_value: EvalValue, jupyter_mode: str) -> None:
     app.run(jupyter_mode=jupyter_mode)  # type: ignore
 
 
-def _scatter_two_eval_values(eval_value: EvalValue, other_eval_value: EvalValue,
-                             jupyter_mode: str) -> None:
+def _scatter_two_metric_values(metric_value: MetricValue,
+                               other_metric_value: MetricValue,
+                               jupyter_mode: str) -> None:
     '''Shows an interactive scatter plot of all data points in two
-    :class:`~langcheck.eval.eval_value.EvalValue`.
+    :class:`~langcheck.metrics.metric_value.MetricValue`.
     '''
-    # Validate that the two EvalValues have the same data points
-    if eval_value.generated_outputs != other_eval_value.generated_outputs:
-        raise ValueError('Both EvalValues must have the same generated_outputs')
-    if eval_value.prompts != other_eval_value.prompts:
-        raise ValueError('Both EvalValues must have the same prompts')
-    if eval_value.reference_outputs != other_eval_value.reference_outputs:
-        raise ValueError('Both EvalValues must have the same reference_outputs')
-    if eval_value.language != other_eval_value.language:
-        raise ValueError('Both EvalValues must have the same language')
+    # Validate that the two MetricValues have the same data points
+    if metric_value.generated_outputs != other_metric_value.generated_outputs:
+        raise ValueError(
+            'Both MetricValues must have the same generated_outputs')
+    if metric_value.prompts != other_metric_value.prompts:
+        raise ValueError('Both MetricValues must have the same prompts')
+    if metric_value.reference_outputs != other_metric_value.reference_outputs:
+        raise ValueError(
+            'Both MetricValues must have the same reference_outputs')
+    if metric_value.language != other_metric_value.language:
+        raise ValueError('Both MetricValues must have the same language')
 
-    # Append "(other)" to the metric name of the second EvalValue if necessary.
-    # (It's possible to plot two EvalValues from the same metric, e.g. if you
-    # compute semantic_sim() with a local model and an OpenAI model)
-    if eval_value.metric_name == other_eval_value.metric_name:
-        other_eval_value = deepcopy(other_eval_value)
-        other_eval_value.metric_name += ' (other)'
+    # Append "(other)" to the metric name of the second MetricValue if
+    # necessary. (It's possible to plot two MetricValues from the same metric,
+    # e.g. if you compute semantic_sim() with a local model and an OpenAI model)
+    if metric_value.metric_name == other_metric_value.metric_name:
+        other_metric_value = deepcopy(other_metric_value)
+        other_metric_value.metric_name += ' (other)'
 
-    # Rename some EvalValue fields for display
-    df = eval_value.to_df()
-    df.rename(columns={'metric_value': eval_value.metric_name}, inplace=True)
-    df[other_eval_value.metric_name] = other_eval_value.to_df()['metric_value']
+    # Rename some MetricValue fields for display
+    df = metric_value.to_df()
+    df.rename(columns={'metric_value': metric_value.metric_name}, inplace=True)
+    df[other_metric_value.metric_name] = other_metric_value.to_df(
+    )['metric_value']
     df['prompt'] = df['prompt'].fillna('None')
     df['reference_output'] = df['reference_output'].fillna('None')
     df['source'] = df['source'].fillna('None')
@@ -248,24 +255,24 @@ def _scatter_two_eval_values(eval_value: EvalValue, other_eval_value: EvalValue,
         # Configure the actual scatter plot
         # (We need to explicitly add the index column into hover_data here.
         # Unfortunately it's not possible to make "index" show up at the top of
-        # the tooltip like _scatter_one_eval_value() since Plotly always
+        # the tooltip like _scatter_one_metric_value() since Plotly always
         # displays the x and y values at the top.)
         hover_data = {col: True for col in filtered_df.columns}
         hover_data['index'] = filtered_df.index
         fig = px.scatter(filtered_df,
-                         x=eval_value.metric_name,
-                         y=other_eval_value.metric_name,
+                         x=metric_value.metric_name,
+                         y=other_metric_value.metric_name,
                          hover_data=hover_data)
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
         fig.update_xaxes(range=[
-            min(-0.1, math.floor(df[eval_value.metric_name].min())),
-            max(1.1, math.ceil(df[eval_value.metric_name].max()))
+            min(-0.1, math.floor(df[metric_value.metric_name].min())),
+            max(1.1, math.ceil(df[metric_value.metric_name].max()))
         ])
         fig.update_yaxes(range=[
-            min(-0.1, math.floor(df[other_eval_value.metric_name].min())),
-            max(1.1, math.ceil(df[other_eval_value.metric_name].max()))
+            min(-0.1, math.floor(df[other_metric_value.metric_name].min())),
+            max(1.1, math.ceil(df[other_metric_value.metric_name].max()))
         ])
 
         # However, if the user manually zoomed in, keep that zoom level even

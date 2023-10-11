@@ -17,7 +17,7 @@ keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'detoxify >= 0.5',
-    'fugashi', # For tokenizer of eval.ja.toxicity()
+    'fugashi', # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
     'nltk >= 3',
     'openai >= 0.11.6',
@@ -29,7 +29,7 @@ dependencies = [
     'tomli; python_version < "3.11"',
     'torch >= 2',
     'transformers >= 4.6',
-    "unidic-lite >= 1.0.1"  # For tokenizer of eval.ja.toxicity()
+    "unidic-lite >= 1.0.1"  # For tokenizer of metrics.ja.toxicity()
 ]
 requires-python = ">=3.8"
 
