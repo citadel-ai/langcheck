@@ -5,10 +5,10 @@
 
 Simple, Pythonic building blocks to evaluate LLM applications.
 
-[Install](#install) •
 [Examples](#examples) •
-[Docs](https://langcheck.readthedocs.io/en/latest/index.html) •
+[Use Cases](#use-cases) •
 [Quickstart](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
+[Docs](https://langcheck.readthedocs.io/en/latest/index.html) •
 [日本語](README_ja.md)
 
 </div>
@@ -49,66 +49,12 @@ assert langcheck.metrics.fluency(generated_outputs) > 0.5
 
 LangCheck includes several types of metrics to evaluate LLM applications. Some examples:
 
-```python
-# 1. Reference-Free Text Quality Metrics
-langcheck.metrics.toxicity(generated_outputs)
-langcheck.metrics.fluency(generated_outputs)
-langcheck.metrics.sentiment(generated_outputs)
-langcheck.metrics.flesch_kincaid_grade(generated_outputs)
-
-# 2. Reference-Based Text Quality Metrics
-langcheck.metrics.factual_consistency(generated_outputs, reference_outputs)
-langcheck.metrics.semantic_sim(generated_outputs, reference_outputs)
-langcheck.metrics.rouge2(generated_outputs, reference_outputs)
-langcheck.metrics.exact_match(generated_outputs, reference_outputs)
-
-# 3. Text Structure Metrics
-langcheck.metrics.is_int(generated_outputs, domain=range(1, 6))
-langcheck.metrics.is_float(generated_outputs, min=0, max=None)
-langcheck.metrics.is_json_array(generated_outputs)
-langcheck.metrics.is_json_object(generated_outputs)
-langcheck.metrics.contains_regex(generated_outputs, r"\d{5,}")
-langcheck.metrics.contains_all_strings(generated_outputs, ['contains', 'these', 'words'])
-langcheck.metrics.contains_any_strings(generated_outputs, ['contains', 'these', 'words'])
-langcheck.metrics.validation_fn(generated_outputs, lambda x: 'myKey' in json.loads(x))
-```
-
-Some LangCheck metrics support using the OpenAI API. To use the OpenAI option,
-make sure to set the API key:
-
-```python
-import openai
-from langcheck.metrics.en import semantic_sim
-
-# https://platform.openai.com/account/api-keys
-openai.api_key = YOUR_OPENAI_API_KEY
-
-generated_outputs = ["The cat is sitting on the mat."]
-reference_outputs = ["The cat sat on the mat."]
-eval_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
-```
-
-Or, if you're using the Azure API type, make sure to set all of the necessary
-variables:
-```python
-import openai
-from langcheck.metrics.en import semantic_sim
-
-openai.api_type = 'azure'
-openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
-openai.api_version = YOUR_API_VERSION
-openai.api_key = YOUR_OPENAI_API_KEY
-
-generated_outputs = ["The cat is sitting on the mat."]
-reference_outputs = ["The cat sat on the mat."]
-
-# When using the Azure API type, you need to pass in your model's
-# deployment name
-eval_value = semantic_sim(generated_outputs,
-                          reference_outputs,
-                          embedding_model_type='openai',
-                          openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
-```
+|                                                            Type of Metric                                                            |                                                     Examples                                                     |   Languages   |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------- |
+| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA        |
+| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_sim(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`           | EN, JA        |
+| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA        |
+| [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages |
 
 ### Visualize Metrics
 
@@ -141,7 +87,6 @@ fluency_values.histogram()
 
 ![Histogram for one metric](docs/_static/histogram.png)
 
-
 ### Augment Data (coming soon)
 
 ```python
@@ -153,24 +98,60 @@ more_prompts += langcheck.augment.gender(prompts, to_gender='male')
 more_prompts += langcheck.augment.gpt35_rewrite(prompts)
 ```
 
-### Building Blocks for Monitoring
+## Use Cases
 
-LangCheck isn't just for testing, it can also monitor production LLM outputs. Just save the outputs and pass them into LangCheck.
+### Unit Testing
+
+You can write test cases for your LLM application using LangCheck metrics.
+
+For example, if you only have a list of prompts to test against:
 
 ```python
 from langcheck.utils import load_json
 
-recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
-langcheck.metrics.toxicity(recorded_outputs) < 0.25
-langcheck.metrics.is_json_array(recorded_outputs)
+# Run the LLM application once to generate text
+prompts = load_json('test_prompts.json')
+generated_outputs = [my_llm_app(prompt) for prompt in prompts]
+
+# Unit tests
+def test_toxicity(generated_outputs):
+    assert langcheck.metrics.toxicity(generated_outputs) < 0.1
+
+def test_fluency(generated_outputs):
+    assert langcheck.metrics.fluency(generated_outputs) > 0.9
+
+def test_json_structure(generated_outputs):
+    assert langcheck.metrics.validation_fn(
+        generated_outputs, lambda x: 'myKey' in json.loads(x)).all()
 ```
 
-### Building Blocks for Guardrails
+### Monitoring
 
-LangCheck isn't just for testing, it can also provide guardrails on LLM outputs. Just filter candidate outputs through LangCheck.
+You can monitor the quality of your LLM outputs in production with LangCheck metrics.
+
+Just save the outputs and pass them into LangCheck.
 
 ```python
+recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
+
+# Evaluate and display toxic outputs in production logs
+langcheck.metrics.toxicity(recorded_outputs) < 0.25
+
+# Or if your app outputs structured text
+langcheck.metrics.is_json_array(recorded_outputs)```
+```
+
+### Guardrails
+
+You can provide guardrails on LLM outputs with LangCheck metrics.
+
+Just filter candidate outputs through LangCheck.
+
+```python
+# Get a candidate output from the LLM app
 raw_output = my_llm_app(random_user_prompt)
+
+# Filter the output before it reaches the user
 while langcheck.metrics.contains_any_strings(raw_output, blacklist_words).any():
-    raw_output = my_llm_app(random_user_prompt)
+    raw_output = my_llm_app(random_user_prompt)```
 ```

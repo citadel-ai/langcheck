@@ -46,7 +46,7 @@ def sentiment(generated_outputs: List[str] | str,
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models for examples on
     setting up the OpenAI API key.
 
     Ref:
@@ -128,7 +128,7 @@ def toxicity(generated_outputs: List[str] | str,
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models for examples on
     setting up the OpenAI API key.
 
     Ref:
@@ -217,7 +217,7 @@ def fluency(generated_outputs: List[str] | str,
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models for examples on
     setting up the OpenAI API key.
 
     Ref:

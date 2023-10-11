@@ -23,6 +23,8 @@ There are several different types of metrics:
 | :ref:`reference-based-text-quality-metrics` | ``toxicity(generated_outputs)``                        | EN, JA        |
 |                                             |                                                        |               |
 |                                             | ``sentiment(generated_outputs)``                       |               |
+|                                             |                                                        |               |
+|                                             | ``ai_disclaimer_similarity(generated_outputs)``        |               |
 +---------------------------------------------+--------------------------------------------------------+---------------+
 | :ref:`reference-free-text-quality-metrics`  | ``semantic_sim(generated_outputs, reference_outputs)`` | EN, JA        |
 |                                             |                                                        |               |
