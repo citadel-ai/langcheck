@@ -5,7 +5,7 @@ import pytest
 from langcheck.eval import (contains_all_strings, contains_any_strings,
                             contains_regex, is_float, is_int, is_json_array,
                             is_json_object, matches_regex, validation_fn)
-from tests.utils import is_close
+from tests.utils import is_close, lists_are_equal
 
 ################################################################################
 # Tests
@@ -33,10 +33,7 @@ def test_is_int(generated_outputs, domain, metric_values):
     eval_value = is_int(generated_outputs, domain)
     assert eval_value.metric_name == 'is_int'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -63,10 +60,7 @@ def test_is_float(generated_outputs, min, max, metric_values):
     eval_value = is_float(generated_outputs, min, max)
     assert eval_value.metric_name == 'is_float'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -87,10 +81,7 @@ def test_is_json_array(generated_outputs, metric_values):
     eval_value = is_json_array(generated_outputs)
     assert eval_value.metric_name == 'is_json_array'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -111,10 +102,7 @@ def test_is_json_object(generated_outputs, metric_values):
     eval_value = is_json_object(generated_outputs)
     assert eval_value.metric_name == 'is_json_object'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -147,10 +135,7 @@ def test_matches_regex(generated_outputs, regex, metric_values):
     eval_value = matches_regex(generated_outputs, regex)
     assert eval_value.metric_name == 'matches_regex'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -179,10 +164,7 @@ def test_contains_regex(generated_outputs, regex, metric_values):
     eval_value = contains_regex(generated_outputs, regex)
     assert eval_value.metric_name == 'contains_regex'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -227,10 +209,7 @@ def test_contains_all_strings(generated_outputs, strings, case_sensitive,
                                       case_sensitive)
     assert eval_value.metric_name == 'contains_all_strings'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -275,10 +254,7 @@ def test_contains_any_strings(generated_outputs, strings, case_sensitive,
                                       case_sensitive)
     assert eval_value.metric_name == 'contains_any_strings'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
 
 
@@ -294,8 +270,5 @@ def test_validation_fn(generated_outputs, valid_fn, metric_values):
     eval_value = validation_fn(generated_outputs, valid_fn)
     assert eval_value.metric_name == 'validation_fn'
     assert eval_value.prompts is None
-    if isinstance(generated_outputs, str):
-        assert eval_value.generated_outputs == [generated_outputs]
-    else:
-        assert eval_value.generated_outputs == generated_outputs
+    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
     assert is_close(eval_value.metric_values, metric_values)
