@@ -538,8 +538,9 @@ def ai_disclaimer_language_similarity(
     between the generated outputs and a reference AI disclaimer phrase; by
     default, this phrase is "I don't have personal opinions, emotions, or
     consciousness.", but you can also pass in a custom phrase. Please refer to
-    `langcheck.eval.en.reference_based_text_quality.semantic_sim` for details on
-    the typical output ranges and the supported embedding model types.
+    :func:`~langcheck.eval.en.reference_based_text_quality.semantic_sim` for
+    details on the typical output ranges and the supported embedding model
+    types.
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
