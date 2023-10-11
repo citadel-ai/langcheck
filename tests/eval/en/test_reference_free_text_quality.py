@@ -2,9 +2,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from langcheck.eval.en import (ai_disclaimer_language_similarity,
-                               flesch_kincaid_grade, flesch_reading_ease,
-                               fluency, sentiment, toxicity)
+from langcheck.eval.en import (ai_disclaimer_similarity, flesch_kincaid_grade,
+                               flesch_reading_ease, fluency, sentiment,
+                               toxicity)
 from tests.utils import is_close
 
 ################################################################################
@@ -160,21 +160,21 @@ def test_flesch_kincaid_grade(generated_outputs, metric_values):
     "I don't have personal opinions, emotions, or consciousness.",
     "As an AI language model, I don't have my own beliefs."
 ]])
-def test_ai_disclaimer_language_similarity(generated_outputs):
-    eval_value = ai_disclaimer_language_similarity(generated_outputs)
+def test_ai_disclaimer_similarity(generated_outputs):
+    eval_value = ai_disclaimer_similarity(generated_outputs)
     assert all(0.5 <= v <= 1 for v in eval_value.metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs', [[
     "I don't have personal opinions, emotions, or consciousness.",
 ]])
-def test_ai_disclaimer_language_similarity_openai(generated_outputs):
+def test_ai_disclaimer_similarity_openai(generated_outputs):
     mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
     # Calling the openai.Embedding.create method requires an OpenAI API key, so
     # we mock the return value instead
     with patch('openai.Embedding.create',
                Mock(return_value=mock_embedding_response)):
-        eval_value = ai_disclaimer_language_similarity(
+        eval_value = ai_disclaimer_similarity(
             generated_outputs, embedding_model_type='openai')
         sim_value = eval_value.metric_values[0]
         # Since the mock embeddings are the same for the generated output and

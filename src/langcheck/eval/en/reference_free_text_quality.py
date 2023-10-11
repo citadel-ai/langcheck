@@ -527,7 +527,7 @@ def flesch_kincaid_grade(
                      language='en')
 
 
-def ai_disclaimer_language_similarity(
+def ai_disclaimer_similarity(
         generated_outputs: List[str],
         prompts: Optional[List[str]] = None,
         ai_disclaimer_text: Optional[str] = None,
@@ -563,7 +563,7 @@ def ai_disclaimer_language_similarity(
     semantic_sim_values = semantic_sim(generated_outputs,
                                        ai_disclaimer_text_list, prompts,
                                        embedding_model_type, openai_args)
-    return EvalValue(metric_name='ai_disclaimer_language_similarity',
+    return EvalValue(metric_name='ai_disclaimer_similarity',
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
