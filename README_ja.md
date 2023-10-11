@@ -50,12 +50,12 @@ assert sentiment(generated_outputs) > 0.5
 
 LangCheckには、他にも以下のようなLLMアプリケーションを評価するための指標が含まれています。
 
-| 種類   | 主な指標 |  言語 |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------- |
-| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)` | 英語、日本語　       |
-| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`           | 英語、日本語 |
-| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | 英語、日本語 |
-| [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | 全ての言語 |
+|                                                                 種類                                                                 |                                                   主な指標                                                    |     言語     |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------ |
+| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`                                               | 英語、日本語 |
+| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)` | 英語、日本語 |
+| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                             | 英語、日本語 |
+| [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                         | 全ての言語   |
 
 
 ### 数値の可視化
@@ -147,8 +147,8 @@ langcheck.metrics.is_json_array(recorded_outputs)
 
 ```python
 # LLMからいったん出力を得る
-
 raw_output = my_llm_app(random_user_prompt)
+
 # 不適切な単語が含まれていた場合、別の出力を作って上書きする
 while langcheck.metrics.contains_any_strings(raw_output, blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
