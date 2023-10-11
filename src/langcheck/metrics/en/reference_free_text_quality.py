@@ -9,7 +9,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
-from langcheck.metrics.eval_value import EvalValue
+from langcheck.metrics.metric_value import MetricValue
 from langcheck.stats import compute_stats
 
 _sentiment_model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
@@ -23,10 +23,11 @@ _fluency_model = None
 _toxicity_model = None
 
 
-def sentiment(generated_outputs: List[str] | str,
-              prompts: Optional[List[str] | str] = None,
-              model_type: str = 'local',
-              openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+def sentiment(
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
@@ -53,7 +54,7 @@ def sentiment(generated_outputs: List[str] | str,
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -66,13 +67,13 @@ def sentiment(generated_outputs: List[str] | str,
     else:  # openai
         scores = _sentiment_openai(generated_outputs, openai_args)
 
-    return EvalValue(metric_name='sentiment',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='sentiment',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')
 
 
 def _sentiment_local(generated_outputs: List[str]) -> List[float]:
@@ -177,7 +178,7 @@ def _sentiment_openai(
 def fluency(generated_outputs: List[str] | str,
             prompts: Optional[List[str] | str] = None,
             model_type: str = 'local',
-            openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+            openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
 
@@ -202,7 +203,7 @@ def fluency(generated_outputs: List[str] | str,
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -215,13 +216,13 @@ def fluency(generated_outputs: List[str] | str,
     else:  # openai
         scores = _fluency_openai(generated_outputs, openai_args)
 
-    return EvalValue(metric_name='fluency',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='fluency',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')
 
 
 def _fluency_local(generated_outputs: List[str]) -> List[float]:
@@ -324,10 +325,11 @@ def _fluency_openai(
     return score_list
 
 
-def toxicity(generated_outputs: List[str] | str,
-             prompts: Optional[List[str] | str] = None,
-             model_type: str = 'local',
-             openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+def toxicity(
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
 
@@ -352,7 +354,7 @@ def toxicity(generated_outputs: List[str] | str,
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -365,13 +367,13 @@ def toxicity(generated_outputs: List[str] | str,
     else:  # openai
         scores = _toxicity_openai(generated_outputs, openai_args)
 
-    return EvalValue(metric_name='toxicity',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='toxicity',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')
 
 
 def _toxicity_local(generated_outputs: List[str]) -> List[float]:
@@ -452,7 +454,7 @@ def _toxicity_openai(
 
 def flesch_reading_ease(
         generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+        prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
     '''Calculates the readability of generated outputs using the Flesch Reading
     Ease Score. This metric takes on float values between (-∞, 121.22], but
     typically ranges between 0 and 100, where higher scores mean the text is
@@ -468,7 +470,7 @@ def flesch_reading_ease(
             optional metadata and not used to calculate the metric.
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -478,18 +480,18 @@ def flesch_reading_ease(
         206.835 - 1.015 * (stat.num_words / stat.num_sentences) - 84.6 *
         (stat.num_syllables / stat.num_words) for stat in output_stats
     ]
-    return EvalValue(metric_name='flesch_reading_ease',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='flesch_reading_ease',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')
 
 
 def flesch_kincaid_grade(
         generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+        prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
     '''Calculates the readability of generated outputs using the Flesch-Kincaid
     Grade Level metric. This metric takes on float values between [-3.40, ∞),
     but typically ranges between 0 and 12 (corresponding to U.S. grade levels),
@@ -507,7 +509,7 @@ def flesch_kincaid_grade(
             optional metadata and not used to calculate the metric.
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -517,10 +519,10 @@ def flesch_kincaid_grade(
         0.39 * (stat.num_words / stat.num_sentences) + 11.8 *
         (stat.num_syllables / stat.num_words) - 15.59 for stat in output_stats
     ]
-    return EvalValue(metric_name='flesch_kincaid_grade',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='flesch_kincaid_grade',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')

@@ -5,7 +5,7 @@ from langcheck.metrics.en.reference_based_text_quality import (rouge1, rouge2,
 from langcheck.metrics.en.reference_free_text_quality import (
     flesch_kincaid_grade, flesch_reading_ease, fluency, sentiment, toxicity)
 from langcheck.metrics.en.source_based_text_quality import factual_consistency
-from langcheck.metrics.eval_value import EvalValue
+from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.reference_based_text_quality import exact_match
 from langcheck.metrics.text_structure import (contains_all_strings,
                                               contains_any_strings,
@@ -19,7 +19,7 @@ __all__ = [
     'contains_all_strings',
     'contains_any_strings',
     'contains_regex',
-    'EvalValue',
+    'MetricValue',
     'exact_match',
     'factual_consistency',
     'flesch_kincaid_grade',

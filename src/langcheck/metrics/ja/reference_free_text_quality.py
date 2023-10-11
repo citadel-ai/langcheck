@@ -12,7 +12,7 @@ from langcheck.metrics.en.reference_free_text_quality import (_fluency_openai,
                                                               _toxicity_openai)
 from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
-from langcheck.metrics.eval_value import EvalValue
+from langcheck.metrics.metric_value import MetricValue
 
 _sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA E501
 _sentiment_tokenizer = None
@@ -29,10 +29,11 @@ _fluency_tokenizer = None
 _fluency_model = None
 
 
-def sentiment(generated_outputs: List[str] | str,
-              prompts: Optional[List[str] | str] = None,
-              model_type: str = 'local',
-              openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+def sentiment(
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
@@ -62,7 +63,7 @@ def sentiment(generated_outputs: List[str] | str,
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -73,10 +74,10 @@ def sentiment(generated_outputs: List[str] | str,
     # The English prompt works well enough for Japanese
     # TODO: Investigate the performance improvement with Japanese prompt
     if model_type == 'openai':
-        eval_value = en_sentiment(generated_outputs, prompts, model_type,
-                                  openai_args)
-        eval_value.language = 'ja'
-        return eval_value
+        metric_value = en_sentiment(generated_outputs, prompts, model_type,
+                                    openai_args)
+        metric_value.language = 'ja'
+        return metric_value
 
     global _sentiment_tokenizer, _sentiment_model
 
@@ -101,19 +102,20 @@ def sentiment(generated_outputs: List[str] | str,
 
     scores = (probs[:, 1] / 2 + probs[:, 2]).tolist()
 
-    return EvalValue(metric_name='sentiment',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='ja')
+    return MetricValue(metric_name='sentiment',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='ja')
 
 
-def toxicity(generated_outputs: List[str] | str,
-             prompts: Optional[List[str] | str] = None,
-             model_type: str = 'local',
-             openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+def toxicity(
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
 
@@ -145,7 +147,7 @@ def toxicity(generated_outputs: List[str] | str,
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -158,13 +160,13 @@ def toxicity(generated_outputs: List[str] | str,
     else:  # openai
         scores = _toxicity_openai(generated_outputs, openai_args)
 
-    return EvalValue(metric_name='toxicity',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='ja')
+    return MetricValue(metric_name='toxicity',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='ja')
 
 
 def _toxicity_local(generated_outputs: List[str]) -> List[float]:
@@ -203,7 +205,7 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 def fluency(generated_outputs: List[str] | str,
             prompts: Optional[List[str] | str] = None,
             model_type: str = 'local',
-            openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+            openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
 
@@ -234,7 +236,7 @@ def fluency(generated_outputs: List[str] | str,
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -247,13 +249,13 @@ def fluency(generated_outputs: List[str] | str,
     else:  # openai
         scores = _fluency_openai(generated_outputs, openai_args)
 
-    return EvalValue(metric_name='fluency',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='ja')
+    return MetricValue(metric_name='fluency',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='ja')
 
 
 def _fluency_local(generated_outputs: List[str]) -> List[float]:
@@ -303,7 +305,7 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
 
 def tateishi_ono_yamada_reading_ease(
         generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+        prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
     '''Calculates the readability of generated Japanese outputs using the
     reading ease score introduced in "日本文の読みやすさの評価式 (A Computer
     Readability Formula of Japanese Texts for Machine Scoring)". This metric
@@ -327,7 +329,7 @@ def tateishi_ono_yamada_reading_ease(
             optional metadata and not used to calculate the metric.
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
@@ -374,10 +376,10 @@ def tateishi_ono_yamada_reading_ease(
             - 4.6 * comma_period_ratio + 115.79
 
     scores = [_get_reading_ease(text) for text in generated_outputs]
-    return EvalValue(metric_name='tateishi_ono_yamada_reading_ease',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=None,
-                     metric_values=scores,
-                     language='ja')
+    return MetricValue(metric_name='tateishi_ono_yamada_reading_ease',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       metric_values=scores,
+                       language='ja')

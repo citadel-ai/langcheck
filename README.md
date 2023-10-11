@@ -39,7 +39,7 @@ generated_outputs = [
 langcheck.metrics.fluency(generated_outputs) > 0.5
 ```
 
-![EvalValueWithThreshold screenshot](docs/_static/EvalValueWithThreshold_output.png)
+![MetricValueWithThreshold screenshot](docs/_static/MetricValueWithThreshold_output.png)
 
 It's easy to turn LangCheck metrics into unit tests, just use `assert`:
 
@@ -85,7 +85,7 @@ openai.api_key = YOUR_OPENAI_API_KEY
 
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
-eval_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
+metric_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
 ```
 
 Or, if you're using the Azure API type, make sure to set all of the necessary
@@ -104,7 +104,7 @@ reference_outputs = ["The cat sat on the mat."]
 
 # When using the Azure API type, you need to pass in your model's
 # deployment name
-eval_value = semantic_sim(generated_outputs,
+metric_value = semantic_sim(generated_outputs,
                           reference_outputs,
                           embedding_model_type='openai',
                           openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})

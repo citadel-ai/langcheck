@@ -8,7 +8,7 @@ from rouge_score import rouge_scorer
 from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
-from langcheck.metrics.eval_value import EvalValue
+from langcheck.metrics.metric_value import MetricValue
 
 
 def semantic_sim(
@@ -16,7 +16,7 @@ def semantic_sim(
         reference_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
         embedding_model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
@@ -52,7 +52,7 @@ def semantic_sim(
             `openai.Embedding.create` function, default None
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
@@ -93,18 +93,18 @@ def semantic_sim(
     # vectors to exceed 1.0 slightly, so we clip the outputs
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
 
-    return EvalValue(metric_name='semantic_sim',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     sources=None,
-                     metric_values=cosine_scores.tolist(),
-                     language='en')
+    return MetricValue(metric_name='semantic_sim',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       metric_values=cosine_scores.tolist(),
+                       language='en')
 
 
 def rouge1(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+           prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
     '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of unigrams
     (single tokens) between the generated outputs and the reference outputs.
@@ -121,24 +121,24 @@ def rouge1(generated_outputs: List[str] | str,
             optional metadata and not used to calculate the metric.
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs, reference_outputs, 'rouge1')
-    return EvalValue(metric_name='rouge1',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='rouge1',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')
 
 
 def rouge2(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+           prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
     '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of bigrams
     (two adjacent tokens) between the generated outputs and the reference
@@ -155,24 +155,24 @@ def rouge2(generated_outputs: List[str] | str,
             optional metadata and not used to calculate the metric.
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs, reference_outputs, 'rouge2')
-    return EvalValue(metric_name='rouge2',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='rouge2',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')
 
 
 def rougeL(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+           prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
     '''Calculates the F1 metrics of the ROUGE-L scores between the generated
     outputs and the reference outputs. It evaluates the longest common
     subsequence (LCS) between the generated outputs and the reference outputs.
@@ -189,7 +189,7 @@ def rougeL(generated_outputs: List[str] | str,
             optional metadata and not used to calculate the metric.
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
@@ -205,13 +205,13 @@ def rougeL(generated_outputs: List[str] | str,
     #
     # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA E501
     scores = _rouge(generated_outputs, reference_outputs, 'rougeLsum')
-    return EvalValue(metric_name='rougeL',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     sources=None,
-                     metric_values=scores,
-                     language='en')
+    return MetricValue(metric_name='rougeL',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       metric_values=scores,
+                       language='en')
 
 
 def _rouge(generated_outputs: List[str], reference_outputs: List[str],
