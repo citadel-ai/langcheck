@@ -5,8 +5,8 @@
 
 Simple, Pythonic building blocks to evaluate LLM applications.
 
+[Install](#install) •
 [Examples](#examples) •
-[Use Cases](#use-cases) •
 [Quickstart](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [Docs](https://langcheck.readthedocs.io/en/latest/index.html) •
 [日本語](README_ja.md)
@@ -98,7 +98,6 @@ more_prompts += langcheck.augment.gender(prompts, to_gender='male')
 more_prompts += langcheck.augment.gpt35_rewrite(prompts)
 ```
 
-## Use Cases
 
 ### Unit Testing
 
