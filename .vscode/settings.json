@@ -1,9 +1,12 @@
 {
-  "python.formatting.provider": "yapf",
+  // Settings from https://marketplace.visualstudio.com/items?itemName=eeyore.yapf
+  "python.formatting.provider": "none",
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSaveMode": "file",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "eeyore.yapf"
   }
 }
