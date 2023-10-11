@@ -137,7 +137,7 @@ recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
 langcheck.metrics.toxicity(recorded_outputs) < 0.25
 
 # Or if your app outputs structured text
-langcheck.metrics.is_json_array(recorded_outputs)```
+langcheck.metrics.is_json_array(recorded_outputs)
 ```
 
 ### Guardrails
@@ -152,5 +152,5 @@ raw_output = my_llm_app(random_user_prompt)
 
 # Filter the output before it reaches the user
 while langcheck.metrics.contains_any_strings(raw_output, blacklist_words).any():
-    raw_output = my_llm_app(random_user_prompt)```
+    raw_output = my_llm_app(random_user_prompt)
 ```
