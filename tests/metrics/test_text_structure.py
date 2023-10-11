@@ -30,11 +30,11 @@ from tests.utils import is_close, lists_are_equal
     ],
 )
 def test_is_int(generated_outputs, domain, metric_values):
-    eval_value = is_int(generated_outputs, domain)
-    assert eval_value.metric_name == 'is_int'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = is_int(generated_outputs, domain)
+    assert metric_value.metric_name == 'is_int'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize(
@@ -57,11 +57,11 @@ def test_is_int(generated_outputs, domain, metric_values):
     ],
 )
 def test_is_float(generated_outputs, min, max, metric_values):
-    eval_value = is_float(generated_outputs, min, max)
-    assert eval_value.metric_name == 'is_float'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = is_float(generated_outputs, min, max)
+    assert metric_value.metric_name == 'is_float'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs,metric_values', [
@@ -78,11 +78,11 @@ def test_is_float(generated_outputs, min, max, metric_values):
     (['''{"a": 1, "b": 2.5}'''], [0]),
 ])
 def test_is_json_array(generated_outputs, metric_values):
-    eval_value = is_json_array(generated_outputs)
-    assert eval_value.metric_name == 'is_json_array'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = is_json_array(generated_outputs)
+    assert metric_value.metric_name == 'is_json_array'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs,metric_values', [
@@ -99,11 +99,11 @@ def test_is_json_array(generated_outputs, metric_values):
     (['''[1, 2, 3]'''], [0]),
 ])
 def test_is_json_object(generated_outputs, metric_values):
-    eval_value = is_json_object(generated_outputs)
-    assert eval_value.metric_name == 'is_json_object'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = is_json_object(generated_outputs)
+    assert metric_value.metric_name == 'is_json_object'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize(
@@ -132,11 +132,11 @@ def test_is_json_object(generated_outputs, metric_values):
     ],
 )
 def test_matches_regex(generated_outputs, regex, metric_values):
-    eval_value = matches_regex(generated_outputs, regex)
-    assert eval_value.metric_name == 'matches_regex'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = matches_regex(generated_outputs, regex)
+    assert metric_value.metric_name == 'matches_regex'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize(
@@ -161,11 +161,11 @@ def test_matches_regex(generated_outputs, regex, metric_values):
     ],
 )
 def test_contains_regex(generated_outputs, regex, metric_values):
-    eval_value = contains_regex(generated_outputs, regex)
-    assert eval_value.metric_name == 'contains_regex'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = contains_regex(generated_outputs, regex)
+    assert metric_value.metric_name == 'contains_regex'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize(
@@ -205,12 +205,12 @@ def test_contains_regex(generated_outputs, regex, metric_values):
 )
 def test_contains_all_strings(generated_outputs, strings, case_sensitive,
                               metric_values):
-    eval_value = contains_all_strings(generated_outputs, strings,
-                                      case_sensitive)
-    assert eval_value.metric_name == 'contains_all_strings'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = contains_all_strings(generated_outputs, strings,
+                                        case_sensitive)
+    assert metric_value.metric_name == 'contains_all_strings'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize(
@@ -250,12 +250,12 @@ def test_contains_all_strings(generated_outputs, strings, case_sensitive,
 )
 def test_contains_any_strings(generated_outputs, strings, case_sensitive,
                               metric_values):
-    eval_value = contains_any_strings(generated_outputs, strings,
-                                      case_sensitive)
-    assert eval_value.metric_name == 'contains_any_strings'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = contains_any_strings(generated_outputs, strings,
+                                        case_sensitive)
+    assert metric_value.metric_name == 'contains_any_strings'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs,valid_fn,metric_values', [
@@ -267,8 +267,8 @@ def test_contains_any_strings(generated_outputs, strings, case_sensitive,
     (['lorem ipsum'], lambda x: x / 0, [0]),
 ])
 def test_validation_fn(generated_outputs, valid_fn, metric_values):
-    eval_value = validation_fn(generated_outputs, valid_fn)
-    assert eval_value.metric_name == 'validation_fn'
-    assert eval_value.prompts is None
-    assert lists_are_equal(generated_outputs, eval_value.generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = validation_fn(generated_outputs, valid_fn)
+    assert metric_value.metric_name == 'validation_fn'
+    assert metric_value.prompts is None
+    assert lists_are_equal(generated_outputs, metric_value.generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)

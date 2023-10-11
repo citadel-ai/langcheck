@@ -40,7 +40,7 @@ generated_outputs = [
 sentiment(generated_outputs) > 0.5
 ```
 
-![EvalValueWithThreshold のスクリーンショット](docs/_static/EvalValueWithThreshold_output_ja.png)
+![MetricValueWithThreshold のスクリーンショット](docs/_static/MetricValueWithThreshold_output_ja.png)
 
 `assert`を使うことで、LangCheckの各指標を簡単にユニットテストに変換できます。
 
@@ -97,7 +97,7 @@ openai.api_key = YOUR_OPENAI_API_KEY
 
 generated_outputs = ["猫が座っています。"]
 reference_outputs = ["猫が座っていました。"]
-eval_value = semantic_similarity(generated_outputs, reference_outputs, embedding_model_type='openai')
+metric_value = semantic_similarity(generated_outputs, reference_outputs, embedding_model_type='openai')
 ```
 
 Azure OpenAIのAPIをお使いの場合、さらに必要なオプションが指定されていることを確認してください。
@@ -113,10 +113,11 @@ openai.api_key = YOUR_OPENAI_API_KEY
 generated_outputs = ["猫が座っています。"]
 reference_outputs = ["猫が座っていました。"]
 # Azure OpenAIをお使いの場合は、正しいデプロイ名を指定してください。
-eval_value = semantic_similarity(generated_outputs,
-                                 reference_outputs,
-                                 embedding_model_type='openai',
-                                 openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
+metric_value = semantic_similarity(
+    generated_outputs,
+    reference_outputs,
+    embedding_model_type='openai',
+    openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
 ```
 
 ### 数値の可視化

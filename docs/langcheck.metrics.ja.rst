@@ -2,7 +2,7 @@
 
 
 langcheck.metrics.ja
-=================
+====================
 
 .. automodule:: langcheck.metrics.ja
    :members:

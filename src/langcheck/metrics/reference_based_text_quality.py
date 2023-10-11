@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import List, Optional
 
 from langcheck.metrics._validation import validate_parameters_reference_based
-from langcheck.metrics.eval_value import EvalValue
+from langcheck.metrics.metric_value import MetricValue
 
 
 def exact_match(generated_outputs: List[str] | str,
                 reference_outputs: List[str] | str,
-                prompts: Optional[List[str] | str] = None) -> EvalValue[int]:
+                prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
     '''Checks if the generated outputs exact matches with the reference outputs.
     This metric takes on binary 0 or 1 values.
 
@@ -19,7 +19,7 @@ def exact_match(generated_outputs: List[str] | str,
             optional metadata and not used to calculate the metric.
 
     Returns:
-        An :class:`~langcheck.metrics.eval_value.EvalValue` object
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
@@ -32,10 +32,10 @@ def exact_match(generated_outputs: List[str] | str,
         else:
             metric_values.append(0)
 
-    return EvalValue(metric_name='exact_match',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=reference_outputs,
-                     sources=None,
-                     metric_values=metric_values,
-                     language=None)
+    return MetricValue(metric_name='exact_match',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       metric_values=metric_values,
+                       language=None)

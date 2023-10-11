@@ -2,7 +2,7 @@
 
 
 langcheck.metrics
-==============
+=================
 
 .. <UPDATE_AFTER_SPHINX_APIDOC>
 
@@ -13,7 +13,7 @@ Since LangCheck has multi-lingual support, language-specific metrics are organiz
 .. tip::
     As a shortcut, all English and language-agnostic metrics are also directly accessible from ``langcheck.metrics``. For example, you can directly run ``langcheck.metrics.sentiment()`` instead of ``langcheck.metrics.en.reference_free_text_quality.sentiment()``.
 
-    Additionally, ``langcheck.metrics.EvalValue`` is a shortcut for ``langcheck.metrics.eval_value.EvalValue``.
+    Additionally, ``langcheck.metrics.MetricValue`` is a shortcut for ``langcheck.metrics.metric_value.MetricValue``.
 
 There are several different types of metrics:
 
@@ -62,6 +62,6 @@ There are several different types of metrics:
    :hidden:
    :maxdepth: 4
 
-   langcheck.metrics.eval_value
+   langcheck.metrics.metric_value
    langcheck.metrics.reference_based_text_quality
    langcheck.metrics.text_structure

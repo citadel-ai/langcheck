@@ -12,7 +12,7 @@ NumericType = TypeVar('NumericType', float, int)
 
 
 @dataclass
-class EvalValue(Generic[NumericType]):
+class MetricValue(Generic[NumericType]):
     '''A rich object that is the output of any langcheck.metrics function.'''
     metric_name: str
     metric_values: List[NumericType]
@@ -36,87 +36,88 @@ class EvalValue(Generic[NumericType]):
 
     def __str__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.metrics.eval_value.EvalValue` object.
+        :class:`~langcheck.metrics.metric_value.MetricValue` object.
         '''
         return (f'Metric: {self.metric_name}\n'
                 f'{self.to_df()}')
 
     def __repr__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.metrics.eval_value.EvalValue` object.
+        :class:`~langcheck.metrics.metric_value.MetricValue` object.
         '''
         return str(self)
 
     def _repr_html_(self) -> str:
         '''Returns an HTML representation of an
-        :class:`~langcheck.metrics.eval_value.EvalValue`, which is
+        :class:`~langcheck.metrics.metric_value.MetricValue`, which is
         automatically called by Jupyter notebooks.
         '''
         return (f'Metric: {self.metric_name}<br>'
                 f'{self.to_df()._repr_html_()}'  # type: ignore
                )
 
-    def __lt__(self, threshold: float | int) -> EvalValueWithThreshold:
-        '''Allows the user to write a `eval_value < 0.5` expression.'''
+    def __lt__(self, threshold: float | int) -> MetricValueWithThreshold:
+        '''Allows the user to write a `metric_value < 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(**all_fields,
-                                      threshold=threshold,
-                                      threshold_op='<')
+        return MetricValueWithThreshold(**all_fields,
+                                        threshold=threshold,
+                                        threshold_op='<')
 
-    def __le__(self, threshold: float | int) -> EvalValueWithThreshold:
-        '''Allows the user to write a `eval_value <= 0.5` expression.'''
+    def __le__(self, threshold: float | int) -> MetricValueWithThreshold:
+        '''Allows the user to write a `metric_value <= 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(**all_fields,
-                                      threshold=threshold,
-                                      threshold_op='<=')
+        return MetricValueWithThreshold(**all_fields,
+                                        threshold=threshold,
+                                        threshold_op='<=')
 
-    def __gt__(self, threshold: float | int) -> EvalValueWithThreshold:
-        '''Allows the user to write a `eval_value > 0.5` expression.'''
+    def __gt__(self, threshold: float | int) -> MetricValueWithThreshold:
+        '''Allows the user to write a `metric_value > 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(**all_fields,
-                                      threshold=threshold,
-                                      threshold_op='>')
+        return MetricValueWithThreshold(**all_fields,
+                                        threshold=threshold,
+                                        threshold_op='>')
 
-    def __ge__(self, threshold: float | int) -> EvalValueWithThreshold:
-        '''Allows the user to write a `eval_value >= 0.5` expression.'''
+    def __ge__(self, threshold: float | int) -> MetricValueWithThreshold:
+        '''Allows the user to write a `metric_value >= 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(**all_fields,
-                                      threshold=threshold,
-                                      threshold_op='>=')
+        return MetricValueWithThreshold(**all_fields,
+                                        threshold=threshold,
+                                        threshold_op='>=')
 
-    def __eq__(self, threshold: float | int) -> EvalValueWithThreshold:
-        '''Allows the user to write a `eval_value == 0.5` expression.'''
+    def __eq__(self, threshold: float | int) -> MetricValueWithThreshold:
+        '''Allows the user to write a `metric_value == 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(**all_fields,
-                                      threshold=threshold,
-                                      threshold_op='==')
+        return MetricValueWithThreshold(**all_fields,
+                                        threshold=threshold,
+                                        threshold_op='==')
 
-    def __ne__(self, threshold: float | int) -> EvalValueWithThreshold:
-        '''Allows the user to write a `eval_value != 0.5` expression.'''
+    def __ne__(self, threshold: float | int) -> MetricValueWithThreshold:
+        '''Allows the user to write a `metric_value != 0.5` expression.'''
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return EvalValueWithThreshold(**all_fields,
-                                      threshold=threshold,
-                                      threshold_op='!=')
+        return MetricValueWithThreshold(**all_fields,
+                                        threshold=threshold,
+                                        threshold_op='!=')
 
     def all(self) -> bool:
-        '''Equivalent to all(eval_value.metric_values). This is mostly useful
+        '''Equivalent to all(metric_value.metric_values). This is mostly useful
         for binary metric functions.
         '''
         return all(self.metric_values)
 
     def any(self) -> bool:
-        '''Equivalent to any(eval_value.metric_values). This is mostly useful
+        '''Equivalent to any(metric_value.metric_values). This is mostly useful
         for binary metric functions.
         '''
         return any(self.metric_values)
 
     def __bool__(self):
-        raise ValueError('An EvalValue cannot be used as a boolean. '
-                         'Try an expression like `eval_value > 0.5`, '
-                         '`eval_value.all()`, or `eval_value.any()` instead.')
+        raise ValueError(
+            'An MetricValue cannot be used as a boolean. '
+            'Try an expression like `metric_value > 0.5`, '
+            '`metric_value.all()`, or `metric_value.any()` instead.')
 
     def scatter(self, jupyter_mode: str = 'inline'):
-        '''Shows an interactive scatter plot of all data points in EvalValue.
+        '''Shows an interactive scatter plot of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.
 
         This is a convenience function that calls
@@ -126,7 +127,7 @@ class EvalValue(Generic[NumericType]):
         return scatter(self, jupyter_mode=jupyter_mode)
 
     def histogram(self, jupyter_mode: str = 'inline'):
-        '''Shows an interactive histogram of all data points in EvalValue.
+        '''Shows an interactive histogram of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.
 
         This is a convenience function that calls
@@ -137,10 +138,10 @@ class EvalValue(Generic[NumericType]):
 
 
 @dataclass
-class EvalValueWithThreshold(EvalValue):
+class MetricValueWithThreshold(MetricValue):
     '''A rich object that is the output of comparing an
-    :class:`~langcheck.metrics.eval_value.EvalValue` object,
-    e.g. `eval_value >= 0.5`.
+    :class:`~langcheck.metrics.metric_value.MetricValue` object,
+    e.g. `metric_value >= 0.5`.
     '''
     threshold: float | int
     threshold_op: str  # One of '<', '<=', '>', '>=', '==', '!='
@@ -193,7 +194,7 @@ class EvalValueWithThreshold(EvalValue):
 
     def __str__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.metrics.eval_value.EvalValue`.
+        :class:`~langcheck.metrics.metric_value.MetricValue`.
         '''
         return (f'Metric: {self.metric_name}\n'
                 f'Pass Rate: {round(self.pass_rate*100, 2)}%\n'
@@ -201,13 +202,13 @@ class EvalValueWithThreshold(EvalValue):
 
     def __repr__(self) -> str:
         '''Returns a string representation of an
-        :class:`~langcheck.metrics.eval_value.EvalValue` object.
+        :class:`~langcheck.metrics.metric_value.MetricValue` object.
         '''
         return str(self)
 
     def _repr_html_(self) -> str:
         '''Returns an HTML representation of an
-        :class:`~langcheck.metrics.eval_value.EvalValue`, which is
+        :class:`~langcheck.metrics.metric_value.MetricValue`, which is
         automatically called by Jupyter notebooks.
         '''
         return (f'Metric: {self.metric_name}<br>'
@@ -224,8 +225,8 @@ class EvalValueWithThreshold(EvalValue):
         return any(self.threshold_results)
 
     def __bool__(self) -> bool:
-        '''Allows the user to write an `assert eval_value > 0.5` or
-        `if eval_value > 0.5:` expression. This is shorthand for
-        `assert (eval_value > 0.5).all()`.
+        '''Allows the user to write an `assert metric_value > 0.5` or
+        `if metric_value > 0.5:` expression. This is shorthand for
+        `assert (metric_value > 0.5).all()`.
         '''
         return self.all()
