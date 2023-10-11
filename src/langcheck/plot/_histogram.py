@@ -9,15 +9,15 @@ from langcheck.plot._css import GLOBAL_CSS
 
 def histogram(metric_value: MetricValue, jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive histogram of all data points in
-    :class:`~langcheck.metrics.metric_value.MetricValue`. When run in a notebook,
-    this usually displays the chart inline in the cell output.
+    :class:`~langcheck.metrics.metric_value.MetricValue`. When run in a
+    notebook, this usually displays the chart inline in the cell output.
 
     Args:
-        metric_value: The :class:`~langcheck.metrics.metric_value.MetricValue` to
-            plot.
+        metric_value: The :class:`~langcheck.metrics.metric_value.MetricValue`
+            to plot.
         other_metric_value: If provided, another
-            :class:`~langcheck.metrics.metric_value.MetricValue` to plot on the same
-            chart.
+            :class:`~langcheck.metrics.metric_value.MetricValue` to plot on the
+            same chart.
         jupyter_mode: Defaults to 'inline', which displays the chart in the
             cell output. For Colab, set this to 'external' instead. See the
             Dash documentation for more info:
