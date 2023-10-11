@@ -112,7 +112,7 @@ class MetricValue(Generic[NumericType]):
 
     def __bool__(self):
         raise ValueError(
-            'An MetricValue cannot be used as a boolean. '
+            'A MetricValue cannot be used as a boolean. '
             'Try an expression like `metric_value > 0.5`, '
             '`metric_value.all()`, or `metric_value.any()` instead.')
 
