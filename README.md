@@ -7,7 +7,8 @@ Simple, Pythonic building blocks to evaluate LLM applications.
 
 [Install](#install) •
 [Examples](#examples) •
-[Docs](#docs)  •
+[Docs](https://langcheck.readthedocs.io/en/latest/index.html) •
+[Quickstart](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [日本語](README_ja.md)
 
 </div>
@@ -173,7 +174,3 @@ raw_output = my_llm_app(random_user_prompt)
 while langcheck.eval.contains_any_strings([raw_output], blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```
-
-## Docs
-
-Link to ReadTheDocs.
