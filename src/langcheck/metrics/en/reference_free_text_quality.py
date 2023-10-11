@@ -530,8 +530,8 @@ def flesch_kincaid_grade(
 
 
 def ai_disclaimer_similarity(
-        generated_outputs: List[str],
-        prompts: Optional[List[str]] = None,
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
         ai_disclaimer_phrase: str = (
             "I don't have personal opinions, emotions, or consciousness."),
         embedding_model_type: str = 'local',
@@ -559,6 +559,9 @@ def ai_disclaimer_similarity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
+
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
     semantic_sim_values = semantic_sim(generated_outputs,
                                        ai_disclaimer_phrase_list, prompts,
