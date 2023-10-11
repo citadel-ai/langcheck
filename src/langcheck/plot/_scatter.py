@@ -164,7 +164,7 @@ def _scatter_two_eval_values(eval_value: EvalValue, other_eval_value: EvalValue,
 
     # Append "(other)" to the metric name of the second EvalValue if necessary.
     # (It's possible to plot two EvalValues from the same metric, e.g. if you
-    # compute semantic_sim() with a local model and an OpenAI model)
+    # compute semantic_similarity() with a local model and an OpenAI model)
     if eval_value.metric_name == other_eval_value.metric_name:
         other_eval_value = deepcopy(other_eval_value)
         other_eval_value.metric_name += ' (other)'

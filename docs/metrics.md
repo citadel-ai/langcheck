@@ -36,7 +36,7 @@ LangCheck metrics are categorized by metric type, which correspond to the kind o
 |                                Type of Metric                                 |                                                     Examples                                                     |   Languages   |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------- |
 | [Reference-Free Text Quality Metrics](#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA        |
-| [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_sim(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`           | EN, JA        |
+| [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA        |
 | [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA        |
 | [Text Structure Metrics](#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages |
 
@@ -52,7 +52,7 @@ An example metric is {func}`~langcheck.metrics.en.reference_free_text_quality.to
 
 Reference-based metrics require a ground truth output (a "reference") to compare LLM outputs against. For example, in a Q&A application, you might have human written answers as references.
 
-An example metric is {func}`~langcheck.metrics.en.reference_based_text_quality.semantic_sim`, which computes the semantic similarity between the LLM-generated text and the reference text as a score between -1 and 1.
+An example metric is {func}`~langcheck.metrics.en.reference_based_text_quality.semantic_similarity`, which computes the semantic similarity between the LLM-generated text and the reference text as a score between -1 and 1.
 
 (source-based-text-quality-metrics)=
 ### Source-Based Text Quality Metrics
@@ -71,27 +71,27 @@ An example metric is {func}`~langcheck.metrics.text_structure.is_json_object`, w
 (computing-metrics-with-openai-models)=
 ### Computing Metrics with OpenAI Models
 
-Several text quality metrics are computed using a model (e.g. `toxicity`, `sentiment`, `semantic_sim`, `factual_consistency`). By default, LangCheck will download and use a model that can run locally on your machine (often from HuggingFace) so that the metric function works with no additional setup.
+Several text quality metrics are computed using a model (e.g. `toxicity`, `sentiment`, `semantic_similarity`, `factual_consistency`). By default, LangCheck will download and use a model that can run locally on your machine (often from HuggingFace) so that the metric function works with no additional setup.
 
 However, if you have an OpenAI API key, you can also configure these metrics to use an OpenAI model, which may provide more accurate results for more complex use cases. Here are some examples of how to do this:
 
 ```python
 import openai
-from langcheck.metrics.en import semantic_sim
+from langcheck.metrics.en import semantic_similarity
 
 # https://platform.openai.com/account/api-keys
 openai.api_key = YOUR_OPENAI_API_KEY
 
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
-eval_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
+eval_value = semantic_similarity(generated_outputs, reference_outputs, embedding_model_type='openai')
 ```
 
 Or, if you're using the Azure API type, make sure to set all of the necessary variables:
 
 ```python
 import openai
-from langcheck.metrics.en import semantic_sim
+from langcheck.metrics.en import semantic_similarity
 
 openai.api_type = 'azure'
 openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
@@ -103,7 +103,7 @@ reference_outputs = ["The cat sat on the mat."]
 
 # When using the Azure API type, you need to pass in your model's
 # deployment name
-eval_value = semantic_sim(generated_outputs,
+eval_value = semantic_similarity(generated_outputs,
                           reference_outputs,
                           embedding_model_type='openai',
                           openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})

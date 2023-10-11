@@ -9,12 +9,12 @@ from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.en.reference_based_text_quality import \
-    semantic_sim as en_semantic_sim
+    semantic_similarity as en_semantic_similarity
 from langcheck.metrics.eval_value import EvalValue
 from langcheck.metrics.ja._tokenizers import JanomeTokenizer
 
 
-def semantic_sim(
+def semantic_similarity(
         generated_outputs: List[str] | str,
         reference_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
@@ -65,10 +65,11 @@ def semantic_sim(
         'The supported ones are ["local", "openai"]')
 
     if embedding_model_type == 'openai':
-        # We can use the same API as english semantic_sim to compare the
+        # We can use the same API as english semantic_similarity to compare the
         # similarity
-        eval_value = en_semantic_sim(generated_outputs, reference_outputs,
-                                     prompts, embedding_model_type, openai_args)
+        eval_value = en_semantic_similarity(generated_outputs,
+                                            reference_outputs, prompts,
+                                            embedding_model_type, openai_args)
         eval_value.language = 'ja'
         return eval_value
 
@@ -87,7 +88,7 @@ def semantic_sim(
     # vectors to exceed 1.0 slightly, so we clip the outputs
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
 
-    return EvalValue(metric_name='semantic_sim',
+    return EvalValue(metric_name='semantic_similarity',
                      prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,

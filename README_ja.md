@@ -63,7 +63,7 @@ langcheck.metrics.ja.sentiment(generated_outputs)
 # reference_outputsに含まれる事実とgenerated_outputsの整合性が取れているかの分析
 langcheck.metrics.ja.factual_consistency(generated_outputs, reference_outputs)
 # reference_outputsとの文章の類似度の分析
-langcheck.metrics.ja.semantic_sim(generated_outputs, reference_outputs)
+langcheck.metrics.ja.semantic_similarity(generated_outputs, reference_outputs)
 langcheck.metrics.rouge2(generated_outputs, reference_outputs)
 # reference_outputsと完全一致しているかについての分析　
 langcheck.metrics.exact_match(generated_outputs, reference_outputs)
@@ -90,20 +90,20 @@ langcheck.metrics.validation_fn(generated_outputs, lambda x: 'myKey' in json.loa
 これらの手法を使う際には、正しくAPI Keyが設定されていることを確認してください。
 ```python
 import openai
-from langcheck.metrics.ja import semantic_sim
+from langcheck.metrics.ja import semantic_similarity
 
 # https://platform.openai.com/account/api-keys
 openai.api_key = YOUR_OPENAI_API_KEY
 
 generated_outputs = ["猫が座っています。"]
 reference_outputs = ["猫が座っていました。"]
-eval_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
+eval_value = semantic_similarity(generated_outputs, reference_outputs, embedding_model_type='openai')
 ```
 
 Azure OpenAIのAPIをお使いの場合、さらに必要なオプションが指定されていることを確認してください。
 ```python
 import openai
-from langcheck.metrics.ja import semantic_sim
+from langcheck.metrics.ja import semantic_similarity
 
 openai.api_type = 'azure'
 openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
@@ -113,10 +113,10 @@ openai.api_key = YOUR_OPENAI_API_KEY
 generated_outputs = ["猫が座っています。"]
 reference_outputs = ["猫が座っていました。"]
 # Azure OpenAIをお使いの場合は、正しいデプロイ名を指定してください。
-eval_value = semantic_sim(generated_outputs,
-                          reference_outputs,
-                          embedding_model_type='openai',
-                          openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
+eval_value = semantic_similarity(generated_outputs,
+                                 reference_outputs,
+                                 embedding_model_type='openai',
+                                 openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
 ```
 
 ### 数値の可視化
