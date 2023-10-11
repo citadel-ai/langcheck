@@ -23,21 +23,21 @@ generated_outputs = [
 ]
 
 # Check text quality and get results as a DataFrame
-langcheck.eval.fluency(generated_outputs)
+langcheck.metrics.fluency(generated_outputs)
 ```
 
-The output of {func}`langcheck.eval.fluency()` (and [any metric function](metrics.md)) can be printed as a DataFrame:
+The output of {func}`langcheck.metrics.fluency()` (and [any metric function](metrics.md)) can be printed as a DataFrame:
 
-![EvalValue output](_static/quickstart_EvalValue_output.png)
+![MetricValue output](_static/quickstart_MetricValue_output.png)
 
 It's more than just a DataFrame, though. Try setting a threshold to view pass/fail results:
 
 ```python
-fluency_values = langcheck.eval.fluency(generated_outputs)
+fluency_values = langcheck.metrics.fluency(generated_outputs)
 fluency_values > 0.5
 ```
 
-![EvalValue output](_static/quickstart_EvalValueWithThreshold_output.png)
+![MetricValue output](_static/quickstart_MetricValueWithThreshold_output.png)
 
 You can also set an assertion (useful in unit tests!):
 
@@ -82,13 +82,13 @@ generated_outputs = [my_llm_app(prompt) for prompt in prompts]
 
 # Unit tests
 def test_toxicity(generated_outputs):
-    assert langcheck.eval.toxicity(generated_outputs) < 0.1
+    assert langcheck.metrics.toxicity(generated_outputs) < 0.1
 
 def test_fluency(generated_outputs):
-    assert langcheck.eval.fluency(generated_outputs) > 0.9
+    assert langcheck.metrics.fluency(generated_outputs) > 0.9
 
 def test_json_structure(generated_outputs):
-    assert langcheck.eval.validation_fn(
+    assert langcheck.metrics.validation_fn(
         generated_outputs, lambda x: 'myKey' in json.loads(x)).all()
 ```
 
@@ -98,10 +98,10 @@ If you also have reference outputs, you can compare against predictions against 
 reference_outputs = load_json('reference_outputs.json')
 
 def test_semantic_similarity(generated_outputs, reference_outputs):
-    assert langcheck.eval.semantic_sim(generated_outputs, reference_outputs) > 0.9
+    assert langcheck.metrics.semantic_sim(generated_outputs, reference_outputs) > 0.9
 
 def test_rouge2_similarity(generated_outputs, reference_outputs):
-    assert langcheck.eval.rouge2(generated_outputs, reference_outputs) > 0.9
+    assert langcheck.metrics.rouge2(generated_outputs, reference_outputs) > 0.9
 ```
 
 Coming soon: LangCheck can also help you create new test cases with `langcheck.augment`!
@@ -116,10 +116,10 @@ Just save the outputs and pass them into LangCheck.
 recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
 
 # Evaluate and display toxic outputs in production logs
-langcheck.eval.toxicity(recorded_outputs) < 0.25
+langcheck.metrics.toxicity(recorded_outputs) < 0.25
 
 # Or if your app outputs structured text
-langcheck.eval.is_json_array(recorded_outputs)
+langcheck.metrics.is_json_array(recorded_outputs)
 ```
 
 ### Guardrails
@@ -133,7 +133,7 @@ Just filter candidate outputs through LangCheck.
 raw_output = my_llm_app(random_user_prompt)
 
 # Filter the output before it reaches the user
-while langcheck.eval.contains_any_strings(raw_output, blacklist_words).any():
+while langcheck.metrics.contains_any_strings(raw_output, blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```
 
@@ -144,7 +144,7 @@ Another common use case is detecting hallucinations:
 raw_output, context = my_rag_app(random_user_prompt)
 
 # Fact check the output against the context before it reaches the user
-if langcheck.eval.factual_consistency(raw_output, context) < 0.5:
+if langcheck.metrics.factual_consistency(raw_output, context) < 0.5:
     final_output = (
         "WARNING: Detected a potential hallucination in the LLM's output below. "
         "Please fact-check the output!\n" +

@@ -13,7 +13,7 @@ To install and run the LangCheck package from your local git repo:
 # Try using langcheck
 # (If you edit the package, just restart the Python REPL to reflect your changes)
 > python
->>> from langcheck.eval import is_float
+>>> from langcheck.metrics import is_float
 >>> is_float(['1', '-2', 'a'])
 Metric: is_float
 prompt generated_output reference_output  metric_value
@@ -52,7 +52,7 @@ To make documentation:
 2. Re-generate all `docs/_build/*.html` files from the raw `.rst` and `.md` files.
     - `make -C docs clean html`
     - This uses autodoc to populate .html files at the function-level.
-    - Note: you'll see warnings like "more than one target found for cross-reference 'EvalValue'". Sphinx seems to get confused when we import a module's classes into its parent package's `__init__.py`. This seems to be harmless and there doesn't seem to be a way to suppress it.
+    - Note: you'll see warnings like "more than one target found for cross-reference 'MetricValue'". Sphinx seems to get confused when we import a module's classes into its parent package's `__init__.py`. This seems to be harmless and there doesn't seem to be a way to suppress it.
         - [https://groups.google.com/g/sphinx-users/c/vuW6OOb96Yo](https://groups.google.com/g/sphinx-users/c/vuW6OOb96Yo)
 
 3. View documentation locally

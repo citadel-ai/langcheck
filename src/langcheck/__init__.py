@@ -1,3 +1,3 @@
-from langcheck import eval, plot, utils
+from langcheck import metrics, plot, utils
 
-__all__ = ['eval', 'plot', 'utils']
+__all__ = ['metrics', 'plot', 'utils']
