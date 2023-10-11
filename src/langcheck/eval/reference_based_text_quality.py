@@ -1,20 +1,26 @@
+from __future__ import annotations
+
 from typing import List
 
+from langcheck.eval._validation import validate_parameters_reference_based
 from langcheck.eval.eval_value import EvalValue
 
 
-def exact_match(generated_outputs: List[str],
-                reference_outputs: List[str]) -> EvalValue[int]:
+def exact_match(generated_outputs: List[str] | str,
+                reference_outputs: List[str] | str) -> EvalValue[int]:
     '''Checks if the generated outputs exact matches with the reference outputs.
     This metric takes on binary 0 or 1 values.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        reference_outputs: A list of reference outputs
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    generated_outputs, reference_outputs = validate_parameters_reference_based(
+        generated_outputs, reference_outputs)
+
     # The values are binary: 1 if it's an exact match and 0 if not
     metric_values = []
     for gen, ref in zip(generated_outputs, reference_outputs):

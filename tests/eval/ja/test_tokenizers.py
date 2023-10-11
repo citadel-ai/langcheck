@@ -1,4 +1,4 @@
-import sys
+import pkgutil
 from typing import List
 
 import pytest
@@ -21,7 +21,7 @@ def test_janome_tokenizer(text: str, expected_tokens: List[str],
     assert tokenizer.tokenize(text) == expected_tokens
 
 
-@pytest.mark.skipif("MeCab" in sys.modules,
+@pytest.mark.skipif(pkgutil.find_loader("MeCab"),
                     reason="MeCab has already been installed.")
 def test_handle_mecab_not_founud() -> None:
     with pytest.raises(ModuleNotFoundError):

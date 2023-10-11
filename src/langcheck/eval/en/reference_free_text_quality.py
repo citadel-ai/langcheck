@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 import torch
@@ -5,6 +7,7 @@ from detoxify import Detoxify
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
+from langcheck.eval._validation import validate_parameters_reference_free
 from langcheck.eval.en._openai import OpenAIBasedEvaluator
 from langcheck.eval.eval_value import EvalValue
 from langcheck.stats import compute_stats
@@ -20,8 +23,8 @@ _fluency_model = None
 _toxicity_model = None
 
 
-def sentiment(generated_outputs: List[str],
-              prompts: Optional[List[str]] = None,
+def sentiment(generated_outputs: List[str] | str,
+              prompts: Optional[List[str] | str] = None,
               model_type: str = 'local',
               openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
@@ -41,9 +44,9 @@ def sentiment(generated_outputs: List[str],
     setting up the OpenAI API key.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -52,6 +55,8 @@ def sentiment(generated_outputs: List[str],
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -169,8 +174,8 @@ def _sentiment_openai(
     return score_list
 
 
-def fluency(generated_outputs: List[str],
-            prompts: Optional[List[str]] = None,
+def fluency(generated_outputs: List[str] | str,
+            prompts: Optional[List[str] | str] = None,
             model_type: str = 'local',
             openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
@@ -188,9 +193,9 @@ def fluency(generated_outputs: List[str],
     setting up the OpenAI API key.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -199,6 +204,8 @@ def fluency(generated_outputs: List[str],
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -317,8 +324,8 @@ def _fluency_openai(
     return score_list
 
 
-def toxicity(generated_outputs: List[str],
-             prompts: Optional[List[str]] = None,
+def toxicity(generated_outputs: List[str] | str,
+             prompts: Optional[List[str] | str] = None,
              model_type: str = 'local',
              openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
@@ -336,9 +343,9 @@ def toxicity(generated_outputs: List[str],
     setting up the OpenAI API key.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -347,6 +354,8 @@ def toxicity(generated_outputs: List[str],
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -442,8 +451,8 @@ def _toxicity_openai(
 
 
 def flesch_reading_ease(
-        generated_outputs: List[str],
-        prompts: Optional[List[str]] = None) -> EvalValue[float]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the readability of generated outputs using the Flesch Reading
     Ease Score. This metric takes on float values between (-∞, 121.22], but
     typically ranges between 0 and 100, where higher scores mean the text is
@@ -454,13 +463,16 @@ def flesch_reading_ease(
     details.
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
+
     output_stats = [compute_stats(output) for output in generated_outputs]
     scores = [
         206.835 - 1.015 * (stat.num_words / stat.num_sentences) - 84.6 *
@@ -476,8 +488,8 @@ def flesch_reading_ease(
 
 
 def flesch_kincaid_grade(
-        generated_outputs: List[str],
-        prompts: Optional[List[str]] = None) -> EvalValue[float]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the readability of generated outputs using the Flesch-Kincaid
     Grade Level metric. This metric takes on float values between [-3.40, ∞),
     but typically ranges between 0 and 12 (corresponding to U.S. grade levels),
@@ -490,13 +502,16 @@ def flesch_kincaid_grade(
         https://apps.dtic.mil/sti/citations/ADA006655
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
+
     output_stats = [compute_stats(output) for output in generated_outputs]
     scores = [
         0.39 * (stat.num_words / stat.num_sentences) + 11.8 *

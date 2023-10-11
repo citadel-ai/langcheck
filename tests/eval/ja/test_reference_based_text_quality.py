@@ -22,7 +22,8 @@ parametrize_tokenizer = pytest.mark.parametrize('tokenizer', [
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
-                         [(["猫がマットの上に座った。"], ["猫がマットの上に座った。"])])
+                         [("猫がマットの上に座った。", "猫がマットの上に座った。"),
+                          (["猫がマットの上に座った。"], ["猫がマットの上に座った。"])])
 @parametrize_rouge_function
 @parametrize_tokenizer
 def test_rouge_identical(generated_outputs: str, reference_outputs: str,
@@ -39,7 +40,8 @@ def test_rouge_identical(generated_outputs: str, reference_outputs: str,
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
-                         [(["猫が、マットの上に座った。"], ["私は、アイスクリームを食べます。"])])
+                         [("猫が、マットの上に座った。", "私は、アイスクリームを食べます。"),
+                          (["猫が、マットの上に座った。"], ["私は、アイスクリームを食べます。"])])
 @parametrize_rouge_function
 @parametrize_tokenizer
 def test_rouge_no_overlap(generated_outputs: str, reference_outputs: str,
@@ -57,7 +59,8 @@ def test_rouge_no_overlap(generated_outputs: str, reference_outputs: str,
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
-                         [(["猫がマットの上に座った。"], ["猫がマットの上に座っている。"])])
+                         [("猫がマットの上に座った。", "猫がマットの上に座っている。"),
+                          (["猫がマットの上に座った。"], ["猫がマットの上に座っている。"])])
 @parametrize_rouge_function
 @parametrize_tokenizer
 def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
@@ -79,7 +82,8 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
-                         [(["猫が座っています。"], ["猫が座っています。"])])
+                         [("猫が座っています。", "猫が座っています。"),
+                          (["猫が座っています。"], ["猫が座っています。"])])
 def test_semantic_sim_identical(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
@@ -87,7 +91,8 @@ def test_semantic_sim_identical(generated_outputs, reference_outputs):
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
-                         [(["猫が座っています。"], ["ネコがすわっています。"])])
+                         [("猫が座っています。", "ネコがすわっています。"),
+                          (["猫が座っています。"], ["ネコがすわっています。"])])
 def test_semantic_sim_character_sensitivity(generated_outputs,
                                             reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
@@ -96,7 +101,8 @@ def test_semantic_sim_character_sensitivity(generated_outputs,
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
-                         [(["猫が座っています。"], ["僕はアイスクリームを食べるのが好きです。"])])
+                         [("猫が座っています。", "僕はアイスクリームを食べるのが好きです。"),
+                          (["猫が座っています。"], ["僕はアイスクリームを食べるのが好きです。"])])
 def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
     eval_value = semantic_sim(generated_outputs, reference_outputs)
     semantic_sim_value = eval_value.metric_values[0]
@@ -104,7 +110,8 @@ def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
-                         [(["猫が座っています。"], ["猫が座っています。"])])
+                         [("猫が座っています。", "猫が座っています。"),
+                          (["猫が座っています。"], ["猫が座っています。"])])
 def test_semantic_sim_openai(generated_outputs, reference_outputs):
     mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
     # Calling the openai.Embedding.create method requires an OpenAI API key, so

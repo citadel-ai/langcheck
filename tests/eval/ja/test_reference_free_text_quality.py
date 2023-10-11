@@ -11,13 +11,17 @@ from tests.utils import is_close
 ################################################################################
 
 
-@pytest.mark.parametrize('generated_outputs', [["私は嬉しい", "私は悲しい"], ['こんにちは']])
+@pytest.mark.parametrize('generated_outputs', [
+    'こんにちは',
+    ['こんにちは'],
+    ["私は嬉しい", "私は悲しい"],
+])
 def test_sentiment(generated_outputs):
     eval_value = sentiment(generated_outputs)
     assert all(0 <= v <= 1 for v in eval_value.metric_values)
 
 
-@pytest.mark.parametrize('generated_outputs', ["私は嬉しい"])
+@pytest.mark.parametrize('generated_outputs', ["私は嬉しい", ["私は嬉しい"]])
 def test_sentiment_openai(generated_outputs):
     mock_chat_response = {
         'choices': [{
@@ -91,6 +95,8 @@ def test_fluency_openai(generated_outputs):
 
 
 @pytest.mark.parametrize('generated_outputs,metric_values', [
+    ('吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。',
+     [73.499359]),
     (['吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。'
      ], [73.499359]),
     (['日本語自然言語処理には、日本語独特の技法が多数必要で、欧米系言語と比較して難易度が高い。'], [24.7875]),

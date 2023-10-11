@@ -181,7 +181,7 @@ langcheck.eval.is_json_array(recorded_outputs)
 ```python
 raw_output = my_llm_app(random_user_prompt)
 # 不適切な単語が含まれていた場合、別の出力を作って上書きする
-while langcheck.eval.contains_any_strings([raw_output], blacklist_words).any():
+while langcheck.eval.contains_any_strings(raw_output, blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```
 

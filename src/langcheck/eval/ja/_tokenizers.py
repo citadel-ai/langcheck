@@ -62,8 +62,8 @@ class MeCabTokenizer(_JapaneseTokenizer):
         except ModuleNotFoundError:
             raise ModuleNotFoundError(
                 "No module named 'MeCab'.\n"
-                "Since 'MeCabTokenizer' is an optional feature, 'MeCab'"
-                "is not installed by default along with langcheck. Please"
+                "Since 'MeCabTokenizer' is an optional feature, 'MeCab' "
+                "is not installed by default along with langcheck. Please "
                 "set up 'MeCab' on your own.")
 
         self.tokenizer = MeCab.Tagger()
