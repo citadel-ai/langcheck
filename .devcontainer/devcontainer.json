@@ -19,6 +19,7 @@
 		"ms-python.vscode-pylance",
 		"ms-python.flake8",
 		"ms-python.isort",
+		"eeyore.yapf",
 		"GitHub.vscode-pull-request-github",
 		"ms-azuretools.vscode-docker",
 		"shardulm94.trailing-spaces",
