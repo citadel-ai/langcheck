@@ -174,8 +174,8 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
     # we mock the return value instead
     with patch('openai.Embedding.create',
                Mock(return_value=mock_embedding_response)):
-        eval_value = ai_disclaimer_similarity(
-            generated_outputs, embedding_model_type='openai')
+        eval_value = ai_disclaimer_similarity(generated_outputs,
+                                              embedding_model_type='openai')
         sim_value = eval_value.metric_values[0]
         # Since the mock embeddings are the same for the generated output and
         # the AI disclaimer phrase, the AI disclaimer language similarity should
