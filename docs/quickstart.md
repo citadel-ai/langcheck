@@ -53,11 +53,17 @@ fluency_values.scatter()
 
 ![Scatter plot for one metric](_static/scatter_one_metric.gif)
 
-Finally, just call `to_df()` to get the underlying DataFrame for custom analysis:
+To get the underlying DataFrame for custom analysis, just call `to_df()`:
 
 ```python
 fluency_values.to_df()
 (fluency_values > 0.5).to_df()
+```
+
+Finally, metric functions can also take a single string as input, which is useful for monitoring and guardrails use cases.
+
+```python
+langcheck.metrics.fluency('The black cat is sitting')
 ```
 
 To learn more about the different metrics in LangCheck, see [the Metrics page](metrics.md).
@@ -146,8 +152,8 @@ raw_output, context = my_rag_app(random_user_prompt)
 # Fact check the output against the context before it reaches the user
 if langcheck.metrics.factual_consistency(raw_output, context) < 0.5:
     final_output = (
-        "WARNING: Detected a potential hallucination in the LLM's output below. "
-        "Please fact-check the output!\n" +
+        "WARNING: Detected a potential hallucination in the LLM's output. " +
+        "Please fact-check the output below!\n" +
         raw_output
     )
 ```

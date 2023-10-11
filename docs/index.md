@@ -1,11 +1,12 @@
 # LangCheck Documentation
 
-LangCheck provides simple, Pythonic building blocks to evaluate LLM applications.
+LangCheck is a simple, Pythonic toolkit to evaluate LLM applications – use it to create unit tests, monitoring, guardrails, and more.
+
+Get started with the docs below.
 
 ```{toctree}
 :maxdepth: 1
 
-Home <self>
 installation.md
 quickstart.md
 metrics.md

@@ -36,8 +36,8 @@ def semantic_sim(
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
-    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
-    setting up the OpenAI API key.
+    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    for examples on setting up the OpenAI API key.
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity
