@@ -2,7 +2,7 @@
 
 
 langcheck.metrics
-==============
+=================
 
 .. <UPDATE_AFTER_SPHINX_APIDOC>
 
