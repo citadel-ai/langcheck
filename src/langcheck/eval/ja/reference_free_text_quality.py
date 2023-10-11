@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 import regex as re
@@ -5,6 +7,7 @@ import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
+from langcheck.eval._validation import validate_parameters_reference_free
 from langcheck.eval.en.reference_free_text_quality import _toxicity_openai
 from langcheck.eval.en.reference_free_text_quality import \
     sentiment as en_sentiment
@@ -20,8 +23,8 @@ _toxicity_tokenizer = None
 _toxicity_model = None
 
 
-def sentiment(generated_outputs: List[str],
-              prompts: Optional[List[str]] = None,
+def sentiment(generated_outputs: List[str] | str,
+              prompts: Optional[List[str] | str] = None,
               model_type: str = 'local',
               openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
@@ -44,9 +47,9 @@ def sentiment(generated_outputs: List[str],
         https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -55,7 +58,8 @@ def sentiment(generated_outputs: List[str],
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -183,8 +187,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
 
 def tateishi_ono_yamada_reading_ease(
-        generated_outputs: List[str],
-        prompts: Optional[List[str]] = None) -> EvalValue[float]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
     '''Calculates the readability of generated Japanese outputs using the
     reading ease score introduced in "日本文の読みやすさの評価式 (A Computer
     Readability Formula of Japanese Texts for Machine Scoring)". This metric
@@ -203,13 +207,16 @@ def tateishi_ono_yamada_reading_ease(
         https://aclanthology.org/C88-2135/ (English)
 
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
+
     # Regular expressions used to compute the reading ease score
     blank_re = r'[ |　|\n]'
     hiragana_run_re = r'[\u3041-\u309F]+'

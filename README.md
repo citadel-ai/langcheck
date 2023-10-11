@@ -171,6 +171,6 @@ LangCheck isn't just for testing, it can also provide guardrails on LLM outputs.
 
 ```python
 raw_output = my_llm_app(random_user_prompt)
-while langcheck.eval.contains_any_strings([raw_output], blacklist_words).any():
+while langcheck.eval.contains_any_strings(raw_output, blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```

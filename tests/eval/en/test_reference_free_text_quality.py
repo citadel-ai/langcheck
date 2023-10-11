@@ -13,13 +13,13 @@ from tests.utils import is_close
 
 @pytest.mark.parametrize(
     'generated_outputs',
-    [["I'm fine!", "I'm feeling pretty bad today."], ['Hello']])
+    ['Hello', ['Hello'], ["I'm fine!", "I'm feeling pretty bad today."]])
 def test_sentiment(generated_outputs):
     eval_value = sentiment(generated_outputs)
     assert all(0 <= v <= 1 for v in eval_value.metric_values)
 
 
-@pytest.mark.parametrize('generated_outputs', ["I'm fine!"])
+@pytest.mark.parametrize('generated_outputs', ["I'm fine!", ["I'm fine!"]])
 def test_sentiment_openai(generated_outputs):
     mock_chat_response = {
         'choices': [{
@@ -39,16 +39,18 @@ def test_sentiment_openai(generated_outputs):
         assert eval_value.metric_values[0] == 1
 
 
-@pytest.mark.parametrize(
-    'generated_outputs',
-    [["I'd appreciate your help.", 'Today I eats very much apples good.'],
-     ['cat']])
+@pytest.mark.parametrize('generated_outputs', [
+    'cat', ['cat'],
+    ["I'd appreciate your help.", 'Today I eats very much apples good.']
+])
 def test_fluency(generated_outputs):
     eval_value = fluency(generated_outputs)
     assert all(0 <= v <= 1 for v in eval_value.metric_values)
 
 
-@pytest.mark.parametrize('generated_outputs', ["I'd appreciate your help."])
+@pytest.mark.parametrize(
+    'generated_outputs',
+    ["I'd appreciate your help.", ["I'd appreciate your help."]])
 def test_fluency_openai(generated_outputs):
     mock_chat_response = {
         'choices': [{
@@ -68,16 +70,18 @@ def test_fluency_openai(generated_outputs):
         assert eval_value.metric_values[0] == 1
 
 
-@pytest.mark.parametrize(
-    'generated_outputs',
-    [['I hate you. Shut your mouth!', 'Thank you so much for coming today!!'],
-     ['foo bar']])
+@pytest.mark.parametrize('generated_outputs', [
+    'foo bar', ['foo bar'],
+    ['I hate you. Shut your mouth!', 'Thank you so much for coming today!!']
+])
 def test_toxicity(generated_outputs):
     eval_value = toxicity(generated_outputs)
     assert all(0 <= v <= 1 for v in eval_value.metric_values)
 
 
-@pytest.mark.parametrize('generated_outputs', ['I hate you. Shut your mouth!'])
+@pytest.mark.parametrize(
+    'generated_outputs',
+    ['I hate you. Shut your mouth!', ['I hate you. Shut your mouth!']])
 def test_toxicity_openai(generated_outputs):
     mock_chat_response = {
         'choices': [{
@@ -101,6 +105,11 @@ def test_toxicity_openai(generated_outputs):
     'generated_outputs,metric_values',
     [
         (
+            'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
+            'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+            'a place on it is kept for you.',
+            [75.00651612903226]),
+        (
             [
                 'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
                 'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
@@ -122,6 +131,11 @@ def test_flesch_reading_ease(generated_outputs, metric_values):
 @pytest.mark.parametrize(
     'generated_outputs,metric_values',
     [
+        (
+            'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
+            'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+            'a place on it is kept for you.',
+            [4.33767741935484]),
         (
             [
                 'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501

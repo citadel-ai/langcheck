@@ -133,7 +133,7 @@ Just filter candidate outputs through LangCheck.
 raw_output = my_llm_app(random_user_prompt)
 
 # Filter the output before it reaches the user
-while langcheck.eval.contains_any_strings([raw_output], blacklist_words).any():
+while langcheck.eval.contains_any_strings(raw_output, blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```
 
@@ -144,7 +144,7 @@ Another common use case is detecting hallucinations:
 raw_output, context = my_rag_app(random_user_prompt)
 
 # Fact check the output against the context before it reaches the user
-if langcheck.eval.factual_consistency([raw_output], context) < 0.5:
+if langcheck.eval.factual_consistency(raw_output, context) < 0.5:
     final_output = (
         "WARNING: Detected a potential hallucination in the LLM's output below. "
         "Please fact-check the output!\n" +
