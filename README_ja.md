@@ -8,8 +8,8 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 
 [インストール](#インストール) •
 [利用例](#利用例) •
-[ドキュメント](https://langcheck.readthedocs.io/en/latest/index.html) •
 [クイックスタート](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
+[ドキュメント](https://langcheck.readthedocs.io/en/latest/index.html) •
 [English](README.md)
 
 </div>
@@ -50,75 +50,12 @@ assert sentiment(generated_outputs) > 0.5
 
 LangCheckには、他にも以下のようなLLMアプリケーションを評価するための指標が含まれています。
 
-```python
-# 1. LLMのアウトプット単体での評価
-# 有害表現分析
-langcheck.metrics.ja.toxicity(generated_outputs)
-# 文章表現の自然さの分析　
-langcheck.metrics.ja.fluency(generated_outputs)
-# 感情分析
-langcheck.metrics.ja.sentiment(generated_outputs)
-
-# 2. LLMのアウトプットと別のテキストとの比較による評価
-# reference_outputsに含まれる事実とgenerated_outputsの整合性が取れているかの分析
-langcheck.metrics.ja.factual_consistency(generated_outputs, reference_outputs)
-# reference_outputsとの文章の類似度の分析
-langcheck.metrics.ja.semantic_similarity(generated_outputs, reference_outputs)
-langcheck.metrics.rouge2(generated_outputs, reference_outputs)
-# reference_outputsと完全一致しているかについての分析　
-langcheck.metrics.exact_match(generated_outputs, reference_outputs)
-
-# 3. アウトプットの構造に関わる評価
-# 正しい整数の形式になっているか？
-langcheck.metrics.is_int(generated_outputs, domain=range(1, 6))
-# 正しい小数の形式になっているか？
-langcheck.metrics.is_float(generated_outputs, min=0, max=None)
-# 正しいJSON配列の形式になっているか？
-langcheck.metrics.is_json_array(generated_outputs)
-# 正しいJSONオブジェクトの形式になっているか？
-langcheck.metrics.is_json_object(generated_outputs)
-# 正規表現とのマッチによる分析
-langcheck.metrics.contains_regex(generated_outputs, r"\d{5,}")
-# 指定された語を含むかどうかの分析
-langcheck.metrics.contains_all_strings(generated_outputs, ['これらの', '単語を', '含む'])
-langcheck.metrics.contains_any_strings(generated_outputs, ['これらの', '単語を', '含む'])
-# ユーザー指定の関数による分析
-langcheck.metrics.validation_fn(generated_outputs, lambda x: 'myKey' in json.loads(x))
-```
-
-いくつかの指標においては、OpenAI APIを使った評価手法がサポートされています。
-これらの手法を使う際には、正しくAPI Keyが設定されていることを確認してください。
-```python
-import openai
-from langcheck.metrics.ja import semantic_similarity
-
-# https://platform.openai.com/account/api-keys
-openai.api_key = YOUR_OPENAI_API_KEY
-
-generated_outputs = ["猫が座っています。"]
-reference_outputs = ["猫が座っていました。"]
-metric_value = semantic_similarity(generated_outputs, reference_outputs, embedding_model_type='openai')
-```
-
-Azure OpenAIのAPIをお使いの場合、さらに必要なオプションが指定されていることを確認してください。
-```python
-import openai
-from langcheck.metrics.ja import semantic_similarity
-
-openai.api_type = 'azure'
-openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
-openai.api_version = YOUR_API_VERSION
-openai.api_key = YOUR_OPENAI_API_KEY
-
-generated_outputs = ["猫が座っています。"]
-reference_outputs = ["猫が座っていました。"]
-# Azure OpenAIをお使いの場合は、正しいデプロイ名を指定してください。
-metric_value = semantic_similarity(
-    generated_outputs,
-    reference_outputs,
-    embedding_model_type='openai',
-    openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
-```
+|                                                                 種類                                                                 |                                                   主な指標                                                    |     言語     |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------ |
+| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`                                               | 英語、日本語 |
+| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)` | 英語、日本語 |
+| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                             | 英語、日本語 |
+| [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                         | 全ての言語   |
 
 ### 数値の可視化
 LangCheckでは、他にもインタラクティブなグラフを使って数値を可視化することができます。
@@ -162,9 +99,36 @@ more_prompts += langcheck.augment.gender(prompts, to_gender='male')
 more_prompts += langcheck.augment.gpt35_rewrite(prompts)
 ```
 
-### モニタリングへの活用　
+### ユニットテスト　
 
-LangCheck はテストのためだけのツールではありません。LLMの出力のモニタリングにも活用いただけます。LLMの出力を保存して、LangCheckに入力してください。
+LangCheckを使うことで、LLMアプリケーションのユニットテストを簡単に書くことができます。
+
+例えば、テスト用のプロンプトを保存しておくだけで、以下のようにテストを行えます。
+
+```python
+from langcheck.utils import load_json
+
+# LLMアプリケーションをテスト用プロンプトに対して走らせ、出力を得る
+prompts = load_json('test_prompts.json')
+generated_outputs = [my_llm_app(prompt) for prompt in prompts]
+
+# ユニットテスト　
+def test_toxicity(generated_outputs):
+    assert langcheck.metrics.toxicity(generated_outputs) < 0.1
+
+def test_fluency(generated_outputs):
+    assert langcheck.metrics.fluency(generated_outputs) > 0.9
+
+def test_json_structure(generated_outputs):
+    assert langcheck.metrics.validation_fn(
+        generated_outputs, lambda x: 'myKey' in json.loads(x)).all()
+```
+
+### モニタリング
+
+本番環境のLLMの出力のモニタリングにもLangCheckを活用できます。
+
+LLMの出力を保存して、LangCheckに入力してください。
 
 ```python
 from langcheck.utils import load_json
@@ -176,12 +140,14 @@ langcheck.metrics.ja.toxicity(recorded_outputs) < 0.25
 langcheck.metrics.is_json_array(recorded_outputs)
 ```
 
-### ガードレールとしての活用
+### ガードレール
 
 他にも、LLMの出力の安全性を高めるガードレールとしてもお使いいただけます。
 
 ```python
+# LLMからいったん出力を得る
 raw_output = my_llm_app(random_user_prompt)
+
 # 不適切な単語が含まれていた場合、別の出力を作って上書きする
 while langcheck.metrics.contains_any_strings(raw_output, blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
