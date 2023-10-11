@@ -84,7 +84,7 @@ openai.api_key = YOUR_OPENAI_API_KEY
 
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
-eval_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
+similarity_value = semantic_sim(generated_outputs, reference_outputs, embedding_model_type='openai')
 ```
 
 Or, if you're using the Azure API type, make sure to set all of the necessary variables:
@@ -103,7 +103,7 @@ reference_outputs = ["The cat sat on the mat."]
 
 # When using the Azure API type, you need to pass in your model's
 # deployment name
-eval_value = semantic_sim(generated_outputs,
+similarity_value = semantic_sim(generated_outputs,
                           reference_outputs,
                           embedding_model_type='openai',
                           openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
