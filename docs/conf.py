@@ -46,6 +46,8 @@ html_css_files = ['custom.css']
 html_title = 'LangCheck'
 html_favicon = '_static/LangCheck-Logo-Favicon.png'
 html_theme_options = {
+    "repository_url": "https://github.com/citadel-ai/langcheck",
+    "use_repository_button": True,
     "logo": {
         "image_light": "_static/LangCheck-Logo-horizontal.png",
         "image_dark": "_static/LangCheck-Logo-White-horizontal.png",
