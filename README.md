@@ -55,6 +55,7 @@ langcheck.eval.toxicity(generated_outputs)
 langcheck.eval.fluency(generated_outputs)
 langcheck.eval.sentiment(generated_outputs)
 langcheck.eval.flesch_kincaid_grade(generated_outputs)
+langcheck.eval.ai_disclaimer_language_similarity(generated_outputs)
 
 # 2. Reference-Based Text Quality Metrics
 langcheck.eval.factual_consistency(generated_outputs, reference_outputs)
