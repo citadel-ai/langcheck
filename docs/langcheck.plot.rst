@@ -6,14 +6,14 @@ langcheck.plot
 
 .. <UPDATE_AFTER_SPHINX_APIDOC>
 
-``langcheck.plot`` contains functions to visualize the output of metric functions (``EvalValue`` objects).
+``langcheck.plot`` contains functions to visualize the output of metric functions (``MetricValue`` objects).
 
 For example, run ``langcheck.plot.scatter()`` in a Jupyter notebook to see this interactive scatter plot:
 
 .. image:: _static/scatter_one_metric.gif
 
 .. tip::
-    As a shortcut, you can run plotting functions directly on an :class:`~langcheck.metrics.eval_value.EvalValue`. For example, ``toxicity_values.scatter()`` is equivalent to ``langcheck.plot.scatter(toxicity_values)``.
+    As a shortcut, you can run plotting functions directly on an :class:`~langcheck.metrics.metric_value.MetricValue`. For example, ``toxicity_values.scatter()`` is equivalent to ``langcheck.plot.scatter(toxicity_values)``.
 
 ----
 

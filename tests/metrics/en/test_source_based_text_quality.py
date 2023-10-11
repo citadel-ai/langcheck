@@ -15,13 +15,13 @@ from langcheck.metrics.en import factual_consistency
      (['Tokyo is the capital of Japan.', 'The Earth is flat.'
       ], ["Tokyo is Japan's capital city.", 'The Earth is round.'])])
 def test_factual_consistency(generated_outputs, sources):
-    eval_value = factual_consistency(generated_outputs,
-                                     sources,
-                                     model_type='local')
-    factual_consistency_high = eval_value.metric_values[0]
+    metric_value = factual_consistency(generated_outputs,
+                                       sources,
+                                       model_type='local')
+    factual_consistency_high = metric_value.metric_values[0]
     assert 0.9 <= factual_consistency_high <= 1
     if len(generated_outputs) == 2:
-        factual_consistency_low = eval_value.metric_values[1]
+        factual_consistency_low = metric_value.metric_values[1]
         assert 0.0 <= factual_consistency_low <= 0.1
 
 
@@ -43,8 +43,8 @@ def test_factual_consistency_openai(generated_outputs, sources):
     # key, so we mock the return value instead
     with patch('openai.ChatCompletion.create',
                Mock(return_value=mock_chat_response)):
-        eval_value = factual_consistency(generated_outputs,
-                                         sources,
-                                         model_type='openai')
+        metric_value = factual_consistency(generated_outputs,
+                                           sources,
+                                           model_type='openai')
         # "Fully Consistent" gets a value of 1.0
-        assert eval_value.metric_values[0] == 1
+        assert metric_value.metric_values[0] == 1

@@ -39,7 +39,7 @@ generated_outputs = [
 langcheck.metrics.fluency(generated_outputs) > 0.5
 ```
 
-![EvalValueWithThreshold screenshot](docs/_static/EvalValueWithThreshold_output.png)
+![MetricValueWithThreshold screenshot](docs/_static/MetricValueWithThreshold_output.png)
 
 It's easy to turn LangCheck metrics into unit tests, just use `assert`:
 

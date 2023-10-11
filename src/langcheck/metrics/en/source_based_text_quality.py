@@ -9,7 +9,7 @@ from transformers import AutoConfig, AutoModelForSeq2SeqLM, AutoTokenizer
 
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
-from langcheck.metrics.eval_value import EvalValue
+from langcheck.metrics.metric_value import MetricValue
 
 _factual_consistency_model_path = 'MingZhong/unieval-fact'
 _factual_consistency_config = None
@@ -22,7 +22,7 @@ def factual_consistency(
         sources: List[str] | str,
         prompts: Optional[List[str] | str] = None,
         model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. The factual consistency score for one generated output is
     computed as the average of the per-sentence consistencies of the generated
@@ -56,7 +56,7 @@ def factual_consistency(
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        An EvalValue object
+        An MetricValue object
     '''
     generated_outputs, sources, prompts = validate_parameters_source_based(
         generated_outputs, sources, prompts)
@@ -96,13 +96,13 @@ def factual_consistency(
             sum(score_list[start_idx:start_idx + num]) / num)
         start_idx += num
 
-    return EvalValue(metric_name='factual_consistency',
-                     prompts=prompts,
-                     generated_outputs=generated_outputs,
-                     reference_outputs=None,
-                     sources=sources,
-                     metric_values=score_per_output,
-                     language='en')
+    return MetricValue(metric_name='factual_consistency',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=sources,
+                       metric_values=score_per_output,
+                       language='en')
 
 
 def _factual_consistency_local(gen_sentences_list: List[str],

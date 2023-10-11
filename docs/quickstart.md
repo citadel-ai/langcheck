@@ -28,7 +28,7 @@ langcheck.metrics.fluency(generated_outputs)
 
 The output of {func}`langcheck.metrics.fluency()` (and [any metric function](metrics.md)) can be printed as a DataFrame:
 
-![EvalValue output](_static/quickstart_EvalValue_output.png)
+![MetricValue output](_static/quickstart_MetricValue_output.png)
 
 It's more than just a DataFrame, though. Try setting a threshold to view pass/fail results:
 
@@ -37,7 +37,7 @@ fluency_values = langcheck.metrics.fluency(generated_outputs)
 fluency_values > 0.5
 ```
 
-![EvalValue output](_static/quickstart_EvalValueWithThreshold_output.png)
+![MetricValue output](_static/quickstart_MetricValueWithThreshold_output.png)
 
 You can also set an assertion (useful in unit tests!):
 

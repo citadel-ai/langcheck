@@ -17,8 +17,8 @@ from tests.utils import is_close
     ["私は嬉しい", "私は悲しい"],
 ])
 def test_sentiment(generated_outputs):
-    eval_value = sentiment(generated_outputs)
-    assert all(0 <= v <= 1 for v in eval_value.metric_values)
+    metric_value = sentiment(generated_outputs)
+    assert all(0 <= v <= 1 for v in metric_value.metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs', ["私は嬉しい", ["私は嬉しい"]])
@@ -36,16 +36,16 @@ def test_sentiment_openai(generated_outputs):
     # key, so we mock the return value instead
     with patch('openai.ChatCompletion.create',
                Mock(return_value=mock_chat_response)):
-        eval_value = sentiment(generated_outputs, model_type='openai')
+        metric_value = sentiment(generated_outputs, model_type='openai')
         # "Positive" gets a value of 1.0
-        assert eval_value.metric_values[0] == 1
+        assert metric_value.metric_values[0] == 1
 
 
 @pytest.mark.parametrize('generated_outputs',
                          [['馬鹿', '今日はりんごを食べました。'], ['猫'], '猫'])
 def test_toxicity(generated_outputs):
-    eval_value = toxicity(generated_outputs)
-    assert all(0 <= v <= 1 for v in eval_value.metric_values)
+    metric_value = toxicity(generated_outputs)
+    assert all(0 <= v <= 1 for v in metric_value.metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs', ['アホ', ['アホ']])
@@ -63,17 +63,17 @@ def test_toxicity_openai(generated_outputs):
     # key, so we mock the return value instead
     with patch('openai.ChatCompletion.create',
                Mock(return_value=mock_chat_response)):
-        eval_value = toxicity(generated_outputs, model_type='openai')
+        metric_value = toxicity(generated_outputs, model_type='openai')
         # "5" gets a value of 1.0
-        assert eval_value.metric_values[0] == 1
+        assert metric_value.metric_values[0] == 1
 
 
 @pytest.mark.parametrize(
     'generated_outputs',
     [['ご機嫌いかがですか？私はとても元気です。', '機嫌いかが？私はとても元気人です。'], ['猫'], '猫'])
 def test_fluency(generated_outputs):
-    eval_value = fluency(generated_outputs)
-    assert all(0 <= v <= 1 for v in eval_value.metric_values)
+    metric_value = fluency(generated_outputs)
+    assert all(0 <= v <= 1 for v in metric_value.metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs',
@@ -92,9 +92,9 @@ def test_fluency_openai(generated_outputs):
     # key, so we mock the return value instead
     with patch('openai.ChatCompletion.create',
                Mock(return_value=mock_chat_response)):
-        eval_value = fluency(generated_outputs, model_type='openai')
+        metric_value = fluency(generated_outputs, model_type='openai')
         # "Good" gets a value of 1.0
-        assert eval_value.metric_values[0] == 1
+        assert metric_value.metric_values[0] == 1
 
 
 @pytest.mark.parametrize('generated_outputs,metric_values', [
@@ -105,5 +105,5 @@ def test_fluency_openai(generated_outputs):
     (['日本語自然言語処理には、日本語独特の技法が多数必要で、欧米系言語と比較して難易度が高い。'], [24.7875]),
 ])
 def test_tateishi_ono_yamada_reading_ease(generated_outputs, metric_values):
-    eval_value = tateishi_ono_yamada_reading_ease(generated_outputs)
-    assert is_close(eval_value.metric_values, metric_values)
+    metric_value = tateishi_ono_yamada_reading_ease(generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)
