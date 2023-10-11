@@ -56,7 +56,7 @@ def semantic_sim(generated_outputs: List[str] | str,
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
     assert embedding_model_type in [
         'local', 'openai'
@@ -117,7 +117,7 @@ def rouge1(generated_outputs: List[str] | str,
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
@@ -156,7 +156,7 @@ def rouge2(generated_outputs: List[str] | str,
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
@@ -195,7 +195,7 @@ def rougeL(generated_outputs: List[str] | str,
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
         generated_outputs, reference_outputs, prompts)
 
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
