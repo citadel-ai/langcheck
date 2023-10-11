@@ -13,15 +13,15 @@ def scatter(metric_value: MetricValue,
             other_metric_value: Optional[MetricValue] = None,
             jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive scatter plot of all data points in an
-    :class:`~langcheck.metrics.metric_value.MetricValue`. When run in a notebook,
-    this usually displays the chart inline in the cell output.
+    :class:`~langcheck.metrics.metric_value.MetricValue`. When run in a
+    notebook, this usually displays the chart inline in the cell output.
 
     Args:
-        metric_value: The :class:`~langcheck.metrics.metric_value.MetricValue` to
-        plot.
+        metric_value: The :class:`~langcheck.metrics.metric_value.MetricValue`
+            to plot.
         other_metric_value: If provided, another
-            :class:`~langcheck.metrics.metric_value.MetricValue` to plot on the same
-            chart.
+            :class:`~langcheck.metrics.metric_value.MetricValue` to plot on the
+            same chart.
         jupyter_mode: Defaults to 'inline', which displays the chart in the
             cell output. For Colab, set this to 'external' instead. See the
             Dash documentation for more info:
@@ -167,9 +167,9 @@ def _scatter_two_metric_values(metric_value: MetricValue,
     if metric_value.language != other_metric_value.language:
         raise ValueError('Both MetricValues must have the same language')
 
-    # Append "(other)" to the metric name of the second MetricValue if necessary.
-    # (It's possible to plot two MetricValues from the same metric, e.g. if you
-    # compute semantic_sim() with a local model and an OpenAI model)
+    # Append "(other)" to the metric name of the second MetricValue if
+    # necessary. (It's possible to plot two MetricValues from the same metric,
+    # e.g. if you compute semantic_sim() with a local model and an OpenAI model)
     if metric_value.metric_name == other_metric_value.metric_name:
         other_metric_value = deepcopy(other_metric_value)
         other_metric_value.metric_name += ' (other)'
