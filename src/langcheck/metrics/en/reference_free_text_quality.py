@@ -9,7 +9,8 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
-from langcheck.metrics.en.reference_based_text_quality import semantic_sim
+from langcheck.metrics.en.reference_based_text_quality import \
+    semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.stats import compute_stats
 
@@ -563,13 +564,15 @@ def ai_disclaimer_similarity(
         generated_outputs, prompts)
 
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
-    semantic_sim_values = semantic_sim(generated_outputs,
-                                       ai_disclaimer_phrase_list, prompts,
-                                       embedding_model_type, openai_args)
+    semantic_similarity_values = semantic_similarity(generated_outputs,
+                                                     ai_disclaimer_phrase_list,
+                                                     prompts,
+                                                     embedding_model_type,
+                                                     openai_args)
     return MetricValue(metric_name='ai_disclaimer_similarity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
-                       metric_values=semantic_sim_values.metric_values,
+                       metric_values=semantic_similarity_values.metric_values,
                        language='en')
