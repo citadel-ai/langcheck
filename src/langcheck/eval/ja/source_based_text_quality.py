@@ -16,9 +16,9 @@ _factual_consistency_translation_pipeline = None
 def factual_consistency(
         generated_outputs: List[str] | str,
         sources: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
         model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None,
-        prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. The factual consistency score for one generated output is
     computed as the average of the per-sentence consistencies of the generated
@@ -49,12 +49,12 @@ def factual_consistency(
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
             `openai.ChatCompletion.create` function, default None
-        prompts: The prompts used to generate the output(s). Prompts are
-            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
@@ -68,7 +68,7 @@ def factual_consistency(
     # The English prompt works well enough for Japanese
     # TODO: Investigate the performance improvement with Japanese prompt
     if model_type == 'openai':
-        eval_value = en_factual_consistency(generated_outputs, sources,
+        eval_value = en_factual_consistency(generated_outputs, sources, prompts,
                                             model_type, openai_args)
         eval_value.language = 'ja'
         return eval_value
