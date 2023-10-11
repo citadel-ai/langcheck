@@ -530,7 +530,7 @@ def flesch_kincaid_grade(
 def ai_disclaimer_similarity(
         generated_outputs: List[str],
         prompts: Optional[List[str]] = None,
-        ai_disclaimer_text: Optional[str] = None,
+        ai_disclaimer_phrase: Optional[str] = None,
         embedding_model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the degree to which the LLM's output contains a disclaimer
@@ -546,7 +546,7 @@ def ai_disclaimer_similarity(
         generated_outputs: A list of model generated outputs to evaluate
         prompts: An optional list of prompts used to generate the outputs.
             Prompts are not evaluated and only used as metadata.
-        ai_disclaimer_text: Reference AI disclaimer phrase, default "I don't
+        ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
         embedding_model_type: The type of embedding model to use ('local' or
             'openai'), default 'local'
@@ -556,12 +556,12 @@ def ai_disclaimer_similarity(
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-    if ai_disclaimer_text is None:
-        ai_disclaimer_text = (
+    if ai_disclaimer_phrase is None:
+        ai_disclaimer_phrase = (
             "I don't have personal opinions, emotions, or consciousness.")
-    ai_disclaimer_text_list = [ai_disclaimer_text] * len(generated_outputs)
+    ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
     semantic_sim_values = semantic_sim(generated_outputs,
-                                       ai_disclaimer_text_list, prompts,
+                                       ai_disclaimer_phrase_list, prompts,
                                        embedding_model_type, openai_args)
     return EvalValue(metric_name='ai_disclaimer_similarity',
                      prompts=prompts,
