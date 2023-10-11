@@ -109,7 +109,8 @@ def _validate_parameters(
     sources: Optional[List[str] | str]
 ) -> tuple[List[str], Optional[List[str]], Optional[List[str]],
            Optional[List[str]]]:
-    '''Validates and parses function parameters for metrics in langcheck.metrics.
+    '''Validates and parses function parameters for metrics in
+    langcheck.metrics.
 
     Args:
         generated_outputs: The model generated output(s) to evaluate

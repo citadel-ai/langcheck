@@ -9,11 +9,12 @@ from langcheck.plot._css import GLOBAL_CSS
 
 def histogram(eval_value: EvalValue, jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive histogram of all data points in
-    :class:`~langcheck.metrics.eval_value.EvalValue`. When run in a notebook, this
-    usually displays the chart inline in the cell output.
+    :class:`~langcheck.metrics.eval_value.EvalValue`. When run in a notebook,
+    this usually displays the chart inline in the cell output.
 
     Args:
-        eval_value: The :class:`~langcheck.metrics.eval_value.EvalValue` to plot.
+        eval_value: The :class:`~langcheck.metrics.eval_value.EvalValue` to
+            plot.
         other_eval_value: If provided, another
             :class:`~langcheck.metrics.eval_value.EvalValue` to plot on the same
             chart.

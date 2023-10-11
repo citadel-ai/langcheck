@@ -13,11 +13,12 @@ def scatter(eval_value: EvalValue,
             other_eval_value: Optional[EvalValue] = None,
             jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive scatter plot of all data points in an
-    :class:`~langcheck.metrics.eval_value.EvalValue`. When run in a notebook, this
-    usually displays the chart inline in the cell output.
+    :class:`~langcheck.metrics.eval_value.EvalValue`. When run in a notebook,
+    this usually displays the chart inline in the cell output.
 
     Args:
-        eval_value: The :class:`~langcheck.metrics.eval_value.EvalValue` to plot.
+        eval_value: The :class:`~langcheck.metrics.eval_value.EvalValue` to
+        plot.
         other_eval_value: If provided, another
             :class:`~langcheck.metrics.eval_value.EvalValue` to plot on the same
             chart.
