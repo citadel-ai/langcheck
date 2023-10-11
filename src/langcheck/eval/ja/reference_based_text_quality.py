@@ -17,6 +17,7 @@ from langcheck.eval.ja._tokenizers import JanomeTokenizer
 def semantic_sim(
         generated_outputs: List[str] | str,
         reference_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
         embedding_model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
@@ -46,6 +47,8 @@ def semantic_sim(
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         embedding_model_type: The type of embedding model to use ('local' or
             'openai'), default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -54,8 +57,8 @@ def semantic_sim(
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+        generated_outputs, reference_outputs, prompts)
     assert embedding_model_type in [
         'local', 'openai'
     ], ('Unsupported embedding model type. '
@@ -65,7 +68,7 @@ def semantic_sim(
         # We can use the same API as english semantic_sim to compare the
         # similarity
         eval_value = en_semantic_sim(generated_outputs, reference_outputs,
-                                     embedding_model_type, openai_args)
+                                     prompts, embedding_model_type, openai_args)
         eval_value.language = 'ja'
         return eval_value
 
@@ -85,7 +88,7 @@ def semantic_sim(
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
 
     return EvalValue(metric_name='semantic_sim',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,
@@ -95,6 +98,7 @@ def semantic_sim(
 
 def rouge1(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
            *,
            tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
@@ -108,19 +112,21 @@ def rouge1(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+        generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rouge1',
                     tokenizer=tokenizer)
     return EvalValue(metric_name='rouge1',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,
@@ -130,6 +136,7 @@ def rouge1(generated_outputs: List[str] | str,
 
 def rouge2(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
            *,
            tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
@@ -144,19 +151,21 @@ def rouge2(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+        generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rouge2',
                     tokenizer=tokenizer)
     return EvalValue(metric_name='rouge2',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,
@@ -166,6 +175,7 @@ def rouge2(generated_outputs: List[str] | str,
 
 def rougeL(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
            *,
            tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-L scores between the generated
@@ -180,12 +190,14 @@ def rougeL(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An EvalValue object
     '''
-    generated_outputs, reference_outputs = validate_parameters_reference_based(
-        generated_outputs, reference_outputs)
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+        generated_outputs, reference_outputs, prompts)
 
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
     # - 1) sentence-level, where newline characters are ignored
@@ -202,7 +214,7 @@ def rougeL(generated_outputs: List[str] | str,
                     'rougeLsum',
                     tokenizer=tokenizer)
     return EvalValue(metric_name='rougeL',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=reference_outputs,
                      sources=None,

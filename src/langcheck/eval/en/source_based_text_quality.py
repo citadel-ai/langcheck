@@ -20,6 +20,7 @@ _factual_consistency_model = None
 def factual_consistency(
         generated_outputs: List[str] | str,
         sources: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
         model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the factual consistency between the generated outputs and
@@ -47,6 +48,8 @@ def factual_consistency(
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -55,8 +58,8 @@ def factual_consistency(
     Returns:
         An EvalValue object
     '''
-    generated_outputs, sources = validate_parameters_source_based(
-        generated_outputs, sources)
+    generated_outputs, sources, prompts = validate_parameters_source_based(
+        generated_outputs, sources, prompts)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -94,7 +97,7 @@ def factual_consistency(
         start_idx += num
 
     return EvalValue(metric_name='factual_consistency',
-                     prompts=None,
+                     prompts=prompts,
                      generated_outputs=generated_outputs,
                      reference_outputs=None,
                      sources=sources,
