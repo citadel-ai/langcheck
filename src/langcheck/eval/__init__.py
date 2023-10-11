@@ -2,10 +2,9 @@ from langcheck.eval import en, ja
 from langcheck.eval.en.reference_based_text_quality import (rouge1, rouge2,
                                                             rougeL,
                                                             semantic_sim)
-from langcheck.eval.en.reference_free_text_quality import (flesch_kincaid_grade,
-                                                           flesch_reading_ease,
-                                                           fluency, sentiment,
-                                                           toxicity)
+from langcheck.eval.en.reference_free_text_quality import (
+    ai_disclaimer_language_similarity, flesch_kincaid_grade,
+    flesch_reading_ease, fluency, sentiment, toxicity)
 from langcheck.eval.en.source_based_text_quality import factual_consistency
 from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.reference_based_text_quality import exact_match
@@ -18,6 +17,7 @@ from langcheck.eval.text_structure import (contains_all_strings,
 __all__ = [
     'en',
     'ja',
+    'ai_disclaimer_language_similarity',
     'contains_all_strings',
     'contains_any_strings',
     'contains_regex',

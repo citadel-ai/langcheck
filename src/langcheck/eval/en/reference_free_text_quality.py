@@ -9,6 +9,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.eval._validation import validate_parameters_reference_free
 from langcheck.eval.en._openai import OpenAIBasedEvaluator
+from langcheck.eval.en.reference_based_text_quality import semantic_sim
 from langcheck.eval.eval_value import EvalValue
 from langcheck.stats import compute_stats
 
@@ -523,4 +524,49 @@ def flesch_kincaid_grade(
                      reference_outputs=None,
                      sources=None,
                      metric_values=scores,
+                     language='en')
+
+
+def ai_disclaimer_language_similarity(
+        generated_outputs: List[str],
+        prompts: Optional[List[str]] = None,
+        ai_disclaimer_text: Optional[str] = None,
+        embedding_model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+    '''Calculates the degree to which the LLM's output contains a disclaimer
+    that it is an AI. This is calculated by computing the semantic similarity
+    between the generated outputs and a reference AI disclaimer phrase; by
+    default, this phrase is "I don't have personal opinions, emotions, or
+    consciousness.", but you can also pass in a custom phrase. Please refer to
+    `langcheck.eval.en.reference_based_text_quality.semantic_sim` for details on
+    the typical output ranges and the supported embedding model types.
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        prompts: An optional list of prompts used to generate the outputs.
+            Prompts are not evaluated and only used as metadata.
+        ai_disclaimer_text: Reference AI disclaimer phrase, default "I don't
+            have personal opinions, emotions, or consciousness."
+        embedding_model_type: The type of embedding model to use ('local' or
+            'openai'), default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.Embedding.create` function, default None
+
+    Returns:
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
+    '''
+    if ai_disclaimer_text is None:
+        ai_disclaimer_text = (
+            "I don't have personal opinions, emotions, or consciousness.")
+    ai_disclaimer_text_list = [ai_disclaimer_text] * len(generated_outputs)
+    semantic_sim_values = semantic_sim(generated_outputs,
+                                       ai_disclaimer_text_list,
+                                       prompts,
+                                       embedding_model_type, openai_args)
+    return EvalValue(metric_name='ai_disclaimer_language_similarity',
+                     prompts=prompts,
+                     generated_outputs=generated_outputs,
+                     reference_outputs=None,
+                     sources=None,
+                     metric_values=semantic_sim_values.metric_values,
                      language='en')
