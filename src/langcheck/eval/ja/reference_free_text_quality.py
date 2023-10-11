@@ -8,7 +8,8 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.eval._validation import validate_parameters_reference_free
-from langcheck.eval.en.reference_free_text_quality import _toxicity_openai
+from langcheck.eval.en.reference_free_text_quality import (_fluency_openai,
+                                                           _toxicity_openai)
 from langcheck.eval.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.eval.eval_value import EvalValue
@@ -21,6 +22,11 @@ _toxicity_model_path = "Alnusjaponica/toxicity-score-multi-classification"
 _toxicity_tokenizer_path = "line-corporation/line-distilbert-base-japanese"
 _toxicity_tokenizer = None
 _toxicity_model = None
+
+_fluency_model_path = "liwii/fluency-score-classification-ja"
+_fluency_tokenizer_path = "line-corporation/line-distilbert-base-japanese"
+_fluency_tokenizer = None
+_fluency_model = None
 
 
 def sentiment(generated_outputs: List[str] | str,
@@ -104,17 +110,20 @@ def sentiment(generated_outputs: List[str] | str,
                      language='ja')
 
 
-def toxicity(generated_outputs: List[str],
-             prompts: Optional[List[str]] = None,
+def toxicity(generated_outputs: List[str] | str,
+             prompts: Optional[List[str] | str] = None,
              model_type: str = 'local',
              openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
 
     We currently support two model types:
-    1. The 'local' type, where the our fine-tuned model is downloaded from
-    HuggingFace and run locally. This is the default model type and there is
-    no setup needed to run this.
+    1. The 'local' type, where a model file is downloaded from HuggingFace and
+    run locally. This is the default model type and there is no setup needed to
+    run this.
+    The model (Alnusjaponica/toxicity-score-multi-classification) is a
+    fine-tuned model based on line-corporation/line-distilbert-base-japanese
+    model.
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
@@ -122,10 +131,14 @@ def toxicity(generated_outputs: List[str],
     https://github.com/citadel-ai/langcheck#evaluate-text for examples on
     setting up the OpenAI API key.
 
+    Ref:
+        https://huggingface.co/line-corporation/line-distilbert-base-japanese
+        https://huggingface.co/Alnusjaponica/toxicity-score-multi-classification
+
     Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        prompts: An optional list of prompts used to generate the outputs.
-            Prompts are not evaluated and only used as metadata.
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
@@ -134,7 +147,8 @@ def toxicity(generated_outputs: List[str],
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
     assert model_type in ['local', 'openai'
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
@@ -184,6 +198,107 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     toxicity_scores = torch.sigmoid(output.logits[:, 0]).tolist()
 
     return toxicity_scores
+
+
+def fluency(generated_outputs: List[str] | str,
+            prompts: Optional[List[str] | str] = None,
+            model_type: str = 'local',
+            openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
+    '''Calculates the fluency scores of generated outputs. This metric takes on
+    float values between [0, 1], where 0 is low fluency and 1 is high fluency.
+
+    We currently support two model types:
+    1. The 'local' type, where a model file is downloaded from HuggingFace and
+    run locally. This is the default model type and there is no setup needed to
+    run this.
+    The model (liwii/fluency-score-classification-ja) is a fine-tuned model
+    based on line-corporation/line-distilbert-base-japanese model.
+    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default, in the same way as english counterpart. While the model you use
+    is configurable, please make sure to use one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    https://github.com/citadel-ai/langcheck#evaluate-text for examples on
+    setting up the OpenAI API key.
+
+    Ref:
+        https://huggingface.co/line-corporation/line-distilbert-base-japanese
+        https://huggingface.co/liwii/fluency-score-classification-ja
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
+        model_type: The type of model to use ('local' or 'openai'),
+            default 'local'
+        openai_args: Dict of additional args to pass in to the
+            `openai.ChatCompletion.create` function, default None
+
+    Returns:
+        An :class:`~langcheck.eval.eval_value.EvalValue` object
+    '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
+    assert model_type in ['local', 'openai'
+                         ], ('Unsupported model type. '
+                             'The supported ones are ["local", "openai"]')
+
+    if model_type == 'local':
+        scores = _fluency_local(generated_outputs)
+    else:  # openai
+        scores = _fluency_openai(generated_outputs, openai_args)
+
+    return EvalValue(metric_name='fluency',
+                     prompts=prompts,
+                     generated_outputs=generated_outputs,
+                     reference_outputs=None,
+                     sources=None,
+                     metric_values=scores,
+                     language='ja')
+
+
+def _fluency_local(generated_outputs: List[str]) -> List[float]:
+    '''Calculates the fluency scores of generated outputs using a fine-tuned
+    model from `line-corporation/line-distilbert-base-japanese`. This metric
+    takes on float values between [0, 1], where 0 is low fluency and 1 is high
+    fluency.
+
+    Ref:
+        https://huggingface.co/line-corporation/line-distilbert-base-japanese
+        https://huggingface.co/liwii/fluency-score-classification-ja
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+
+    Returns:
+        A list of scores
+    '''
+    global _fluency_model, _fluency_tokenizer
+    _fluency_model = (
+        _fluency_model or
+        AutoModelForSequenceClassification.from_pretrained(_fluency_model_path))
+
+    # Suppress "tokenizer class you load ... is not the same type ..." error
+    # because AutoTokenzier is suggested by the readme of the original model
+    # and "DistilBertJapaneseTokenizer", which is suggested by the warning,
+    # is not exposed to transformers.
+    with _handle_logging_level():
+        _fluency_tokenizer = (_fluency_tokenizer or
+                              AutoTokenizer.from_pretrained(
+                                  _fluency_tokenizer_path,
+                                  trust_remote_code=True,
+                                  revision='main'))
+
+    input_tokens = _fluency_tokenizer(generated_outputs,
+                                      return_tensors='pt',
+                                      padding=True)
+    with torch.no_grad():
+        # Probabilities of [not_fluent, fluent]
+        probs = torch.nn.functional.softmax(
+            _fluency_model(**input_tokens).logits, dim=1)
+
+    fluency_scores = probs[:, 1].tolist()
+
+    return fluency_scores
 
 
 def tateishi_ono_yamada_reading_ease(
