@@ -530,7 +530,8 @@ def flesch_kincaid_grade(
 def ai_disclaimer_similarity(
         generated_outputs: List[str],
         prompts: Optional[List[str]] = None,
-        ai_disclaimer_phrase: Optional[str] = None,
+        ai_disclaimer_phrase: str = (
+            "I don't have personal opinions, emotions, or consciousness."),
         embedding_model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the degree to which the LLM's output contains a disclaimer
@@ -556,9 +557,6 @@ def ai_disclaimer_similarity(
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
     '''
-    if ai_disclaimer_phrase is None:
-        ai_disclaimer_phrase = (
-            "I don't have personal opinions, emotions, or consciousness.")
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
     semantic_sim_values = semantic_sim(generated_outputs,
                                        ai_disclaimer_phrase_list, prompts,
