@@ -68,21 +68,16 @@ def test_toxicity_openai(generated_outputs):
         assert eval_value.metric_values[0] == 1
 
 
-@pytest.mark.parametrize('generated_outputs',
-                         [
-                             ['ご機嫌いかがですか？私はとても元気です。',
-                              '機嫌いかが？私はとても元気人です。'
-                             ], ['猫'], '猫'
-                         ])
+@pytest.mark.parametrize(
+    'generated_outputs',
+    [['ご機嫌いかがですか？私はとても元気です。', '機嫌いかが？私はとても元気人です。'], ['猫'], '猫'])
 def test_fluency(generated_outputs):
     eval_value = fluency(generated_outputs)
     assert all(0 <= v <= 1 for v in eval_value.metric_values)
 
 
 @pytest.mark.parametrize('generated_outputs',
-                         ['ご機嫌いかがですか？私はとても元気です。',
-                          ['ご機嫌いかがですか？私はとても元気です。']
-                          ])
+                         ['ご機嫌いかがですか？私はとても元気です。', ['ご機嫌いかがですか？私はとても元気です。']])
 def test_fluency_openai(generated_outputs):
     mock_chat_response = {
         'choices': [{
