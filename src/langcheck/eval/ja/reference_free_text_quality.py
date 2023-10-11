@@ -118,15 +118,22 @@ def toxicity(generated_outputs: List[str] | str,
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
 
     We currently support two model types:
-    1. The 'local' type, where the our fine-tuned model is downloaded from
-    HuggingFace and run locally. This is the default model type and there is
-    no setup needed to run this.
+    1. The 'local' type, where a model file is downloaded from HuggingFace and
+    run locally. This is the default model type and there is no setup needed to
+    run this.
+    The model (Alnusjaponica/toxicity-score-multi-classification) is a
+    fine-tuned model based on line-corporation/line-distilbert-base-japanese
+    model.
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
     https://github.com/citadel-ai/langcheck#evaluate-text for examples on
     setting up the OpenAI API key.
+
+    Ref:
+        https://huggingface.co/line-corporation/line-distilbert-base-japanese
+        https://huggingface.co/Alnusjaponica/toxicity-score-multi-classification
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
@@ -201,15 +208,21 @@ def fluency(generated_outputs: List[str] | str,
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
 
     We currently support two model types:
-    1. The 'local' type, where the our fine-tuned model is downloaded from
-    HuggingFace and run locally. This is the default model type and there is
-    no setup needed to run this.
+    1. The 'local' type, where a model file is downloaded from HuggingFace and
+    run locally. This is the default model type and there is no setup needed to
+    run this.
+    The model (liwii/fluency-score-classification-ja) is a fine-tuned model
+    based on line-corporation/line-distilbert-base-japanese model.
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
     https://github.com/citadel-ai/langcheck#evaluate-text for examples on
     setting up the OpenAI API key.
+
+    Ref:
+        https://huggingface.co/line-corporation/line-distilbert-base-japanese
+        https://huggingface.co/liwii/fluency-score-classification-ja
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
