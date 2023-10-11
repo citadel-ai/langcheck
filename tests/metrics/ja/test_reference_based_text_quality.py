@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from langcheck.metrics.ja import (JanomeTokenizer, MeCabTokenizer, rouge1,
-                                  rouge2, rougeL, semantic_sim)
+                                  rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.ja._tokenizers import _JapaneseTokenizer
 from langcheck.metrics.metric_value import MetricValue
 from tests.utils import is_close
@@ -85,44 +85,44 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
                          [("猫が座っています。", "猫が座っています。"),
                           (["猫が座っています。"], ["猫が座っています。"])])
-def test_semantic_sim_identical(generated_outputs, reference_outputs):
-    metric_value = semantic_sim(generated_outputs, reference_outputs)
-    semantic_sim_value = metric_value.metric_values[0]
-    assert 0.99 <= semantic_sim_value <= 1
+def test_semantic_similarity_identical(generated_outputs, reference_outputs):
+    metric_value = semantic_similarity(generated_outputs, reference_outputs)
+    semantic_similarity_value = metric_value.metric_values[0]
+    assert 0.99 <= semantic_similarity_value <= 1
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
                          [("猫が座っています。", "ネコがすわっています。"),
                           (["猫が座っています。"], ["ネコがすわっています。"])])
-def test_semantic_sim_character_sensitivity(generated_outputs,
-                                            reference_outputs):
-    metric_value = semantic_sim(generated_outputs, reference_outputs)
-    semantic_sim_value = metric_value.metric_values[0]
-    assert 0.75 <= semantic_sim_value <= 1
+def test_semantic_similarity_character_sensitivity(generated_outputs,
+                                                   reference_outputs):
+    metric_value = semantic_similarity(generated_outputs, reference_outputs)
+    semantic_similarity_value = metric_value.metric_values[0]
+    assert 0.75 <= semantic_similarity_value <= 1
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
                          [("猫が座っています。", "僕はアイスクリームを食べるのが好きです。"),
                           (["猫が座っています。"], ["僕はアイスクリームを食べるのが好きです。"])])
-def test_semantic_sim_not_similar(generated_outputs, reference_outputs):
-    metric_value = semantic_sim(generated_outputs, reference_outputs)
-    semantic_sim_value = metric_value.metric_values[0]
-    assert 0.0 <= semantic_sim_value <= 0.25
+def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
+    metric_value = semantic_similarity(generated_outputs, reference_outputs)
+    semantic_similarity_value = metric_value.metric_values[0]
+    assert 0.0 <= semantic_similarity_value <= 0.25
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
                          [("猫が座っています。", "猫が座っています。"),
                           (["猫が座っています。"], ["猫が座っています。"])])
-def test_semantic_sim_openai(generated_outputs, reference_outputs):
+def test_semantic_similarity_openai(generated_outputs, reference_outputs):
     mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
     # Calling the openai.Embedding.create method requires an OpenAI API key, so
     # we mock the return value instead
     with patch('openai.Embedding.create',
                Mock(return_value=mock_embedding_response)):
-        metric_value = semantic_sim(generated_outputs,
-                                    reference_outputs,
-                                    embedding_model_type='openai')
-        semantic_sim_value = metric_value.metric_values[0]
+        metric_value = semantic_similarity(generated_outputs,
+                                           reference_outputs,
+                                           embedding_model_type='openai')
+        semantic_similarity_value = metric_value.metric_values[0]
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
-        assert 0.99 <= semantic_sim_value <= 1
+        assert 0.99 <= semantic_similarity_value <= 1

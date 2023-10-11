@@ -57,7 +57,6 @@ LangCheckには、他にも以下のようなLLMアプリケーションを評�
 | [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                             | 英語、日本語 |
 | [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                         | 全ての言語   |
 
-
 ### 数値の可視化
 LangCheckでは、他にもインタラクティブなグラフを使って数値を可視化することができます。
 

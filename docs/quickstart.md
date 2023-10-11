@@ -104,7 +104,7 @@ If you also have reference outputs, you can compare against predictions against 
 reference_outputs = load_json('reference_outputs.json')
 
 def test_semantic_similarity(generated_outputs, reference_outputs):
-    assert langcheck.metrics.semantic_sim(generated_outputs, reference_outputs) > 0.9
+    assert langcheck.metrics.semantic_similarity(generated_outputs, reference_outputs) > 0.9
 
 def test_rouge2_similarity(generated_outputs, reference_outputs):
     assert langcheck.metrics.rouge2(generated_outputs, reference_outputs) > 0.9

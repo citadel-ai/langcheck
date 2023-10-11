@@ -11,7 +11,7 @@ from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.metric_value import MetricValue
 
 
-def semantic_sim(
+def semantic_similarity(
         generated_outputs: List[str] | str,
         reference_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
@@ -93,7 +93,7 @@ def semantic_sim(
     # vectors to exceed 1.0 slightly, so we clip the outputs
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
 
-    return MetricValue(metric_name='semantic_sim',
+    return MetricValue(metric_name='semantic_similarity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,

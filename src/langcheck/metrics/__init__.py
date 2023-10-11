@@ -1,7 +1,6 @@
 from langcheck.metrics import en, ja
-from langcheck.metrics.en.reference_based_text_quality import (rouge1, rouge2,
-                                                               rougeL,
-                                                               semantic_sim)
+from langcheck.metrics.en.reference_based_text_quality import (
+    rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (
     ai_disclaimer_similarity, flesch_kincaid_grade, flesch_reading_ease,
     fluency, sentiment, toxicity)
@@ -36,7 +35,7 @@ __all__ = [
     'rouge2',
     'rougeL',
     'validation_fn',
-    'semantic_sim',
+    'semantic_similarity',
     'sentiment',
     'toxicity',
 ]
