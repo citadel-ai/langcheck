@@ -14,11 +14,12 @@ from langcheck.eval.eval_value import EvalValue
 from langcheck.eval.ja._tokenizers import JanomeTokenizer
 
 
-def semantic_sim(generated_outputs: List[str] | str,
-                 reference_outputs: List[str] | str,
-                 embedding_model_type: str = 'local',
-                 openai_args: Optional[Dict[str, str]] = None,
-                 prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+def semantic_sim(
+        generated_outputs: List[str] | str,
+        reference_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        embedding_model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
@@ -46,12 +47,12 @@ def semantic_sim(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         embedding_model_type: The type of embedding model to use ('local' or
             'openai'), default 'local'
         openai_args: Dict of additional args to pass in to the
             `openai.Embedding.create` function, default None
-        prompts: The prompts used to generate the output(s). Prompts are
-            optional metadata and not used to calculate the metric.
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
@@ -67,7 +68,7 @@ def semantic_sim(generated_outputs: List[str] | str,
         # We can use the same API as english semantic_sim to compare the
         # similarity
         eval_value = en_semantic_sim(generated_outputs, reference_outputs,
-                                     embedding_model_type, openai_args)
+                                     prompts, embedding_model_type, openai_args)
         eval_value.language = 'ja'
         return eval_value
 
@@ -97,9 +98,9 @@ def semantic_sim(generated_outputs: List[str] | str,
 
 def rouge1(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
            *,
-           tokenizer: Optional[Tokenizer] = None,
-           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+           tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
     (single tokens) between the generated outputs and the reference outputs.
     This metric takes on float values between [0, 1], where 0 is no overlap and
@@ -135,9 +136,9 @@ def rouge1(generated_outputs: List[str] | str,
 
 def rouge2(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
            *,
-           tokenizer: Optional[Tokenizer] = None,
-           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+           tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of bigrams
     (two adjacent tokens) between the generated outputs and the reference
@@ -174,9 +175,9 @@ def rouge2(generated_outputs: List[str] | str,
 
 def rougeL(generated_outputs: List[str] | str,
            reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
            *,
-           tokenizer: Optional[Tokenizer] = None,
-           prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+           tokenizer: Optional[Tokenizer] = None) -> EvalValue[float]:
     '''Calculates the F1 metrics of the ROUGE-L scores between the generated
     outputs and the reference outputs. It evaluates the longest common
     subsequence (LCS) between the generated outputs and the reference outputs.

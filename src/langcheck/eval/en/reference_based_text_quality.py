@@ -11,11 +11,12 @@ from langcheck.eval._validation import validate_parameters_reference_based
 from langcheck.eval.eval_value import EvalValue
 
 
-def semantic_sim(generated_outputs: List[str] | str,
-                 reference_outputs: List[str] | str,
-                 embedding_model_type: str = 'local',
-                 openai_args: Optional[Dict[str, str]] = None,
-                 prompts: Optional[List[str] | str] = None) -> EvalValue[float]:
+def semantic_sim(
+        generated_outputs: List[str] | str,
+        reference_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        embedding_model_type: str = 'local',
+        openai_args: Optional[Dict[str, str]] = None) -> EvalValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
@@ -43,12 +44,12 @@ def semantic_sim(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
         embedding_model_type: The type of embedding model to use ('local' or
             'openai'), default 'local'
         openai_args: Dict of additional args to pass in to the
             `openai.Embedding.create` function, default None
-        prompts: The prompts used to generate the output(s). Prompts are
-            optional metadata and not used to calculate the metric.
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
@@ -150,7 +151,8 @@ def rouge2(generated_outputs: List[str] | str,
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
-        prompts: The prompt(s) used to generate the output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         An :class:`~langcheck.eval.eval_value.EvalValue` object
