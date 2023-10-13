@@ -9,6 +9,8 @@ To install and run the LangCheck package from your local git repo:
 ```text
 # Install the langcheck package in editable mode with dev dependencies
 > python -m pip install -e .[dev]
+# If you are using zsh, make sure to escape the brackets
+> python -m pip install -e .\[dev\]
 
 # Try using langcheck
 # (If you edit the package, just restart the Python REPL to reflect your changes)
