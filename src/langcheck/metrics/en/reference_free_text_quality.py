@@ -43,7 +43,9 @@ def sentiment(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models
+
+    `This example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Args:
@@ -57,7 +59,7 @@ def sentiment(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''  # NOQA: E501
+    '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
     assert model_type in ['local', 'openai'
@@ -343,7 +345,9 @@ def toxicity(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models
+
+    `This example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Args:
@@ -357,7 +361,7 @@ def toxicity(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''  # NOQA: E501
+    '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
     assert model_type in ['local', 'openai'

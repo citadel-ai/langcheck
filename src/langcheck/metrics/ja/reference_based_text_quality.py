@@ -36,7 +36,9 @@ def semantic_similarity(
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models
+
+    `This example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -56,7 +58,7 @@ def semantic_similarity(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''  # NOQA: E501
+    '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
     assert embedding_model_type in [
