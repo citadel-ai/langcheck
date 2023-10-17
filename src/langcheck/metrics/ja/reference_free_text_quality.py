@@ -323,7 +323,7 @@ def tateishi_ono_yamada_reading_ease(
     original paper for details.
 
     Ref:
-        https://www.jstage.jst.go.jp/article/nihongokyoiku/158/0/158_49/_pdf/-char/ja (Japanese) # NOQA: E501
+        https://www.jstage.jst.go.jp/article/nihongokyoiku/158/0/158_49/_pdf/-char/ja (Japanese)
         https://ipsj.ixsq.nii.ac.jp/ej/?action=pages_view_main&active_action=repository_view_main_item_detail&item_id=37773&item_no=1&page_id=13&block_id=8 (Japanese)
         https://aclanthology.org/C88-2135/ (English)
 
