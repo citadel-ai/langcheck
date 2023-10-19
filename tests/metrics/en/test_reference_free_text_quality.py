@@ -106,20 +106,20 @@ def test_toxicity_openai(generated_outputs):
     'generated_outputs,metric_values',
     [
         (
-            'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
-            'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+            'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA: E501
+            'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA: E501
             'a place on it is kept for you.',
             [75.00651612903226]),
         (
             [
-                'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
-                'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+                'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA: E501
+                'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA: E501
                 'a place on it is kept for you.'
             ],
             [75.00651612903226]),
         (
             [
-                'How slowly the time passes here, encompassed as I am by frost and snow!\n'  # NOQA E501
+                'How slowly the time passes here, encompassed as I am by frost and snow!\n'  # NOQA: E501
                 'Yet a second step is taken towards my enterprise.'
             ],
             [77.45815217391308])
@@ -133,20 +133,20 @@ def test_flesch_reading_ease(generated_outputs, metric_values):
     'generated_outputs,metric_values',
     [
         (
-            'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
-            'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+            'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA: E501
+            'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA: E501
             'a place on it is kept for you.',
             [4.33767741935484]),
         (
             [
-                'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA E501
-                'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA E501
+                'My Friend. Welcome to the Carpathians. I am anxiously expecting you.\n'  # NOQA: E501
+                'Sleep well to-night. At three to-morrow the diligence will start for Bukovina;\n'  # NOQA: E501
                 'a place on it is kept for you.'
             ],
             [4.33767741935484]),
         (
             [
-                'How slowly the time passes here, encompassed as I am by frost and snow!\n'  # NOQA E501
+                'How slowly the time passes here, encompassed as I am by frost and snow!\n'  # NOQA: E501
                 'Yet a second step is taken towards my enterprise.'
             ],
             [5.312391304347827]),

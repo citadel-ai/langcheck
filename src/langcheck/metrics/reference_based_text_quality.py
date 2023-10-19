@@ -21,7 +21,7 @@ def exact_match(generated_outputs: List[str] | str,
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
 
     # The values are binary: 1 if it's an exact match and 0 if not
