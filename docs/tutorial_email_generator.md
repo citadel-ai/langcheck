@@ -114,9 +114,8 @@ Sincerely,
 
 ## Evaluating with LangCheck (No References)
 
-At this point in our development process of the email generator, we would start iterating on the prompt template to try and improve the outputs. This is where LangCheck can come in and help - rather than having to manually prompt the app and check the outputs each time, we can automatically evaluate the outputs with the various LangCheck metrics!
 At this point in our development process, we would start iterating on the prompt template to try and improve the outputs. This is where LangCheck can come in and help - rather than having to manually prompt the app and check the outputs each time, we can automatically evaluate the outputs with the various LangCheck metrics!
-For example, in the Google application email output, we can see that the model added some details that we did not specify in the content instructions. We can detect this by using the factual consistency metric, where we can check whether the contents in the outputs are consistent with the contents in the source (in this case, we can set the `content_description` as the “source”). Indeed, we see that this output has a low factual consistency score.
+
 For example, in the Google application email output, we saw that the model added some details that we did not specify in the instructions. We can detect this by using the factual consistency metric, which checks whether the output text is consistent with the source text (in this case, we can set the `content_description` as the “source”). Indeed, we see that this output has a low factual consistency score.
 ```python
 factual_consistency = langcheck.metrics.factual_consistency(generated_outputs=[email], sources=[content_description])
@@ -127,8 +126,8 @@ print(f"factual consistency = {factual_consistency.metric_values[0]:.2f}")
 factual consistency = 0.37
 ```
 
-There are many other factors other than factual consistency that we would care about in our email generator app. As examples, we want the email to also be:
 There are many factors other than factual consistency that we might care about in our email generator app. For example, we also want the email to be:
+- Not offensive/toxic
 - Fluent
 - Generally have a positive sentiment (though maybe not always)
 - Not contain any AI disclaimer language (i.e. language similar to “As an AI model, I don’t have opinions”)
@@ -207,7 +206,6 @@ factual consistency = 0.55
 
 ## Evaluating with LangCheck's Reference-Based Metrics
 
-The metrics that we have examined so far have been text structure and reference free metrics, meaning that we don’t need a reference output to evaluate the email generator’s outputs. However, if we do have some reference outputs, we would be able to leverage the reference based metrics as well.
 The metrics that we have examined so far have been reference-free and source-based metrics, meaning that we don’t need a reference output to evaluate the email generator’s outputs. However, if we do have some reference outputs, we can leverage the reference-based metrics as well.
 For all of the email prompts, I wrote out the emails that I personally would’ve written (see here). Let’s now assume that my email writing skills are good enough to call these the reference outputs, and compute some of LangCheck’s reference based metrics. Below, we compute the `rougeL` and `semantic_similarity` metrics, and show them both in a scatter plot.
 
