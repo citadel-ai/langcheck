@@ -208,7 +208,7 @@ factual consistency = 0.55
 ## Evaluating with LangCheck's Reference-Based Metrics
 
 The metrics that we have examined so far have been text structure and reference free metrics, meaning that we don’t need a reference output to evaluate the email generator’s outputs. However, if we do have some reference outputs, we would be able to leverage the reference based metrics as well.
-
+The metrics that we have examined so far have been reference-free and source-based metrics, meaning that we don’t need a reference output to evaluate the email generator’s outputs. However, if we do have some reference outputs, we can leverage the reference-based metrics as well.
 For all of the email prompts, I wrote out the emails that I personally would’ve written (see here). Let’s now assume that my email writing skills are good enough to call these the reference outputs, and compute some of LangCheck’s reference based metrics. Below, we compute the `rougeL` and `semantic_similarity` metrics, and show them both in a scatter plot.
 
 ```python
