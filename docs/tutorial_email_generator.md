@@ -128,7 +128,7 @@ factual consistency = 0.37
 ```
 
 There are many other factors other than factual consistency that we would care about in our email generator app. As examples, we want the email to also be:
-- Not offensive/toxic
+There are many factors other than factual consistency that we might care about in our email generator app. For example, we also want the email to be:
 - Fluent
 - Generally have a positive sentiment (though maybe not always)
 - Not contain any AI disclaimer language (i.e. language similar to “As an AI model, I don’t have opinions”)
