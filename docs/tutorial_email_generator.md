@@ -115,7 +115,7 @@ Sincerely,
 ## Evaluating with LangCheck (No References)
 
 At this point in our development process of the email generator, we would start iterating on the prompt template to try and improve the outputs. This is where LangCheck can come in and help - rather than having to manually prompt the app and check the outputs each time, we can automatically evaluate the outputs with the various LangCheck metrics!
-
+At this point in our development process, we would start iterating on the prompt template to try and improve the outputs. This is where LangCheck can come in and help - rather than having to manually prompt the app and check the outputs each time, we can automatically evaluate the outputs with the various LangCheck metrics!
 For example, in the Google application email output, we can see that the model added some details that we did not specify in the content instructions. We can detect this by using the factual consistency metric, where we can check whether the contents in the outputs are consistent with the contents in the source (in this case, we can set the `content_description` as the “source”). Indeed, we see that this output has a low factual consistency score.
 
 ```python
