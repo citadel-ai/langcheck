@@ -93,24 +93,22 @@ content_description = """
 email = generate_email(subject, recipient_name, content_description)
 print(email)
 ```
-```text
-Subject: Application for the Software Engineer Role
-
-Dear Google Hiring Team,
-
-I hope this email finds you well. I am writing to express my interest in applying for the Software Engineer role at Google.
-
-With several years of experience specializing in AI, I believe I am a strong candidate for this position. Throughout my career, I have developed a deep understanding and proficiency in various AI technologies and their application in real-world scenarios. My expertise spans across machine learning, natural language processing, and computer vision, among other domains. I am well-versed in programming languages such as Python, Java, and C++, and have a solid foundation in data structures and algorithms.
-
-Having closely followed Google's groundbreaking advancements in AI and software engineering, I am particularly enthused about the opportunity to contribute to such innovative projects. I am confident that my experience, skills, and enthusiasm would be valuable assets to the team.
-
-Additionally, I am ready to start as soon as possible and eager to hit the ground running. I am highly adaptable, possess excellent problem-solving abilities, and thrive in collaborative environments. Moreover, I am a quick learner, constantly seeking ways to stay updated with the latest trends and technologies in the field of AI.
-
-Thank you for considering my application. I look forward to the possibility of joining Google and contributing to its mission of pushing the boundaries of technology.
-
-Sincerely,
-[Your Name]
-```
+> Subject: Application for the Software Engineer Role
+> 
+> Dear Google Hiring Team,
+> 
+> I hope this email finds you well. I am writing to express my interest in applying for the Software Engineer role at Google.
+> 
+> With several years of experience specializing in AI, I believe I am a strong candidate for this position. Throughout my career, I have developed a deep understanding and proficiency in various AI technologies and their application in real-world scenarios. My expertise spans across machine learning, natural language processing, and computer vision, among other domains. I am well-versed in programming languages such as Python, Java, and C++, and have a solid foundation in data structures and algorithms.
+> 
+> Having closely followed Google's groundbreaking advancements in AI and software engineering, I am particularly enthused about the opportunity to contribute to such innovative projects. I am confident that my experience, skills, and enthusiasm would be valuable assets to the team.
+> 
+> Additionally, I am ready to start as soon as possible and eager to hit the ground running. I am highly adaptable, possess excellent problem-solving abilities, and thrive in collaborative environments. Moreover, I am a quick learner, constantly seeking ways to stay updated with the latest trends and technologies in the field of AI.
+> 
+> Thank you for considering my application. I look forward to the possibility of joining Google and contributing to its mission of pushing the boundaries of technology.
+> 
+> Sincerely,
+> [Your Name]
 
 ## Evaluating with LangCheck (No References)
 
@@ -187,22 +185,20 @@ factual_consistency = langcheck.metrics.factual_consistency(generated_outputs=em
 print(f"factual consistency = {factual_consistency.metric_values[0]:.2f}")
 ```
 
-```text
-####
-Subject: Application for the software engineer role
-
-Dear Hiring Manager,
-
-I am writing to apply for the software engineer role at Google. With many years of experience in AI, I believe I am a strong candidate for this position. I am ready to start as soon as possible.
-
-Thank you for considering my application.
-
-Sincerely,
-[Your Name]
-####
-
-factual consistency = 0.55
-```
+> ####
+> Subject: Application for the software engineer role
+> 
+> Dear Hiring Manager,
+> 
+> I am writing to apply for the software engineer role at Google. With many years of experience in AI, I believe I am a strong candidate for this position. I am ready to start as soon as possible.
+> 
+> Thank you for considering my application.
+> 
+> Sincerely,
+> [Your Name]
+> ####
+> 
+> factual consistency = 0.55
 
 ## Evaluating with LangCheck's Reference-Based Metrics
 
