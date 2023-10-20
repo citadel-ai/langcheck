@@ -36,7 +36,7 @@ class OpenAIBasedEvaluator:
         self._argument_description = argument_description
         self._openai_args = openai_args
 
-    def get_score(self, prompt: str) -> float:
+    def get_score(self, prompt: str) -> Optional[float]:
         '''
         Retrieves the score for a given prompt using the OpenAI API.
 
@@ -45,10 +45,7 @@ class OpenAIBasedEvaluator:
 
         Returns:
             Score associated with the given prompt based the resulting
-                assessment
-
-        Raises:
-            AssertionError: If the OpenAI API returns an unrecognized assessment
+                assessment, `None` if the score could not be computed
         '''
         argument_options = list(self._assessment_to_score_mapping.keys())
         messages = [{"role": "user", "content": prompt}]
@@ -67,29 +64,35 @@ class OpenAIBasedEvaluator:
                 "required": [self._argument_name],
             },
         }]
-        if self._openai_args is None:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                functions=functions,
-                function_call={"name": self._function_name},
-            )
-        else:
-            response = openai.ChatCompletion.create(
-                messages=messages,
-                functions=functions,
-                function_call={"name": self._function_name},
-                **self._openai_args,
-            )
-        response_message = response["choices"][0]["message"]
-        function_args = json.loads(
-            response_message["function_call"]["arguments"])
-        assessment = function_args.get(self._argument_name)
+        try:
+            if self._openai_args is None:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=messages,
+                    functions=functions,
+                    function_call={"name": self._function_name},
+                )
+            else:
+                response = openai.ChatCompletion.create(
+                    messages=messages,
+                    functions=functions,
+                    function_call={"name": self._function_name},
+                    **self._openai_args,
+                )
+            response_message = response["choices"][0]["message"]
+            function_args = json.loads(
+                response_message["function_call"]["arguments"])
+            assessment = function_args.get(self._argument_name)
+        except Exception as e:
+            print(f'OpenAI failed to return a response: {e}')
+            print(f'Prompt that triggered the failure is:\n{prompt}')
+            return None
 
         if assessment not in self._assessment_to_score_mapping:
             # By leveraging the function calling API, this should be pretty
             # rare, but we're dealing with LLMs here so nothing is absolute!
-            raise AssertionError(
-                'OpenAI returned an unrecognized assessment :(')
+            print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
+            print(f'Prompt that triggered the failure is:\n{prompt}')
+            return None
 
         return self._assessment_to_score_mapping[assessment]
