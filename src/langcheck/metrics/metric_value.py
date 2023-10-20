@@ -15,7 +15,7 @@ NumericType = TypeVar('NumericType', float, int)
 class MetricValue(Generic[NumericType]):
     '''A rich object that is the output of any langcheck.metrics function.'''
     metric_name: str
-    metric_values: List[NumericType]
+    metric_values: List[Optional[NumericType]]
     prompts: Optional[List[str]]
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
