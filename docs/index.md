@@ -10,6 +10,7 @@ Get started with the docs below.
 installation.md
 quickstart.md
 metrics.md
+tutorials.md
 langcheck.rst
 contributing.md
 GitHub <https://github.com/citadel-ai/langcheck>

@@ -1,4 +1,4 @@
-# Tuturial - Evaluating an Email Generator
+# Evaluating an Email Generator
 
 In this tutorial, we will walk through how we can use LangCheck to evaluate a simple email generator app based on the OpenAI API.
 
