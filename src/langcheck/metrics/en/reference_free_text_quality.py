@@ -13,6 +13,7 @@ from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.stats import compute_stats
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _sentiment_model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 _sentiment_tokenizer = None
@@ -171,7 +172,7 @@ def _sentiment_openai(
         openai_args=openai_args)
 
     score_list = []
-    for gen in generated_outputs:
+    for gen in tqdm_wrapper(generated_outputs):
         score = oai_evaluator.get_score(_prompt(gen_output=gen))
         score_list.append(score)
     return score_list
@@ -321,7 +322,7 @@ def _fluency_openai(
         openai_args=openai_args)
 
     score_list = []
-    for gen in generated_outputs:
+    for gen in tqdm_wrapper(generated_outputs):
         score = oai_evaluator.get_score(_prompt(gen_output=gen))
         score_list.append(score)
     return score_list
@@ -448,7 +449,7 @@ def _toxicity_openai(
         openai_args=openai_args)
 
     score_list = []
-    for gen in generated_outputs:
+    for gen in tqdm_wrapper(generated_outputs):
         score = oai_evaluator.get_score(_prompt(gen_output=gen))
         score_list.append(score)
     return score_list
@@ -477,7 +478,9 @@ def flesch_reading_ease(
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
 
-    output_stats = [compute_stats(output) for output in generated_outputs]
+    output_stats = [
+        compute_stats(output) for output in tqdm_wrapper(generated_outputs)
+    ]
     scores = [
         206.835 - 1.015 * (stat.num_words / stat.num_sentences) - 84.6 *
         (stat.num_syllables / stat.num_words) for stat in output_stats
@@ -516,7 +519,9 @@ def flesch_kincaid_grade(
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
 
-    output_stats = [compute_stats(output) for output in generated_outputs]
+    output_stats = [
+        compute_stats(output) for output in tqdm_wrapper(generated_outputs)
+        ]
     scores = [
         0.39 * (stat.num_words / stat.num_sentences) + 11.8 *
         (stat.num_syllables / stat.num_words) - 15.59 for stat in output_stats

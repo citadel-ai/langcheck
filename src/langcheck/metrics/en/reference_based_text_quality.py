@@ -9,6 +9,7 @@ from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 def semantic_similarity(
@@ -231,7 +232,7 @@ def _rouge(generated_outputs: List[str], reference_outputs: List[str],
     assert rouge_type in ["rouge1", "rouge2", "rougeLsum"]
     scorer = rouge_scorer.RougeScorer([rouge_type], use_stemmer=True)
     scores = []
-    for gen, ref in zip(generated_outputs, reference_outputs):
+    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs), total=len(generated_outputs)):
         score = scorer.score(gen, ref)
         scores.append(score[rouge_type].fmeasure)
     return scores

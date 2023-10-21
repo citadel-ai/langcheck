@@ -6,6 +6,7 @@ from typing import Callable, Container, Iterable, List, Optional
 
 from langcheck.metrics._validation import validate_parameters_text_structure
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 def is_int(generated_outputs: List[str] | str,
@@ -29,7 +30,7 @@ def is_int(generated_outputs: List[str] | str,
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in generated_outputs:
+    for output in tqdm_wrapper(generated_outputs):
         try:
             output_int = int(output)
             if domain is None or output_int in domain:
@@ -72,7 +73,7 @@ def is_float(generated_outputs: List[str] | str,
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in generated_outputs:
+    for output in tqdm_wrapper(generated_outputs):
         try:
             output_float = float(output)
             if min is None and max is None:
@@ -114,7 +115,7 @@ def is_json_object(
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in generated_outputs:
+    for output in tqdm_wrapper(generated_outputs):
         try:
             json_output = json.loads(output)
             if isinstance(json_output, dict):
@@ -152,7 +153,7 @@ def is_json_array(
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in generated_outputs:
+    for output in tqdm_wrapper(generated_outputs):
         try:
             json_output = json.loads(output)
             if isinstance(json_output, list):
@@ -192,7 +193,7 @@ def matches_regex(
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in generated_outputs:
+    for output in tqdm_wrapper(generated_outputs):
         if re.fullmatch(regex, output) is not None:
             metric_values.append(1)
         else:
@@ -228,7 +229,7 @@ def contains_regex(
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in generated_outputs:
+    for output in tqdm_wrapper(generated_outputs):
         if re.search(regex, output) is not None:
             metric_values.append(1)
         else:
@@ -274,7 +275,7 @@ def contains_all_strings(
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in _generated_outputs:
+    for output in tqdm_wrapper(_generated_outputs):
         if all(string in output for string in _strings):
             metric_values.append(1)
         else:
@@ -321,7 +322,7 @@ def contains_any_strings(
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in _generated_outputs:
+    for output in tqdm_wrapper(_generated_outputs):
         if any(string in output for string in _strings):
             metric_values.append(1)
         else:
@@ -359,7 +360,7 @@ def validation_fn(
 
     # The values are binary: 1 for success and 0 for failure
     metric_values = []
-    for output in generated_outputs:
+    for output in tqdm_wrapper(generated_outputs):
         try:
             if valid_fn(output):
                 metric_values.append(1)

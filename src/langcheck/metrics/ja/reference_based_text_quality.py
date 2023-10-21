@@ -12,6 +12,7 @@ from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity as en_semantic_similarity
 from langcheck.metrics.ja._tokenizers import JanomeTokenizer
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 def semantic_similarity(
@@ -248,7 +249,7 @@ def _rouge(generated_outputs: List[str],
                                       use_stemmer=True,
                                       tokenizer=tokenizer)
     scores = []
-    for gen, ref in zip(generated_outputs, reference_outputs):
+    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs), total=len(generated_outputs)):
         score = scorer.score(gen, ref)
         scores.append(score[rouge_type].fmeasure)
     return scores

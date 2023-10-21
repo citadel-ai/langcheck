@@ -13,6 +13,7 @@ from langcheck.metrics.en.reference_free_text_quality import (_fluency_openai,
 from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA E501
 _sentiment_tokenizer = None
@@ -375,7 +376,7 @@ def tateishi_ono_yamada_reading_ease(
             - 5.3 * _mean_str_length(katakana_runs)\
             - 4.6 * comma_period_ratio + 115.79
 
-    scores = [_get_reading_ease(text) for text in generated_outputs]
+    scores = [_get_reading_ease(text) for text in tqdm_wrapper(generated_outputs)]
     return MetricValue(metric_name='tateishi_ono_yamada_reading_ease',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
