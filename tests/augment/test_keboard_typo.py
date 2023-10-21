@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from langcheck.augment import keyboard_typo
+from langcheck.augment.en import keyboard_typo
 
 
 @pytest.mark.parametrize(

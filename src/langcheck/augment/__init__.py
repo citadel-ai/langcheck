@@ -1,5 +1,5 @@
-from langcheck.augment.en._keyboard_typo import keyboard_typo
+from langcheck.augment import en
 
-all = [
-    'keyboard_typo',
+__all__ = [
+    "en",
 ]
