@@ -37,7 +37,8 @@ def semantic_similarity(
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -58,7 +59,7 @@ def semantic_similarity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
     assert embedding_model_type in [
         'local', 'openai'
@@ -120,7 +121,7 @@ def rouge1(generated_outputs: List[str] | str,
     Returns:
         An MetricValue object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
@@ -159,7 +160,7 @@ def rouge2(generated_outputs: List[str] | str,
     Returns:
         An MetricValue object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
 
     scores = _rouge(generated_outputs,
@@ -198,7 +199,7 @@ def rougeL(generated_outputs: List[str] | str,
     Returns:
         An MetricValue object
     '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA E501
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
 
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
@@ -210,7 +211,7 @@ def rougeL(generated_outputs: List[str] | str,
     # the ROUGE-L score (https://github.com/bheinzerling/pyrouge), which is a
     # Python wrapper around original perl script implementation.
     #
-    # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA E501
+    # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA: E501
     scores = _rouge(generated_outputs,
                     reference_outputs,
                     'rougeLsum',

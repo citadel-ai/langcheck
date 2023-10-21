@@ -9,7 +9,7 @@ from langcheck.metrics.en.source_based_text_quality import \
     factual_consistency as en_factual_consistency
 from langcheck.metrics.metric_value import MetricValue
 
-_factual_consistency_translation_model_path = 'staka/fugumt-ja-en'
+_factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-ja-en'
 _factual_consistency_translation_pipeline = None
 
 
@@ -34,7 +34,7 @@ def factual_consistency(
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
     This function wraps :func:`~langcheck.metrics.en.en_factual_consistency`
-    using the translation model ``staka/fugumt-ja-en`` to translate the
+    using the translation model ``Helsinki-NLP/opus-mt-ja-en`` to translate the
     Japanese texts to English before computing the factual consistency
     scores. This is because the UniEval-fact model is trained on English
     text.
@@ -43,7 +43,8 @@ def factual_consistency(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Args:

@@ -23,7 +23,7 @@ author = 'Citadel AI'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.autodoc',  # Automatically generate "API Reference" pages from docstrings  # NOQA E501
+    'sphinx.ext.autodoc',  # Automatically generate "API Reference" pages from docstrings  # NOQA: E501
     'sphinx.ext.napoleon',  # Read Google-style docstrings
     'sphinx.ext.viewcode',  # Add links from docs to source code
     'myst_parser'  # Enable Markdown support
