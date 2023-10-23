@@ -12,8 +12,9 @@ def keyboard_typo(
     Args:
         texts: List of texts to be augmented.
         **kwargs: Arbitrary keyword arguments, which will be passed to
-            :class:`nlpaug.augmenter.char.keyboard.KeyboardAug`. See the
-            documentation for more details.
+            `nlpaug.augmenter.char.keyboard.KeyboardAug
+            <https://nlpaug.readthedocs.io/en/latest/augmenter/char/keyboard.html#nlpaug.augmenter.char.keyboard.KeyboardAug>`_.
+            See the documentation for more details.
 
     Returns:
         A list of perturbed texts.
