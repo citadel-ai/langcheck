@@ -35,6 +35,23 @@ def scatter(metric_value: MetricValue,
                                    jupyter_mode)
 
 
+def _format_text_for_hover(text: str):
+    '''Helper function to format a string so that it displays nicely on hover in
+    the scatter plot.
+    '''
+    # First, split the text by newline characters. This is recommended in
+    # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.replace_whitespace
+    paragraphs = text.split('\n')
+    # Then, split the paragraphs into separate lines with a max width of 70
+    # chars (default)
+    lines = [line for p in paragraphs for line in textwrap.wrap(p)]
+    # Only show a max of 5 lines. If there are more than 5, add '...' to
+    # indicate that the text has been cut off
+    if len(lines) > 5:
+        lines = lines[:5] + ['...']
+    return '<br>'.join(lines)
+
+
 def _scatter_one_metric_value(metric_value: MetricValue,
                               jupyter_mode: str) -> None:
     '''Shows an interactive scatter plot of all data points in one
@@ -43,15 +60,12 @@ def _scatter_one_metric_value(metric_value: MetricValue,
     # Rename some MetricValue fields for display
     df = metric_value.to_df()
     df.rename(columns={'metric_value': metric_value.metric_name}, inplace=True)
-    df['prompt'] = df['prompt'].fillna('None')
-    df['prompt'] = df['prompt'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
-    df['reference_output'] = df['reference_output'].fillna('None')
-    df['reference_output'] = df['reference_output'].apply(
-        lambda t: "<br>".join(textwrap.wrap(t)))
-    df['source'] = df['source'].fillna('None')
-    df['source'] = df['source'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
+    df['prompt'] = df['prompt'].fillna('None').apply(_format_text_for_hover)
+    df['reference_output'] = df['reference_output'].fillna('None').apply(
+        _format_text_for_hover)
+    df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
     df['generated_output'] = df['generated_output'].apply(
-        lambda t: "<br>".join(textwrap.wrap(t)))
+        _format_text_for_hover)
 
     # Define layout of the Dash app (chart + search boxes)
     app = Dash(__name__)
@@ -187,15 +201,12 @@ def _scatter_two_metric_values(metric_value: MetricValue,
     df.rename(columns={'metric_value': metric_value.metric_name}, inplace=True)
     df[other_metric_value.metric_name] = other_metric_value.to_df(
     )['metric_value']
-    df['prompt'] = df['prompt'].fillna('None')
-    df['prompt'] = df['prompt'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
-    df['reference_output'] = df['reference_output'].fillna('None')
-    df['reference_output'] = df['reference_output'].apply(
-        lambda t: "<br>".join(textwrap.wrap(t)))
-    df['source'] = df['source'].fillna('None')
-    df['source'] = df['source'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
+    df['prompt'] = df['prompt'].fillna('None').apply(_format_text_for_hover)
+    df['reference_output'] = df['reference_output'].fillna('None').apply(
+        _format_text_for_hover)
+    df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
     df['generated_output'] = df['generated_output'].apply(
-        lambda t: "<br>".join(textwrap.wrap(t)))
+        _format_text_for_hover)
 
     # Define layout of the Dash app (chart + search boxes)
     app = Dash(__name__)
