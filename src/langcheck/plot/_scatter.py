@@ -1,4 +1,5 @@
 import math
+import textwrap
 from copy import deepcopy
 from typing import Optional
 
@@ -43,8 +44,14 @@ def _scatter_one_metric_value(metric_value: MetricValue,
     df = metric_value.to_df()
     df.rename(columns={'metric_value': metric_value.metric_name}, inplace=True)
     df['prompt'] = df['prompt'].fillna('None')
+    df['prompt'] = df['prompt'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
     df['reference_output'] = df['reference_output'].fillna('None')
+    df['reference_output'] = df['reference_output'].apply(
+        lambda t: "<br>".join(textwrap.wrap(t)))
     df['source'] = df['source'].fillna('None')
+    df['source'] = df['source'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
+    df['generated_output'] = df['generated_output'].apply(
+        lambda t: "<br>".join(textwrap.wrap(t)))
 
     # Define layout of the Dash app (chart + search boxes)
     app = Dash(__name__)
@@ -181,8 +188,14 @@ def _scatter_two_metric_values(metric_value: MetricValue,
     df[other_metric_value.metric_name] = other_metric_value.to_df(
     )['metric_value']
     df['prompt'] = df['prompt'].fillna('None')
+    df['prompt'] = df['prompt'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
     df['reference_output'] = df['reference_output'].fillna('None')
+    df['reference_output'] = df['reference_output'].apply(
+        lambda t: "<br>".join(textwrap.wrap(t)))
     df['source'] = df['source'].fillna('None')
+    df['source'] = df['source'].apply(lambda t: "<br>".join(textwrap.wrap(t)))
+    df['generated_output'] = df['generated_output'].apply(
+        lambda t: "<br>".join(textwrap.wrap(t)))
 
     # Define layout of the Dash app (chart + search boxes)
     app = Dash(__name__)
