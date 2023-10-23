@@ -118,6 +118,8 @@ At this point in our development process, we would start iterating on the prompt
 
 For example, in the Google application email output, we saw that the model added some details that we did not specify in the instructions. We can detect this by using the factual consistency metric, which checks whether the output text is consistent with the source text (in this case, we can set the `content_description` as the “source”). Indeed, we see that this output has a low factual consistency score.
 ```python
+import langcheck
+
 factual_consistency = langcheck.metrics.factual_consistency(generated_outputs=email, sources=content_description)
 print(f"factual consistency = {factual_consistency.metric_values[0]:.2f}")
 ```
