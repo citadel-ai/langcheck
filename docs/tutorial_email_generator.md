@@ -1,6 +1,6 @@
 # Evaluating an Email Generator
 
-In this tutorial, we will walk through how we can use LangCheck to evaluate a simple email generator app based on the OpenAI API.
+In this tutorial, we will walk through how we can use LangCheck to evaluate a simple email generator app based on the OpenAI API. To see all the code that this tutorial is based on (and to run it yourself!), [see this Colab](https://colab.research.google.com/github/citadel-ai/langcheck/blob/main/docs/notebooks/Email%20Generation%20Tutorial.ipynb).
 
 ## Building a Simple Email Generator
 
@@ -202,7 +202,7 @@ print(f"factual consistency = {factual_consistency.metric_values[0]:.2f}")
 
 The metrics that we have examined so far have been reference-free and source-based metrics, meaning that we don’t need a reference output to evaluate the email generator’s outputs. However, if we do have some reference outputs, we can leverage the reference-based metrics as well.
 
-For all of the email prompts, I wrote out the emails that I personally would’ve written (see here). Let’s now assume that my email writing skills are good enough to call these the reference outputs, and compute some of LangCheck’s reference based metrics. Below, we compute the `rougeL` and `semantic_similarity` metrics, and show them both in a scatter plot.
+For all of the email prompts, I wrote out the emails that I personally would’ve written ([see here](https://colab.research.google.com/github/citadel-ai/langcheck/blob/main/docs/notebooks/Email%20Generation%20Tutorial.ipynb)). Let’s now assume that my email writing skills are good enough to call these the reference outputs, and compute some of LangCheck’s reference based metrics. Below, we compute the `rougeL` and `semantic_similarity` metrics, and show them both in a scatter plot.
 
 ```python
 generated_emails = [item["generated_email"] for item in [japan_trip, running_late, google_application]]
@@ -217,7 +217,7 @@ langcheck.plot.scatter(semantic_similarity, rougeL)
 
 Due to the longform nature of these generated emails, we can see that the rougeL values tend to be a bit low, even though the semantic_similarity values are high.
 
-However, one aspect that rougeL would be a good fit to evaluate would be the generated subjects at the beginning of the generated emails. Let's first check that the generated email does indeed follow the `Subject: <appropriate subject>` that we specified in the prompt, and then compute the rougeL score between the generated subject and the reference subject.
+However, one aspect that rougeL would be a good fit to evaluate would be the generated subjects at the beginning of the generated emails. Below, we first check that the generated email does indeed follow the `Subject: <appropriate subject>` that we specified in the prompt, and then compute the rougeL score between the generated subject and the reference subject. We can see `rougeL` is able to identify some meaningful differences in the wording of the subject, even when the semantic meanings are pretty similar.
 
 ```python
 import re
