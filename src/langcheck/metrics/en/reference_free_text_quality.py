@@ -43,7 +43,8 @@ def sentiment(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Args:
@@ -192,7 +193,8 @@ def fluency(generated_outputs: List[str] | str,
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Args:
@@ -343,7 +345,8 @@ def toxicity(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Args:
