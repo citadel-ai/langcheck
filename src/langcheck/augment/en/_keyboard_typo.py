@@ -19,5 +19,5 @@ def keyboard_typo(
     Returns:
         A list of perturbed texts.
     '''
-    aug = nac.KeyboardAug()
-    return aug.augment(texts, **kwargs)
+    aug = nac.KeyboardAug(**kwargs)
+    return aug.augment(texts)
