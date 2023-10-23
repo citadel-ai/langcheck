@@ -213,7 +213,7 @@ semantic_similarity = langcheck.metrics.semantic_similarity(generated_outputs=ge
 
 langcheck.plot.scatter(semantic_similarity, rougeL)
 ```
-![MetricValue output](_static/email_tutorial_scatter.png)
+![MetricValue output](_static/email_tutorial_scatter_1.png)
 
 Due to the longform nature of these generated emails, we can see that the rougeL values tend to be a bit low, even though the semantic_similarity values are high.
 
@@ -253,3 +253,4 @@ subject_semantic_similarity = langcheck.metrics.semantic_similarity(
 
 langcheck.plot.scatter(subject_semantic_similarity, subject_rougeL)
 ```
+![MetricValue output](_static/email_tutorial_scatter_2.png)
