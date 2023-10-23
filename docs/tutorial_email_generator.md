@@ -120,7 +120,9 @@ For example, in the Google application email output, we saw that the model added
 ```python
 import langcheck
 
-factual_consistency = langcheck.metrics.factual_consistency(generated_outputs=email, sources=content_description)
+factual_consistency = langcheck.metrics.factual_consistency(
+    generated_outputs=google_application['generated_email'],
+    sources=google_application['content_description'])
 print(f"factual consistency = {factual_consistency.metric_values[0]:.2f}")
 ```
 
