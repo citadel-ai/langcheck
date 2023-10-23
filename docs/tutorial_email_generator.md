@@ -54,32 +54,30 @@ print(email)
 ```
 
 Below are the app's outputs on those two examples.
-```text
-Subject: Japan Trip Update
 
-Hey Alex,
+> Subject: Japan Trip Update
+>
+> Hey Alex,
+>
+> Just wanted to give you a quick update on the Japan trip. We arrived in Tokyo yesterday and visited Tokyo Sky Tree, which was amazing! The view from the top was breathtaking.
+>
+> So far, my favorite part of the trip has been trying the local food, especially ramen. It's absolutely delicious!
+>
+> I'll keep you posted on any further updates.
+>
+> Take care,  
+> [Your Name]
 
-Just wanted to give you a quick update on the Japan trip. We arrived in Tokyo yesterday and visited Tokyo Sky Tree, which was amazing! The view from the top was breathtaking.
-
-So far, my favorite part of the trip has been trying the local food, especially ramen. It's absolutely delicious!
-
-I'll keep you posted on any further updates.
-
-Take care,
-[Your Name]
-```
-```text
-Subject: Running Late for 10am Meeting
-
-Hi Kenny,
-
-I just wanted to give you a heads up that I will be approximately 10 minutes late for our 10am meeting this morning. I encountered a train transfer issue while commuting to the office.
-
-I apologize for any inconvenience this may cause and I'll make sure to catch up promptly once I arrive.
-
-Best regards,
-[Your Name]
-```
+> Subject: Running Late for 10am Meeting
+>
+> Hi Kenny,
+>
+> I just wanted to give you a heads up that I will be approximately 10 minutes late for our 10am meeting this morning. I encountered a train transfer issue while commuting to the office.
+>
+> I apologize for any inconvenience this may cause and I'll make sure to catch up promptly once I arrive.
+>
+> Best regards,  
+> [Your Name]
 
 Based on these couple examples, it seems like the app is doing a pretty good job. However, it's not always perfect - in the example below, the app "hallucinates" a bunch of fake qualifications that we did not specify!
 
@@ -110,8 +108,8 @@ print(email)
 >
 > Looking forward to hearing from you soon.
 >
-> Sincerely,
-> [Your Name]
+> Sincerely,  
+> [Your Name]  
 > [Contact Information]
 
 ## Evaluating with LangCheck (No References)
@@ -179,16 +177,13 @@ def generate_email(recipient_name, content_description):
 
 email = generate_email(google_application['recipient_name'],
                        google_application['content_description'])
-print("####")
 print(email)
-print("####")
 
 factual_consistency = langcheck.metrics.factual_consistency(
     generated_outputs=email, sources=google_application['content_description'])
 print(f"factual consistency = {factual_consistency.metric_values[0]:.2f}")
 ```
 
-> ####
 > Subject: Applying for Software Engineering Role
 >
 > Dear Google,
@@ -197,9 +192,10 @@ print(f"factual consistency = {factual_consistency.metric_values[0]:.2f}")
 >
 > Thank you for considering my application.
 >
-> Sincerely,
+> Sincerely,  
 > [Your Name]
-> ####
+>
+> ----
 > factual consistency = 0.40
 
 ## Evaluating with LangCheck's Reference-Based Metrics
