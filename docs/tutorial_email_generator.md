@@ -254,3 +254,9 @@ subject_semantic_similarity = langcheck.metrics.semantic_similarity(
 langcheck.plot.scatter(subject_semantic_similarity, subject_rougeL)
 ```
 ![MetricValue output](_static/email_tutorial_scatter_2.png)
+
+## Closing
+
+In this tutorial, we went through a very simple cycle of creating an email generator, evaluating its outputs, and making some improvements based on those evaluations. While we only worked with three examples throughout the tutorial, in practice we would want to evaluate on *many* more examples, which is where having a tool like LangCheck to automate those evaluations would be helpful. If you're interested in learning more about LangCheck, please refer to these docs!
+- [Quickstart](quickstart.md)
+- [Metrics Page](metrics.md)
