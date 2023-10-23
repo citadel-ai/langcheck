@@ -1,12 +1,12 @@
-from typing import List
+from __future__ import annotations
 
 import nlpaug.augmenter.char as nac
 
 
 def keyboard_typo(
-    texts: List[str],
+    texts: list[str] | str,
     **kwargs,
-) -> List[str]:
+) -> list[str]:
     '''Generate keyboard typo perturbed texts for augmentation.
 
     Args:
