@@ -118,7 +118,7 @@ class MetricValue(Generic[NumericType]):
             'Try an expression like `metric_value > 0.5`, '
             '`metric_value.all()`, or `metric_value.any()` instead.')
 
-    def scatter(self, jupyter_mode: str = 'inline'):
+    def scatter(self, jupyter_mode: str = 'inline') -> None:
         '''Shows an interactive scatter plot of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.
 
@@ -128,7 +128,7 @@ class MetricValue(Generic[NumericType]):
         from langcheck.plot import scatter
         return scatter(self, jupyter_mode=jupyter_mode)
 
-    def histogram(self, jupyter_mode: str = 'inline'):
+    def histogram(self, jupyter_mode: str = 'inline') -> None:
         '''Shows an interactive histogram of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.
 
@@ -148,7 +148,7 @@ class MetricValueWithThreshold(MetricValue):
     threshold: float | int
     threshold_op: str  # One of '<', '<=', '>', '>=', '==', '!='
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         '''Computes self.pass_rate and self.threshold_results based on the
         constructor arguments.
         '''
