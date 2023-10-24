@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from transformers import pipeline
+from transformers.pipelines import pipeline
 
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en.source_based_text_quality import \
