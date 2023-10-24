@@ -30,13 +30,16 @@ def keyboard_typo(
         Note that the default values for these arguments are different from the
         ``nlpaug`` defaults. To be more specific, the default values for
         ``aug_char_p`` to be `0.1`, ``aug_char_max`` and ``aug_word_max`` to be
-        `None`. See the documentation for more details.
+        `None`, and ``include_special_char`` and ``include_numeric`` to be
+        `False`. See the documentation for more details.
 
     Returns:
         A list of perturbed texts.
     '''
 
     kwargs["aug_char_p"] = kwargs.get("aug_char_p", 0.1)
+    kwargs["aug_char_max"] = kwargs.get("aug_char_max")
+    kwargs["aug_word_max"] = kwargs.get("aug_word_max")
     kwargs["include_special_char"] = kwargs.get("include_special_char", False)
     kwargs["include_numeric"] = kwargs.get("include_numeric", False)
 
