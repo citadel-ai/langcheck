@@ -216,11 +216,19 @@ The metrics that we have examined so far have been reference-free and source-bas
 For all of the email prompts, I wrote out the emails that I personally would’ve written ([see here](https://colab.research.google.com/github/citadel-ai/langcheck/blob/main/docs/notebooks/Email%20Generation%20Tutorial.ipynb)). Let’s now assume that my email writing skills are good enough to call these the reference outputs, and compute some of LangCheck’s reference based metrics. Below, we compute the `rougeL` and `semantic_similarity` metrics, and show them both in a scatter plot.
 
 ```python
-generated_emails = [item["generated_email"] for item in [japan_trip, running_late, google_application]]
-reference_emails = [item["reference"] for item in [japan_trip, running_late, google_application]]
+generated_emails = [
+    item["generated_email"]
+    for item in [japan_trip, running_late, google_application]
+]
+reference_emails = [
+    item["reference"]
+    for item in [japan_trip, running_late, google_application]
+]
 
-rougeL = langcheck.metrics.rougeL(generated_outputs=generated_emails, reference_outputs=reference_emails)
-semantic_similarity = langcheck.metrics.semantic_similarity(generated_outputs=generated_emails, reference_outputs=reference_emails)
+rougeL = langcheck.metrics.rougeL(generated_outputs=generated_emails,
+                                  reference_outputs=reference_emails)
+semantic_similarity = langcheck.metrics.semantic_similarity(
+    generated_outputs=generated_emails, reference_outputs=reference_emails)
 
 langcheck.plot.scatter(semantic_similarity, rougeL)
 ```
