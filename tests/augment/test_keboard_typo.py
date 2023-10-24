@@ -9,8 +9,8 @@ from langcheck.augment.en import keyboard_typo
 @pytest.mark.parametrize(
     "texts, expected",
     [
-        (["Hello, world!"], ["HF;lo, eorlE!"]),
-        (["Hello, world!", "I'm hungry"], ["HF;lo, eorlE!", "I ' m Y Tngry"]),
+        (["Hello, world!"], ["HePlo, wLrld!"]),
+        (["Hello, world!", "I'm hungry"], ["HePlo, wLrld!", "I ' m hungrt"]),
     ],
 )
 def test_keyboard_typo(texts: List[str], expected: List[str]):
