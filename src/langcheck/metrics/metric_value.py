@@ -8,14 +8,15 @@ from typing import Generic, List, Optional, TypeVar
 import pandas as pd
 
 # Metrics take on float or integer values
-NumericType = TypeVar('NumericType', float, int)
+# Some metrics may return `None` values when the score fails to be computed
+NumericType = TypeVar('NumericType', float, int, Optional[float], Optional[int])
 
 
 @dataclass
 class MetricValue(Generic[NumericType]):
     '''A rich object that is the output of any langcheck.metrics function.'''
     metric_name: str
-    metric_values: List[Optional[NumericType]]
+    metric_values: List[NumericType]
     prompts: Optional[List[str]]
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
