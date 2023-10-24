@@ -70,7 +70,7 @@ def histogram(metric_value: MetricValue, jupyter_mode: str = 'inline') -> None:
 
         # Manually set the number of bins in the histogram. We can't use the
         # nbins parameter of px.histogram() since it's just a suggested number
-        # of bins. See: https://community.plotly.com/t/histogram-bin-size-with-plotly-express/38927/5  # NOQA E501
+        # of bins. See: https://community.plotly.com/t/histogram-bin-size-with-plotly-express/38927/5  # NOQA: E501
         start = math.floor(df[metric_value.metric_name].min())
         end = math.ceil(df[metric_value.metric_name].max())
         step_size = (end - start) / int(num_bins)

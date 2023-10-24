@@ -14,7 +14,7 @@ from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
 
-_sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA E501
+_sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA: E501
 _sentiment_tokenizer = None
 _sentiment_model = None
 
@@ -47,7 +47,8 @@ def sentiment(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -130,7 +131,8 @@ def toxicity(
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -219,7 +221,8 @@ def fluency(generated_outputs: List[str] | str,
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -319,8 +322,8 @@ def tateishi_ono_yamada_reading_ease(
     original paper for details.
 
     Ref:
-        https://www.jstage.jst.go.jp/article/nihongokyoiku/158/0/158_49/_pdf/-char/ja (Japanese) # NOQA E501
-        https://ipsj.ixsq.nii.ac.jp/ej/?action=pages_view_main&active_action=repository_view_main_item_detail&item_id=37773&item_no=1&page_id=13&block_id=8 (Japanese) # NOQA E501
+        https://www.jstage.jst.go.jp/article/nihongokyoiku/158/0/158_49/_pdf/-char/ja (Japanese)
+        https://ipsj.ixsq.nii.ac.jp/ej/?action=pages_view_main&active_action=repository_view_main_item_detail&item_id=37773&item_no=1&page_id=13&block_id=8 (Japanese)
         https://aclanthology.org/C88-2135/ (English)
 
     Args:
@@ -330,7 +333,7 @@ def tateishi_ono_yamada_reading_ease(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    '''  # NOQA: E501
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
 
