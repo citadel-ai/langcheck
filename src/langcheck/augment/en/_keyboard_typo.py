@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import nlpaug.augmenter.char as nac
+from nlpaug.augmenter.char.keyboard import KeyboardAug
 
 
 def keyboard_typo(
@@ -43,5 +43,5 @@ def keyboard_typo(
     kwargs["include_special_char"] = kwargs.get("include_special_char", False)
     kwargs["include_numeric"] = kwargs.get("include_numeric", False)
 
-    aug = nac.KeyboardAug(**kwargs)
+    aug = KeyboardAug(**kwargs)
     return aug.augment(texts)
