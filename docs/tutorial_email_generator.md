@@ -251,8 +251,8 @@ reference_emails = [
 ]
 
 # Check that the generated email contains the string "Subject: "
-contains_subject = langcheck.metrics.contains_any_strings(
-    generated_outputs=generated_emails, strings=["Subject: "])
+contains_subject = langcheck.metrics.contains_regex(
+    generated_outputs=generated_emails, regex='Subject: (.*?)(\n|$)')
 assert contains_subject == 1
 
 
