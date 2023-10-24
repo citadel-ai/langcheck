@@ -138,14 +138,21 @@ There are many factors other than factual consistency that we might care about i
 
 Here is how we can use LangCheck to check all of these aspects.
 ```python
-emails = [item["generated_email"] for item in [japan_trip, running_late, google_application]]
-content_descriptions = [item["content_description"] for item in [japan_trip, running_late, google_application]]
+emails = [
+    item["generated_email"]
+    for item in [japan_trip, running_late, google_application]
+]
+content_descriptions = [
+    item["content_description"]
+    for item in [japan_trip, running_late, google_application]
+]
 
-factual_consistency = langcheck.metrics.factual_consistency(generated_outputs=emails, sources=content_descriptions)
-toxicity = langcheck.metrics.toxicity(generated_outputs=emails)
-fluency = langcheck.metrics.fluency(generated_outputs=emails)
-sentiment = langcheck.metrics.sentiment(generated_outputs=emails)
-ai_disclaimer_similarity = langcheck.metrics.ai_disclaimer_similarity(generated_outputs=emails)
+factual_consistency = langcheck.metrics.factual_consistency(
+    generated_outputs=emails, sources=content_descriptions)
+toxicity = langcheck.metrics.toxicity(emails)
+fluency = langcheck.metrics.fluency(emails)
+sentiment = langcheck.metrics.sentiment(emails)
+ai_disclaimer_similarity = langcheck.metrics.ai_disclaimer_similarity(emails)
 
 # Let's check that the generated emails are not toxic!
 assert toxicity < 0.2
