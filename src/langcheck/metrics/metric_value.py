@@ -8,6 +8,9 @@ from typing import Generic, List, Optional, TypeVar
 
 import pandas as pd
 
+from langcheck.plot import histogram as plot_histogram
+from langcheck.plot import scatter as plot_scatter
+
 # Metrics take on float or integer values
 # Some metrics may return `None` values when the score fails to be computed
 NumericType = TypeVar('NumericType', float, int, Optional[float], Optional[int])
@@ -125,8 +128,11 @@ class MetricValue(Generic[NumericType]):
         This is a convenience function that calls
         :func:`langcheck.plot.scatter()`.
         '''
-        from langcheck.plot import scatter
-        return scatter(self, jupyter_mode=jupyter_mode)
+
+        # Type ignore because a Self type is only valid in class contexts
+        return plot_scatter(
+            self,  # type: ignore[reportGeneralTypeIssues]
+            jupyter_mode=jupyter_mode)
 
     def histogram(self, jupyter_mode: str = 'inline') -> None:
         '''Shows an interactive histogram of all data points in MetricValue.
@@ -135,8 +141,11 @@ class MetricValue(Generic[NumericType]):
         This is a convenience function that calls
         :func:`langcheck.plot.histogram()`.
         '''
-        from langcheck.plot import histogram
-        return histogram(self, jupyter_mode=jupyter_mode)
+
+        # Type ignore because a Self type is only valid in class contexts
+        return plot_histogram(
+            self,  # type: ignore[reportGeneralTypeIssues]
+            jupyter_mode=jupyter_mode)
 
 
 @dataclass
