@@ -16,9 +16,11 @@ from langcheck.metrics.ja import factual_consistency
 def test_factual_consistency(generated_outputs, sources):
     metric_value = factual_consistency(generated_outputs, sources)
     factual_consistency_high = metric_value.metric_values[0]
+    assert factual_consistency_high is not None
     assert 0.9 <= factual_consistency_high <= 1
     if len(metric_value.metric_values) == 2:
         factual_consistency_low = metric_value.metric_values[1]
+        assert factual_consistency_low is not None
         assert 0.0 <= factual_consistency_low <= 0.1
 
 
@@ -43,4 +45,4 @@ def test_factual_consistency_openai(generated_outputs, sources):
                                            sources,
                                            model_type='openai')
         # "Fully Consistent" gets a value of 1.0
-        assert metric_value.metric_values[0] == 1
+        assert metric_value == 1

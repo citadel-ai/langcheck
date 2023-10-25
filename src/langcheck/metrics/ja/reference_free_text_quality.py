@@ -14,7 +14,7 @@ from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
 
-_sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA E501
+_sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA: E501
 _sentiment_tokenizer = None
 _sentiment_model = None
 
@@ -30,14 +30,16 @@ _fluency_model = None
 
 
 def sentiment(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
-    are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive).)
+    are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
+    also be `None` if it could not be computed.)
 
     We currently support two model types:
     1. The 'local' type, where the Twitter-roBERTa-base-sentiment-multilingual
@@ -47,7 +49,8 @@ def sentiment(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -112,12 +115,15 @@ def sentiment(
 
 
 def toxicity(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
+    (NOTE: when using the OpenAI model, the toxicity scores are in steps of
+    0.25. The score may also be `None` if it could not be computed.)
 
     We currently support two model types:
     1. The 'local' type, where a model file is downloaded from HuggingFace and
@@ -130,7 +136,8 @@ def toxicity(
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -202,12 +209,17 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     return toxicity_scores
 
 
-def fluency(generated_outputs: List[str] | str,
-            prompts: Optional[List[str] | str] = None,
-            model_type: str = 'local',
-            openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+def fluency(
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
+    (NOTE: when using the OpenAI model, the fluency scores are either 0.0
+    (poor), 0.5 (fair), or 1.0 (good). The score may also be `None` if it could
+    not be computed.)
 
     We currently support two model types:
     1. The 'local' type, where a model file is downloaded from HuggingFace and
@@ -219,7 +231,8 @@ def fluency(generated_outputs: List[str] | str,
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -319,8 +332,8 @@ def tateishi_ono_yamada_reading_ease(
     original paper for details.
 
     Ref:
-        https://www.jstage.jst.go.jp/article/nihongokyoiku/158/0/158_49/_pdf/-char/ja (Japanese) # NOQA E501
-        https://ipsj.ixsq.nii.ac.jp/ej/?action=pages_view_main&active_action=repository_view_main_item_detail&item_id=37773&item_no=1&page_id=13&block_id=8 (Japanese) # NOQA E501
+        https://www.jstage.jst.go.jp/article/nihongokyoiku/158/0/158_49/_pdf/-char/ja (Japanese)
+        https://ipsj.ixsq.nii.ac.jp/ej/?action=pages_view_main&active_action=repository_view_main_item_detail&item_id=37773&item_no=1&page_id=13&block_id=8 (Japanese)
         https://aclanthology.org/C88-2135/ (English)
 
     Args:
@@ -330,7 +343,7 @@ def tateishi_ono_yamada_reading_ease(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    '''  # NOQA: E501
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
 

@@ -18,11 +18,12 @@ _factual_consistency_model = None
 
 
 def factual_consistency(
-        generated_outputs: List[str] | str,
-        sources: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+    generated_outputs: List[str] | str,
+    sources: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. The factual consistency score for one generated output is
     computed as the average of the per-sentence consistencies of the generated
@@ -30,7 +31,8 @@ def factual_consistency(
     [0, 1], where 0 means that the output is not at all consistent with the
     source text, and 1 means that the output is fully consistent with the source
     text. (NOTE: when uing the OpenAI model, the factuality score for each
-    sentence is either 0.0, 0.5, or 1.0.)
+    sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
+    could not be computed.)
 
     We currently support two model types:
 
@@ -42,7 +44,8 @@ def factual_consistency(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models  # NOQA E501
+    `this example
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
     for examples on setting up the OpenAI API key.
 
     Args:
@@ -96,8 +99,9 @@ def factual_consistency(
         if None in scores_for_output:
             score_per_output.append(None)
         else:
-            score_per_output.append(sum(scores_for_output) /
-                                    num)  # type: ignore
+            score_per_output.append(
+                sum(scores_for_output) /  # type: ignore
+                num)
         start_idx += num
 
     return MetricValue(metric_name='factual_consistency',
