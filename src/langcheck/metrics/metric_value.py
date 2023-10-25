@@ -163,9 +163,13 @@ class MetricValueWithThreshold(MetricValue):
         if self.threshold_op not in operators:
             raise ValueError(f'Invalid threshold operator: {self.threshold_op}')
 
+        if self.threshold is None:
+            raise ValueError("A threshold of `None` is not supported.")
+
+        # Set the result to `False` if the metric value is `None`
         self._threshold_results = [
             operators[self.threshold_op](x, self.threshold)
-            for x in self.metric_values
+            if x is not None else False for x in self.metric_values
         ]
 
         self._pass_rate = mean(self._threshold_results)
