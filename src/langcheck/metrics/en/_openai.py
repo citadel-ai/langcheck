@@ -38,7 +38,9 @@ class OpenAIBasedEvaluator:
 
     def get_score(self, prompt: str) -> Optional[float]:
         '''
-        Retrieves the score for a given prompt using the OpenAI API.
+        Retrieves the score for a given prompt using the OpenAI API. If the API
+        fails to return a response, or the response is not in the expected
+        format, `None` is returned.
 
         Args:
             prompt: Prompt that asks the OpenAI API for an assessment
