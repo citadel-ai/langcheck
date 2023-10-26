@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import operator
+import warnings
 from dataclasses import dataclass, fields
 from statistics import mean
 from typing import Generic, List, Optional, TypeVar
@@ -165,6 +166,11 @@ class MetricValueWithThreshold(MetricValue):
 
         if self.threshold is None:
             raise ValueError("A threshold of `None` is not supported.")
+
+        if None in self.metric_values:
+            warnings.warn(
+                "The threshold result for `None` values in `metric_values` will"
+                " always be `False`.")
 
         # Set the result to `False` if the metric value is `None`
         self._threshold_results = [
