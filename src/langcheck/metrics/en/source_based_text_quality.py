@@ -256,7 +256,7 @@ def _factual_consistency_openai(
 
         Save the resulting assessment. The available assessments are:
         `Fully Consistent`
-        `Partially Consistent
+        `Partially Consistent`
         `Not Consistent`
         '''
 
