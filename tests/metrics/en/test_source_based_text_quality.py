@@ -37,7 +37,8 @@ def test_factual_consistency_openai(generated_outputs, sources):
             'message': {
                 'function_call': {
                     'arguments': "{\n  \"factuality\": \"Fully Consistent\"\n}"
-                }
+                },
+                'content': 'foo bar'
             }
         }]
     }
