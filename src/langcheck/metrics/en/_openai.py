@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 import openai
 
@@ -36,7 +36,8 @@ class OpenAIBasedEvaluator:
         self._argument_description = argument_description
         self._openai_args = openai_args
 
-    def get_score(self, prompt: str) -> Optional[float]:
+    def get_score(self, prompt: str,
+                  function_call_prompt_template: Callable) -> Optional[float]:
         '''
         Retrieves the score for a given prompt using the OpenAI API.
 
@@ -69,19 +70,33 @@ class OpenAIBasedEvaluator:
                 response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=messages,
+                )
+            else:
+                response = openai.ChatCompletion.create(
+                    messages=messages,
+                    **self._openai_args,
+                )
+            freeform_assessment = response["choices"][0]["message"]["content"]
+            fn_call_messages = [{
+                "role": "user",
+                "content": function_call_prompt_template(freeform_assessment)
+            }]
+            if self._openai_args is None:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=fn_call_messages,
                     functions=functions,
                     function_call={"name": self._function_name},
                 )
             else:
                 response = openai.ChatCompletion.create(
-                    messages=messages,
+                    messages=fn_call_messages,
                     functions=functions,
                     function_call={"name": self._function_name},
                     **self._openai_args,
                 )
-            response_message = response["choices"][0]["message"]
             function_args = json.loads(
-                response_message["function_call"]["arguments"])
+                response["choices"][0]["message"]["function_call"]["arguments"])
             assessment = function_args.get(self._argument_name)
         except Exception as e:
             print(f'OpenAI failed to return a response: {e}')

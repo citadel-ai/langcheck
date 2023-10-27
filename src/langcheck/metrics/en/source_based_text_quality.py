@@ -235,8 +235,7 @@ def _factual_consistency_openai(
         [END DATA]
 
         Determine whether the submitted claim is factually consistent with the
-        source, and save the resulting assessment. The available assessments
-        are:
+        source. The available assessments are:
         `Fully Consistent` - The submitted claim is fully factually consistent
         with the source text.
         `Partially Consistent` - The submitted claim is partially factually
@@ -244,6 +243,21 @@ def _factual_consistency_openai(
         that are factually consistent, but some aspects that are not.
         `Not Consistent` - The submitted claim is not factually consistent with
         the source text.
+
+        Take a deep breath and work on this problem step-by-step.
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        The following is an assessment on the factual consistency of a claim:
+        ************
+        [Assessment]: {long_assessment}
+        ************
+
+        Save the resulting assessment. The available assessments are:
+        `Fully Consistent`
+        `Partially Consistent
+        `Not Consistent`
         '''
 
     factuality_assessment_to_score = {
@@ -262,6 +276,7 @@ def _factual_consistency_openai(
 
     score_list = []
     for src, gen in zip(srcs_list, gen_sentences_list):
-        score = oai_evaluator.get_score(_prompt(src=src, gen_output=gen))
+        score = oai_evaluator.get_score(_prompt(src=src, gen_output=gen),
+                                        _function_call_prompt)
         score_list.append(score)
     return score_list
