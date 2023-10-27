@@ -39,17 +39,51 @@ class OpenAIBasedEvaluator:
     def get_score(self, prompt: str,
                   function_call_prompt_template: Callable) -> Optional[float]:
         '''
-        Retrieves the score for a given prompt using the OpenAI API.
+        Retrieves the score for a given prompt using the OpenAI API. The first
+        API call is a "normal" call, where the API will return unstructured
+        text. The second call leverages the function calling API, where the API
+        should return a structured response.
 
         Args:
-            prompt: Prompt that asks the OpenAI API for an assessment
+            prompt: Prompt that asks the OpenAI API for the unstructured
+                assessment response
+            function_call_prompt_template: Prompt template used to construct the
+                prompt that asks the OpenAI API for the structured assessment
+                response
 
         Returns:
-            Score associated with the given prompt based the resulting
+            Score associated with the given prompt based on the resulting
                 assessment, `None` if the score could not be computed
         '''
-        argument_options = list(self._assessment_to_score_mapping.keys())
+        # First, call the API to get an unstructured assessment. The response
+        # should include both the assessment itself and the model's reasoning
+        # for that assessment.
         messages = [{"role": "user", "content": prompt}]
+        try:
+            if self._openai_args is None:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=messages,
+                )
+            else:
+                response = openai.ChatCompletion.create(
+                    messages=messages,
+                    **self._openai_args,
+                )
+            unstructured_assessment = response["choices"][0]["message"][
+                "content"]
+        except Exception as e:
+            print(f'OpenAI failed to return an unstructured assessment: {e}')
+            print(f'Prompt that triggered the failure is:\n{prompt}')
+            return None
+
+        # Next, call the API leveraging function calling to get a structured
+        # assessment
+        fn_call_messages = [{
+            "role": "user",
+            "content": function_call_prompt_template(unstructured_assessment)
+        }]
+        argument_options = list(self._assessment_to_score_mapping.keys())
         functions = [{
             "name": self._function_name,
             "description": self._function_description,
@@ -69,21 +103,6 @@ class OpenAIBasedEvaluator:
             if self._openai_args is None:
                 response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
-                    messages=messages,
-                )
-            else:
-                response = openai.ChatCompletion.create(
-                    messages=messages,
-                    **self._openai_args,
-                )
-            freeform_assessment = response["choices"][0]["message"]["content"]
-            fn_call_messages = [{
-                "role": "user",
-                "content": function_call_prompt_template(freeform_assessment)
-            }]
-            if self._openai_args is None:
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
                     messages=fn_call_messages,
                     functions=functions,
                     function_call={"name": self._function_name},
@@ -99,8 +118,9 @@ class OpenAIBasedEvaluator:
                 response["choices"][0]["message"]["function_call"]["arguments"])
             assessment = function_args.get(self._argument_name)
         except Exception as e:
-            print(f'OpenAI failed to return a response: {e}')
-            print(f'Prompt that triggered the failure is:\n{prompt}')
+            print(f'OpenAI failed to return a structured assessment: {e}')
+            print('Prompt that triggered the failure is:\n'
+                  f'{function_call_prompt_template(unstructured_assessment)}')
             return None
 
         if assessment not in self._assessment_to_score_mapping:
