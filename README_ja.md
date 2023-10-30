@@ -134,11 +134,13 @@ LLMの出力を保存して、LangCheckに入力してください。
 ```python
 from langcheck.utils import load_json
 
-recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
+production_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
+
 # 有害性の高い出力になっていないかを調べる。
-langcheck.metrics.ja.toxicity(recorded_outputs) < 0.25
+langcheck.metrics.ja.toxicity(production_outputs) > 0.75
+
 # 出力がJSON形式になっているかを調べる
-langcheck.metrics.is_json_array(recorded_outputs)
+langcheck.metrics.is_json_array(production_outputs)
 ```
 
 ### ガードレール

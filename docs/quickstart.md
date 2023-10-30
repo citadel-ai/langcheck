@@ -116,16 +116,24 @@ Coming soon: LangCheck can also help you create new test cases with `langcheck.a
 
 You can monitor the quality of your LLM outputs in production with LangCheck metrics.
 
-Just save the outputs and pass them into LangCheck.
+Just save the logs and pass them into LangCheck.
 
 ```python
-recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
+production_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
+production_prompts = load_json('llm_logs_2023_10_02.json')['prompts']
 
 # Evaluate and display toxic outputs in production logs
-langcheck.metrics.toxicity(recorded_outputs) < 0.25
+langcheck.metrics.toxicity(production_outputs) > 0.75
+langcheck.metrics.toxicity(production_prompts) > 0.75
+
+# Plot relationship between prompt toxicity and response toxicity
+langcheck.plot.scatter(
+    langcheck.metrics.toxicity(production_prompts),
+    langcheck.metrics.toxicity(production_outputs)
+)
 
 # Or if your app outputs structured text
-langcheck.metrics.is_json_array(recorded_outputs)
+langcheck.metrics.is_json_array(production_outputs)
 ```
 
 ### Guardrails
