@@ -17,7 +17,7 @@ from tests.utils import is_close
     ['Hello', ['Hello'], ["I'm fine!", "I'm feeling pretty bad today."]])
 def test_sentiment(generated_outputs):
     metric_value = sentiment(generated_outputs)
-    assert all(0 <= v <= 1 for v in metric_value.metric_values)
+    assert 0 <= metric_value <= 1
 
 
 @pytest.mark.parametrize('generated_outputs', ["I'm fine!", ["I'm fine!"]])
@@ -37,7 +37,7 @@ def test_sentiment_openai(generated_outputs):
                Mock(return_value=mock_chat_response)):
         metric_value = sentiment(generated_outputs, model_type='openai')
         # "Positive" gets a value of 1.0
-        assert metric_value.metric_values[0] == 1
+        assert metric_value == 1
 
 
 @pytest.mark.parametrize('generated_outputs', [
@@ -46,7 +46,7 @@ def test_sentiment_openai(generated_outputs):
 ])
 def test_fluency(generated_outputs):
     metric_value = fluency(generated_outputs)
-    assert all(0 <= v <= 1 for v in metric_value.metric_values)
+    assert 0 <= metric_value <= 1
 
 
 @pytest.mark.parametrize(
@@ -68,7 +68,7 @@ def test_fluency_openai(generated_outputs):
                Mock(return_value=mock_chat_response)):
         metric_value = fluency(generated_outputs, model_type='openai')
         # "Good" gets a value of 1.0
-        assert metric_value.metric_values[0] == 1
+        assert metric_value == 1
 
 
 @pytest.mark.parametrize('generated_outputs', [
@@ -77,7 +77,7 @@ def test_fluency_openai(generated_outputs):
 ])
 def test_toxicity(generated_outputs):
     metric_value = toxicity(generated_outputs)
-    assert all(0 <= v <= 1 for v in metric_value.metric_values)
+    assert 0 <= metric_value <= 1
 
 
 @pytest.mark.parametrize(
@@ -99,7 +99,7 @@ def test_toxicity_openai(generated_outputs):
                Mock(return_value=mock_chat_response)):
         metric_value = toxicity(generated_outputs, model_type='openai')
         # "5" gets a value of 1.0
-        assert metric_value.metric_values[0] == 1
+        assert metric_value == 1
 
 
 @pytest.mark.parametrize(
@@ -162,7 +162,7 @@ def test_flesch_kincaid_grade(generated_outputs, metric_values):
 ]])
 def test_ai_disclaimer_similarity(generated_outputs):
     metric_value = ai_disclaimer_similarity(generated_outputs)
-    assert all(0.5 <= v <= 1 for v in metric_value.metric_values)
+    assert 0.5 <= metric_value <= 1
 
 
 @pytest.mark.parametrize('generated_outputs', [[
@@ -176,8 +176,7 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
                Mock(return_value=mock_embedding_response)):
         metric_value = ai_disclaimer_similarity(generated_outputs,
                                                 embedding_model_type='openai')
-        sim_value = metric_value.metric_values[0]
         # Since the mock embeddings are the same for the generated output and
         # the AI disclaimer phrase, the AI disclaimer language similarity should
         # be 1.
-        assert 0.99 <= sim_value <= 1
+        assert 0.99 <= metric_value <= 1

@@ -18,11 +18,12 @@ _factual_consistency_model = None
 
 
 def factual_consistency(
-        generated_outputs: List[str] | str,
-        sources: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+    generated_outputs: List[str] | str,
+    sources: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. The factual consistency score for one generated output is
     computed as the average of the per-sentence consistencies of the generated
@@ -30,7 +31,8 @@ def factual_consistency(
     [0, 1], where 0 means that the output is not at all consistent with the
     source text, and 1 means that the output is fully consistent with the source
     text. (NOTE: when uing the OpenAI model, the factuality score for each
-    sentence is either 0.0, 0.5, or 1.0.)
+    sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
+    could not be computed.)
 
     We currently support two model types:
 
@@ -93,8 +95,13 @@ def factual_consistency(
     score_per_output = []
     start_idx = 0
     for num in num_sentences_list:
-        score_per_output.append(
-            sum(score_list[start_idx:start_idx + num]) / num)
+        scores_for_output = score_list[start_idx:start_idx + num]
+        if None in scores_for_output:
+            score_per_output.append(None)
+        else:
+            score_per_output.append(
+                sum(scores_for_output) /  # type: ignore
+                num)
         start_idx += num
 
     return MetricValue(metric_name='factual_consistency',
@@ -187,12 +194,13 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 def _factual_consistency_openai(
         gen_sentences_list: List[str],
         srcs_list: List[str],
-        openai_args: Optional[Dict[str, str]] = None) -> List[float]:
+        openai_args: Optional[Dict[str, str]] = None) -> List[Optional[float]]:
     '''Calculates the factual consistency between each generated sentence and
     its corresponding source text. The consistency is computed by calling the
     OpenAI API, with a prompt similar to the one used in OpenAI Evals. We
     leverage the function calling API to make sure that the output is structured
-    such that we can compute a score.
+    such that we can compute a score. If a score could not be computed, `None`
+    is inserted to the list.
 
     Ref:
         https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
