@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import nltk
 import torch
@@ -87,12 +87,14 @@ def factual_consistency(
 
     if model_type == 'local':
         score_list = _factual_consistency_local(gen_sentences_list, srcs_list)
+        explanation_list = None
     else:  # openai
-        score_list = _factual_consistency_openai(gen_sentences_list, srcs_list,
-                                                 openai_args)
+        score_list, explanation_list = _factual_consistency_openai(
+            gen_sentences_list, srcs_list, openai_args)
 
     # The score for each output is the average of the scores of its sentences
     score_per_output = []
+    explanation_per_output = []
     start_idx = 0
     for num in num_sentences_list:
         scores_for_output = score_list[start_idx:start_idx + num]
@@ -102,6 +104,21 @@ def factual_consistency(
             score_per_output.append(
                 sum(scores_for_output) /  # type: ignore
                 num)
+
+        # The explanation for each output is the list of all the explanations
+        # for each sentence
+        if explanation_list:
+            explanations_for_output = explanation_list[start_idx:start_idx +
+                                                       num]
+            if None in explanations_for_output:
+                explanation_per_output.append(None)
+            elif len(explanations_for_output) == 1:
+                explanation_per_output.append(explanations_for_output[0])
+            else:
+                # TODO: This just converts the list of explanations into a
+                # string, which is not the best. We should instead just generate
+                # one clean explanation for each output.
+                explanation_per_output.append(str(explanations_for_output))
         start_idx += num
 
     return MetricValue(metric_name='factual_consistency',
@@ -109,6 +126,8 @@ def factual_consistency(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=sources,
+                       explanations=None
+                       if explanation_list is None else explanation_per_output,
                        metric_values=score_per_output,
                        language='en')
 
@@ -192,9 +211,10 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 
 
 def _factual_consistency_openai(
-        gen_sentences_list: List[str],
-        srcs_list: List[str],
-        openai_args: Optional[Dict[str, str]] = None) -> List[Optional[float]]:
+    gen_sentences_list: List[str],
+    srcs_list: List[str],
+    openai_args: Optional[Dict[str, str]] = None
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency between each generated sentence and
     its corresponding source text. The consistency is computed by calling the
     OpenAI API, with a prompt similar to the one used in OpenAI Evals. We
@@ -275,8 +295,10 @@ def _factual_consistency_openai(
         openai_args=openai_args)
 
     score_list = []
+    explanation_list = []
     for src, gen in zip(srcs_list, gen_sentences_list):
-        score = oai_evaluator.get_score(_prompt(src=src, gen_output=gen),
-                                        _function_call_prompt)
+        score, explanation = oai_evaluator.get_score(
+            _prompt(src=src, gen_output=gen), _function_call_prompt)
         score_list.append(score)
-    return score_list
+        explanation_list.append(explanation)
+    return score_list, explanation_list
