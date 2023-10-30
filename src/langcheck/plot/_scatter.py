@@ -64,6 +64,8 @@ def _scatter_one_metric_value(metric_value: MetricValue,
     df['reference_output'] = df['reference_output'].fillna('None').apply(
         _format_text_for_hover)
     df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
+    df['explanation'] = df['explanation'].fillna('None').apply(
+        _format_text_for_hover)
     df['generated_output'] = df['generated_output'].apply(
         _format_text_for_hover)
 
@@ -205,6 +207,8 @@ def _scatter_two_metric_values(metric_value: MetricValue,
     df['reference_output'] = df['reference_output'].fillna('None').apply(
         _format_text_for_hover)
     df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
+    df['explanation'] = df['explanation'].fillna('None').apply(
+        _format_text_for_hover)
     df['generated_output'] = df['generated_output'].apply(
         _format_text_for_hover)
 
