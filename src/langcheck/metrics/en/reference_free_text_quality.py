@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from detoxify import Detoxify
@@ -69,14 +69,16 @@ def sentiment(
 
     if model_type == 'local':
         scores = _sentiment_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _sentiment_openai(generated_outputs, openai_args)
+        scores, explanations = _sentiment_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='sentiment',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='en')
 
@@ -120,8 +122,9 @@ def _sentiment_local(generated_outputs: List[str]) -> List[float]:
 
 
 def _sentiment_openai(
-        generated_outputs: List[str],
-        openai_args: Optional[Dict[str, str]] = None) -> List[Optional[float]]:
+    generated_outputs: List[str],
+    openai_args: Optional[Dict[str, str]] = None
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the sentiment scores of generated outputs using the OpenAI
     API. This metric takes on float values that are either 0, 0.5, or 1, where 0
     is negative sentiment, 0.5 is neutral sentiment, and 1 is positive
@@ -172,7 +175,7 @@ def _sentiment_openai(
 
         Save the resulting assessment. The available assessments are:
         `Positive`
-        `Neutral
+        `Neutral`
         `Negative`
         '''
 
@@ -190,11 +193,13 @@ def _sentiment_openai(
         openai_args=openai_args)
 
     score_list = []
+    explanation_list = []
     for gen in generated_outputs:
-        score = oai_evaluator.get_score(_prompt(gen_output=gen),
-                                        _function_call_prompt)
+        score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
+                                                     _function_call_prompt)
         score_list.append(score)
-    return score_list
+        explanation_list.append(explanation)
+    return score_list, explanation_list
 
 
 def fluency(
@@ -241,14 +246,16 @@ def fluency(
 
     if model_type == 'local':
         scores = _fluency_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _fluency_openai(generated_outputs, openai_args)
+        scores, explanations = _fluency_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='en')
 
@@ -291,8 +298,9 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
 
 
 def _fluency_openai(
-        generated_outputs: List[str],
-        openai_args: Optional[Dict[str, str]] = None) -> List[Optional[float]]:
+    generated_outputs: List[str],
+    openai_args: Optional[Dict[str, str]] = None
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the fluency scores of generated outputs using the OpenAI
     API, using a prompt that is similar to the one used in G-Eval (see the Ref
     below). This metric takes on float values that are either 0, 0.5, or 1,
@@ -363,11 +371,13 @@ def _fluency_openai(
         openai_args=openai_args)
 
     score_list = []
+    explanation_list = []
     for gen in generated_outputs:
-        score = oai_evaluator.get_score(_prompt(gen_output=gen),
-                                        _function_call_prompt)
+        score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
+                                                     _function_call_prompt)
         score_list.append(score)
-    return score_list
+        explanation_list.append(explanation)
+    return score_list, explanation_list
 
 
 def toxicity(
@@ -413,14 +423,16 @@ def toxicity(
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _toxicity_openai(generated_outputs, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='en')
 
@@ -446,8 +458,9 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
 
 def _toxicity_openai(
-        generated_outputs: List[str],
-        openai_args: Optional[Dict[str, str]] = None) -> List[Optional[float]]:
+    generated_outputs: List[str],
+    openai_args: Optional[Dict[str, str]] = None
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the toxicity scores of generated outputs using the OpenAI API.
     This metric takes on float values between [0, 1] (in steps of 0.25), where 0
     is low toxicity and 1 is high toxicity. We leverage the function calling API
@@ -512,11 +525,13 @@ def _toxicity_openai(
         openai_args=openai_args)
 
     score_list = []
+    explanation_list = []
     for gen in generated_outputs:
-        score = oai_evaluator.get_score(_prompt(gen_output=gen),
-                                        _function_call_prompt)
+        score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
+                                                     _function_call_prompt)
         score_list.append(score)
-    return score_list
+        explanation_list.append(explanation)
+    return score_list, explanation_list
 
 
 def flesch_reading_ease(
@@ -552,6 +567,7 @@ def flesch_reading_ease(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
@@ -591,6 +607,7 @@ def flesch_kincaid_grade(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
@@ -639,5 +656,6 @@ def ai_disclaimer_similarity(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=semantic_similarity_values.metric_values,
                        language='en')

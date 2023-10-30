@@ -1,5 +1,5 @@
 import json
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Tuple
 
 import openai
 
@@ -36,8 +36,9 @@ class OpenAIBasedEvaluator:
         self._argument_description = argument_description
         self._openai_args = openai_args
 
-    def get_score(self, prompt: str,
-                  function_call_prompt_template: Callable) -> Optional[float]:
+    def get_score(
+        self, prompt: str, function_call_prompt_template: Callable
+    ) -> Tuple[Optional[float], Optional[str]]:
         '''
         Retrieves the score for a given prompt using the OpenAI API. The first
         API call is a "normal" call, where the API will return unstructured
@@ -75,7 +76,7 @@ class OpenAIBasedEvaluator:
         except Exception as e:
             print(f'OpenAI failed to return an unstructured assessment: {e}')
             print(f'Prompt that triggered the failure is:\n{prompt}')
-            return None
+            return None, None
 
         # Next, call the API leveraging function calling to get a structured
         # assessment
@@ -121,13 +122,14 @@ class OpenAIBasedEvaluator:
             print(f'OpenAI failed to return a structured assessment: {e}')
             print('Prompt that triggered the failure is:\n'
                   f'{function_call_prompt_template(unstructured_assessment)}')
-            return None
+            return None, None
 
         if assessment not in self._assessment_to_score_mapping:
             # By leveraging the function calling API, this should be pretty
             # rare, but we're dealing with LLMs here so nothing is absolute!
             print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
             print(f'Prompt that triggered the failure is:\n{prompt}')
-            return None
+            return None, None
 
-        return self._assessment_to_score_mapping[assessment]
+        return self._assessment_to_score_mapping[
+            assessment], unstructured_assessment
