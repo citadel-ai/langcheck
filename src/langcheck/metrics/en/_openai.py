@@ -40,10 +40,10 @@ class OpenAIBasedEvaluator:
         self, prompt: str, function_call_prompt_template: Callable
     ) -> Tuple[Optional[float], Optional[str]]:
         '''
-        Retrieves the score for a given prompt using the OpenAI API. The first
-        API call is a "normal" call, where the API will return unstructured
-        text. The second call leverages the function calling API, where the API
-        should return a structured response.
+        Retrieves the score and unstructured assessment for a given prompt using
+        the OpenAI API. The first API call is a "normal" call, where the API
+        will return unstructured text. The second call leverages the function
+        calling API, where the API should return a structured response.
 
         Args:
             prompt: Prompt that asks the OpenAI API for the unstructured
@@ -53,8 +53,12 @@ class OpenAIBasedEvaluator:
                 response
 
         Returns:
-            Score associated with the given prompt based on the resulting
-                assessment, `None` if the score could not be computed
+            score: score associated with the given prompt based on the resulting
+                structured assessment. Returns `None` if the score could not be
+                computed.
+            unstructured_assessment: unstructured assessment text, which also
+                serves as the explanation of the score. Returns `None` if the
+                score could not be computed.
         '''
         # First, call the API to get an unstructured assessment. The response
         # should include both the assessment itself and the model's reasoning
