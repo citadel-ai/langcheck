@@ -66,27 +66,29 @@ class OpenAIBasedEvaluator:
                 "required": [self._argument_name],
             },
         }]
-        if self._openai_args is None:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                functions=functions,
-                function_call={"name": self._function_name},
-            )
-        else:
-            response = openai.ChatCompletion.create(
-                messages=messages,
-                functions=functions,
-                function_call={"name": self._function_name},
-                **self._openai_args,
-            )
-        # This sanity check is necessary to pass pyright since the openai
-        # library is not typed.
-        assert isinstance(response, dict)
-        response_message = response["choices"][0]["message"]
-        function_args = json.loads(
-            response_message["function_call"]["arguments"])
-        assessment = function_args.get(self._argument_name)
+        try:
+            if self._openai_args is None:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=messages,
+                    functions=functions,
+                    function_call={"name": self._function_name},
+                )
+            else:
+                response = openai.ChatCompletion.create(
+                    messages=messages,
+                    functions=functions,
+                    function_call={"name": self._function_name},
+                    **self._openai_args,
+                )
+            response_message = response["choices"][0]["message"]
+            function_args = json.loads(
+                response_message["function_call"]["arguments"])
+            assessment = function_args.get(self._argument_name)
+        except Exception as e:
+            print(f'OpenAI failed to return a response: {e}')
+            print(f'Prompt that triggered the failure is:\n{prompt}')
+            return None
 
         if assessment not in self._assessment_to_score_mapping:
             # By leveraging the function calling API, this should be pretty
