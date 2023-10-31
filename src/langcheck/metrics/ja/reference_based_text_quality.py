@@ -94,6 +94,7 @@ def semantic_similarity(
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=cosine_scores.tolist(),
                        language='ja')
 
@@ -132,6 +133,7 @@ def rouge1(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
@@ -171,6 +173,7 @@ def rouge2(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
@@ -220,6 +223,7 @@ def rougeL(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 

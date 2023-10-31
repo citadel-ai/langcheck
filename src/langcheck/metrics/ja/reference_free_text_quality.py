@@ -110,6 +110,7 @@ def sentiment(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
@@ -164,14 +165,16 @@ def toxicity(
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _toxicity_openai(generated_outputs, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='ja')
 
@@ -259,14 +262,16 @@ def fluency(
 
     if model_type == 'local':
         scores = _fluency_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _fluency_openai(generated_outputs, openai_args)
+        scores, explanations = _fluency_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='ja')
 
@@ -394,5 +399,6 @@ def tateishi_ono_yamada_reading_ease(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
