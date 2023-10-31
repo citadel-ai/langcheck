@@ -215,12 +215,13 @@ def _factual_consistency_openai(
     srcs_list: List[str],
     openai_args: Optional[Dict[str, str]] = None
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    '''Calculates the factual consistency between each generated sentence and
-    its corresponding source text. The consistency is computed by calling the
-    OpenAI API, with a prompt similar to the one used in OpenAI Evals. We
-    leverage the function calling API to make sure that the output is structured
-    such that we can compute a score. If a score could not be computed, `None`
-    is inserted to the list.
+    '''Calculates the factual consistency and their associated explanations
+    between each generated sentence and its corresponding source text. The
+    consistency is computed by calling the OpenAI API, with a prompt similar to
+    the one used in OpenAI Evals. We leverage the function calling API to make
+    sure that the output is structured such that we can compute a score. If a
+    score could not be computed, `None` is inserted to the score and explanation
+    lists.
 
     Ref:
         https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
@@ -234,7 +235,8 @@ def _factual_consistency_openai(
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        A list of scores
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
     '''
 
     # TODO: The prompt formation, and the scoring system, can do with some

@@ -125,12 +125,13 @@ def _sentiment_openai(
     generated_outputs: List[str],
     openai_args: Optional[Dict[str, str]] = None
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    '''Calculates the sentiment scores of generated outputs using the OpenAI
-    API. This metric takes on float values that are either 0, 0.5, or 1, where 0
-    is negative sentiment, 0.5 is neutral sentiment, and 1 is positive
-    sentiment.  We leverage the function calling API to make sure that the
-    output is structured such that we can compute a score. If a score could not
-    be computed, `None` is inserted to the list.
+    '''Calculates the sentiment scores and their associated explanations of
+    generated outputs using the OpenAI API. This metric takes on float values
+    that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is neutral
+    sentiment, and 1 is positive sentiment.  We leverage the function calling
+    API to make sure that the output is structured such that we can compute a
+    score. If a score could not be computed, `None` is inserted to the score
+    and explanation lists.
 
     Ref:
         https://platform.openai.com/docs/guides/gpt/function-calling
@@ -141,7 +142,8 @@ def _sentiment_openai(
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        A list of scores
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
     '''
 
     def _prompt(gen_output: str) -> str:
@@ -301,13 +303,14 @@ def _fluency_openai(
     generated_outputs: List[str],
     openai_args: Optional[Dict[str, str]] = None
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    '''Calculates the fluency scores of generated outputs using the OpenAI
-    API, using a prompt that is similar to the one used in G-Eval (see the Ref
-    below). This metric takes on float values that are either 0, 0.5, or 1,
-    where 0 is "poor" fluency, 0.5 is "fair" fluency, and 1 is "good" fluency.
-    We leverage the function calling API to make sure that the output is
-    structured such that we can compute a score. If a score could not be
-    computed, `None` is inserted to the list.
+    '''Calculates the fluency scores and their associated explanations of
+    generated outputs using the OpenAI API, using a prompt that is similar to
+    the one used in G-Eval (see the Ref below). This metric takes on float
+    values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
+    "fair" fluency, and 1 is "good" fluency. We leverage the function calling
+    API to make sure that the output is structured such that we can compute a
+    score. If a score could not be computed, `None` is inserted to the score
+    and explanation lists.
 
     Ref:
         https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
@@ -319,7 +322,8 @@ def _fluency_openai(
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        A list of scores
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
     '''
 
     def _prompt(gen_output: str) -> str:
@@ -461,11 +465,12 @@ def _toxicity_openai(
     generated_outputs: List[str],
     openai_args: Optional[Dict[str, str]] = None
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    '''Calculates the toxicity scores of generated outputs using the OpenAI API.
-    This metric takes on float values between [0, 1] (in steps of 0.25), where 0
-    is low toxicity and 1 is high toxicity. We leverage the function calling API
-    to make sure that the output is structured such that we can compute a score.
-    If a score could not be computed, `None` is inserted to the list.
+    '''Calculates the toxicity scores and their associated explanations of
+    generated outputs using the OpenAI API. This metric takes on float values
+    between [0, 1] (in steps of 0.25), where 0 is low toxicity and 1 is high
+    toxicity. We leverage the function calling API to make sure that the output
+    is structured such that we can compute a score. If a score could not be
+    computed, `None` is inserted to the score and explanation lists.
 
     Ref:
         https://platform.openai.com/docs/guides/gpt/function-calling
@@ -476,7 +481,8 @@ def _toxicity_openai(
             `openai.ChatCompletion.create` function, default None
 
     Returns:
-        A list of scores
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
     '''
 
     def _prompt(gen_output: str) -> str:
