@@ -43,7 +43,10 @@ class OpenAIBasedEvaluator:
         Retrieves the score and unstructured assessment for a given prompt using
         the OpenAI API. The first API call is a "normal" call, where the API
         will return unstructured text. The second call leverages the function
-        calling API, where the API should return a structured response.
+        calling API, where the API should return a structured response. If the
+        API fails to return a response, or the response is not in the expected
+        format, `None` is returned for both the score and the unstructured
+        assessment.
 
         Args:
             prompt: Prompt that asks the OpenAI API for the unstructured
