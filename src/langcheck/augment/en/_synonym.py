@@ -21,9 +21,11 @@ def synonym(
         <https://nlpaug.readthedocs.io/en/latest/_modules/nlpaug/augmenter/word/synonym.html>`_
         is acceptable. Some of the more useful ones from `nlpaug` document are
         listed below:
-            - ``aug_p`` (float): Percentage of word will be augmented.
-            - ``aug_min``: Minimum number of word will be augmented.
-            - ``aug_max``: Maximum number of word will be augmented.
+
+          - ``aug_p`` (float): Percentage of word will be augmented.
+          - ``aug_min``: Minimum number of word will be augmented.
+          - ``aug_max``: Maximum number of word will be augmented.
+
         Note that the default values for these arguments are different from the
         ``nlpaug`` defaults. To be more specific, the default values for
         ``aug_p`` to be `0.1` and ``aug_char_max`` to be `None`. See the source
