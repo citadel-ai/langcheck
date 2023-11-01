@@ -28,7 +28,7 @@ def synonym(
 
         Note that the default values for these arguments are different from the
         ``nlpaug`` defaults. To be more specific, the default values for
-        ``aug_p`` to be `0.1` and ``aug_char_max`` to be `None`. See the source
+        ``aug_p`` to be `0.1` and ``aug_max`` to be `None`. See the source
         code for mode details.
 
     Returns:
