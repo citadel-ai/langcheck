@@ -19,5 +19,4 @@ def test_synonym(texts: list[str], expected: list[str]):
     seed = 42
     random.seed(seed)
     actual = synonym(texts)
-    print(actual)
     assert actual == expected
