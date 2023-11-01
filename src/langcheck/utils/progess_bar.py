@@ -1,7 +1,9 @@
+from typing import Iterable, Optional, Any
+
 from tqdm import tqdm
 
 
-def tqdm_wrapper(iterable, desc=None, total=None, unit="it"):
+def tqdm_wrapper(iterable: Iterable[Any], desc: Optional[str] = None, total: Optional[int] = None, unit: str="it"):
     """
     Wrapper for tqdm to make it optional
     """
