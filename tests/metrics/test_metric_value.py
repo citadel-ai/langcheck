@@ -1,6 +1,9 @@
+from typing import Optional
+
 import pytest
 
 from langcheck.metrics import is_float
+from langcheck.metrics.metric_value import MetricValue
 
 
 def test_metric_value():
@@ -53,3 +56,20 @@ def test_metric_value_comparisons():
     assert (metric_value >= 0).all()
     assert all((metric_value >= 0).threshold_results)
     assert (metric_value >= 0).pass_rate == 1
+
+
+def test_optional_metric_values():
+    score_list = [1.0, None]
+    dummy_generated_outputs = ['foo', 'bar']
+    metric_value: MetricValue[Optional[float]] = MetricValue(
+        metric_name='test',
+        prompts=None,
+        generated_outputs=dummy_generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        metric_values=score_list,
+        language='en')
+
+    assert (metric_value > 0).pass_rate == 0.5
+    assert (metric_value == 1).pass_rate == 0.5
+    assert (metric_value == 0).pass_rate == 0

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import operator
+import warnings
 from dataclasses import dataclass, fields
 from statistics import mean
 from typing import Generic, List, Optional, TypeVar
@@ -8,7 +9,8 @@ from typing import Generic, List, Optional, TypeVar
 import pandas as pd
 
 # Metrics take on float or integer values
-NumericType = TypeVar('NumericType', float, int)
+# Some metrics may return `None` values when the score fails to be computed
+NumericType = TypeVar('NumericType', float, int, Optional[float], Optional[int])
 
 
 @dataclass
@@ -162,9 +164,18 @@ class MetricValueWithThreshold(MetricValue):
         if self.threshold_op not in operators:
             raise ValueError(f'Invalid threshold operator: {self.threshold_op}')
 
+        if self.threshold is None:
+            raise ValueError("A threshold of `None` is not supported.")
+
+        if None in self.metric_values:
+            warnings.warn(
+                "The threshold result for `None` values in `metric_values` will"
+                " always be `False`.")
+
+        # Set the result to `False` if the metric value is `None`
         self._threshold_results = [
             operators[self.threshold_op](x, self.threshold)
-            for x in self.metric_values
+            if x is not None else False for x in self.metric_values
         ]
 
         self._pass_rate = mean(self._threshold_results)

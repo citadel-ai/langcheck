@@ -31,14 +31,16 @@ _fluency_model = None
 
 
 def sentiment(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
-    are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive).)
+    are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
+    also be `None` if it could not be computed.)
 
     We currently support two model types:
     1. The 'local' type, where the Twitter-roBERTa-base-sentiment-multilingual
@@ -48,8 +50,8 @@ def sentiment(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example
-    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -114,12 +116,15 @@ def sentiment(
 
 
 def toxicity(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
+    (NOTE: when using the OpenAI model, the toxicity scores are in steps of
+    0.25. The score may also be `None` if it could not be computed.)
 
     We currently support two model types:
     1. The 'local' type, where a model file is downloaded from HuggingFace and
@@ -132,8 +137,8 @@ def toxicity(
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -205,12 +210,17 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     return toxicity_scores
 
 
-def fluency(generated_outputs: List[str] | str,
-            prompts: Optional[List[str] | str] = None,
-            model_type: str = 'local',
-            openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+def fluency(
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
+    (NOTE: when using the OpenAI model, the fluency scores are either 0.0
+    (poor), 0.5 (fair), or 1.0 (good). The score may also be `None` if it could
+    not be computed.)
 
     We currently support two model types:
     1. The 'local' type, where a model file is downloaded from HuggingFace and
@@ -222,8 +232,8 @@ def fluency(generated_outputs: List[str] | str,
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example
-    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Ref:

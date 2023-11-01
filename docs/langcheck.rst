@@ -23,6 +23,7 @@ LangCheck consists of a few core sub-packages:
    :hidden:
    :maxdepth: 4
 
+   langcheck.augment
    langcheck.metrics
    langcheck.plot
    langcheck.utils

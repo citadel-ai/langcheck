@@ -133,13 +133,13 @@ You can monitor the quality of your LLM outputs in production with LangCheck met
 Just save the outputs and pass them into LangCheck.
 
 ```python
-recorded_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
+production_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
 
 # Evaluate and display toxic outputs in production logs
-langcheck.metrics.toxicity(recorded_outputs) < 0.25
+langcheck.metrics.toxicity(production_outputs) > 0.75
 
 # Or if your app outputs structured text
-langcheck.metrics.is_json_array(recorded_outputs)
+langcheck.metrics.is_json_array(production_outputs)
 ```
 
 ### Guardrails

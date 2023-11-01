@@ -36,7 +36,7 @@ def test_rouge_identical(generated_outputs: str, reference_outputs: str,
         generated_outputs,
         reference_outputs,
         tokenizer=tokenizer() if tokenizer else None)
-    assert actual_metric_value.metric_values == [1.]
+    assert actual_metric_value == 1.
     assert actual_metric_value.language == 'ja'
 
 
@@ -55,7 +55,7 @@ def test_rouge_no_overlap(generated_outputs: str, reference_outputs: str,
         generated_outputs,
         reference_outputs,
         tokenizer=tokenizer() if tokenizer else None)
-    assert actual_metric_value.metric_values == [0.]
+    assert actual_metric_value == 0.
     assert actual_metric_value.language == 'ja'
 
 
@@ -87,8 +87,7 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
                           (["猫が座っています。"], ["猫が座っています。"])])
 def test_semantic_similarity_identical(generated_outputs, reference_outputs):
     metric_value = semantic_similarity(generated_outputs, reference_outputs)
-    semantic_similarity_value = metric_value.metric_values[0]
-    assert 0.99 <= semantic_similarity_value <= 1
+    assert 0.99 <= metric_value <= 1
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
@@ -97,8 +96,7 @@ def test_semantic_similarity_identical(generated_outputs, reference_outputs):
 def test_semantic_similarity_character_sensitivity(generated_outputs,
                                                    reference_outputs):
     metric_value = semantic_similarity(generated_outputs, reference_outputs)
-    semantic_similarity_value = metric_value.metric_values[0]
-    assert 0.75 <= semantic_similarity_value <= 1
+    assert 0.75 <= metric_value <= 1
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
@@ -106,8 +104,7 @@ def test_semantic_similarity_character_sensitivity(generated_outputs,
                           (["猫が座っています。"], ["僕はアイスクリームを食べるのが好きです。"])])
 def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
     metric_value = semantic_similarity(generated_outputs, reference_outputs)
-    semantic_similarity_value = metric_value.metric_values[0]
-    assert 0.0 <= semantic_similarity_value <= 0.25
+    assert 0.0 <= metric_value <= 0.25
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
@@ -122,7 +119,6 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
                                            embedding_model_type='openai')
-        semantic_similarity_value = metric_value.metric_values[0]
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
-        assert 0.99 <= semantic_similarity_value <= 1
+        assert 0.99 <= metric_value <= 1
