@@ -20,15 +20,15 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 
 ## インストール
 
-```
+```shell
 pip install langcheck
 ```
 
 ## 利用例
 
 ### テキスト評価
-様々な指標を使って、LLMの生成したテキストを評価することができます。
 
+様々な指標を使って、LLMの生成したテキストを評価することができます。
 
 ```python
 from langcheck.metrics.ja import sentiment
@@ -62,6 +62,7 @@ LangCheckには、他にも以下のようなLLMアプリケーションを評�
 | [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                         | 全ての言語   |
 
 ### 数値の可視化
+
 LangCheckでは、他にもインタラクティブなグラフを使って数値を可視化することができます。
 
 ```python
@@ -75,7 +76,6 @@ sentiment_values.scatter()
 
 ![Scatter plot for one metric](docs/_static/scatter_one_metric_ja.gif)
 
-
 ```python
 # 複数の指標についてのインタラクティブな散布図
 langcheck.plot.scatter(sentiment_values, toxicity_values)
@@ -83,14 +83,12 @@ langcheck.plot.scatter(sentiment_values, toxicity_values)
 
 ![Scatter plot for two metrics](docs/_static/scatter_two_metrics_ja.png)
 
-
 ```python
 # インタラクティブなヒストグラム
 toxicity_values.histogram()
 ```
 
 ![Histogram for one metric](docs/_static/histogram_ja.png)
-
 
 ### データの拡張 (近日公開)
 
@@ -103,7 +101,7 @@ more_prompts += langcheck.augment.gender(prompts, to_gender='male')
 more_prompts += langcheck.augment.gpt35_rewrite(prompts)
 ```
 
-### ユニットテスト　
+### ユニットテスト
 
 LangCheckを使うことで、LLMアプリケーションのユニットテストを簡単に書くことができます。
 
