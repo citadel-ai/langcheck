@@ -3,6 +3,9 @@
 <img src="docs/_static/LangCheck-Logo-square.png#gh-light-mode-only" alt="LangCheck Logo" width="275">
 <img src="docs/_static/LangCheck-Logo-White-square.png#gh-dark-mode-only" alt="LangCheck Logo" width="275">
 
+[![Pytest Tests](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml/badge.svg)](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml)
+[![Downloads](https://static.pepy.tech/badge/langcheck)](https://pepy.tech/project/langcheck)
+![GitHub](https://img.shields.io/github/license/citadel-ai/langcheck)
 [![](https://dcbadge.vercel.app/api/server/Bkndx9RXqw?compact=true&style=flat)](https://discord.gg/Bkndx9RXqw)
 
 LLMアプリケーションの評価のためのシンプルなPythonライブラリです。
