@@ -143,7 +143,8 @@ def _scatter_one_metric_value(metric_value: MetricValue,
                          y=metric_value.metric_name,
                          hover_data=filtered_df.columns)
         if isinstance(metric_value, MetricValueWithThreshold):
-            _plot_threshold(fig, metric_value.threshold_op, metric_value.threshold, Axis.horizontal)
+            _plot_threshold(fig, metric_value.threshold_op,
+                            metric_value.threshold, Axis.horizontal)
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
         fig.update_xaxes(range=[-0.1, len(df)])
@@ -292,9 +293,11 @@ def _scatter_two_metric_values(metric_value: MetricValue,
                          hover_data=hover_data)
         # Draw threshold if any of metric_value is MetricValueWithThreshold
         if isinstance(metric_value, MetricValueWithThreshold):
-            _plot_threshold(fig, metric_value.threshold_op, metric_value.threshold, Axis.vertical)
+            _plot_threshold(fig, metric_value.threshold_op,
+                            metric_value.threshold, Axis.vertical)
         if isinstance(other_metric_value, MetricValueWithThreshold):
-            _plot_threshold(fig, other_metric_value.threshold_op, other_metric_value.threshold, Axis.horizontal)
+            _plot_threshold(fig, other_metric_value.threshold_op,
+                            other_metric_value.threshold, Axis.horizontal)
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes

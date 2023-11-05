@@ -1,6 +1,7 @@
 import re
 from enum import Enum
 from typing import Union
+
 from plotly.graph_objects import Figure
 
 
@@ -9,7 +10,8 @@ class Axis(Enum):
     horizontal = 1
 
 
-def _plot_threshold(fig: Figure, threshold_op:str, threshold:Union[float, int], direction: Axis):
+def _plot_threshold(fig: Figure, threshold_op: str,
+                    threshold: Union[float, int], direction: Axis):
     '''Draw dash line on target figure by giving threshold and axis
     '''
     threshold_text = f"{threshold_op} {threshold}"
@@ -19,7 +21,7 @@ def _plot_threshold(fig: Figure, threshold_op:str, threshold:Union[float, int], 
                       line_dash='dash',
                       annotation_text=threshold_text,
                       annotation_position='right')
-    elif direction == Axis.vertical: # Draw a vertical line
+    elif direction == Axis.vertical:  # Draw a vertical line
         fig.add_vline(x=threshold,
                       line_width=3,
                       line_dash='dash',
