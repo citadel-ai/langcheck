@@ -5,7 +5,8 @@ from dash import Dash, Input, Output, dcc, html
 
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.plot._css import GLOBAL_CSS
-from langcheck.plot._utils import _plot_threshold, Axis
+from langcheck.plot._utils import Axis, _plot_threshold
+
 
 def histogram(metric_value: MetricValue, jupyter_mode: str = 'inline') -> None:
     '''Shows an interactive histogram of all data points in
@@ -68,7 +69,7 @@ def histogram(metric_value: MetricValue, jupyter_mode: str = 'inline') -> None:
         # Plot the histogram
         fig = px.histogram(df, x=metric_value.metric_name)
         if 'threshold_test' in df.columns:
-            #get threshold text from dataframe 
+            # Get threshold text from dataframe
             threshold_text = df.get("threshold_test").unique().tolist()[0]
             _plot_threshold(fig, threshold_text, Axis.vertical)
         # Manually set the number of bins in the histogram. We can't use the
