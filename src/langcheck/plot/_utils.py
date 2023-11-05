@@ -10,7 +10,7 @@ class Axis(Enum):
 
 
 def _plot_threshold(fig: Figure, threshold_op:str, threshold:Union[float, int], direction: Axis):
-    '''Draw dash line on given threshold and axis
+    '''Draw dash line on target figure by giving threshold and axis
     '''
     threshold_text = f"{threshold_op} {threshold}"
     if direction == Axis.horizontal:  # Draw a horizontal line
