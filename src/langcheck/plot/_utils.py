@@ -1,6 +1,6 @@
 import re
 from enum import Enum
-
+from typing import Union
 from plotly.graph_objects import Figure
 
 
@@ -9,22 +9,17 @@ class Axis(Enum):
     horizontal = 1
 
 
-def _plot_threshold(fig: Figure, threshold_text: str, direction: Axis):
-    # Analyize threshold condition
-    pattern = r'(<|<=|>|>=|==)\s([0-9]\.[0-9]+)'
-    match = re.search(pattern, threshold_text)
-    if match:
-        operator, threshold = match.groups()
-    else:
-        raise ValueError('Threshold not Found!')
-    operator, threshold = operator[0], float(threshold)
-    if direction == Axis.horizontal:  # Paint in row
+def _plot_threshold(fig: Figure, threshold_op:str, threshold:Union[float, int], direction: Axis):
+    '''Draw dash line on given threshold and axis
+    '''
+    threshold_text = f"{threshold_op} {threshold}"
+    if direction == Axis.horizontal:  # Draw a horizontal line
         fig.add_hline(y=threshold,
                       line_width=3,
                       line_dash='dash',
                       annotation_text=threshold_text,
-                      annotation_position='left')
-    elif direction == Axis.vertical:
+                      annotation_position='right')
+    elif direction == Axis.vertical: # Draw a vertical line
         fig.add_vline(x=threshold,
                       line_width=3,
                       line_dash='dash',

@@ -6,7 +6,7 @@ from typing import Optional
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
-from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.metric_value import MetricValue, MetricValueWithThreshold
 from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
 from langcheck.plot._utils import Axis, _plot_threshold
 
@@ -142,10 +142,8 @@ def _scatter_one_metric_value(metric_value: MetricValue,
                          x=filtered_df.index,
                          y=metric_value.metric_name,
                          hover_data=filtered_df.columns)
-        if 'threshold_test' in df.columns:
-            # Get threshold text from dataframe
-            threshold_text = df.get("threshold_test").unique().tolist()[0]
-            _plot_threshold(fig, threshold_text, Axis.horizontal)
+        if isinstance(metric_value, MetricValueWithThreshold):
+            _plot_threshold(fig, metric_value.threshold_op, metric_value.threshold, Axis.horizontal)
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
         fig.update_xaxes(range=[-0.1, len(df)])
@@ -292,17 +290,11 @@ def _scatter_two_metric_values(metric_value: MetricValue,
                          x=metric_value.metric_name,
                          y=other_metric_value.metric_name,
                          hover_data=hover_data)
-        # Paint threshold
-        if 'threshold_test' in df.columns:
-            # Get threshold text from dataframe
-            threshold_text = df.get("threshold_test").unique().tolist()[0]
-            _plot_threshold(fig, threshold_text, Axis.vertical)
-
-        if 'threshold_test' in other_metric_value.to_df().columns:
-            # Paint other metrics threshold if exsist
-            other_threshold_text = other_metric_value.to_df().get(
-                "threshold_test").unique().tolist()[0]
-            _plot_threshold(fig, other_threshold_text, Axis.horizontal)
+        # Draw threshold if any of metric_value is MetricValueWithThreshold
+        if isinstance(metric_value, MetricValueWithThreshold):
+            _plot_threshold(fig, metric_value.threshold_op, metric_value.threshold, Axis.vertical)
+        if isinstance(other_metric_value, MetricValueWithThreshold):
+            _plot_threshold(fig, other_metric_value.threshold_op, other_metric_value.threshold, Axis.horizontal)
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
