@@ -78,6 +78,9 @@ class OpenAIBasedEvaluator:
                     messages=messages,
                     **self._openai_args,
                 )
+            # This metrics-with-openai-models>`__ is necessary to pass pyright
+            # since the openai library is not typed.
+            assert isinstance(response, dict)
             unstructured_assessment = response["choices"][0]["message"][
                 "content"]
         except Exception as e:
