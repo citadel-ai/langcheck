@@ -46,8 +46,8 @@ def factual_consistency(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example
-    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Args:
@@ -104,5 +104,6 @@ def factual_consistency(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=sources,
+                       explanations=None,
                        metric_values=factual_consistency_scores,
                        language='ja')

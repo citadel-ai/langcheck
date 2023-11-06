@@ -4,6 +4,9 @@
 <img src="docs/_static/LangCheck-Logo-White-square.png#gh-dark-mode-only" alt="LangCheck Logo" width="275">
 
 [![](https://dcbadge.vercel.app/api/server/Bkndx9RXqw?compact=true&style=flat)](https://discord.gg/Bkndx9RXqw)
+[![Pytest Tests](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml/badge.svg)](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml)
+[![Downloads](https://static.pepy.tech/badge/langcheck)](https://pepy.tech/project/langcheck)
+![GitHub](https://img.shields.io/github/license/citadel-ai/langcheck)
 
 Simple, Pythonic building blocks to evaluate LLM applications.
 
@@ -17,7 +20,7 @@ Simple, Pythonic building blocks to evaluate LLM applications.
 
 ## Install
 
-```
+```shell
 pip install langcheck
 ```
 
@@ -73,14 +76,12 @@ fluency_values.scatter()
 
 ![Scatter plot for one metric](docs/_static/scatter_one_metric.gif)
 
-
 ```python
 # Interactive scatter plot of two metrics
 langcheck.plot.scatter(fluency_values, sentiment_values)
 ```
 
 ![Scatter plot for two metrics](docs/_static/scatter_two_metrics.png)
-
 
 ```python
 # Interactive histogram of a single metric
@@ -99,7 +100,6 @@ more_prompts += langcheck.augment.synonym(prompts)
 more_prompts += langcheck.augment.gender(prompts, to_gender='male')
 more_prompts += langcheck.augment.gpt35_rewrite(prompts)
 ```
-
 
 ### Unit Testing
 

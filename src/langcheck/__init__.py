@@ -1,3 +1,3 @@
-from langcheck import metrics, plot, utils
+from langcheck import augment, metrics, plot, utils
 
-__all__ = ['metrics', 'plot', 'utils']
+__all__ = ['augment', 'metrics', 'plot', 'utils']

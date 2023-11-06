@@ -7,8 +7,9 @@ import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 from pandas.core.indexes.base import Index
 
-from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.metric_value import MetricValue, MetricValueWithThreshold
 from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
+from langcheck.plot._utils import Axis, _plot_threshold
 
 
 def scatter(metric_value: MetricValue,
@@ -65,6 +66,8 @@ def _scatter_one_metric_value(metric_value: MetricValue,
     df['reference_output'] = df['reference_output'].fillna('None').apply(
         _format_text_for_hover)
     df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
+    df['explanation'] = df['explanation'].fillna('None').apply(
+        _format_text_for_hover)
     df['generated_output'] = df['generated_output'].apply(
         _format_text_for_hover)
 
@@ -142,7 +145,9 @@ def _scatter_one_metric_value(metric_value: MetricValue,
                          x=filtered_df.index,
                          y=metric_value.metric_name,
                          hover_data=filtered_df.columns)
-
+        if isinstance(metric_value, MetricValueWithThreshold):
+            _plot_threshold(fig, metric_value.threshold_op,
+                            metric_value.threshold, Axis.horizontal)
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
         fig.update_xaxes(range=[-0.1, len(df)])
@@ -206,6 +211,8 @@ def _scatter_two_metric_values(metric_value: MetricValue,
     df['reference_output'] = df['reference_output'].fillna('None').apply(
         _format_text_for_hover)
     df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
+    df['explanation'] = df['explanation'].fillna('None').apply(
+        _format_text_for_hover)
     df['generated_output'] = df['generated_output'].apply(
         _format_text_for_hover)
 
@@ -291,6 +298,13 @@ def _scatter_two_metric_values(metric_value: MetricValue,
                          x=metric_value.metric_name,
                          y=other_metric_value.metric_name,
                          hover_data=hover_data)
+        # Draw threshold if any of metric_value is MetricValueWithThreshold
+        if isinstance(metric_value, MetricValueWithThreshold):
+            _plot_threshold(fig, metric_value.threshold_op,
+                            metric_value.threshold, Axis.vertical)
+        if isinstance(other_metric_value, MetricValueWithThreshold):
+            _plot_threshold(fig, other_metric_value.threshold_op,
+                            other_metric_value.threshold, Axis.horizontal)
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes

@@ -51,8 +51,8 @@ def sentiment(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example
-    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -112,6 +112,7 @@ def sentiment(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
@@ -138,8 +139,8 @@ def toxicity(
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example
-    https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -166,14 +167,16 @@ def toxicity(
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _toxicity_openai(generated_outputs, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='ja')
 
@@ -233,8 +236,8 @@ def fluency(
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example
-    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Ref:
@@ -261,14 +264,16 @@ def fluency(
 
     if model_type == 'local':
         scores = _fluency_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _fluency_openai(generated_outputs, openai_args)
+        scores, explanations = _fluency_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='ja')
 
@@ -396,5 +401,6 @@ def tateishi_ono_yamada_reading_ease(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')

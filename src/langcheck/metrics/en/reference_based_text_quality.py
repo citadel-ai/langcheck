@@ -33,8 +33,8 @@ def semantic_similarity(
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
-    `this example
-    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`_
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
     on setting up the OpenAI API key.
 
     Ref:
@@ -103,6 +103,7 @@ def semantic_similarity(
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=cosine_scores.tolist(),
                        language='en')
 
@@ -137,6 +138,7 @@ def rouge1(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
@@ -171,6 +173,7 @@ def rouge2(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
@@ -215,6 +218,7 @@ def rougeL(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
