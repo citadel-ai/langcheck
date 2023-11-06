@@ -99,5 +99,6 @@ def factual_consistency(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=sources,
+                       explanations=None,
                        metric_values=factual_consistency_scores,
                        language='ja')

@@ -22,6 +22,8 @@ class MetricValue(Generic[NumericType]):
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
     sources: Optional[List[str]]
+    explanations: Optional[List[Optional[
+        str]]]  # An explanation can be None if the metric could not be computed
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
@@ -31,6 +33,7 @@ class MetricValue(Generic[NumericType]):
             'source': self.sources,
             'generated_output': self.generated_outputs,
             'reference_output': self.reference_outputs,
+            'explanation': self.explanations,
             'metric_value': self.metric_values,
         }
 
