@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
-from transformers import pipeline
+from transformers.pipelines import pipeline
+from transformers.pipelines.base import Pipeline
 
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en.source_based_text_quality import \
@@ -10,7 +11,7 @@ from langcheck.metrics.en.source_based_text_quality import \
 from langcheck.metrics.metric_value import MetricValue
 
 _factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-ja-en'
-_factual_consistency_translation_pipeline = None
+_factual_consistency_translation_pipeline: Pipeline | None = None
 
 
 def factual_consistency(
@@ -82,12 +83,16 @@ def factual_consistency(
             'translation', model=_factual_consistency_translation_model_path)
 
     # Translate the sources and generated outputs to English.
+    # Currently, the type checks are not working for the pipeline, since
+    # too diverse types can be returned.
     en_source = [
-        d['translation_text']
+        cast(str,
+             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(sources)
     ]
     en_generated_outputs = [
-        d['translation_text']
+        cast(str,
+             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(generated_outputs)
     ]
     # Compute the factual consistency scores in English.

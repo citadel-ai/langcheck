@@ -27,16 +27,18 @@ parametrize_tokenizer = pytest.mark.parametrize('tokenizer', [
 @parametrize_rouge_function
 @parametrize_tokenizer
 def test_rouge_identical(generated_outputs: str, reference_outputs: str,
-                         rouge_function: Callable[[str, str],
-                                                  MetricValue[float]],
+                         rouge_function: Callable[
+                             [str, str, Optional[_JapaneseTokenizer]],
+                             MetricValue[float]],
                          tokenizer: Optional[_JapaneseTokenizer]) -> None:
     # All ROUGE scores are 1 if the generated and reference outputs are
     # identical
     actual_metric_value = rouge_function(
         generated_outputs,
         reference_outputs,
-        tokenizer=tokenizer() if tokenizer else None)
-    assert actual_metric_value == 1.
+        tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
+        if tokenizer else None)
+    assert actual_metric_value.metric_values == [1.]
     assert actual_metric_value.language == 'ja'
 
 
@@ -54,8 +56,9 @@ def test_rouge_no_overlap(generated_outputs: str, reference_outputs: str,
     actual_metric_value = rouge_function(
         generated_outputs,
         reference_outputs,
-        tokenizer=tokenizer() if tokenizer else None)
-    assert actual_metric_value == 0.
+        tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
+        if tokenizer else None)
+    assert actual_metric_value.metric_values == [0.]
     assert actual_metric_value.language == 'ja'
 
 
@@ -69,16 +72,18 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
                                                      MetricValue[float]],
                             tokenizer: Optional[_JapaneseTokenizer]) -> None:
     expected_value = {
-        rouge1: [0.823529411764706],
-        rouge2: [0.7999999999999999],
-        rougeL: [0.823529411764706]
+        'rouge1': [0.823529411764706],
+        'rouge2': [0.7999999999999999],
+        'rougeL': [0.823529411764706]
     }
     # The ROUGE-2 score is lower than the ROUGE-1 and ROUGE-L scores
     actual_metric_value = rouge_function(
         generated_outputs,
         reference_outputs,
-        tokenizer=tokenizer() if tokenizer else None)
-    is_close(actual_metric_value.metric_values, expected_value[rouge_function])
+        tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
+        if tokenizer else None)
+    is_close(actual_metric_value.metric_values,
+             expected_value[rouge_function.__name__])
     assert actual_metric_value.language == 'ja'
 
 

@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 
 import regex as re
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers.models.auto.modeling_auto import \
+    AutoModelForSequenceClassification
+from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
