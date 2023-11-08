@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langcheck"
-version = "0.1.0"
+version = "0.2.0"
 description = "Simple, Pythonic building blocks to evaluate LLM-based applications"
 readme = "README.md"
 authors = [{ name = "Citadel AI", email = "info@citadel.co.jp" }]
@@ -21,13 +21,14 @@ dependencies = [
     'janome >= 0.3.1',
     "nlpaug",
     'nltk >= 3',
-    'openai >= 0.11.6',
+    'openai >= 0.11.6, <1',
     'pandas >= 1',
     'plotly >= 5',
     'rouge_score >= 0.1.2',
     'sentence_transformers >= 2',
     'sentencepiece>=0.1.95',
     'tomli; python_version < "3.11"',
+    'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
     'torch >= 2',
     'transformers >= 4.6',
     "unidic-lite >= 1.0.1"  # For tokenizer of metrics.ja.toxicity()
