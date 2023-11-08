@@ -11,6 +11,11 @@ from nltk.tokenize.treebank import TreebankWordDetokenizer
 from langcheck.augment.en._gender._gender_pronouns import (_PRONOUNS_DICT,
                                                            _BaseGenderPronouns)
 
+try:
+    nltk.data.find('averaged_perceptron_tagger')
+except LookupError:
+    nltk.download('averaged_perceptron_tagger')
+
 # This dictionary is used to determine the form of the pronoun.
 # Note that his and hers are not included in this dictionary because they can be
 # either of two different forms depending on the context.
