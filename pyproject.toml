@@ -36,7 +36,18 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "sphinx-book-theme", "myst-parser", "ipykernel"]
+dev = [
+    "yapf==0.40.1",
+    "flake8",
+    "isort",
+    "pyright",
+    "pandas-stubs",
+    "pytest",
+    "sphinx",
+    "sphinx-book-theme",
+    "myst-parser",
+    "ipykernel"
+]
 optional = ["mecab-python3 >= 1.0.4"]
 
 [project.urls]
@@ -48,7 +59,7 @@ column_limit = 80
 
 [tool.yapfignore]
 ignore_patterns = [
-  "venv/*",
+    "venv/*",
 ]
 
 [tool.isort]
@@ -56,7 +67,16 @@ multi_line_output = 0
 line_length = 80
 include_trailing_comma = false
 
+[tool.pyright]
+autoSearchPaths=false
+extraPaths=[] # Include paths from PYTHONPATH env var and .env definition
+useLibraryCodeForTypes=true
+typeCheckingMode="basic"
+ignore = [
+    "build", "venv"
+]
+
 [tool.pytest.ini_options]
 markers = [
-  "optional: marks tests as optional",
+    "optional: marks tests as optional",
 ]
