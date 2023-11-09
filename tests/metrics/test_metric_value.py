@@ -67,6 +67,7 @@ def test_optional_metric_values():
         generated_outputs=dummy_generated_outputs,
         reference_outputs=None,
         sources=None,
+        explanations=None,
         metric_values=score_list,
         language='en')
 

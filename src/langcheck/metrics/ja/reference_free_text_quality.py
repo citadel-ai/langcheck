@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 
 import regex as re
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers.models.auto.modeling_auto import \
+    AutoModelForSequenceClassification
+from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
@@ -111,6 +113,7 @@ def sentiment(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
@@ -165,14 +168,16 @@ def toxicity(
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _toxicity_openai(generated_outputs, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='ja')
 
@@ -260,14 +265,16 @@ def fluency(
 
     if model_type == 'local':
         scores = _fluency_local(generated_outputs)
+        explanations = None
     else:  # openai
-        scores = _fluency_openai(generated_outputs, openai_args)
+        scores, explanations = _fluency_openai(generated_outputs, openai_args)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=explanations,
                        metric_values=scores,
                        language='ja')
 
@@ -395,5 +402,6 @@ def tateishi_ono_yamada_reading_ease(
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')

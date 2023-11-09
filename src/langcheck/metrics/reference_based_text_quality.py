@@ -38,5 +38,6 @@ def exact_match(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=metric_values,
                        language=None)

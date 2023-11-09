@@ -82,6 +82,10 @@ def semantic_similarity(
                 input=generated_outputs, **openai_args)
             ref_embed_response = openai.Embedding.create(
                 input=reference_outputs, **openai_args)
+        # This sanity check is necessary to pass pyright since the openai
+        # library is not typed.
+        assert isinstance(gen_embed_response, dict)
+        assert isinstance(ref_embed_response, dict)
         generated_embeddings = [
             item['embedding'] for item in gen_embed_response['data']
         ]
@@ -89,8 +93,8 @@ def semantic_similarity(
             item['embedding'] for item in ref_embed_response['data']
         ]
 
-    cosine_scores = util.pairwise_cos_sim(generated_embeddings,
-                                          reference_embeddings)
+    cosine_scores = util.pairwise_cos_sim(torch.tensor(generated_embeddings),
+                                          torch.tensor(reference_embeddings))
     # Numerical instability can cause the dot product of almost identical
     # vectors to exceed 1.0 slightly, so we clip the outputs
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
@@ -100,6 +104,7 @@ def semantic_similarity(
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=cosine_scores.tolist(),
                        language='en')
 
@@ -134,6 +139,7 @@ def rouge1(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
@@ -168,6 +174,7 @@ def rouge2(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
@@ -212,6 +219,7 @@ def rougeL(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='en')
 
