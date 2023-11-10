@@ -329,7 +329,7 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
             }
             batch_probs = torch.nn.functional.softmax(
                 _fluency_model(**batch_input_tokens).logits, dim=1)
-        fluency_scores.extend(batch_probs[:, 1].tolist())
+            fluency_scores.extend(batch_probs[:, 1].tolist())
 
 
     return fluency_scores
