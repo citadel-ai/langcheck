@@ -93,11 +93,19 @@ def semantic_similarity(
             item['embedding'] for item in ref_embed_response['data']
         ]
 
-    cosine_scores = util.pairwise_cos_sim(torch.tensor(generated_embeddings),
-                                          torch.tensor(reference_embeddings))
-    # Numerical instability can cause the dot product of almost identical
-    # vectors to exceed 1.0 slightly, so we clip the outputs
-    cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
+    batch_size = 8
+    scores = []
+    with torch.no_grad():
+        for i in tqdm_wrapper(range(0, len(generated_embeddings), batch_size)):
+            batch_generated_embeddings = generated_embeddings[i:i + batch_size]
+            batch_reference_embeddings = reference_embeddings[i:i + batch_size]
+
+            cosine_scores = util.pairwise_cos_sim(torch.tensor(generated_embeddings),
+                                                  torch.tensor(reference_embeddings))
+            # Numerical instability can cause the dot product of almost identical
+            # vectors to exceed 1.0 slightly, so we clip the outputs
+            cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
+            scores.extend(cosine_scores.tolist())
 
     return MetricValue(metric_name='semantic_similarity',
                        prompts=prompts,
@@ -105,7 +113,7 @@ def semantic_similarity(
                        reference_outputs=reference_outputs,
                        sources=None,
                        explanations=None,
-                       metric_values=cosine_scores.tolist(),
+                       metric_values=scores,
                        language='en')
 
 

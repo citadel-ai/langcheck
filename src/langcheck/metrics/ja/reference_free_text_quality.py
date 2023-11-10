@@ -209,8 +209,13 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     input_tokens = _toxicity_tokenizer(generated_outputs,
                                        return_tensors='pt',
                                        padding=True)
-    output = _toxicity_model(**input_tokens)
-    toxicity_scores = torch.sigmoid(output.logits[:, 0]).tolist()
+    batchsize = 8
+    toxicity_scores = []
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize), total=len(generated_outputs)//batchsize):
+        with torch.no_grad():
+            output = _toxicity_model(**input_tokens)
+        toxicity_scores.extend(
+            torch.sigmoid(output.logits[:, 0]).tolist())
 
     return toxicity_scores
 
@@ -314,12 +319,18 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     input_tokens = _fluency_tokenizer(generated_outputs,
                                       return_tensors='pt',
                                       padding=True)
+    batchsize = 8
+    fluency_scores = []
     with torch.no_grad():
-        # Probabilities of [not_fluent, fluent]
-        probs = torch.nn.functional.softmax(
-            _fluency_model(**input_tokens).logits, dim=1)
+        for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize)):
+            batch_input_tokens = {
+                k: v[i:i + batchsize]
+                for k, v in input_tokens.items()
+            }
+            batch_probs = torch.nn.functional.softmax(
+                _fluency_model(**batch_input_tokens).logits, dim=1)
+        fluency_scores.extend(batch_probs[:, 1].tolist())
 
-    fluency_scores = probs[:, 1].tolist()
 
     return fluency_scores
 

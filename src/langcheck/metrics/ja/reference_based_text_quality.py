@@ -82,15 +82,24 @@ def semantic_similarity(
     # https://tech.yellowback.net/posts/sentence-transformers-japanese-models
     model = SentenceTransformer(
         'sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
-    generated_embeddings = model.encode(generated_outputs)
-    reference_embeddings = model.encode(reference_outputs)
-    cosine_scores = util.pairwise_cos_sim(
-        generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
-        reference_embeddings,  # type: ignore[reportGeneralTypeIssues]
-    )
-    # Numerical instability can cause the dot product of almost identical
-    # vectors to exceed 1.0 slightly, so we clip the outputs
-    cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
+    batch_size = 8
+    scores = []
+    with torch.no_grad():
+        for i in tqdm_wrapper(
+                range(0, len(generated_outputs), batch_size), total=len(generated_outputs) // batch_size
+        ):
+            batch_generated_outputs = generated_outputs[i:i + batch_size]
+            batch_reference_outputs = reference_outputs[i:i + batch_size]
+            generated_embeddings = model.encode(batch_generated_outputs)
+            reference_embeddings = model.encode(batch_reference_outputs)
+            cosine_scores = util.pairwise_cos_sim(
+                generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
+                reference_embeddings,  # type: ignore[reportGeneralTypeIssues]
+            )
+            # Numerical instability can cause the dot product of almost identical
+            # vectors to exceed 1.0 slightly, so we clip the outputs
+            cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
+            scores.extend(cosine_scores.tolist())
 
     return MetricValue(metric_name='semantic_similarity',
                        prompts=prompts,
@@ -98,7 +107,7 @@ def semantic_similarity(
                        reference_outputs=reference_outputs,
                        sources=None,
                        explanations=None,
-                       metric_values=cosine_scores.tolist(),
+                       metric_values=scores,
                        language='ja')
 
 

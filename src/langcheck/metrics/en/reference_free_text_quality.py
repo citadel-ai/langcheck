@@ -295,12 +295,16 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
                                       return_tensors='pt',
                                       padding=True)
 
+    batch_size = 8
+    scores = []
     with torch.no_grad():
-        # Probabilities of [negative, neutral, positive]
-        probs = torch.nn.functional.softmax(
-            _fluency_model(**input_tokens).logits, dim=1)
-
-    return probs[:, 1].tolist()
+        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size), total=len(generated_outputs)//batch_size):
+            # Probabilities of [negative, neutral, positive]
+            batch_input_tokens = {k: v[i:i+batch_size] for k, v in input_tokens.items()}
+            probs = torch.nn.functional.softmax(
+                _fluency_model(**batch_input_tokens).logits, dim=1)
+            scores.extend(probs[:, 1].tolist())
+    return scores
 
 
 def _fluency_openai(
@@ -463,7 +467,13 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     global _toxicity_model
     if _toxicity_model is None:
         _toxicity_model = Detoxify('original')
-    return _toxicity_model.predict(generated_outputs)['toxicity']
+
+    scores = []
+    batch_size = 8
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size), total=len(generated_outputs)//batch_size):
+        scores.extend(_toxicity_model.predict(generated_outputs[i:i+batch_size])['toxicity'])
+
+    return scores
 
 
 def _toxicity_openai(
@@ -569,7 +579,7 @@ def flesch_reading_ease(
         generated_outputs, prompts)
 
     output_stats = [
-        compute_stats(output) for output in tqdm_wrapper(generated_outputs)
+        compute_stats(output) for output in tqdm_wrapper(generated_outputs, desc='Computing stats')
     ]
     scores = [
         206.835 - 1.015 * (stat.num_words / stat.num_sentences) - 84.6 *
@@ -611,7 +621,7 @@ def flesch_kincaid_grade(
         generated_outputs, prompts)
 
     output_stats = [
-        compute_stats(output) for output in tqdm_wrapper(generated_outputs)
+        compute_stats(output) for output in tqdm_wrapper(generated_outputs, desc='Computing stats')
         ]
     scores = [
         0.39 * (stat.num_words / stat.num_sentences) + 11.8 *
