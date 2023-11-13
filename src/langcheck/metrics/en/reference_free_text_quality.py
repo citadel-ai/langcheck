@@ -299,8 +299,8 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     scores = []
     with torch.no_grad():
         for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size), total=len(generated_outputs)//batch_size):
-            # Probabilities of [negative, neutral, positive]
             batch_input_tokens = {k: v[i:i+batch_size] for k, v in input_tokens.items()}
+            # Probabilities of [negative, neutral, positive]
             probs = torch.nn.functional.softmax(
                 _fluency_model(**batch_input_tokens).logits, dim=1)
             scores.extend(probs[:, 1].tolist())

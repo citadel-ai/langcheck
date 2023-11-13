@@ -213,9 +213,14 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     toxicity_scores = []
     for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize), total=len(generated_outputs)//batchsize):
         with torch.no_grad():
-            output = _toxicity_model(**input_tokens)
-        toxicity_scores.extend(
-            torch.sigmoid(output.logits[:, 0]).tolist())
+            batch_input_tokens = {
+                k: v[i:i + batchsize]
+                for k, v in input_tokens.items()
+            }
+            batch_output = _toxicity_model(**batch_input_tokens)
+            toxicity_scores.extend(
+                torch.sigmoid(batch_output.logits[:, 0]).tolist()
+            )
 
     return toxicity_scores
 
