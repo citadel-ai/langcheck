@@ -24,5 +24,5 @@ def test_ocr_typo(instances: List[str] | str, num_perturbations: int,
                   expected: List[str]):
     seed = 42
     random.seed(seed)
-    actual = ocr_typo(instances, num_perturbations)
+    actual = ocr_typo(instances, num_perturbations=num_perturbations)
     assert actual == expected
