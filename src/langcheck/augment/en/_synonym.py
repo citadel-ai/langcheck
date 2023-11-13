@@ -5,6 +5,7 @@ from nlpaug.augmenter.word import SynonymAug
 
 def synonym(
     instances: list[str] | str,
+    *,
     num_perturbations: int = 1,
     **kwargs,
 ) -> list[str]:

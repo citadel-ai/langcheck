@@ -5,6 +5,7 @@ from nlpaug.augmenter.char.ocr import OcrAug
 
 def ocr_typo(
     instances: list[str] | str,
+    *,
     num_perturbations: int = 1,
     **kwargs,
 ) -> list[str]:

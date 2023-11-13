@@ -24,5 +24,5 @@ def test_keyboard_typo(instances: List[str] | str, num_perturbations: int,
                        expected: List[str]):
     seed = 42
     random.seed(seed)
-    actual = keyboard_typo(instances, num_perturbations)
+    actual = keyboard_typo(instances, num_perturbations=num_perturbations)
     assert actual == expected

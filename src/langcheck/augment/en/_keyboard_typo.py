@@ -5,6 +5,7 @@ from nlpaug.augmenter.char.keyboard import KeyboardAug
 
 def keyboard_typo(
     instances: list[str] | str,
+    *,
     num_perturbations: int = 1,
     **kwargs,
 ) -> list[str]:
