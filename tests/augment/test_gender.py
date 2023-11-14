@@ -13,7 +13,7 @@ def test_invalid_to_gender():
 
 def test_invalid_input():
     with pytest.raises(TypeError):
-        gender(1)
+        gender(1)  # type: ignore[reportGeneralTypeIssues]
 
 
 @pytest.mark.parametrize(
