@@ -130,7 +130,7 @@ _NEO_PRONOUNS_LIST = [
 ]
 
 _PRONOUNS_DICT = MappingProxyType({
-    None: [_PLURAL_PRONOUNS],
+    "plural": [_PLURAL_PRONOUNS],
     "male": [_MALE_PRONOUNS],
     "female": [_FEMALE_PRONOUNS],
     "neutral": _NEO_PRONOUNS_LIST + [_PLURAL_PRONOUNS],

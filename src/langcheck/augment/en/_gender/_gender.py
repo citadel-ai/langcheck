@@ -87,15 +87,14 @@ def _replace_gender_pronouns(
 def gender(
     texts: Iterable[str] | str,
     *,
-    to_gender: str | None = None,
+    to_gender: str = 'plural',
 ) -> list[str]:
     """Replace pronouns with that of specified gender.
 
         Args:
             texts: Iterable of texts to be augmented.
-            to_gender: Replacing pronoun type string ('male', 'female' or
-                'neutral'). Default to None and use third-person plural when not
-                specified.
+            to_gender: Replacing pronoun type string ('male', 'female',
+            'neutral', or 'plural'). Default to `plural`.
 
         Returns:
             List of sentences with replaced pronouns.
@@ -105,11 +104,12 @@ def gender(
             because `NLTK <https://www.nltk.org/>`_ does not recognize them.
 
     """
-    if (to_gender is not None) and (to_gender
-                                    not in ["female", "male", "neutral"]):
+    if (to_gender is not None) and (to_gender not in [
+            "female", "male", "neutral", "plural"
+    ]):
         raise ValueError(
-            f"The argument 'gender' must be one of 'female', 'male', or"
-            f"'neutral' but got {to_gender}.")
+            f"The argument 'gender' must be one of 'female', 'male', 'neutral',"
+            f" or 'plural', but got {to_gender}.")
     target_gender = choice(_PRONOUNS_DICT[to_gender])
 
     if isinstance(texts, str):

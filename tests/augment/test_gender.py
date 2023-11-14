@@ -37,6 +37,9 @@ def test_invalid_input():
              ]),
     ("neutral",
      ['Xe cooks by xyrself.', 'This is xyr dog.', 'I gave xem a book.']),
+    ("plural", [
+        "They cooks by themselves.", "This is their dog.", "I gave them a book."
+    ]),
 ])
 def test_gender(
     texts: List[str],
@@ -45,5 +48,6 @@ def test_gender(
 ):
     seed = 42
     random.seed(seed)
-    actual = gender(texts, to_gender=to_gender)
+    actual = gender(texts) if to_gender is None else gender(texts,
+                                                            to_gender=to_gender)
     assert actual == expected
