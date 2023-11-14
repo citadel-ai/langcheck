@@ -5,7 +5,9 @@ from typing import Dict, List, Optional, Tuple
 import nltk
 import torch
 import torch.nn as nn
-from transformers import AutoConfig, AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers.models.auto.configuration_auto import AutoConfig
+from transformers.models.auto.modeling_auto import AutoModelForSeq2SeqLM
+from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator

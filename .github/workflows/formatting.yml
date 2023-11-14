@@ -42,3 +42,6 @@ jobs:
       # Run the isort format test
       - name: Isort
         run: isort --check-only .
+
+      - name: Pyright
+        run: pyright .

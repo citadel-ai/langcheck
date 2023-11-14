@@ -58,7 +58,8 @@ class MeCabTokenizer(_JapaneseTokenizer):
 
     def __init__(self):
         try:
-            import MeCab
+            # Ignore the missing imports error since MeCab is optional.
+            import MeCab  # type: ignore[reportMissingImports]
         except ModuleNotFoundError:
             raise ModuleNotFoundError(
                 "No module named 'MeCab'.\n"
