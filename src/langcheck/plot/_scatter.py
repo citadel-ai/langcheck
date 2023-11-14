@@ -1,10 +1,11 @@
 import math
 import textwrap
 from copy import deepcopy
-from typing import Optional
+from typing import Optional, Union
 
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
+from pandas.core.indexes.base import Index
 
 from langcheck.metrics.metric_value import MetricValue, MetricValueWithThreshold
 from langcheck.plot._css import GLOBAL_CSS, INPUT_CSS, NUM_RESULTS_CSS
@@ -289,7 +290,9 @@ def _scatter_two_metric_values(metric_value: MetricValue,
         # Unfortunately it's not possible to make "index" show up at the top of
         # the tooltip like _scatter_one_metric_value() since Plotly always
         # displays the x and y values at the top.)
-        hover_data = {col: True for col in filtered_df.columns}
+        hover_data: dict[str, Union[bool, Index]] = {
+            col: True for col in filtered_df.columns
+        }
         hover_data['index'] = filtered_df.index
         fig = px.scatter(filtered_df,
                          x=metric_value.metric_name,
