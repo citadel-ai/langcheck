@@ -4,13 +4,28 @@ from nlpaug.augmenter.char.keyboard import KeyboardAug
 
 
 def keyboard_typo(
-    texts: list[str] | str,
+    instances: list[str] | str,
+    *,
+    num_perturbations: int = 1,
     **kwargs,
 ) -> list[str]:
-    '''Generate keyboard typo perturbed texts for augmentation.
+    '''Applies a keyboard typo text perturbation to each string in instances
+    (usually a list of prompts).
 
     Args:
-        texts: List of texts to be augmented.
+        instances: A single string or a list of strings to be augmented.
+        num_perturbations: The number of perturbed instances to generate for
+            each string in instances
+        aug_char_p: Percentage of characters (per token) that will be augmented.
+            Defaults to `0.1`.
+        aug_char_max: Maximum number of characters which will be augmented.
+            Defaults to `None`.
+        aug_word_max: Maximum number of words which will be augmented. Defaults
+            to `None`.
+        include_special_char: Allow special characters to be augmented. Defaults
+            to `False`.
+        include_numeric: Allow numeric characters to be augmented. Defaults to
+            `False`.
 
     .. note::
         Any argument that can be passed to
@@ -29,14 +44,11 @@ def keyboard_typo(
           - ``aug_word_min`` (int): Minimum number of word will be augmented.
           - ``aug_word_max`` (int): Maximum number of word will be augmented.
 
-        Note that the default values for these arguments are different from the
-        ``nlpaug`` defaults. To be more specific, the default values for
-        ``aug_char_p`` to be `0.1`, ``aug_char_max`` and ``aug_word_max`` to be
-        `None`, and ``include_special_char`` and ``include_numeric`` to be
-        `False`. See the documentation for more details.
+        Note that the default values for these arguments may be different from
+        the ``nlpaug`` defaults.
 
     Returns:
-        A list of perturbed texts.
+        A list of perturbed instances.
     '''
 
     kwargs["aug_char_p"] = kwargs.get("aug_char_p", 0.1)
@@ -45,5 +57,10 @@ def keyboard_typo(
     kwargs["include_special_char"] = kwargs.get("include_special_char", False)
     kwargs["include_numeric"] = kwargs.get("include_numeric", False)
 
+    instances = [instances] if isinstance(instances, str) else instances
+    perturbed_instances = []
     aug = KeyboardAug(**kwargs)
-    return aug.augment(texts)
+    for instance in instances:
+        for _ in range(num_perturbations):
+            perturbed_instances += aug.augment(instance)
+    return perturbed_instances

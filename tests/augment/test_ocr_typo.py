@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 from typing import List
 
@@ -7,14 +9,20 @@ from langcheck.augment.en import ocr_typo
 
 
 @pytest.mark.parametrize(
-    "texts, expected",
+    "instances, num_perturbations, expected",
     [
-        (["Hello, world!"], ["Hel1u, world!"]),
-        (["Hello, world!", "I'm hungry"], ["Hel1u, world!", "I ' m hungry"]),
+        ("Hello, world!", 1, ["Hel1u, world!"]),
+        ("Hello, world!", 2, ["Hel1u, world!", "Hello, w0r1d!"]),
+        (["Hello, world!"], 1, ["Hel1u, world!"]),
+        (["Hello, world!"], 2, ["Hel1u, world!", "Hello, w0r1d!"]),
+        (["Hello, world!", "I'm hungry"], 1, ["Hel1u, world!", "I ' m hungry"]),
+        (["Hello, world!", "I'm hungry"], 2,
+         ['Hel1u, world!', 'Hello, w0r1d!', "1 ' m hongky", "I ' m hun9ky"]),
     ],
 )
-def test_ocr_typo(texts: List[str], expected: List[str]):
+def test_ocr_typo(instances: List[str] | str, num_perturbations: int,
+                  expected: List[str]):
     seed = 42
     random.seed(seed)
-    actual = ocr_typo(texts)
+    actual = ocr_typo(instances, num_perturbations=num_perturbations)
     assert actual == expected
