@@ -22,6 +22,8 @@ class MetricValue(Generic[NumericType]):
     generated_outputs: List[str]
     reference_outputs: Optional[List[str]]
     sources: Optional[List[str]]
+    explanations: Optional[List[Optional[
+        str]]]  # An explanation can be None if the metric could not be computed
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
@@ -31,6 +33,7 @@ class MetricValue(Generic[NumericType]):
             'source': self.sources,
             'generated_output': self.generated_outputs,
             'reference_output': self.reference_outputs,
+            'explanation': self.explanations,
             'metric_value': self.metric_values,
         }
 
@@ -118,25 +121,34 @@ class MetricValue(Generic[NumericType]):
             'Try an expression like `metric_value > 0.5`, '
             '`metric_value.all()`, or `metric_value.any()` instead.')
 
-    def scatter(self, jupyter_mode: str = 'inline'):
+    def scatter(self, jupyter_mode: str = 'inline') -> None:
         '''Shows an interactive scatter plot of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.
 
         This is a convenience function that calls
         :func:`langcheck.plot.scatter()`.
         '''
-        from langcheck.plot import scatter
-        return scatter(self, jupyter_mode=jupyter_mode)
 
-    def histogram(self, jupyter_mode: str = 'inline'):
+        from langcheck.plot import scatter as plot_scatter
+
+        # Type ignore because a Self type is only valid in class contexts
+        return plot_scatter(
+            self,  # type: ignore[reportGeneralTypeIssues]
+            jupyter_mode=jupyter_mode)
+
+    def histogram(self, jupyter_mode: str = 'inline') -> None:
         '''Shows an interactive histogram of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.
 
         This is a convenience function that calls
         :func:`langcheck.plot.histogram()`.
         '''
-        from langcheck.plot import histogram
-        return histogram(self, jupyter_mode=jupyter_mode)
+        from langcheck.plot import histogram as plot_histogram
+
+        # Type ignore because a Self type is only valid in class contexts
+        return plot_histogram(
+            self,  # type: ignore[reportGeneralTypeIssues]
+            jupyter_mode=jupyter_mode)
 
 
 @dataclass
@@ -148,7 +160,7 @@ class MetricValueWithThreshold(MetricValue):
     threshold: float | int
     threshold_op: str  # One of '<', '<=', '>', '>=', '==', '!='
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         '''Computes self.pass_rate and self.threshold_results based on the
         constructor arguments.
         '''
