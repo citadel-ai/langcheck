@@ -28,7 +28,8 @@ def test_sentiment_openai(generated_outputs):
             'message': {
                 'function_call': {
                     'arguments': "{\n  \"sentiment\": \"Positive\"\n}"
-                }
+                },
+                'content': 'foo bar'
             }
         }]
     }
@@ -55,7 +56,8 @@ def test_toxicity_openai(generated_outputs):
             'message': {
                 'function_call': {
                     'arguments': "{\n  \"toxicity\": \"5\"\n}"
-                }
+                },
+                'content': 'foo bar'
             }
         }]
     }
@@ -84,7 +86,8 @@ def test_fluency_openai(generated_outputs):
             'message': {
                 'function_call': {
                     'arguments': "{\n  \"fluency\": \"Good\"\n}"
-                }
+                },
+                'content': 'foo bar'
             }
         }]
     }

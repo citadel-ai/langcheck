@@ -3,8 +3,9 @@ import math
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
 
-from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.metric_value import MetricValue, MetricValueWithThreshold
 from langcheck.plot._css import GLOBAL_CSS
+from langcheck.plot._utils import Axis, _plot_threshold
 
 
 def histogram(metric_value: MetricValue, jupyter_mode: str = 'inline') -> None:
@@ -67,7 +68,9 @@ def histogram(metric_value: MetricValue, jupyter_mode: str = 'inline') -> None:
     def update_figure(num_bins):
         # Plot the histogram
         fig = px.histogram(df, x=metric_value.metric_name)
-
+        if isinstance(metric_value, MetricValueWithThreshold):
+            _plot_threshold(fig, metric_value.threshold_op,
+                            metric_value.threshold, Axis.vertical)
         # Manually set the number of bins in the histogram. We can't use the
         # nbins parameter of px.histogram() since it's just a suggested number
         # of bins. See: https://community.plotly.com/t/histogram-bin-size-with-plotly-express/38927/5  # NOQA: E501
@@ -75,7 +78,12 @@ def histogram(metric_value: MetricValue, jupyter_mode: str = 'inline') -> None:
         end = math.ceil(df[metric_value.metric_name].max())
         step_size = (end - start) / int(num_bins)
         fig.update_traces(xbins={'start': start, 'end': end, 'size': step_size})
-
+        # Explicitly set the default axis ranges (with a little padding) so that
+        # the range plotted would not be influenced by threshold settings
+        fig.update_xaxes(range=[
+            min(-0.1, math.floor(df[metric_value.metric_name].min())),
+            max(1.1, math.ceil(df[metric_value.metric_name].max()))
+        ])
         # If the user manually zoomed in, keep that zoom level even when
         # update_figure() re-runs
         fig.update_layout(uirevision='constant')

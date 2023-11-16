@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langcheck"
-version = "0.1.0"
+version = "0.2.0"
 description = "Simple, Pythonic building blocks to evaluate LLM-based applications"
 readme = "README.md"
 authors = [{ name = "Citadel AI", email = "info@citadel.co.jp" }]
@@ -21,13 +21,14 @@ dependencies = [
     'janome >= 0.3.1',
     "nlpaug",
     'nltk >= 3',
-    'openai >= 0.11.6',
+    'openai >= 0.11.6, <1',
     'pandas >= 1',
     'plotly >= 5',
     'rouge_score >= 0.1.2',
     'sentence_transformers >= 2',
     'sentencepiece>=0.1.95',
     'tomli; python_version < "3.11"',
+    'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
     'torch >= 2',
     'transformers >= 4.6',
     "unidic-lite >= 1.0.1"  # For tokenizer of metrics.ja.toxicity()
@@ -35,7 +36,18 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["yapf==0.40.1", "flake8", "isort", "pytest", "sphinx", "sphinx-book-theme", "myst-parser", "ipykernel"]
+dev = [
+    "yapf==0.40.1",
+    "flake8",
+    "isort",
+    "pyright",
+    "pandas-stubs",
+    "pytest",
+    "sphinx",
+    "sphinx-book-theme",
+    "myst-parser",
+    "ipykernel"
+]
 optional = ["mecab-python3 >= 1.0.4"]
 
 [project.urls]
@@ -47,7 +59,7 @@ column_limit = 80
 
 [tool.yapfignore]
 ignore_patterns = [
-  "venv/*",
+    "venv/*",
 ]
 
 [tool.isort]
@@ -55,7 +67,16 @@ multi_line_output = 0
 line_length = 80
 include_trailing_comma = false
 
+[tool.pyright]
+autoSearchPaths=false
+extraPaths=[] # Include paths from PYTHONPATH env var and .env definition
+useLibraryCodeForTypes=true
+typeCheckingMode="basic"
+ignore = [
+    "build", "venv"
+]
+
 [tool.pytest.ini_options]
 markers = [
-  "optional: marks tests as optional",
+    "optional: marks tests as optional",
 ]

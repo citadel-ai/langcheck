@@ -83,8 +83,10 @@ def semantic_similarity(
         'sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
-    cosine_scores = util.pairwise_cos_sim(generated_embeddings,
-                                          reference_embeddings)
+    cosine_scores = util.pairwise_cos_sim(
+        generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
+        reference_embeddings,  # type: ignore[reportGeneralTypeIssues]
+    )
     # Numerical instability can cause the dot product of almost identical
     # vectors to exceed 1.0 slightly, so we clip the outputs
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
@@ -94,6 +96,7 @@ def semantic_similarity(
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=cosine_scores.tolist(),
                        language='ja')
 
@@ -132,6 +135,7 @@ def rouge1(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
@@ -171,6 +175,7 @@ def rouge2(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
@@ -220,6 +225,7 @@ def rougeL(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=scores,
                        language='ja')
 
