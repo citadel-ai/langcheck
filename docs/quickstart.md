@@ -110,7 +110,15 @@ def test_rouge2_similarity(generated_outputs, reference_outputs):
     assert langcheck.metrics.rouge2(generated_outputs, reference_outputs) > 0.9
 ```
 
-Coming soon: LangCheck can also help you create new test cases with `langcheck.augment`!
+LangCheck can also help you automatically create new test cases with `langcheck.augment`!
+
+For example, use text augmentations to generate reworded prompts, typos, gender changes, and more.
+
+```python
+reworded_prompts = langcheck.augment.synonym(prompts, num_perturbations=3)
+typo_prompts = langcheck.augment.keyboard_typo(prompts, num_perturbations=3)
+female_prompts = langcheck.augment.gender(prompts, to_gender='female')
+```
 
 ### Monitoring
 

@@ -7,7 +7,7 @@ LangCheck consists of a few core sub-packages:
 
 * ``langcheck.metrics`` for evaluation metrics
 * ``langcheck.plot`` for plotting
-* ``langcheck.augment`` for text augmentation (coming soon)
+* ``langcheck.augment`` for text augmentation
 * ``langcheck.utils`` for utility functions
 
 .. </UPDATE_AFTER_SPHINX_APIDOC>
