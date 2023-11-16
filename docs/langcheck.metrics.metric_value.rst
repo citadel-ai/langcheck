@@ -1,6 +1,6 @@
 
-langcheck.metrics.eval\_value
-=============================
+langcheck.metrics.metric\_value
+===============================
 
 .. automodule:: langcheck.metrics.metric_value
    :members:

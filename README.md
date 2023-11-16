@@ -90,15 +90,21 @@ fluency_values.histogram()
 
 ![Histogram for one metric](docs/_static/histogram.png)
 
-### Augment Data (coming soon)
+### Augment Data
+
+Text augmentations can automatically generate reworded prompts, typos, gender changes, and more to evaluate model robustness.
+
+For example, to measure how the model responds to different genders:
 
 ```python
-more_prompts = []
-more_prompts += langcheck.augment.keyboard_typo(prompts)
-more_prompts += langcheck.augment.ocr_typo(prompts)
-more_prompts += langcheck.augment.synonym(prompts)
-more_prompts += langcheck.augment.gender(prompts, to_gender='male')
-more_prompts += langcheck.augment.gpt35_rewrite(prompts)
+male_prompts = langcheck.augment.gender(prompts, to_gender='male')
+female_prompts = langcheck.augment.gender(prompts, to_gender='female')
+
+male_generated_outputs = [my_llm_app(prompt) for prompt in male_prompts]
+female_generated_outputs = [my_llm_app(prompt) for prompt in female_prompts]
+
+langcheck.metrics.sentiment(male_generated_outputs)
+langcheck.metrics.sentiment(female_generated_outputs)
 ```
 
 ### Unit Testing

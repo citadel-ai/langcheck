@@ -60,7 +60,7 @@ fluency_values.to_df()
 (fluency_values > 0.5).to_df()
 ```
 
-Finally, metric functions can also take a single string as input, which is useful for monitoring and guardrails use cases.
+Metric functions can also take a single string as input, which is useful for monitoring and guardrails use cases.
 
 ```python
 langcheck.metrics.fluency('The black cat is sitting')
@@ -68,6 +68,17 @@ langcheck.metrics.fluency('The black cat is sitting')
 
 To learn more about the different metrics in LangCheck, see [the Metrics page](metrics.md).
 
+Finally, you can use text augmentations to automatically generate reworded prompts, typos, gender changes, and more to evaluate model robustness:
+
+```python
+prompt = 'write my friend an email inviting her to my birthday party'
+
+reworded_prompts = langcheck.augment.synonym(prompt, num_perturbations=3)
+typo_prompts = langcheck.augment.keyboard_typo(prompt, num_perturbations=3)
+male_prompts = langcheck.augment.gender(prompt, to_gender='male')
+```
+
+To learn more about the different text augmentations in LangCheck, see the [``langcheck.augment``](langcheck.augment.rst) page.
 
 ## Use Cases
 
@@ -110,7 +121,6 @@ def test_rouge2_similarity(generated_outputs, reference_outputs):
     assert langcheck.metrics.rouge2(generated_outputs, reference_outputs) > 0.9
 ```
 
-Coming soon: LangCheck can also help you create new test cases with `langcheck.augment`!
 
 ### Monitoring
 

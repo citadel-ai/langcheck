@@ -58,4 +58,5 @@
 
 a code {
   font-weight: 400 !important;
+  color: var(--pst-color-link);
 }
