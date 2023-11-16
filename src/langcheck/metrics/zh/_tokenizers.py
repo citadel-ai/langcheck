@@ -41,11 +41,11 @@ class HanLPTokenizer(_ChineseTokenizer):
     .. note::
         HanLP https://github.com/hankcs/HanLP/tree/doc-zh
         HanLP is the newest tokenizer that have developer maintaince.
-        1.HanLP provide MultiTask Model and Single Task Model, As this module is only
-        used for tokenize, use Single Task Model in default. Multitask Model need download
-        400MB +  pretrained weight, in contrast, Single task only need 40MB + 
-        2.HanLP provide pipeline for concurrency, as LLM generated content always multiple
-        sentence, use pipleline mode.
+        1.HanLP have multi-task mode and single task mode. Multitask
+        Model need download 400MB+  pretrained weight, in contrast, 
+        single task only need 40MB+. Use single task mode in default. 
+        2.LLM generated content have lot of sentences in most situtation.
+        use HanLP pipeline mode for concurrency. 
     '''
     def __init__(self) -> None:
         super().__init__()
