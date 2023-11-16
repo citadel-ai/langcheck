@@ -15,13 +15,8 @@ except ModuleNotFoundError:
 
 # Chinese
 # https://github.com/yikeke/zh-style-guide/blob/master/source/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7/%E5%B8%B8%E7%94%A8%E4%B8%AD%E6%96%87%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7.md
-_PUNCTUATIONS = ['、', '，','。',
-                '：','；',
-                '?','!', "？", "！",
-                '～','-','—','——',
-                '……','⋯⋯',
-                '/'
-                ]
+_PUNCTUATIONS = ['、', '，', '。', '：', '；', '?', '!', "？",
+                 "！", '～', '-', '—', '——', '……', '⋯⋯', '/']
 
 
 class _ChineseTokenizer(BaseTokenizer):
