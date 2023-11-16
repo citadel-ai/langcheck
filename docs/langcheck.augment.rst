@@ -6,8 +6,6 @@ langcheck.augment
 
 .. <UPDATE_AFTER_SPHINX_APIDOC>
 
-.. note::
-
 ``langcheck.augment`` contains all of LangCheck's text augmentations.
 
 These augmentations can help you automatically generate test cases to evaluate model robustness to different prompts, typos, gender changes, and more.
