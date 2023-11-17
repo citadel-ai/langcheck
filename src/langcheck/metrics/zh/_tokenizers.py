@@ -61,5 +61,5 @@ class HanLPTokenizer(_ChineseTokenizer):
             append(lambda sents: sum(sents, []))
 
     def _tokenize(self, text: str) -> Iterator[str]:
-        tokens = self.tokenzier_pipeline(text)['tok']
-        return tokens
+        tokens = self.tokenzier_pipeline(text)
+        return tokens  # type: ignore[reportGeneralTypeIssues]

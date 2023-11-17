@@ -13,7 +13,7 @@ from langcheck.metrics.zh._tokenizers import _ChineseTokenizer
     ('北京是中国的首都', ['北京', '是', '中国', '的', '首都']),
 ])
 @pytest.mark.parametrize('tokenizer', [HanLPTokenizer])
-def test_janome_tokenizer(text: str, expected_tokens: List[str],
-                          tokenizer: _ChineseTokenizer) -> None:
+def test_hanlp_tokenizer(text: str, expected_tokens: List[str],
+                         tokenizer: _ChineseTokenizer) -> None:
     tokenizer = tokenizer()  # type: ignore[reportGeneralTypeIssues]
     assert tokenizer.tokenize(text) == expected_tokens
