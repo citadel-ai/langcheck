@@ -3,10 +3,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from langcheck.metrics.zh import (HanLPTokenizer, semantic_similarity, rouge1,
-                                  rouge2, rougeL)
-from langcheck.metrics.zh._tokenizers import _ChineseTokenizer
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.zh import (HanLPTokenizer, rouge1, rouge2, rougeL,
+                                  semantic_similarity)
+from langcheck.metrics.zh._tokenizers import _ChineseTokenizer
 from tests.utils import is_close
 
 ################################################################################

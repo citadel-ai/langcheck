@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import abc
 from collections.abc import Iterator
+
 from rouge_score.tokenizers import Tokenizer as BaseTokenizer
 
 try:
     import hanlp
+
     # size 43M+, fine grained tokenizer
     DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH
 except ModuleNotFoundError:

@@ -10,8 +10,8 @@ from sentence_transformers import SentenceTransformer, util
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity as en_semantic_similarity
-from langcheck.metrics.zh._tokenizers import HanLPTokenizer
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.zh._tokenizers import HanLPTokenizer
 
 
 def semantic_similarity(
