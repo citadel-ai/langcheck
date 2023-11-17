@@ -9,14 +9,15 @@ try:
     # size 43M+, fine grained tokenizer
     DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH
 except ModuleNotFoundError:
-    raise ModuleNotFoundError(
-        "No module named 'HanLP'.\n"
-        "Install it by pip install -U hanlp")
+    raise ModuleNotFoundError("No module named 'HanLP'.\n"
+                              "Install it by pip install -U hanlp")
 
 # Chinese
 # https://github.com/yikeke/zh-style-guide/blob/master/source/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7/%E5%B8%B8%E7%94%A8%E4%B8%AD%E6%96%87%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7.md
-_PUNCTUATIONS = ['、', '，', '。', '：', '；', '?', '!', "？",
-                 "！", '～', '-', '—', '——', '……', '⋯⋯', '/']
+_PUNCTUATIONS = [
+    '、', '，', '。', '：', '；', '?', '!', "？", "！", '～', '-', '—', '——', '……',
+    '⋯⋯', '/'
+]
 
 
 class _ChineseTokenizer(BaseTokenizer):
@@ -47,6 +48,7 @@ class HanLPTokenizer(_ChineseTokenizer):
         2.LLM generated content have lot of sentences in most situtation.
         use HanLP pipeline mode for concurrency. 
     '''
+
     def __init__(self) -> None:
         super().__init__()
         tokenizer = hanlp.load(DEFAULT_TOKENIZER_WEIGHT)
@@ -54,7 +56,7 @@ class HanLPTokenizer(_ChineseTokenizer):
                                     .append(hanlp.utils.rules.split_sentence) \
                                     .append(tokenizer)\
                                     .append(lambda sents: sum(sents, []))
-       
+
     def _tokenize(self, text: str) -> Iterator[str]:
         tokens = self.tokenzier_pipeline(text)
         return tokens
