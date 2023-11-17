@@ -35,7 +35,8 @@ def semantic_similarity(
     is downloaded from HuggingFace and run locally. This is the default model
     type and there is no setup needed to run this. this model will return cosine
     similarity around 0.3 when sentences has no semantic similarity. sentences
-    with missing punctuation would lower the value to 0.25 ~ 0.3.
+    with missing punctuation/different punctuation (one is declarative sentence,
+    one is question) would lower the value to 0.2 ~ 0.3.
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
@@ -85,7 +86,10 @@ def semantic_similarity(
     # 3 different size model provided by BAAI is the Best 3 on embedding task
     # Ref:
     # https://huggingface.co/BAAI/bge-base-zh-v1.5
-    # using this model, it is hard to find two sentence cos_sim < 0.25
+    # using this model, it is hard to find two sentence cos_sim < 0.25.
+    # NOTE: as LLM generated content is more like paraphrase than senteces
+    # assests. there is no paraphrase2paraphrase benchmark yet, I think 
+    # both of these models may not embedding paraphrase well.
     model = SentenceTransformer('BAAI/bge-base-zh-v1.5')
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
@@ -103,3 +107,163 @@ def semantic_similarity(
                        explanations=None,
                        metric_values=cosine_scores.tolist(),
                        language='zh')
+
+
+def rouge1(generated_outputs: List[str] | str,
+           reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
+           *,
+           tokenizer: Optional[Tokenizer] = None) -> MetricValue[float]:
+    '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
+    (single tokens) between the generated outputs and the reference outputs.
+    This metric takes on float values between [0, 1], where 0 is no overlap and
+    1 is complete overlap.
+
+    Ref:
+        https://github.com/google-research/google-research/tree/master/rouge
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
+
+    Returns:
+        An MetricValue object
+    '''
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
+        generated_outputs, reference_outputs, prompts)
+
+    scores = _rouge(generated_outputs,
+                    reference_outputs,
+                    'rouge1',
+                    tokenizer=tokenizer)
+    return MetricValue(metric_name='rouge1',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       explanations=None,
+                       metric_values=scores,
+                       language='zh')
+
+
+def rouge2(generated_outputs: List[str] | str,
+           reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
+           *,
+           tokenizer: Optional[Tokenizer] = None) -> MetricValue[float]:
+    '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
+    outputs and the reference outputs. It evaluates the overlap of bigrams
+    (two adzhcent tokens) between the generated outputs and the reference
+    outputs. This metric takes on float values between [0, 1], where 0 is no
+    overlap and 1 is complete overlap.
+
+    Ref:
+        https://github.com/google-research/google-research/tree/master/rouge
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
+
+    Returns:
+        An MetricValue object
+    '''
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
+        generated_outputs, reference_outputs, prompts)
+
+    scores = _rouge(generated_outputs,
+                    reference_outputs,
+                    'rouge2',
+                    tokenizer=tokenizer)
+    return MetricValue(metric_name='rouge2',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       explanations=None,
+                       metric_values=scores,
+                       language='zh')
+
+
+def rougeL(generated_outputs: List[str] | str,
+           reference_outputs: List[str] | str,
+           prompts: Optional[List[str] | str] = None,
+           *,
+           tokenizer: Optional[Tokenizer] = None) -> MetricValue[float]:
+    '''Calculates the F1 metrics of the ROUGE-L scores between the generated
+    outputs and the reference outputs. It evaluates the longest common
+    subsequence (LCS) between the generated outputs and the reference outputs.
+    This metric takes on float values between [0, 1], where 0 means that the LCS
+    is empty and 1 means that the reference and generated outputs are the same.
+
+    Ref:
+        https://github.com/google-research/google-research/tree/master/rouge
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
+
+    Returns:
+        An MetricValue object
+    '''
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
+        generated_outputs, reference_outputs, prompts)
+
+    # The `rouge_score` package has two flavors of ROUGE-L [1]:
+    # - 1) sentence-level, where newline characters are ignored
+    # - 2) summary-level, where newline characters are interpreted as sentence
+    #      boundaries
+    #
+    # We use (2) here (i.e. `rougeLsum`) because this is how `pyrouge` computes
+    # the ROUGE-L score (https://github.com/bheinzerling/pyrouge), which is a
+    # Python wrapper around original perl script implementation.
+    #
+    # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA: E501
+    scores = _rouge(generated_outputs,
+                    reference_outputs,
+                    'rougeLsum',
+                    tokenizer=tokenizer)
+    return MetricValue(metric_name='rougeL',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       explanations=None,
+                       metric_values=scores,
+                       language='zh')
+
+
+def _rouge(generated_outputs: List[str],
+           reference_outputs: List[str],
+           rouge_type: str,
+           *,
+           tokenizer: Optional[Tokenizer] = None) -> List[float]:
+    '''Helper function for computing the rouge1, rouge2, and rougeL metrics.
+    This uses Google Research's implementation of ROUGE:
+    https://github.com/google-research/google-research/tree/master/rouge
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        reference_outputs: A list of reference outputs
+        rouge_type: rouge1, rouge2, or rougeLsum
+
+    Returns:
+        A list of F1 values of the ROUGE scores
+    '''
+    assert rouge_type in ['rouge1', 'rouge2', 'rougeLsum']
+
+    # The tokenizer is default to HanLPTokenizer
+    tokenizer = tokenizer or HanLPTokenizer()
+    scorer = rouge_scorer.RougeScorer([rouge_type],
+                                      use_stemmer=True,
+                                      tokenizer=tokenizer)
+    scores = []
+    for gen, ref in zip(generated_outputs, reference_outputs):
+        score = scorer.score(gen, ref)
+        scores.append(score[rouge_type].fmeasure)
+    return scores

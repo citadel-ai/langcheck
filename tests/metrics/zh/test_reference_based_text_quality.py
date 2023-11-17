@@ -3,7 +3,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from langcheck.metrics.zh import (HanLPTokenizer, semantic_similarity)
+from langcheck.metrics.zh import (HanLPTokenizer, semantic_similarity,
+                                  rouge1, rouge2, rougeL)
 from langcheck.metrics.zh._tokenizers import _ChineseTokenizer
 from langcheck.metrics.metric_value import MetricValue
 from tests.utils import is_close
@@ -11,9 +12,76 @@ from tests.utils import is_close
 ################################################################################
 # Tests
 ################################################################################
-
+parametrize_rouge_function = pytest.mark.parametrize("rouge_function",
+                                                     [rouge1, rouge2, rougeL])
 parametrize_tokenizer = pytest.mark.parametrize('tokenizer',
                                                 [None, HanLPTokenizer])
+
+
+@pytest.mark.parametrize('generated_outputs,reference_outputs',
+                         [("宇宙的终极答案是什么？", "宇宙的终极答案是什么。"),
+                          (["宇宙的终极答案是什么。"], ["宇宙的终极答案是什么？"])])
+@parametrize_rouge_function
+@parametrize_tokenizer
+def test_rouge_identical(generated_outputs: str, reference_outputs: str,
+                         rouge_function: Callable[
+                             [str, str, Optional[_ChineseTokenizer]],
+                             MetricValue[float]],
+                         tokenizer: Optional[_ChineseTokenizer]) -> None:
+    # All ROUGE scores are 1 if the generated and reference outputs are
+    # identical
+    actual_metric_value = rouge_function(
+        generated_outputs,
+        reference_outputs,
+        tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
+        if tokenizer else None)
+    assert actual_metric_value.metric_values == [1.]
+    assert actual_metric_value.language == 'zh'
+
+
+@pytest.mark.parametrize('generated_outputs,reference_outputs',
+                         [("这样的姑娘是受不了的。", "您到底有什么事？"),
+                          (["这样的姑娘是受不了的。"], ["您到底有什么事？"])])
+@parametrize_rouge_function
+@parametrize_tokenizer
+def test_rouge_no_overlap(generated_outputs: str, reference_outputs: str,
+                          rouge_function: Callable[[str, str],
+                                                   MetricValue[float]],
+                          tokenizer: Optional[_ChineseTokenizer]) -> None:
+    # All ROUGE scores are 0 if the generated and reference outputs have no
+    # overlapping words
+    actual_metric_value = rouge_function(
+        generated_outputs,
+        reference_outputs,
+        tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
+        if tokenizer else None)
+    assert actual_metric_value.metric_values == [0.]
+    assert actual_metric_value.language == 'zh'
+
+
+@pytest.mark.parametrize('generated_outputs,reference_outputs',
+                         [("床前明月光，下一句是什么？", "床前明月光的下一句是什么？"),
+                          (["床前明月光，下一句是什么？"], ["床前明月光的下一句是什么？"])])
+@parametrize_rouge_function
+@parametrize_tokenizer
+def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
+                            rouge_function: Callable[[str, str],
+                                                     MetricValue[float]],
+                            tokenizer: Optional[_ChineseTokenizer]) -> None:
+    expected_value = {
+        'rouge1': [0.941176],
+        'rouge2': [0.8],
+        'rougeL': [0.941176]
+    }
+    # The ROUGE-2 score is lower than the ROUGE-1 and ROUGE-L scores
+    actual_metric_value = rouge_function(
+        generated_outputs,
+        reference_outputs,
+        tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
+        if tokenizer else None)
+    is_close(actual_metric_value.metric_values,
+             expected_value[rouge_function.__name__])
+    assert actual_metric_value.language == 'zh'
 
 
 @pytest.mark.parametrize('generated_outputs,reference_outputs',
