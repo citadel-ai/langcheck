@@ -12,7 +12,7 @@ from langcheck.metrics.zh import factual_consistency
 @pytest.mark.parametrize('generated_outputs,sources', [
     ('北京是中国的首都。', '中国的首都是北京'),
     pytest.param('地球围绕着太阳转动。', '太阳是太阳系的中心。', marks=pytest.mark.xfail),
-    pytest.param(['飞机是一种水中交通工具。', '太阳围绕着地球转动。'], ['飞机在可以在天上飞。', '太阳是太阳系的中心。']),
+    pytest.param(['飞机在是一种空中交通工具。', '太阳围绕着地球转动。'], ['飞机在可以在天上飞。', '太阳是太阳系的中心。']),
 ])
 def test_factual_consistency(generated_outputs, sources):
     metric_value = factual_consistency(generated_outputs, sources)
