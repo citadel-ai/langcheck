@@ -9,7 +9,7 @@ try:
     import hanlp
 
     # size 43M+, fine grained tokenizer
-    DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH
+    DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues] # noqa: E501
 except ModuleNotFoundError:
     raise ModuleNotFoundError("No module named 'HanLP'.\n"
                               "Install it by pip install -U hanlp")
@@ -55,10 +55,11 @@ class HanLPTokenizer(_ChineseTokenizer):
         super().__init__()
         tokenizer = hanlp.load(DEFAULT_TOKENIZER_WEIGHT)
         self.tokenzier_pipeline = hanlp.pipeline().\
-            append(hanlp.utils.rules.split_sentence).\
+            append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+        self.tokenzier_pipeline = self.tokenzier_pipeline.\
             append(tokenizer).\
             append(lambda sents: sum(sents, []))
 
     def _tokenize(self, text: str) -> Iterator[str]:
-        tokens = self.tokenzier_pipeline(text)
+        tokens = self.tokenzier_pipeline(text)['tok']
         return tokens

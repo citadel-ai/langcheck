@@ -93,8 +93,10 @@ def semantic_similarity(
     model = SentenceTransformer('BAAI/bge-base-zh-v1.5')
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
-    cosine_scores = util.pairwise_cos_sim(generated_embeddings,
-                                          reference_embeddings)
+    cosine_scores = util.pairwise_cos_sim(
+        generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
+        reference_embeddings  # type: ignore[reportGeneralTypeIssues]
+    )
     # Numerical instability can cause the dot product of almost identical
     # vectors to exceed 1.0 slightly, so we clip the outputs
     cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)

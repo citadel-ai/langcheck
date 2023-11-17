@@ -15,5 +15,5 @@ from langcheck.metrics.zh._tokenizers import _ChineseTokenizer
 @pytest.mark.parametrize('tokenizer', [HanLPTokenizer])
 def test_janome_tokenizer(text: str, expected_tokens: List[str],
                           tokenizer: _ChineseTokenizer) -> None:
-    tokenizer = tokenizer()
+    tokenizer = tokenizer()  # type: ignore[reportGeneralTypeIssues]
     assert tokenizer.tokenize(text) == expected_tokens
