@@ -6,7 +6,7 @@ from rouge_score.tokenizers import Tokenizer as BaseTokenizer
 
 try:
     import hanlp
-    # size 43M+, fine grained tokenizer 
+    # size 43M+, fine grained tokenizer
     DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH
 except ModuleNotFoundError:
     raise ModuleNotFoundError(

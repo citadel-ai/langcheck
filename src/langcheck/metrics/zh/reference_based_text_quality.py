@@ -31,9 +31,11 @@ def semantic_similarity(
 
     We currently support two embedding model types:
 
-    1. The 'local' type, where the 'paraphrase-multilingual-mpnet-base-v2' model
+    1. The 'local' type, where the 'BAAI/bge-base-zh-v1.5' model
     is downloaded from HuggingFace and run locally. This is the default model
-    type and there is no setup needed to run this.
+    type and there is no setup needed to run this. this model will return cosine
+    similarity around 0.3 when sentences has no semantic similarity. sentences
+    with missing punctuation would lower the value to 0.25 ~ 0.3.
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
@@ -82,9 +84,9 @@ def semantic_similarity(
     # https://github.com/FlagOpen/FlagEmbedding/tree/master/C_MTEB
     # 3 different size model provided by BAAI is the Best 3 on embedding task
     # Ref:
-    # https://huggingface.co/BAAI/bge-small-zh-v1.5
+    # https://huggingface.co/BAAI/bge-base-zh-v1.5
     # using this model, it is hard to find two sentence cos_sim < 0.25
-    model = SentenceTransformer('BAAI/bge-large-zh-v1.5')
+    model = SentenceTransformer('BAAI/bge-base-zh-v1.5')
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
     cosine_scores = util.pairwise_cos_sim(generated_embeddings,
@@ -98,5 +100,6 @@ def semantic_similarity(
                        generated_outputs=generated_outputs,
                        reference_outputs=reference_outputs,
                        sources=None,
+                       explanations=None,
                        metric_values=cosine_scores.tolist(),
                        language='zh')
