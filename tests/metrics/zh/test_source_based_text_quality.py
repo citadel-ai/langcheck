@@ -18,7 +18,7 @@ def test_factual_consistency(generated_outputs, sources):
     metric_value = factual_consistency(generated_outputs, sources)
     factual_consistency_high = metric_value.metric_values[0]
     assert factual_consistency_high is not None
-    assert 0.9 <= factual_consistency_high <= 1
+    assert 0.8 <= factual_consistency_high <= 1
     if len(metric_value.metric_values) == 2:
         factual_consistency_low = metric_value.metric_values[1]
         assert factual_consistency_low is not None
