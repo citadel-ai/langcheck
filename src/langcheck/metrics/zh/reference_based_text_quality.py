@@ -61,7 +61,7 @@ def semantic_similarity(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    
+
     .. note:: It seems same methods in different language share the same
     pydoc, using sphinx or something to make these pydoc easier to be managed?
     '''
