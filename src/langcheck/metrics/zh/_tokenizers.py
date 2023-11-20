@@ -39,11 +39,12 @@ class _ChineseTokenizer(BaseTokenizer):
 class HanLPTokenizer(_ChineseTokenizer):
     '''HanLP based Tokenizer for Chinese.
 
-    The default tokenizer to calculate rouge score base on HanLP.
+    The default tokenizer to calculate rouge score based on HanLP.
 
     .. note::
-        HanLP https://github.com/hankcs/HanLP/tree/doc-zh
-        HanLP is the newest tokenizer that have developer maintaince.
+        `HanLP <https://github.com/hankcs/HanLP/tree/doc-zh>`_ is an actively
+        maintained NLP library that was initially developed for Chinese
+        language processing.
         1.HanLP have multi-task mode and single task mode. Multitask
         Model need download 400MB+  pretrained weight, in contrast,
         single task only need 40MB+. Use single task mode in default.
@@ -54,7 +55,7 @@ class HanLPTokenizer(_ChineseTokenizer):
     def __init__(self) -> None:
         super().__init__()
         tokenizer = hanlp.load(DEFAULT_TOKENIZER_WEIGHT)
-        self.tokenzier_pipeline = hanlp.pipeline().\
+        self.tokenizer_pipeline = hanlp.pipeline().\
             append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
         self.tokenzier_pipeline = self.tokenzier_pipeline.\
             append(tokenizer).\

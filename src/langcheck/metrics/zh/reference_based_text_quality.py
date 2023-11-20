@@ -33,8 +33,8 @@ def semantic_similarity(
 
     1. The 'local' type, where the 'BAAI/bge-base-zh-v1.5' model
     is downloaded from HuggingFace and run locally. This is the default model
-    type and there is no setup needed to run this. this model will return cosine
-    similarity around 0.3 when sentences has no semantic similarity. sentences
+    type and there is no setup needed to run this. This model will return cosine
+    similarities around 0.3 when sentences have no semantic similarity. Sentences
     with missing punctuation/different punctuation (one is declarative sentence,
     one is question) would lower the value to 0.2 ~ 0.3.
 
@@ -81,12 +81,12 @@ def semantic_similarity(
         metric_value.language = 'zh'
         return metric_value
 
-    # According to C-MTEB Benchmark
-    # https://github.com/FlagOpen/FlagEmbedding/tree/master/C_MTEB
-    # 3 different size model provided by BAAI is the Best 3 on embedding task
-    # Ref:
-    # https://huggingface.co/BAAI/bge-base-zh-v1.5
-    # using this model, it is hard to find two sentence cos_sim < 0.25.
+    # According to the C-MTEB Benchmark
+    # (https://github.com/FlagOpen/FlagEmbedding/tree/master/C_MTEB)
+    # the 3 models of different sizes provided BAAI are the best on the
+    # embedding task
+    # Ref: https://huggingface.co/BAAI/bge-base-zh-v1.5
+    # Using this model, it is hard to find two sentence where cos_sim < 0.25.
     # NOTE: as LLM generated content is more like paraphrase than senteces
     # assests. there is no paraphrase2paraphrase benchmark yet, I think
     # both of these models may not embedding paraphrase well.
