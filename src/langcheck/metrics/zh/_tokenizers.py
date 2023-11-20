@@ -57,10 +57,10 @@ class HanLPTokenizer(_ChineseTokenizer):
         tokenizer = hanlp.load(DEFAULT_TOKENIZER_WEIGHT)
         self.tokenizer_pipeline = hanlp.pipeline().\
             append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
-        self.tokenzier_pipeline = self.tokenzier_pipeline.\
+        self.tokenizer_pipeline = self.tokenizer_pipeline.\
             append(tokenizer).\
             append(lambda sents: sum(sents, []))
 
     def _tokenize(self, text: str) -> Iterator[str]:
-        tokens = self.tokenzier_pipeline(text)
+        tokens = self.tokenizer_pipeline(text)
         return tokens  # type: ignore[reportGeneralTypeIssues]

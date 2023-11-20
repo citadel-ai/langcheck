@@ -69,7 +69,6 @@ def factual_consistency(
                          ], ('Unsupported model type. '
                              'The supported ones are ["local", "openai"]')
 
-    # NOTE: https://github.com/shmsw25/FActScore  FactScore tool(EMNLP23)
     if model_type == 'openai':
         metric_value = en_factual_consistency(generated_outputs, sources,
                                               prompts, model_type, openai_args)

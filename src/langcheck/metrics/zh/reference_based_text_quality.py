@@ -34,7 +34,7 @@ def semantic_similarity(
     1. The 'local' type, where the 'BAAI/bge-base-zh-v1.5' model
     is downloaded from HuggingFace and run locally. This is the default model
     type and there is no setup needed to run this. This model will return cosine
-    similarities around 0.3 when sentences have no semantic similarity. Sentences
+    similarities around 0.3 when sentences have no semantic similarity. Sentences # NOQA: E501
     with missing punctuation/different punctuation (one is declarative sentence,
     one is question) would lower the value to 0.2 ~ 0.3.
 
