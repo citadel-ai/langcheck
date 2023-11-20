@@ -1,4 +1,8 @@
 from langcheck.augment import en
-from langcheck.augment.en import gender, keyboard_typo, ocr_typo, synonym
+from langcheck.augment.en import (change_case, gender, keyboard_typo, ocr_typo,
+                                  remove_punctuation, synonym)
 
-__all__ = ["en", "gender", "keyboard_typo", "ocr_typo", "synonym"]
+__all__ = [
+    "change_case", "en", "gender", "keyboard_typo", "ocr_typo", "synonym",
+    "remove_punctuation"
+]

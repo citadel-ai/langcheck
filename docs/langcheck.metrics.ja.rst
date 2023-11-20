@@ -18,3 +18,4 @@ langcheck.metrics.ja
 
    langcheck.metrics.ja.reference_based_text_quality
    langcheck.metrics.ja.reference_free_text_quality
+   langcheck.metrics.ja.source_based_text_quality
