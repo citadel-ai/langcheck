@@ -15,6 +15,10 @@ try:
     nltk.data.find('averaged_perceptron_tagger')
 except LookupError:
     nltk.download('averaged_perceptron_tagger')
+try:
+    nltk.data.find('punkt')
+except LookupError:
+    nltk.download('punkt')
 
 # This dictionary is used to determine the form of the pronoun.
 # Note that his and hers are not included in this dictionary because they can be
