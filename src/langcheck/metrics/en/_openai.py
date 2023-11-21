@@ -1,7 +1,9 @@
 import json
 from typing import Callable, Dict, Optional, Tuple
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 
 class OpenAIBasedEvaluator:
@@ -69,20 +71,12 @@ class OpenAIBasedEvaluator:
         messages = [{"role": "user", "content": prompt}]
         try:
             if self._openai_args is None:
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages,
-                )
+                response = client.chat.completions.create(model="gpt-3.5-turbo",
+                                                          messages=messages)
             else:
-                response = openai.ChatCompletion.create(
-                    messages=messages,
-                    **self._openai_args,
-                )
-            # This metrics-with-openai-models>`__ is necessary to pass pyright
-            # since the openai library is not typed.
-            assert isinstance(response, dict)
-            unstructured_assessment = response["choices"][0]["message"][
-                "content"]
+                response = client.chat.completions.create(messages=messages,
+                                                          **self._openai_args)
+            unstructured_assessment = response.choices[0].message.content
         except Exception as e:
             print(f'OpenAI failed to return an unstructured assessment: {e}')
             print(f'Prompt that triggered the failure is:\n{prompt}')
@@ -112,24 +106,19 @@ class OpenAIBasedEvaluator:
         }]
         try:
             if self._openai_args is None:
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=fn_call_messages,
                     functions=functions,
-                    function_call={"name": self._function_name},
-                )
+                    function_call={"name": self._function_name})
             else:
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     messages=fn_call_messages,
                     functions=functions,
                     function_call={"name": self._function_name},
-                    **self._openai_args,
-                )
-            # This sanity check is necessary to pass pyright since the openai
-            # library is not typed.
-            assert isinstance(response, dict)
+                    **self._openai_args)
             function_args = json.loads(
-                response["choices"][0]["message"]["function_call"]["arguments"])
+                response.choices[0].message.function_call.arguments)
             assessment = function_args.get(self._argument_name)
         except Exception as e:
             print(f'OpenAI failed to return a structured assessment: {e}')

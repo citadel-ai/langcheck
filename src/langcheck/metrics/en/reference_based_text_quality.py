@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-import openai
 import torch
+from openai import OpenAI
 from rouge_score import rouge_scorer
 from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.metric_value import MetricValue
+
+client = OpenAI()
 
 
 def semantic_similarity(
@@ -72,14 +74,14 @@ def semantic_similarity(
         reference_embeddings = model.encode(reference_outputs)
     else:  # openai
         if openai_args is None:
-            gen_embed_response = openai.Embedding.create(
+            gen_embed_response = client.embeddings.create(
                 input=generated_outputs, model='text-embedding-ada-002')
-            ref_embed_response = openai.Embedding.create(
+            ref_embed_response = client.embeddings.create(
                 input=reference_outputs, model='text-embedding-ada-002')
         else:
-            gen_embed_response = openai.Embedding.create(
+            gen_embed_response = client.embeddings.create(
                 input=generated_outputs, **openai_args)
-            ref_embed_response = openai.Embedding.create(
+            ref_embed_response = client.embeddings.create(
                 input=reference_outputs, **openai_args)
         # This sanity check is necessary to pass pyright since the openai
         # library is not typed.
