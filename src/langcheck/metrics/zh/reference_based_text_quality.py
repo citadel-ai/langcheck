@@ -87,9 +87,6 @@ def semantic_similarity(
     # embedding task
     # Ref: https://huggingface.co/BAAI/bge-base-zh-v1.5
     # Using this model, it is hard to find two sentence where cos_sim < 0.25.
-    # NOTE: as LLM generated content is more like paraphrase than senteces
-    # assests. there is no paraphrase2paraphrase benchmark yet, I think
-    # both of these models may not embedding paraphrase well.
     model = SentenceTransformer('BAAI/bge-base-zh-v1.5')
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)

@@ -3,18 +3,12 @@ from __future__ import annotations
 import abc
 from collections.abc import Iterator
 
+import hanlp
 from rouge_score.tokenizers import Tokenizer as BaseTokenizer
 
-try:
-    import hanlp
-
-    # size 43M+, fine grained tokenizer
-    DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues] # noqa: E501
-except ModuleNotFoundError:
-    raise ModuleNotFoundError("No module named 'HanLP'.\n"
-                              "Install it by pip install -U hanlp")
-
-# Chinese
+# size 43M+, fine grained tokenizer
+DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues] # noqa: E501
+# Chinese puncuations list
 # https://github.com/yikeke/zh-style-guide/blob/master/source/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7/%E5%B8%B8%E7%94%A8%E4%B8%AD%E6%96%87%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7.md
 _PUNCTUATIONS = [
     '、', '，', '。', '：', '；', '?', '!', "？", "！", '～', '-', '—', '——', '……',
@@ -45,11 +39,14 @@ class HanLPTokenizer(_ChineseTokenizer):
         `HanLP <https://github.com/hankcs/HanLP/tree/doc-zh>`_ is an actively
         maintained NLP library that was initially developed for Chinese
         language processing.
-        1.HanLP have multi-task mode and single task mode. Multitask
-        Model need download 400MB+  pretrained weight, in contrast,
-        single task only need 40MB+. Use single task mode in default.
-        2.LLM generated content have lot of sentences in most situtation.
-        use HanLP pipeline mode for concurrency.
+        We run HanLP's single-task models using HanLP's pipeline mode, because:
+        1. HanLP has both multi-task models and single-task models. The
+        multi-task models are quite large (generally 400MB+), whereas the
+        single-task models are only ~40MB. So, we use a single-task model by
+        default.
+        2. HanLP's pipeline mode allows processing of long texts (i.e. many
+        sentences) efficiently in parallel. It splits long text into sentences
+        and applies the tokenizer to the sentences in parallel.
     '''
 
     def __init__(self) -> None:
