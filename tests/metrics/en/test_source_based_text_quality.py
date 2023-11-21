@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types.chat import ChatCompletion
 
 from langcheck.metrics.en import factual_consistency
 
@@ -32,20 +33,16 @@ def test_factual_consistency(generated_outputs, sources):
     [('Tokyo is the capital of Japan.', "Tokyo is Japan's capital city."),
      (['Tokyo is the capital of Japan.'], ["Tokyo is Japan's capital city."])])
 def test_factual_consistency_openai(generated_outputs, sources):
-    mock_chat_response = {
-        'choices': [{
-            'message': {
-                'function_call': {
-                    'arguments': "{\n  \"factuality\": \"Fully Consistent\"\n}"
-                },
-                'content': 'foo bar'
-            }
-        }]
-    }
-    # Calling the openai.ChatCompletion.create method requires an OpenAI API
-    # key, so we mock the return value instead
-    with patch('openai.ChatCompletion.create',
-               Mock(return_value=mock_chat_response)):
+    mock_chat_completion = Mock(spec=ChatCompletion)
+    mock_chat_completion.choices = [
+        Mock(message=Mock(function_call=Mock(
+            arguments="{\n  \"factuality\": \"Fully Consistent\"\n}")))
+    ]
+
+    # Calling the openai.resources.chat.Completions.create method requires an
+    # OpenAI API key, so we mock the return value instead
+    with patch('openai.resources.chat.Completions.create',
+               return_value=mock_chat_completion):
         metric_value = factual_consistency(generated_outputs,
                                            sources,
                                            model_type='openai')

@@ -50,9 +50,9 @@ def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
      (["The cat sat on the mat."], ["The cat sat on the mat."])])
 def test_semantic_similarity_openai(generated_outputs, reference_outputs):
     mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
-    # Calling the openai.Embedding.create method requires an OpenAI API key, so
-    # we mock the return value instead
-    with patch('openai.Embedding.create',
+    # Calling the openai.resources.Embeddings.create method requires an OpenAI
+    # API key, so we mock the return value instead
+    with patch('openai.resources.Embeddings.create',
                Mock(return_value=mock_embedding_response)):
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
