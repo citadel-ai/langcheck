@@ -29,7 +29,7 @@ class OpenAIBasedEvaluator:
                 the name of the metric to evaluate (e.g. sentiment).
             argument_description: Description of the argument
             openai_args: Dict of additional args to pass in to the
-                `openai.ChatCompletion.create` function, default None
+                `client.chat.completions.create` function, default None
         '''
         self._assessment_to_score_mapping = assessment_to_score_mapping
         self._function_name = function_name

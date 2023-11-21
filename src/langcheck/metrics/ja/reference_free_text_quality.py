@@ -65,7 +65,7 @@ def sentiment(
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -154,7 +154,7 @@ def toxicity(
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -251,7 +251,7 @@ def fluency(
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object

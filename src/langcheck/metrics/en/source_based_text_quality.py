@@ -58,7 +58,7 @@ def factual_consistency(
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         An MetricValue object
@@ -234,7 +234,7 @@ def _factual_consistency_openai(
         srcs_list: The list of source texts for each generated sentence in
             `gen_sentences_list`
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         score_list: a list of scores

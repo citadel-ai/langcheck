@@ -165,8 +165,8 @@ def test_ai_disclaimer_similarity(generated_outputs):
 ]])
 def test_ai_disclaimer_similarity_openai(generated_outputs):
     mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
-    # Calling the openai.Embedding.create method requires an OpenAI API key, so
-    # we mock the return value instead
+    # Calling the openai.resources.embeddings.create method requires an OpenAI
+    # API key, so we mock the return value instead
     with patch('openai.resources.Embeddings.create',
                Mock(return_value=mock_embedding_response)):
         metric_value = ai_disclaimer_similarity(generated_outputs,

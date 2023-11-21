@@ -52,7 +52,7 @@ def semantic_similarity(
         embedding_model_type: The type of embedding model to use ('local' or
             'openai'), default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.Embedding.create` function, default None
+            `client.embeddings.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object

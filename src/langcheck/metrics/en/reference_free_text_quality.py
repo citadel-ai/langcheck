@@ -58,7 +58,7 @@ def sentiment(
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -141,7 +141,7 @@ def _sentiment_openai(
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         score_list: a list of scores
@@ -237,7 +237,7 @@ def fluency(
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -321,7 +321,7 @@ def _fluency_openai(
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         score_list: a list of scores
@@ -416,7 +416,7 @@ def toxicity(
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -480,7 +480,7 @@ def _toxicity_openai(
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         score_list: a list of scores
@@ -645,7 +645,7 @@ def ai_disclaimer_similarity(
         embedding_model_type: The type of embedding model to use ('local' or
             'openai'), default 'local'
         openai_args: Dict of additional args to pass in to the
-            `openai.Embedding.create` function, default None
+            `client.embeddings.create` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
