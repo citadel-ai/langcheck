@@ -75,7 +75,8 @@ def semantic_similarity(
     ], ('Unsupported embedding model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if embedding_model_type == 'openai' or embedding_model_type == 'azure_openai':
+    if (embedding_model_type == 'openai' or
+            embedding_model_type == 'azure_openai'):
         # We can use the same API as english semantic_similarity to compare the
         # similarity
         metric_value = en_semantic_similarity(generated_outputs,
