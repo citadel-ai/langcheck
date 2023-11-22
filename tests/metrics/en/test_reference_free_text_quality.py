@@ -2,6 +2,7 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types import CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion
 
 from langcheck.metrics.en import (ai_disclaimer_similarity,
@@ -198,7 +199,9 @@ def test_ai_disclaimer_similarity(generated_outputs):
     "I don't have personal opinions, emotions, or consciousness.",
 ]])
 def test_ai_disclaimer_similarity_openai(generated_outputs):
-    mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
+    mock_embedding_response = Mock(spec=CreateEmbeddingResponse)
+    mock_embedding_response.data = [Mock(embedding=[0.1, 0.2, 0.3])]
+
     # Calling the openai.resources.embeddings.create method requires an OpenAI
     # API key, so we mock the return value instead
     with patch('openai.resources.Embeddings.create',
