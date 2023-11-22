@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock, patch
 
 import pytest
@@ -34,7 +35,19 @@ def test_sentiment_openai(generated_outputs):
     # OpenAI API key, so we mock the return value instead
     with patch('openai.resources.chat.Completions.create',
                return_value=mock_chat_completion):
+        # Set the necessary env vars for the 'openai' model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = sentiment(generated_outputs, model_type='openai')
+        # "Positive" gets a value of 1.0
+        assert metric_value == 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = sentiment(generated_outputs,
+                                 model_type='azure_openai',
+                                 openai_args={'model': 'foo bar'})
         # "Positive" gets a value of 1.0
         assert metric_value == 1
 
