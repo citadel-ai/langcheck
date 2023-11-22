@@ -8,6 +8,7 @@ from openai import AzureOpenAI, OpenAI
 
 def rephrase(
         instances: list[str] | str,
+        num_perturbations: int = 1,
         model_type: str = 'openai',
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[dict[str, str]] = None) -> list[Optional[str]]:
@@ -31,6 +32,8 @@ def rephrase(
 
     Args:
         instances: A single string or a list of strings to be augmented.
+        num_perturbations: The number of perturbed instances to generate for
+            each string in instances
         model_type: The type of model to use ('openai' or 'azure_openai'),
             default 'openai'
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
@@ -57,34 +60,35 @@ def rephrase(
     instances = [instances] if isinstance(instances, str) else instances
     rephrased_instances = []
     for instance in instances:
-        prompt = f'''
-        Please rephrase the following prompt without altering its meaning,
-        ensuring you adjust the word order appropriately.
-        Ensure that no more than five consecutive words are repeated
-        and try to use similar words as substitutes where possible.
-        [BEGIN DATA]
-        ************
-        [Prompt]: {instance}
-        ************
-        [END DATA]
-        '''
-        messages = [{"role": "user", "content": prompt}]
-        try:
-            if openai_args is None:
-                response = openai_client.chat.completions.create(
-                    model="gpt-3.5-turbo", messages=messages)
-            else:
-                response = openai_client.chat.completions.create(
-                    messages=messages,
-                    **openai_args,
-                )
-            # This metrics-with-openai-models>`__ is necessary to pass pyright
-            # since the openai library is not typed.
-            rephrased_instance = response.choices[0].message.content
-            rephrased_instances.append(rephrased_instance)
-        except Exception as e:
-            print(f'OpenAI failed to return a rephrased prompt: {e}')
-            print(f'Prompt that triggered the failure is:\n{prompt}')
-            rephrased_instances.append(None)
+        for _ in range(num_perturbations):
+            prompt = f'''
+            Please rephrase the following prompt without altering its meaning,
+            ensuring you adjust the word order appropriately.
+            Ensure that no more than five consecutive words are repeated
+            and try to use similar words as substitutes where possible.
+            [BEGIN DATA]
+            ************
+            [Prompt]: {instance}
+            ************
+            [END DATA]
+            '''
+            messages = [{"role": "user", "content": prompt}]
+            try:
+                if openai_args is None:
+                    response = openai_client.chat.completions.create(
+                        model="gpt-3.5-turbo", messages=messages)
+                else:
+                    response = openai_client.chat.completions.create(
+                        messages=messages,
+                        **openai_args,
+                    )
+                # This metrics-with-openai-models>`__ is necessary to pass pyright
+                # since the openai library is not typed.
+                rephrased_instance = response.choices[0].message.content
+                rephrased_instances.append(rephrased_instance)
+            except Exception as e:
+                print(f'OpenAI failed to return a rephrased prompt: {e}')
+                print(f'Prompt that triggered the failure is:\n{prompt}')
+                rephrased_instances.append(None)
 
     return rephrased_instances
