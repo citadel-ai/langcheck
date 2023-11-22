@@ -1,16 +1,15 @@
 from __future__ import annotations
 
+import os
 from typing import Dict, List, Optional
 
 import torch
-from openai import OpenAI
+from openai import AzureOpenAI, OpenAI
 from rouge_score import rouge_scorer
 from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.metric_value import MetricValue
-
-client = OpenAI()
 
 
 def semantic_similarity(
@@ -18,6 +17,7 @@ def semantic_similarity(
         reference_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
         embedding_model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
@@ -27,7 +27,7 @@ def semantic_similarity(
     OpenAI embeddings, the cosine similarities tend to be skewed quite heavily
     towards higher numbers.)
 
-    We currently support two embedding model types:
+    We currently support three embedding model types:
 
     1. The 'local' type, where the 'all-mpnet-base-v2' model is downloaded
     from HuggingFace and run locally. This is the default model type and
@@ -39,6 +39,11 @@ def semantic_similarity(
     #computing-metrics-with-openai-models>`__
     on setting up the OpenAI API key.
 
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify the
+    model to use in `openai_args`, e.g.
+    `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
+
     Ref:
         https://huggingface.co/tasks/sentence-similarity
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
@@ -49,8 +54,11 @@ def semantic_similarity(
         reference_outputs: The reference output(s)
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        embedding_model_type: The type of embedding model to use ('local' or
-            'openai'), default 'local'
+        embedding_model_type: The type of embedding model to use ('local',
+            'openai', or 'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but `model_type` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             `client.embeddings.create` function, default None
 
@@ -60,9 +68,9 @@ def semantic_similarity(
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
     assert embedding_model_type in [
-        'local', 'openai'
+        'local', 'openai', 'azure_openai'
     ], ('Unsupported embedding model type. '
-        'The supported ones are ["local", "openai"]')
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if embedding_model_type == 'local':
         # The 'all-mpnet-base-v2' model has the highest average performance out
@@ -72,16 +80,34 @@ def semantic_similarity(
         model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         generated_embeddings = model.encode(generated_outputs)
         reference_embeddings = model.encode(reference_outputs)
-    else:  # openai
+    else:  # openai or azure_openai
+        if not openai_client:
+            if embedding_model_type == 'openai':
+                openai_client = OpenAI()
+            else:  # azure_openai
+                # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#embeddings
+                openai_client = AzureOpenAI(
+                    api_key=os.getenv("AZURE_OPENAI_KEY"),
+                    api_version=os.getenv("OPENAI_API_VERSION"),
+                    azure_endpoint=os.getenv(
+                        "AZURE_OPENAI_ENDPOINT"))  # type: ignore
+        if embedding_model_type == 'azure_openai' and not openai_args:
+            raise AssertionError(
+                'The embedding model deployment must be specified in '
+                '`openai_args` for the azure_openai type, e.g. '
+                '`openai_args={"model": "YOUR_DEPLOYMENT_NAME"}`')
+
+        # For type checking
+        assert openai_client is not None
         if openai_args is None:
-            gen_embed_response = client.embeddings.create(
+            gen_embed_response = openai_client.embeddings.create(
                 input=generated_outputs, model='text-embedding-ada-002')
-            ref_embed_response = client.embeddings.create(
+            ref_embed_response = openai_client.embeddings.create(
                 input=reference_outputs, model='text-embedding-ada-002')
         else:
-            gen_embed_response = client.embeddings.create(
+            gen_embed_response = openai_client.embeddings.create(
                 input=generated_outputs, **openai_args)
-            ref_embed_response = client.embeddings.create(
+            ref_embed_response = openai_client.embeddings.create(
                 input=reference_outputs, **openai_args)
         # This sanity check is necessary to pass pyright since the openai
         # library is not typed.

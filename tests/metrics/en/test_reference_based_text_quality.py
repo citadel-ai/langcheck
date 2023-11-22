@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock, patch
 
 import pytest
@@ -54,9 +55,23 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
     # API key, so we mock the return value instead
     with patch('openai.resources.Embeddings.create',
                Mock(return_value=mock_embedding_response)):
+        # Set the necessary env vars for the 'openai' embedding model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
                                            embedding_model_type='openai')
+        # Since the mock embeddings are the same for the generated and reference
+        # outputs, the semantic similarity should be 1.
+        assert 0.99 <= metric_value <= 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = semantic_similarity(generated_outputs,
+                                           reference_outputs,
+                                           embedding_model_type='azure_openai',
+                                           openai_args={'model': 'foo bar'})
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1
