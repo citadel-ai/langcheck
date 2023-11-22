@@ -683,6 +683,7 @@ def ai_disclaimer_similarity(
         prompts: Optional[List[str] | str] = None,
         ai_disclaimer_phrase: str = (
             "I don't have personal opinions, emotions, or consciousness."),
+        openai_client: Optional[OpenAI] = None,
         embedding_model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the degree to which the LLM's output contains a disclaimer
@@ -700,8 +701,11 @@ def ai_disclaimer_similarity(
             Prompts are not evaluated and only used as metadata.
         ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
-        embedding_model_type: The type of embedding model to use ('local' or
-            'openai'), default 'local'
+        embedding_model_type: The type of embedding model to use ('local',
+            'openai', or 'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but `model_type` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             `client.embeddings.create` function, default None
 
@@ -716,7 +720,7 @@ def ai_disclaimer_similarity(
                                                      ai_disclaimer_phrase_list,
                                                      prompts,
                                                      embedding_model_type,
-                                                     openai_args)
+                                                     openai_client, openai_args)
     return MetricValue(metric_name='ai_disclaimer_similarity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
