@@ -8,14 +8,14 @@ import openai
 def rephrase(
         instances: list[str] | str,
         openai_args: Optional[dict[str, str]] = None) -> list[Optional[str]]:
-    '''Rephrase each string in instances (usually a list of prompts) without
-    changintg the meanings. We use the modified version of a prompt presented
-    in `Rethinking Benchmark and Contamination for Language Models with
-    Rephrased Samples <https://arxiv.org/abs/2311.04850>`__ to make an LLM
-    rephrase the given texts.  Currently only OpenAI-based is supported.
-    We use OpenAI's 'gpt-turbo-3.5' model by default. See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
-    #computing-metrics-with-openai-models>`__
+    '''Rephrases each string in instances (usually a list of prompts) without
+    changing their meaning. We use a modified version of the prompt presented
+    in `"Rethinking Benchmark and Contamination for Language Models with
+    Rephrased Samples" <https://arxiv.org/abs/2311.04850>`__ to make an LLM
+    rephrase the given text.
+    Currently, this is not available locally and requires an OpenAI API key,
+    using the 'gpt-turbo-3.5' model by default. See `this page
+    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     Args:
