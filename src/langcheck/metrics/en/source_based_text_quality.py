@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import nltk
 import torch
 import torch.nn as nn
+from openai import OpenAI
 from transformers.models.auto.configuration_auto import AutoConfig
 from transformers.models.auto.modeling_auto import AutoModelForSeq2SeqLM
 from transformers.models.auto.tokenization_auto import AutoTokenizer
@@ -24,6 +25,7 @@ def factual_consistency(
     sources: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
@@ -50,6 +52,11 @@ def factual_consistency(
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify the
+    model to use in `openai_args`, e.g.
+    `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
+
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output
@@ -57,6 +64,9 @@ def factual_consistency(
             optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local' or 'openai'),
             default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but `model_type` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             `client.chat.completions.create` function, default None
 
@@ -65,9 +75,10 @@ def factual_consistency(
     '''
     generated_outputs, sources, prompts = validate_parameters_source_based(
         generated_outputs, sources, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     # Confirm necessary data for nltk.tokenize.sent_tokenize() exists
     try:
@@ -90,9 +101,10 @@ def factual_consistency(
     if model_type == 'local':
         score_list = _factual_consistency_local(gen_sentences_list, srcs_list)
         explanation_list = None
-    else:  # openai
+    else:  # openai or azure_openai
         score_list, explanation_list = _factual_consistency_openai(
-            gen_sentences_list, srcs_list, openai_args)
+            gen_sentences_list, srcs_list, model_type, openai_client,
+            openai_args)
 
     # The score for each output is the average of the scores of its sentences
     score_per_output = []
@@ -213,9 +225,8 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 
 
 def _factual_consistency_openai(
-    gen_sentences_list: List[str],
-    srcs_list: List[str],
-    openai_args: Optional[Dict[str, str]] = None
+    gen_sentences_list: List[str], srcs_list: List[str], client_type: str,
+    client: Optional[OpenAI], openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
     between each generated sentence and its corresponding source text. The
@@ -233,8 +244,12 @@ def _factual_consistency_openai(
         gen_sentences_list: A list of model generated sentences to evaluate
         srcs_list: The list of source texts for each generated sentence in
             `gen_sentences_list`
-        openai_args: Dict of additional args to pass in to the
-            `client.chat.completions.create` function, default None
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            `client_type`.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            `client.chat.completions.create` function
 
     Returns:
         score_list: a list of scores
@@ -296,6 +311,8 @@ def _factual_consistency_openai(
             "Saves a submitted claim's factual consistency assessment."),
         argument_name='factuality',
         argument_description='The factual consistency assessment of the claim',
+        client_type=client_type,
+        client=client,
         openai_args=openai_args)
 
     score_list = []
