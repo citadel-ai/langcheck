@@ -1,31 +1,59 @@
 from __future__ import annotations
 
+import os
 from typing import Optional
 
-import openai
+from openai import AzureOpenAI, OpenAI
 
 
 def rephrase(
         instances: list[str] | str,
+        model_type: str = 'openai',
+        openai_client: Optional[OpenAI] = None,
         openai_args: Optional[dict[str, str]] = None) -> list[Optional[str]]:
     '''Rephrases each string in instances (usually a list of prompts) without
     changing their meaning. We use a modified version of the prompt presented
     in `"Rethinking Benchmark and Contamination for Language Models with
     Rephrased Samples" <https://arxiv.org/abs/2311.04850>`__ to make an LLM
     rephrase the given text.
-    Currently, this is not available locally and requires an OpenAI API key,
-    using the 'gpt-turbo-3.5' model by default. See `this page
+
+    We currently support two model types:
+
+    1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. See `this page
     <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
+    2. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify the
+    model to use in `openai_args`, e.g.
+    `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
+
     Args:
         instances: A single string or a list of strings to be augmented.
+        model_type: The type of model to use ('openai' or 'azure_openai'),
+            default 'openai'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None, we will attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             `openai.ChatCompletion.create` function, default None
 
     Returns:
         A list of rephrased instances.
     '''
+    # Initialize the openai object if openai_client is None
+    if openai_client is None:
+        if model_type == 'openai':
+            openai_client = OpenAI()
+        elif model_type == 'azure_openai':
+            openai_client = AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_KEY"),
+                api_version=os.getenv("OPENAI_API_VERSION"),
+                azure_endpoint=os.getenv(
+                    "AZURE_OPENAI_ENDPOINT"))  # type: ignore
+        else:
+            raise AssertionError(f'Unexpected model type "{model_type}"')
+
     instances = [instances] if isinstance(instances, str) else instances
     rephrased_instances = []
     for instance in instances:
@@ -43,19 +71,16 @@ def rephrase(
         messages = [{"role": "user", "content": prompt}]
         try:
             if openai_args is None:
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages,
-                )
+                response = openai_client.chat.completions.create(
+                    model="gpt-3.5-turbo", messages=messages)
             else:
-                response = openai.ChatCompletion.create(
+                response = openai_client.chat.completions.create(
                     messages=messages,
                     **openai_args,
                 )
             # This metrics-with-openai-models>`__ is necessary to pass pyright
             # since the openai library is not typed.
-            assert isinstance(response, dict)
-            rephrased_instance = response["choices"][0]["message"]["content"]
+            rephrased_instance = response.choices[0].message.content
             rephrased_instances.append(rephrased_instance)
         except Exception as e:
             print(f'OpenAI failed to return a rephrased prompt: {e}')
