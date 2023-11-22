@@ -429,6 +429,7 @@ def toxicity(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
@@ -436,10 +437,12 @@ def toxicity(
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where the Detoxify model is downloaded from HuggingFace
     and run locally. This is the default model type and there is no setup needed
     to run this.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
@@ -448,12 +451,20 @@ def toxicity(
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify the
+    model to use in `openai_args`, e.g.
+    `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
+
     Args:
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but `model_type` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             `client.chat.completions.create` function, default None
 
@@ -462,15 +473,17 @@ def toxicity(
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
         explanations = None
-    else:  # openai
-        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
+    else:  # openai or azure_openai
+        scores, explanations = _toxicity_openai(generated_outputs, model_type,
+                                                openai_client, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
@@ -503,8 +516,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
 
 def _toxicity_openai(
-    generated_outputs: List[str],
-    openai_args: Optional[Dict[str, str]] = None
+    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the toxicity scores and their associated explanations of
     generated outputs using the OpenAI API. This metric takes on float values
@@ -518,8 +531,12 @@ def _toxicity_openai(
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        openai_args: Dict of additional args to pass in to the
-            `client.chat.completions.create` function, default None
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            `client_type`.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            `client.chat.completions.create` function
 
     Returns:
         score_list: a list of scores
@@ -569,6 +586,8 @@ def _toxicity_openai(
         function_description="Saves a statement's toxicity assessment.",
         argument_name='toxicity',
         argument_description='The toxicity assessment of the statement',
+        client_type=client_type,
+        client=client,
         openai_args=openai_args)
 
     score_list = []

@@ -134,6 +134,7 @@ def toxicity(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
@@ -141,13 +142,15 @@ def toxicity(
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where a model file is downloaded from HuggingFace and
     run locally. This is the default model type and there is no setup needed to
     run this.
     The model (Alnusjaponica/toxicity-score-multi-classification) is a
     fine-tuned model based on line-corporation/line-distilbert-base-japanese
     model.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
@@ -155,6 +158,11 @@ def toxicity(
     `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify the
+    model to use in `openai_args`, e.g.
+    `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
 
     Ref:
         https://huggingface.co/line-corporation/line-distilbert-base-japanese
@@ -164,8 +172,11 @@ def toxicity(
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but `model_type` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             `client.chat.completions.create` function, default None
 
@@ -174,15 +185,17 @@ def toxicity(
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
         explanations = None
-    else:  # openai
-        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
+    else:  # openai or azure_openai
+        scores, explanations = _toxicity_openai(generated_outputs, model_type,
+                                                openai_client, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
