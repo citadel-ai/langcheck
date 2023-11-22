@@ -94,10 +94,10 @@ class OpenAIBasedEvaluator:
         try:
             if self._openai_args is None:
                 response = self._client.chat.completions.create(
-                    model="gpt-3.5-turbo", messages=messages)
+                    model="gpt-3.5-turbo", messages=messages)  # type: ignore
             else:
                 response = self._client.chat.completions.create(
-                    messages=messages, **self._openai_args)
+                    messages=messages, **self._openai_args)  # type: ignore
             unstructured_assessment = response.choices[0].message.content
         except Exception as e:
             print(f'OpenAI failed to return an unstructured assessment: {e}')
@@ -130,15 +130,17 @@ class OpenAIBasedEvaluator:
             if self._openai_args is None:
                 response = self._client.chat.completions.create(
                     model="gpt-3.5-turbo",
-                    messages=fn_call_messages,
-                    functions=functions,
+                    messages=fn_call_messages,  # type: ignore
+                    functions=functions,  # type: ignore
                     function_call={"name": self._function_name})
             else:
-                response = self._client.chat.completions.create(
-                    messages=fn_call_messages,
-                    functions=functions,
+                response = self._client.chat.completions.create(  # type: ignore
+                    messages=fn_call_messages,  # type: ignore
+                    functions=functions,  # type: ignore
                     function_call={"name": self._function_name},
-                    **self._openai_args)
+                    **self._openai_args)  # type: ignore
+            # For type checking
+            assert response.choices[0].message.function_call is not None
             function_args = json.loads(
                 response.choices[0].message.function_call.arguments)
             assessment = function_args.get(self._argument_name)

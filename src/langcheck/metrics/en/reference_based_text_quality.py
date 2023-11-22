@@ -106,9 +106,9 @@ def semantic_similarity(
                 input=reference_outputs, model='text-embedding-ada-002')
         else:
             gen_embed_response = openai_client.embeddings.create(
-                input=generated_outputs, **openai_args)
+                input=generated_outputs, **openai_args)  # type: ignore
             ref_embed_response = openai_client.embeddings.create(
-                input=reference_outputs, **openai_args)
+                input=reference_outputs, **openai_args)  # type: ignore
         generated_embeddings = [
             item.embedding for item in gen_embed_response.data
         ]
