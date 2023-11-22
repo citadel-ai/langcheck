@@ -38,7 +38,7 @@ def factual_consistency(
     sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
     could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
 
     1. The 'local' type, where the 'unieval-fact' model is downloaded
     from HuggingFace and run locally. This is the default model type and
@@ -62,8 +62,8 @@ def factual_consistency(
         sources: The source text(s), one string per generated output
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
             None but `model_type` is 'openai' or 'azure_openai', we will
             attempt to create a default client.
