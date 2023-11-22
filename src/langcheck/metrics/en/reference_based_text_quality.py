@@ -109,15 +109,11 @@ def semantic_similarity(
                 input=generated_outputs, **openai_args)
             ref_embed_response = openai_client.embeddings.create(
                 input=reference_outputs, **openai_args)
-        # This sanity check is necessary to pass pyright since the openai
-        # library is not typed.
-        assert isinstance(gen_embed_response, dict)
-        assert isinstance(ref_embed_response, dict)
         generated_embeddings = [
-            item['embedding'] for item in gen_embed_response['data']
+            item.embedding for item in gen_embed_response.data
         ]
         reference_embeddings = [
-            item['embedding'] for item in ref_embed_response['data']
+            item.embedding for item in ref_embed_response.data
         ]
 
     cosine_scores = util.pairwise_cos_sim(torch.tensor(generated_embeddings),

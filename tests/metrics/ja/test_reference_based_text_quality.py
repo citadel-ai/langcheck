@@ -3,6 +3,7 @@ from typing import Callable, Optional
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types import CreateEmbeddingResponse
 
 from langcheck.metrics.ja import (JanomeTokenizer, MeCabTokenizer, rouge1,
                                   rouge2, rougeL, semantic_similarity)
@@ -117,7 +118,9 @@ def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
                          [("猫が座っています。", "猫が座っています。"),
                           (["猫が座っています。"], ["猫が座っています。"])])
 def test_semantic_similarity_openai(generated_outputs, reference_outputs):
-    mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
+    mock_embedding_response = Mock(spec=CreateEmbeddingResponse)
+    mock_embedding_response.data = [Mock(embedding=[0.1, 0.2, 0.3])]
+
     # Calling the openai.resources.Embeddings.create method requires an OpenAI
     # API key, so we mock the return value instead
     with patch('openai.resources.Embeddings.create',
