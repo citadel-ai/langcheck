@@ -197,6 +197,4 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
             if label_proba['label'] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
                 toxicity_scores.append(1 - label_proba['score'])  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
 
-    # flatten list
-    toxicity_scores = sum(toxicity_scores, [])
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]
