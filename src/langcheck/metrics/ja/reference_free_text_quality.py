@@ -55,7 +55,7 @@ def sentiment(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
@@ -155,7 +155,7 @@ def toxicity(
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
@@ -265,7 +265,7 @@ def fluency(
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 

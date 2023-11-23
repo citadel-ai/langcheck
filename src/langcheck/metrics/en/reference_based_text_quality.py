@@ -35,7 +35,7 @@ def semantic_similarity(
 
     2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
     by default (this is configurable). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     on setting up the OpenAI API key.
 
