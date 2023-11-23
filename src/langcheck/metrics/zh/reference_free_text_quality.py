@@ -4,8 +4,7 @@ from typing import Dict, List, Optional
 
 import regex as re
 import torch
-from sklearn.conftest import dataset_fetchers
-from transformers import pipeline
+from transformers.pipelines import pipeline
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
