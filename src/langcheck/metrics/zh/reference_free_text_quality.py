@@ -18,11 +18,6 @@ _sentiment_model_path = 'IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment'  # NOQA: E
 
 _toxicity_model_path = "alibaba-pai/pai-bert-base-zh-llm-risk-detection"
 
-_fluency_model_path = "liwii/fluency-score-classification-ja"
-_fluency_tokenizer_path = "line-corporation/line-distilbert-base-japanese"
-_fluency_tokenizer = None
-_fluency_model = None
-
 
 def sentiment(
     generated_outputs: List[str] | str,
@@ -72,7 +67,7 @@ def sentiment(
     if model_type == 'openai':
         metric_value = en_sentiment(generated_outputs, prompts, model_type,
                                     openai_args)
-        metric_value.language = 'ja'
+        metric_value.language = 'zh'
         return metric_value
 
     global _sentiment_model_path
@@ -82,13 +77,17 @@ def sentiment(
     )  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
     # {0:"Negative", 1:'Positive'}
     _model_id2label = _sentiment_pipeline.model.config.id2label
-    _predict_result = _sentiment_pipeline(generated_outputs)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    _predict_result = _sentiment_pipeline(
+        generated_outputs
+    )  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
     # if predicted result is 'Positive', use the score directly
     # else, use 1 - score as the sentiment score
-    scores = [1 - x['score'] if x['label'] == _model_id2label[0]  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-              else x['score'] for x in _predict_result  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-            ]
-
+    # yapf: disable
+    scores = [
+        1 - x['score'] if x['label'] == _model_id2label[0] else x['score']  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+        for x in _predict_result   # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    ]
+    # yapf: enable
     return MetricValue(
         metric_name='sentiment',
         prompts=prompts,
@@ -180,9 +179,9 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     global _toxicity_model_path
     # this pipeline output predict probability for each text on each label.
     # the output format is List[List[Dict(str)]]
-    _toxicity_pipeline = pipeline(
-        'text-classification', model=_toxicity_model_path,
-        top_k=5)
+    _toxicity_pipeline = pipeline('text-classification',
+                                  model=_toxicity_model_path,
+                                  top_k=5)
 
     # {'Normal': 0, 'Pulp': 1, 'Sex': 2, 'Other Risk': 3, 'Adult': 4}
     _model_id2label = _toxicity_pipeline.model.config.id2label
@@ -193,7 +192,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     toxicity_scores = []
     for item_predict_proba in _predict_results:
         for label_proba in item_predict_proba:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+            # yapf: disable
             if label_proba['label'] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
                 toxicity_scores.append(1 - label_proba['score'])  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-
+            # yapf: enable
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]
