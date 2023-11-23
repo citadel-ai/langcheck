@@ -1,4 +1,4 @@
-from langcheck.metrics import en, ja
+from langcheck.metrics import en, ja, zh
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (
@@ -16,6 +16,7 @@ from langcheck.metrics.text_structure import (contains_all_strings,
 __all__ = [
     'en',
     'ja',
+    'zh',
     'ai_disclaimer_similarity',
     'contains_all_strings',
     'contains_any_strings',
