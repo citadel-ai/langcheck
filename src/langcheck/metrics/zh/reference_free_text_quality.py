@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 import regex as re
-from sklearn.conftest import dataset_fetchers
 import torch
+from sklearn.conftest import dataset_fetchers
 from transformers import pipeline
 
 from langcheck._handle_logs import _handle_logging_level
@@ -78,25 +78,27 @@ def sentiment(
 
     global _sentiment_model_path
 
-    _sentiment_pipeline = pipeline('sentiment-analysis', model=_sentiment_model_path)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    _sentiment_pipeline = pipeline(
+        'sentiment-analysis', model=_sentiment_model_path
+    )  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
     # {0:"Negative", 1:'Positive'}
     _model_id2label = _sentiment_pipeline.model.config.id2label
     _predict_result = _sentiment_pipeline(generated_outputs)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    # if predicted result is 'Positive', use the score directly
+    # else, use 1 - score as the sentiment score
+    scores = [1 - x['score'] if x['label'] == _model_id2label[0]  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+              else x['score'] for x in _predict_result  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+            ]
 
-    scores = [
-        1 - x['score'] if x['label'] == _model_id2label[0]  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-        else
-        x['score'] for x in _predict_result  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-              ]
-
-    return MetricValue(metric_name='sentiment',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=None,
-                       metric_values=scores,  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-                       language='zh')
+    return MetricValue(
+        metric_name='sentiment',
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=None,
+        metric_values=scores,  # type: ignore[reportGeneralTypeIssues]
+        language='zh')
 
 
 def toxicity(
@@ -114,9 +116,8 @@ def toxicity(
     1. The 'local' type, where a model file is downloaded from HuggingFace and
     run locally. This is the default model type and there is no setup needed to
     run this.
-    The model (Alnusjaponica/toxicity-score-multi-classification) is a
-    fine-tuned model based on line-corporation/line-distilbert-base-japanese
-    model.
+    The model (alibaba-pai/pai-bert-base-zh-llm-risk-detection) is a
+    risky detection model for LLM generated content released by Alibaba group.
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
@@ -126,7 +127,7 @@ def toxicity(
     for examples on setting up the OpenAI API key.
 
     Ref:
-        "alibaba-pai/pai-bert-base-zh-llm-risk-detection"
+        https://huggingface.co/alibaba-pai/pai-bert-base-zh-llm-risk-detection
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
@@ -180,14 +181,22 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     global _toxicity_model_path
     # this pipeline output predict probability for each text on each label.
     # the output format is List[List[Dict(str)]]
-    _toxicity_pipeline = pipeline('text-classification', model=_toxicity_model_path, top_k=5)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    _toxicity_pipeline = pipeline(
+        'text-classification', model=_toxicity_model_path,
+        top_k=5)
+
     # {'Normal': 0, 'Pulp': 1, 'Sex': 2, 'Other Risk': 3, 'Adult': 4}
     _model_id2label = _toxicity_pipeline.model.config.id2label
-    _predict_results = _toxicity_pipeline(generated_outputs)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    _predict_results = _toxicity_pipeline(
+        generated_outputs  # type: ignore[reportGeneralTypeIssues]
+    )
+    # labels except Normal are all risky, toxicity_score = 1-score['Normal']
+    toxicity_scores = []
+    for item_predict_proba in _predict_results:
+        for label_proba in item_predict_proba:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+            if label_proba['label'] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+                toxicity_scores.append(1 - label_proba['score'])  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
 
-    toxicity_scores = [
-        [1 - _score['score'] for _score in item_predict_proba if _score['label'] == _model_id2label[0]]  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-        for item_predict_proba in _predict_results]
     # flatten list
     toxicity_scores = sum(toxicity_scores, [])
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]

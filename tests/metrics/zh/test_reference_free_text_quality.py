@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from langcheck.metrics.zh import (sentiment, toxicity)
+from langcheck.metrics.zh import sentiment, toxicity
 from tests.utils import is_close
 
 ################################################################################
