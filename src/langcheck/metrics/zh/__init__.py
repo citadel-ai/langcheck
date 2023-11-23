@@ -2,9 +2,10 @@ from langcheck.metrics.zh._tokenizers import HanLPTokenizer
 from langcheck.metrics.zh.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.zh.source_based_text_quality import factual_consistency
-from langcheck.metrics.zh.reference_free_text_quality import (sentiment)
+from langcheck.metrics.zh.reference_free_text_quality import (sentiment,
+                                                              toxicity)
 __all__ = [
     'HanLPTokenizer', 'semantic_similarity', 'rouge1', 'rouge2', 'rougeL',
     'factual_consistency',
-    'sentiment'
+    'sentiment', 'toxicity'
 ]
