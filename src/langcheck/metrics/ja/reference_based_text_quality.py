@@ -43,8 +43,8 @@ def semantic_similarity(
     for examples on setting up the OpenAI API key.
 
     3. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify the
-    model to use in `openai_args`, e.g.
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in `openai_args`, e.g.
     `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
 
     Ref:
