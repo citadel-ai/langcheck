@@ -8,6 +8,7 @@ from openai import AzureOpenAI, OpenAI
 
 def rephrase(
         instances: list[str] | str,
+        *,
         num_perturbations: int = 1,
         model_type: str = 'openai',
         openai_client: Optional[OpenAI] = None,
@@ -39,16 +40,22 @@ def rephrase(
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
             None, we will attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            `client.chat.completions.create` function, default None
 
     Returns:
         A list of rephrased instances.
     '''
     # Initialize the openai object if openai_client is None
+    # TODO: Refactor this into OpenAIBasedEvaluator?
     if openai_client is None:
         if model_type == 'openai':
             openai_client = OpenAI()
         elif model_type == 'azure_openai':
+            if not openai_args:
+                raise AssertionError(
+                    'The model deployment must be specified in `openai_args` '
+                    'for the azure_openai type, e.g. '
+                    '`openai_args={"model": "YOUR_DEPLOYMENT_NAME"}`')
             openai_client = AzureOpenAI(
                 api_key=os.getenv("AZURE_OPENAI_KEY"),
                 api_version=os.getenv("OPENAI_API_VERSION"),
@@ -82,8 +89,6 @@ def rephrase(
                         messages=messages,
                         **openai_args,
                     )
-                # This metrics-with-openai-models>`__ is necessary to pass pyright
-                # since the openai library is not typed.
                 rephrased_instance = response.choices[0].message.content
                 rephrased_instances.append(rephrased_instance)
             except Exception as e:
