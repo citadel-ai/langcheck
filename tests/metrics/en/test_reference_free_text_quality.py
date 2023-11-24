@@ -209,7 +209,7 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
         # Set the necessary env vars for the 'openai' embedding model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = ai_disclaimer_similarity(generated_outputs,
-                                                embedding_model_type='openai')
+                                                model_type='openai')
         # Since the mock embeddings are the same for the generated output and
         # the AI disclaimer phrase, the AI disclaimer language similarity should
         # be 1.
@@ -221,7 +221,7 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         metric_value = ai_disclaimer_similarity(
             generated_outputs,
-            embedding_model_type='azure_openai',
+            model_type='azure_openai',
             openai_args={'model': 'foo bar'})
         # Since the mock embeddings are the same for the generated output and
         # the AI disclaimer phrase, the AI disclaimer language similarity should

@@ -19,7 +19,7 @@ def semantic_similarity(
         generated_outputs: List[str] | str,
         reference_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
-        embedding_model_type: str = 'local',
+        model_type: str = 'local',
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
@@ -57,8 +57,8 @@ def semantic_similarity(
         reference_outputs: The reference output(s)
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        embedding_model_type: The type of embedding model to use ('local',
-            'openai', or 'azure_openai'), default 'local'
+        model_type: The type of embedding model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
             None but `model_type` is 'openai' or 'azure_openai', we will
             attempt to create a default client.
@@ -70,19 +70,18 @@ def semantic_similarity(
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
-    assert embedding_model_type in [
+    assert model_type in [
         'local', 'openai', 'azure_openai'
     ], ('Unsupported embedding model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if (embedding_model_type == 'openai' or
-            embedding_model_type == 'azure_openai'):
+    if model_type == 'openai' or model_type == 'azure_openai':
         # We can use the same API as english semantic_similarity to compare the
         # similarity
         metric_value = en_semantic_similarity(generated_outputs,
                                               reference_outputs, prompts,
-                                              embedding_model_type,
-                                              openai_client, openai_args)
+                                              model_type, openai_client,
+                                              openai_args)
         metric_value.language = 'ja'
         return metric_value
 

@@ -684,7 +684,7 @@ def ai_disclaimer_similarity(
         ai_disclaimer_phrase: str = (
             "I don't have personal opinions, emotions, or consciousness."),
         openai_client: Optional[OpenAI] = None,
-        embedding_model_type: str = 'local',
+        model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the degree to which the LLM's output contains a disclaimer
     that it is an AI. This is calculated by computing the semantic similarity
@@ -701,8 +701,8 @@ def ai_disclaimer_similarity(
             Prompts are not evaluated and only used as metadata.
         ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
-        embedding_model_type: The type of embedding model to use ('local',
-            'openai', or 'azure_openai'), default 'local'
+        model_type: The type of embedding model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
             None but `model_type` is 'openai' or 'azure_openai', we will
             attempt to create a default client.
@@ -718,8 +718,7 @@ def ai_disclaimer_similarity(
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
     semantic_similarity_values = semantic_similarity(generated_outputs,
                                                      ai_disclaimer_phrase_list,
-                                                     prompts,
-                                                     embedding_model_type,
+                                                     prompts, model_type,
                                                      openai_client, openai_args)
     return MetricValue(metric_name='ai_disclaimer_similarity',
                        prompts=prompts,
