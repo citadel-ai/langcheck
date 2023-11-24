@@ -19,7 +19,7 @@ from tests.utils import is_close
 def test_semantic_similarity_identical(generated_outputs, reference_outputs):
     metric_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='local')
+                                       model_type='local')
     assert 0.99 <= metric_value <= 1
 
 
@@ -31,7 +31,7 @@ def test_semantic_similarity_case_sensitivity(generated_outputs,
                                               reference_outputs):
     metric_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='local')
+                                       model_type='local')
     assert 0.9 <= metric_value <= 1
 
 
@@ -42,7 +42,7 @@ def test_semantic_similarity_case_sensitivity(generated_outputs,
 def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
     metric_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='local')
+                                       model_type='local')
     assert 0.0 <= metric_value <= 0.1
 
 
@@ -62,7 +62,7 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
-                                           embedding_model_type='openai')
+                                           model_type='openai')
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1
@@ -73,7 +73,7 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
-                                           embedding_model_type='azure_openai',
+                                           model_type='azure_openai',
                                            openai_args={'model': 'foo bar'})
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.

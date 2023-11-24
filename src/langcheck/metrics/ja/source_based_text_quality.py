@@ -48,14 +48,14 @@ def factual_consistency(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
     3. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify the
-    model to use in `openai_args`, e.g.
-    `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
@@ -65,10 +65,10 @@ def factual_consistency(
         model_type: The type of model to use ('local', 'openai', or
             'azure_openai'), default 'local'
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None but `model_type` is 'openai' or 'azure_openai', we will
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `client.chat.completions.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An MetricValue object

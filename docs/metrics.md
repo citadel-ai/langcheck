@@ -86,7 +86,7 @@ reference_outputs = ["The cat sat on the mat."]
 os.environ["OPENAI_API_KEY"] = 'YOUR_OPENAI_API_KEY'
 similarity_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='openai')
+                                       model_type='openai')
 
 # Option 2: Pass in an OpenAI client directly
 from openai import OpenAI
@@ -94,7 +94,7 @@ from openai import OpenAI
 client = OpenAI(api_key='YOUR_OPENAI_API_KEY')
 similarity_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='openai',
+                                       model_type='openai',
                                        openai_client=client)
 ```
 
@@ -118,7 +118,7 @@ os.environ["AZURE_OPENAI_ENDPOINT"] = 'YOUR_AZURE_OPENAI_ENDPOINT'
 similarity_value = semantic_similarity(
     generated_outputs,
     reference_outputs,
-    embedding_model_type='azure_openai',
+    model_type='azure_openai',
     openai_args={'model': 'YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME'})
 
 # Option 2: Pass in an AzureOpenAI client directly
@@ -130,7 +130,7 @@ client = AzureOpenAI(api_key='YOUR_AZURE_OPENAI_KEY',
 similarity_value = semantic_similarity(
     generated_outputs,
     reference_outputs,
-    embedding_model_type='azure_openai',
+    model_type='azure_openai',
     openai_client=client,
     openai_args={'model': 'YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME'})
 ```
