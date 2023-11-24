@@ -28,8 +28,8 @@ def rephrase(
 
     2. The 'azure_openai' type. Essentially the same as the 'openai' type,
     except that it uses the AzureOpenAI client. Note that you must specify the
-    model to use in `openai_args`, e.g.
-    `openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}`
+    model to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Args:
         instances: A single string or a list of strings to be augmented.
@@ -40,7 +40,7 @@ def rephrase(
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
             None, we will attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `client.chat.completions.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         A list of rephrased instances.
