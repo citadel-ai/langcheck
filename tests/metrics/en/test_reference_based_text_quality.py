@@ -1,6 +1,8 @@
+import os
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types import CreateEmbeddingResponse
 
 from langcheck.metrics.en import rouge1, rouge2, rougeL, semantic_similarity
 from tests.utils import is_close
@@ -17,7 +19,7 @@ from tests.utils import is_close
 def test_semantic_similarity_identical(generated_outputs, reference_outputs):
     metric_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='local')
+                                       model_type='local')
     assert 0.99 <= metric_value <= 1
 
 
@@ -29,7 +31,7 @@ def test_semantic_similarity_case_sensitivity(generated_outputs,
                                               reference_outputs):
     metric_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='local')
+                                       model_type='local')
     assert 0.9 <= metric_value <= 1
 
 
@@ -40,7 +42,7 @@ def test_semantic_similarity_case_sensitivity(generated_outputs,
 def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
     metric_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       embedding_model_type='local')
+                                       model_type='local')
     assert 0.0 <= metric_value <= 0.1
 
 
@@ -49,14 +51,30 @@ def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
     [("The cat sat on the mat.", "The cat sat on the mat."),
      (["The cat sat on the mat."], ["The cat sat on the mat."])])
 def test_semantic_similarity_openai(generated_outputs, reference_outputs):
-    mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
-    # Calling the openai.Embedding.create method requires an OpenAI API key, so
-    # we mock the return value instead
-    with patch('openai.Embedding.create',
+    mock_embedding_response = Mock(spec=CreateEmbeddingResponse)
+    mock_embedding_response.data = [Mock(embedding=[0.1, 0.2, 0.3])]
+
+    # Calling the openai.resources.Embeddings.create method requires an OpenAI
+    # API key, so we mock the return value instead
+    with patch('openai.resources.Embeddings.create',
                Mock(return_value=mock_embedding_response)):
+        # Set the necessary env vars for the 'openai' embedding model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
-                                           embedding_model_type='openai')
+                                           model_type='openai')
+        # Since the mock embeddings are the same for the generated and reference
+        # outputs, the semantic similarity should be 1.
+        assert 0.99 <= metric_value <= 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = semantic_similarity(generated_outputs,
+                                           reference_outputs,
+                                           model_type='azure_openai',
+                                           openai_args={'model': 'foo bar'})
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1
