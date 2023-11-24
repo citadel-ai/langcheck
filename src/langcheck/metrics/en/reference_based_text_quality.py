@@ -81,6 +81,8 @@ def semantic_similarity(
         generated_embeddings = model.encode(generated_outputs)
         reference_embeddings = model.encode(reference_outputs)
     else:  # openai or azure_openai
+        # Initialize the openai object if openai_client is None
+	    # TODO: Refactor this into OpenAIBasedEvaluator?
         if not openai_client:
             if model_type == 'openai':
                 openai_client = OpenAI()
