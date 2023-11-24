@@ -28,9 +28,9 @@ class OpenAIBasedEvaluator:
             client_type: The type of OpenAI client ('openai' or 'azure_openai')
             client: (Optional) OpenAI or AzureOpenAI client. If this is None,
                 we will attempt to create a default client depending on the
-                `client_type`.
+                ``client_type``.
             openai_args: (Optional) Dict of additional args to pass in to the
-                `client.chat.completions.create` function
+                ``client.chat.completions.create`` function
         '''
         self._client_type = client_type
         if self._client_type == 'azure_openai' and not openai_args:
