@@ -80,14 +80,17 @@ def rephrase(
             [END DATA]
             '''
             messages = [{"role": "user", "content": prompt}]
+            chat_completions = openai_client.chat.completions
             try:
                 if openai_args is None:
-                    response = openai_client.chat.completions.create(
-                        model="gpt-3.5-turbo", messages=messages)
+                    response = chat_completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=messages  # type: ignore
+                    )
                 else:
-                    response = openai_client.chat.completions.create(
-                        messages=messages,
-                        **openai_args,
+                    response = chat_completions.create(  # type: ignore
+                        messages=messages,  # type: ignore
+                        **openai_args,  # type: ignore
                     )
                 rephrased_instance = response.choices[0].message.content
                 rephrased_instances.append(rephrased_instance)
