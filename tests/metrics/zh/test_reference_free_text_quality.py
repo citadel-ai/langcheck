@@ -59,15 +59,14 @@ def test_sentiment_openai(generated_outputs):
 def test_toxicity(generated_outputs):
     metric_value = toxicity(generated_outputs)
     toxicity_score_low_risk = metric_value.metric_values[0]
-    assert 0 <= toxicity_score_low_risk <= 0.6
+    assert 0 <= toxicity_score_low_risk <= 0.6  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
     if len(metric_value.metric_values) == 2:
         toxicity_score_high_risk = metric_value.metric_values[1]
         assert toxicity_score_high_risk is not None
         assert 0.5 <= toxicity_score_high_risk <= 1
 
 
-@pytest.mark.parametrize('generated_outputs',
-                         ['我今天生病了。', ['我今天生病了。']])
+@pytest.mark.parametrize('generated_outputs', ['我今天生病了。', ['我今天生病了。']])
 def test_toxicity_openai(generated_outputs):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
