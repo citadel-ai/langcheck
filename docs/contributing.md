@@ -62,11 +62,13 @@ To make documentation:
 
 ## Publishing
 
-To publish the package to PyPi:
+To publish a new version of LangCheck:
 
 1. Increment the version in `pyproject.toml`
 
-2. Build the package
+2. Cut a new release on GitHub with release notes
+
+3. Build the package
 
 ```text
 > python -m pip install build twine
@@ -74,7 +76,7 @@ To publish the package to PyPi:
 > twine check dist/*
 ```
 
-3. Publish to PyPi
+4. Publish to PyPi
 
 ```text
 # Follow auth token instructions at https://pypi.org/manage/account/token/
@@ -85,3 +87,5 @@ To publish the package to PyPi:
 # PyPi
 > twine upload dist/*
 ```
+
+5. Log into ReadTheDocs and activate the new version on the "Versions" tab

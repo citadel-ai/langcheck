@@ -1,6 +1,8 @@
+import os
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types.chat import ChatCompletion
 
 from langcheck.metrics.ja import (fluency, sentiment,
                                   tateishi_ono_yamada_reading_ease, toxicity)
@@ -23,21 +25,29 @@ def test_sentiment(generated_outputs):
 
 @pytest.mark.parametrize('generated_outputs', ["私は嬉しい", ["私は嬉しい"]])
 def test_sentiment_openai(generated_outputs):
-    mock_chat_response = {
-        'choices': [{
-            'message': {
-                'function_call': {
-                    'arguments': "{\n  \"sentiment\": \"Positive\"\n}"
-                },
-                'content': 'foo bar'
-            }
-        }]
-    }
-    # Calling the openai.ChatCompletion.create method requires an OpenAI API
-    # key, so we mock the return value instead
-    with patch('openai.ChatCompletion.create',
-               Mock(return_value=mock_chat_response)):
+    mock_chat_completion = Mock(spec=ChatCompletion)
+    mock_chat_completion.choices = [
+        Mock(message=Mock(function_call=Mock(
+            arguments="{\n  \"sentiment\": \"Positive\"\n}")))
+    ]
+
+    # Calling the openai.resources.chat.Completions.create method requires an
+    # OpenAI API key, so we mock the return value instead
+    with patch('openai.resources.chat.Completions.create',
+               return_value=mock_chat_completion):
+        # Set the necessary env vars for the 'openai' model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = sentiment(generated_outputs, model_type='openai')
+        # "Positive" gets a value of 1.0
+        assert metric_value == 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = sentiment(generated_outputs,
+                                 model_type='azure_openai',
+                                 openai_args={'model': 'foo bar'})
         # "Positive" gets a value of 1.0
         assert metric_value == 1
 
@@ -51,21 +61,29 @@ def test_toxicity(generated_outputs):
 
 @pytest.mark.parametrize('generated_outputs', ['アホ', ['アホ']])
 def test_toxicity_openai(generated_outputs):
-    mock_chat_response = {
-        'choices': [{
-            'message': {
-                'function_call': {
-                    'arguments': "{\n  \"toxicity\": \"5\"\n}"
-                },
-                'content': 'foo bar'
-            }
-        }]
-    }
-    # Calling the openai.ChatCompletion.create method requires an OpenAI API
-    # key, so we mock the return value instead
-    with patch('openai.ChatCompletion.create',
-               Mock(return_value=mock_chat_response)):
+    mock_chat_completion = Mock(spec=ChatCompletion)
+    mock_chat_completion.choices = [
+        Mock(message=Mock(function_call=Mock(
+            arguments="{\n  \"toxicity\": \"5\"\n}")))
+    ]
+
+    # Calling the openai.resources.chat.Completions.create method requires an
+    # OpenAI API key, so we mock the return value instead
+    with patch('openai.resources.chat.Completions.create',
+               return_value=mock_chat_completion):
+        # Set the necessary env vars for the 'openai' model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = toxicity(generated_outputs, model_type='openai')
+        # "5" gets a value of 1.0
+        assert metric_value == 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = toxicity(generated_outputs,
+                                model_type='azure_openai',
+                                openai_args={'model': 'foo bar'})
         # "5" gets a value of 1.0
         assert metric_value == 1
 
@@ -81,21 +99,29 @@ def test_fluency(generated_outputs):
 @pytest.mark.parametrize('generated_outputs',
                          ['ご機嫌いかがですか？私はとても元気です。', ['ご機嫌いかがですか？私はとても元気です。']])
 def test_fluency_openai(generated_outputs):
-    mock_chat_response = {
-        'choices': [{
-            'message': {
-                'function_call': {
-                    'arguments': "{\n  \"fluency\": \"Good\"\n}"
-                },
-                'content': 'foo bar'
-            }
-        }]
-    }
-    # Calling the openai.ChatCompletion.create method requires an OpenAI API
-    # key, so we mock the return value instead
-    with patch('openai.ChatCompletion.create',
-               Mock(return_value=mock_chat_response)):
+    mock_chat_completion = Mock(spec=ChatCompletion)
+    mock_chat_completion.choices = [
+        Mock(message=Mock(function_call=Mock(
+            arguments="{\n  \"fluency\": \"Good\"\n}")))
+    ]
+
+    # Calling the openai.resources.chat.Completions.create method requires an
+    # OpenAI API key, so we mock the return value instead
+    with patch('openai.resources.chat.Completions.create',
+               return_value=mock_chat_completion):
+        # Set the necessary env vars for the 'openai' model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = fluency(generated_outputs, model_type='openai')
+        # "Good" gets a value of 1.0
+        assert metric_value == 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = fluency(generated_outputs,
+                               model_type='azure_openai',
+                               openai_args={'model': 'foo bar'})
         # "Good" gets a value of 1.0
         assert metric_value == 1
 
