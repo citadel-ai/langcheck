@@ -72,7 +72,7 @@ def semantic_similarity(
         'local', 'openai', 'azure_openai'
     ], ('Unsupported embedding model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
-     batch_size = 8
+    batch_size = 8
     if model_type == 'local':
         # The 'all-mpnet-base-v2' model has the highest average performance out
         # of all the existing sentence-transformer models that have been
