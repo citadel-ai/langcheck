@@ -157,11 +157,12 @@ def toxicity(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'openai' or model_type == 'azure_openai':
-        scores = _toxicity_local(generated_outputs)
-        explanations = None
-    else:  # openai
+        # openai
         scores, explanations = _toxicity_openai(generated_outputs, model_type,
                                                 openai_client, openai_args)
+    else:
+        scores = _toxicity_local(generated_outputs)
+        explanations = None
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
