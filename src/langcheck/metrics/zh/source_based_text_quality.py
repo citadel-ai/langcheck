@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, cast
 
+from openai import OpenAI
 from transformers.pipelines import pipeline
 from transformers.pipelines.base import Pipeline
 
@@ -19,6 +20,7 @@ def factual_consistency(
     sources: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
@@ -55,23 +57,28 @@ def factual_consistency(
         sources: The source text(s), one string per generated output
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An MetricValue object
     '''
     generated_outputs, sources, prompts = validate_parameters_source_based(
         generated_outputs, sources, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'openai':
+    if model_type == 'openai' or model_type == 'azure_openai':
         metric_value = en_factual_consistency(generated_outputs, sources,
-                                              prompts, model_type, openai_args)
+                                              prompts, model_type,
+                                              openai_client, openai_args)
         metric_value.language = 'zh'
         return metric_value
 

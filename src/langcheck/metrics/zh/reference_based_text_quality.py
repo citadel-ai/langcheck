@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 import torch
+from openai import OpenAI
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 from sentence_transformers import SentenceTransformer, util
@@ -18,7 +19,8 @@ def semantic_similarity(
         generated_outputs: List[str] | str,
         reference_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
-        embedding_model_type: str = 'local',
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''
     Calculates the semantic similarities between the generated outputs and
@@ -54,11 +56,13 @@ def semantic_similarity(
         reference_outputs: The reference output(s)
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        embedding_model_type: The type of embedding model to use ('local' or
-            'openai'), default 'local'
+        model_type: The type of embedding model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.Embedding.create` function, default None
-
+            ``client.embeddings.create`` function, default None
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
 
@@ -67,17 +71,18 @@ def semantic_similarity(
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
-    assert embedding_model_type in [
-        'local', 'openai'
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
     ], ('Unsupported embedding model type. '
-        'The supported ones are ["local", "openai"]')
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if embedding_model_type == 'openai':
+    if model_type == 'openai' or model_type == 'azure_openai':
         # We can use the same API as english semantic_similarity to compare the
         # similarity
         metric_value = en_semantic_similarity(generated_outputs,
                                               reference_outputs, prompts,
-                                              embedding_model_type, openai_args)
+                                              model_type, openai_client,
+                                              openai_args)
         metric_value.language = 'zh'
         return metric_value
 
