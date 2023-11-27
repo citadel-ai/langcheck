@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 import regex as re
 import torch
+from openai import OpenAI
 from transformers.pipelines import pipeline
 
 from langcheck._handle_logs import _handle_logging_level
@@ -23,6 +24,7 @@ def sentiment(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
@@ -50,23 +52,27 @@ def sentiment(
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'openai':
+    if model_type == 'openai' or model_type == 'azure_openai':
         metric_value = en_sentiment(generated_outputs, prompts, model_type,
-                                    openai_args)
+                                    openai_client, openai_args)
         metric_value.language = 'zh'
         return metric_value
 
@@ -103,6 +109,7 @@ def toxicity(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
@@ -131,25 +138,30 @@ def toxicity(
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'local':
+    if model_type == 'openai' or model_type == 'azure_openai':
         scores = _toxicity_local(generated_outputs)
         explanations = None
     else:  # openai
-        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs, model_type,
+                                                openai_client, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
