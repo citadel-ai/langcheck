@@ -7,9 +7,9 @@ In this tutorial, we will walk through how we can use LangCheck to evaluate a si
 Let’s start with a simple prompt template that takes in the `recipient_name` and `content_description` as inputs. We want the OpenAI model (gpt-3.5-turbo in this case) to generate an email that follows the content instructions, addressed to the recipient.
 
 ```python
-import openai
+from openai import OpenAI
 
-openai.api_key = 'YOUR_OPENAI_API_KEY'
+client = OpenAI(api_key='YOUR_OPENAI_API_KEY')
 
 
 def generate_email(recipient_name, content_description):
@@ -22,13 +22,13 @@ def generate_email(recipient_name, content_description):
         <Email content>
         ###
         """)
-    response = openai.ChatCompletion.create(model='gpt-3.5-turbo',
-                                            messages=[{
-                                                "role": "system",
-                                                "content": prompt
-                                            }],
-                                            max_tokens=500)
-    email_body = response['choices'][0]['message']['content'].strip()
+    response = client.chat.completions.create(model='gpt-3.5-turbo',
+                                              messages=[{
+                                                  "role": "system",
+                                                  "content": prompt
+                                              }],
+                                              max_tokens=500)
+    email_body = response.choices[0].message.content.strip()
     return email_body
 ```
 
@@ -176,13 +176,13 @@ def generate_email(recipient_name, content_description):
         <Email content>
         ###
         """)
-    response = openai.ChatCompletion.create(model='gpt-3.5-turbo',
+    response = client.chat.completions.create(model='gpt-3.5-turbo',
                                             messages=[{
                                                 "role": "system",
                                                 "content": prompt
                                             }],
                                             max_tokens=500)
-    email_body = response['choices'][0]['message']['content'].strip()
+    email_body = response.choices[0].message.content.strip()
     return email_body
 
 

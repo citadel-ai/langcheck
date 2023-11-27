@@ -1,19 +1,18 @@
 import json
+import os
 from typing import Callable, Dict, Optional, Tuple
 
-import openai
+from openai import AzureOpenAI, OpenAI
 
 
 class OpenAIBasedEvaluator:
     '''Evaluator class based on OpenAI's API.'''
 
-    def __init__(self,
-                 assessment_to_score_mapping: Dict[str, float],
-                 function_name: str,
-                 function_description: str,
-                 argument_name: str,
-                 argument_description: str,
-                 openai_args: Optional[Dict[str, str]] = None) -> None:
+    def __init__(self, assessment_to_score_mapping: Dict[str, float],
+                 function_name: str, function_description: str,
+                 argument_name: str, argument_description: str,
+                 client_type: str, client: Optional[OpenAI],
+                 openai_args: Optional[Dict[str, str]]) -> None:
         '''
         Initialize the OpenAIBasedEvaluator with given parameters.
 
@@ -26,9 +25,34 @@ class OpenAIBasedEvaluator:
             argument_name: Name of the argument to the function. This should be
                 the name of the metric to evaluate (e.g. sentiment).
             argument_description: Description of the argument
-            openai_args: Dict of additional args to pass in to the
-                `openai.ChatCompletion.create` function, default None
+            client_type: The type of OpenAI client ('openai' or 'azure_openai')
+            client: (Optional) OpenAI or AzureOpenAI client. If this is None,
+                we will attempt to create a default client depending on the
+                ``client_type``.
+            openai_args: (Optional) Dict of additional args to pass in to the
+                ``client.chat.completions.create`` function
         '''
+        self._client_type = client_type
+        if self._client_type == 'azure_openai' and not openai_args:
+            raise AssertionError(
+                'The model deployment must be specified in `openai_args` for '
+                'the azure_openai type, e.g. '
+                '`openai_args={"model": "YOUR_DEPLOYMENT_NAME"}`')
+
+        if client:
+            self._client = client
+        elif self._client_type == 'openai':
+            self._client = OpenAI()
+        elif self._client_type == 'azure_openai':
+            # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
+            self._client = AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_KEY"),
+                api_version=os.getenv("OPENAI_API_VERSION"),
+                azure_endpoint=os.getenv(
+                    "AZURE_OPENAI_ENDPOINT"))  # type: ignore
+        else:
+            raise AssertionError(f'Unexpected client type "{client_type}"')
+
         self._assessment_to_score_mapping = assessment_to_score_mapping
         self._function_name = function_name
         self._function_description = function_description
@@ -69,20 +93,12 @@ class OpenAIBasedEvaluator:
         messages = [{"role": "user", "content": prompt}]
         try:
             if self._openai_args is None:
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages,
-                )
+                response = self._client.chat.completions.create(
+                    model="gpt-3.5-turbo", messages=messages)  # type: ignore
             else:
-                response = openai.ChatCompletion.create(
-                    messages=messages,
-                    **self._openai_args,
-                )
-            # This metrics-with-openai-models>`__ is necessary to pass pyright
-            # since the openai library is not typed.
-            assert isinstance(response, dict)
-            unstructured_assessment = response["choices"][0]["message"][
-                "content"]
+                response = self._client.chat.completions.create(
+                    messages=messages, **self._openai_args)  # type: ignore
+            unstructured_assessment = response.choices[0].message.content
         except Exception as e:
             print(f'OpenAI failed to return an unstructured assessment: {e}')
             print(f'Prompt that triggered the failure is:\n{prompt}')
@@ -112,24 +128,21 @@ class OpenAIBasedEvaluator:
         }]
         try:
             if self._openai_args is None:
-                response = openai.ChatCompletion.create(
+                response = self._client.chat.completions.create(
                     model="gpt-3.5-turbo",
-                    messages=fn_call_messages,
-                    functions=functions,
-                    function_call={"name": self._function_name},
-                )
+                    messages=fn_call_messages,  # type: ignore
+                    functions=functions,  # type: ignore
+                    function_call={"name": self._function_name})
             else:
-                response = openai.ChatCompletion.create(
-                    messages=fn_call_messages,
-                    functions=functions,
+                response = self._client.chat.completions.create(  # type: ignore
+                    messages=fn_call_messages,  # type: ignore
+                    functions=functions,  # type: ignore
                     function_call={"name": self._function_name},
-                    **self._openai_args,
-                )
-            # This sanity check is necessary to pass pyright since the openai
-            # library is not typed.
-            assert isinstance(response, dict)
+                    **self._openai_args)  # type: ignore
+            # For type checking
+            assert response.choices[0].message.function_call is not None
             function_args = json.loads(
-                response["choices"][0]["message"]["function_call"]["arguments"])
+                response.choices[0].message.function_call.arguments)
             assessment = function_args.get(self._argument_name)
         except Exception as e:
             print(f'OpenAI failed to return a structured assessment: {e}')
