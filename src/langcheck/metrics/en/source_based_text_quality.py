@@ -324,7 +324,11 @@ def _factual_consistency_openai(
     score_list = []
 
     explanation_list = []
-    for src, gen in tqdm_wrapper(zip(srcs_list, gen_sentences_list)):
+    for src, gen in tqdm_wrapper(
+            zip(srcs_list, gen_sentences_list),
+            desc='Calculating scores',
+            total=len(gen_sentences_list)
+    ):
         score, explanation = oai_evaluator.get_score(
             _prompt(src=src, gen_output=gen), _function_call_prompt)
         score_list.append(score)
