@@ -129,15 +129,11 @@ def semantic_similarity(
                     input=batch_generated_outputs, **openai_args)
                 batch_ref_embed_response = openai_client.embeddings.create(
                     input=batch_reference_outputs, **openai_args)
-            # This sanity check is necessary to pass pyright since the openai
-            # library is not typed.
-            assert isinstance(batch_gen_embed_response, dict)
-            assert isinstance(batch_ref_embed_response, dict)
             batch_generated_embeddings = [
-                item['embedding'] for item in batch_gen_embed_response['data']
+                item.embedding for item in batch_gen_embed_response.data
             ]
             batch_reference_embeddings = [
-                item['embedding'] for item in batch_ref_embed_response['data']
+                item.embedding for item in batch_ref_embed_response.data
             ]
             generated_embeddings.extend(batch_generated_embeddings)
             reference_embeddings.extend(batch_reference_embeddings)
