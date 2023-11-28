@@ -120,14 +120,14 @@ def semantic_similarity(
             batch_generated_outputs = generated_outputs[i:i + batch_size]
             batch_reference_outputs = reference_outputs[i:i + batch_size]
             if openai_args is None:
-                batch_gen_embed_response = openai.Embedding.create(
+                batch_gen_embed_response = openai_client.embeddings.create(
                     input=batch_generated_outputs, model='text-embedding-ada-002')
-                batch_ref_embed_response = openai.Embedding.create(
+                batch_ref_embed_response = openai_client.embeddings.create(
                     input=batch_reference_outputs, model='text-embedding-ada-002')
             else:
-                batch_gen_embed_response = openai.Embedding.create(
+                batch_gen_embed_response = openai_client.embeddings.create(
                     input=batch_generated_outputs, **openai_args)
-                batch_ref_embed_response = openai.Embedding.create(
+                batch_ref_embed_response = openai_client.embeddings.create(
                     input=batch_reference_outputs, **openai_args)
             # This sanity check is necessary to pass pyright since the openai
             # library is not typed.
