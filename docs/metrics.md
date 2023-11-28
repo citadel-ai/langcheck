@@ -76,36 +76,61 @@ Several text quality metrics are computed using a model (e.g. `toxicity`, `senti
 However, if you have an OpenAI API key, you can also configure these metrics to use an OpenAI model, which may provide more accurate results for more complex use cases. Here are some examples of how to do this:
 
 ```python
-import openai
+import os
 from langcheck.metrics.en import semantic_similarity
-
-# https://platform.openai.com/account/api-keys
-openai.api_key = YOUR_OPENAI_API_KEY
 
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
-similarity_value = semantic_similarity(generated_outputs, reference_outputs, embedding_model_type='openai')
+
+# Option 1: Set OPENAI_API_KEY as an environment variable
+os.environ["OPENAI_API_KEY"] = 'YOUR_OPENAI_API_KEY'
+similarity_value = semantic_similarity(generated_outputs,
+                                       reference_outputs,
+                                       model_type='openai')
+
+# Option 2: Pass in an OpenAI client directly
+from openai import OpenAI
+
+client = OpenAI(api_key='YOUR_OPENAI_API_KEY')
+similarity_value = semantic_similarity(generated_outputs,
+                                       reference_outputs,
+                                       model_type='openai',
+                                       openai_client=client)
 ```
 
-Or, if you're using the Azure API type, make sure to set all of the necessary variables:
+Or, if you're using Azure OpenAI, here are some examples of how to use it:
 
 ```python
-import openai
+import os
 from langcheck.metrics.en import semantic_similarity
-
-openai.api_type = 'azure'
-openai.api_base = YOUR_AZURE_OPENAI_ENDPOINT
-openai.api_version = YOUR_API_VERSION
-openai.api_key = YOUR_OPENAI_API_KEY
 
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
+
+# Option 1: Set the AZURE_OPENAI_KEY, OPENAI_API_VERSION, and
+# AZURE_OPENAI_ENDPOINT environment variables
+os.environ["AZURE_OPENAI_KEY"] = 'YOUR_AZURE_OPENAI_KEY'
+os.environ["OPENAI_API_VERSION"] = 'YOUR_OPENAI_API_VERSION'
+os.environ["AZURE_OPENAI_ENDPOINT"] = 'YOUR_AZURE_OPENAI_ENDPOINT'
 
 # When using the Azure API type, you need to pass in your model's
 # deployment name
 similarity_value = semantic_similarity(
     generated_outputs,
     reference_outputs,
-    embedding_model_type='openai',
-    openai_args={'engine': YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME})
+    model_type='azure_openai',
+    openai_args={'model': 'YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME'})
+
+# Option 2: Pass in an AzureOpenAI client directly
+from openai import AzureOpenAI
+
+client = AzureOpenAI(api_key='YOUR_AZURE_OPENAI_KEY',
+                     api_version='YOUR_OPENAI_API_VERSION',
+                     azure_endpoint='YOUR_AZURE_OPENAI_ENDPOINT')
+similarity_value = semantic_similarity(
+    generated_outputs,
+    reference_outputs,
+    model_type='azure_openai',
+    openai_client=client,
+    openai_args={'model': 'YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME'})
 ```

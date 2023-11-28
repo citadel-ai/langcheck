@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 from detoxify import Detoxify
+from openai import OpenAI
 from transformers.models.auto.modeling_auto import \
     AutoModelForSequenceClassification
 from transformers.models.auto.tokenization_auto import AutoTokenizer
@@ -31,6 +32,7 @@ def sentiment(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
@@ -39,41 +41,53 @@ def sentiment(
     are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
     also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where the Twitter-roBERTa-base model is downloaded
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
         scores = _sentiment_local(generated_outputs)
         explanations = None
-    else:  # openai
-        scores, explanations = _sentiment_openai(generated_outputs, openai_args)
+    else:  # openai or azure_openai
+        scores, explanations = _sentiment_openai(generated_outputs, model_type,
+                                                 openai_client, openai_args)
 
     return MetricValue(metric_name='sentiment',
                        prompts=prompts,
@@ -124,8 +138,8 @@ def _sentiment_local(generated_outputs: List[str]) -> List[float]:
 
 
 def _sentiment_openai(
-    generated_outputs: List[str],
-    openai_args: Optional[Dict[str, str]] = None
+    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the sentiment scores and their associated explanations of
     generated outputs using the OpenAI API. This metric takes on float values
@@ -140,8 +154,12 @@ def _sentiment_openai(
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
 
     Returns:
         score_list: a list of scores
@@ -194,6 +212,8 @@ def _sentiment_openai(
         function_description="Saves a statement's sentiment assessment.",
         argument_name='sentiment',
         argument_description='The sentiment assessment of the statement',
+        client_type=client_type,
+        client=client,
         openai_args=openai_args)
 
     score_list = []
@@ -210,6 +230,7 @@ def fluency(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
@@ -218,41 +239,53 @@ def fluency(
     (poor), 0.5 (fair), or 1.0 (good). The score may also be `None` if it could
     not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where the Parrot fluency model is downloaded from
     HuggingFace and run locally. This is the default model type and there is no
     setup needed to run this.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
         scores = _fluency_local(generated_outputs)
         explanations = None
-    else:  # openai
-        scores, explanations = _fluency_openai(generated_outputs, openai_args)
+    else:  # openai or azure_openai
+        scores, explanations = _fluency_openai(generated_outputs, model_type,
+                                               openai_client, openai_args)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
@@ -302,8 +335,8 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
 
 
 def _fluency_openai(
-    generated_outputs: List[str],
-    openai_args: Optional[Dict[str, str]] = None
+    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the fluency scores and their associated explanations of
     generated outputs using the OpenAI API, using a prompt that is similar to
@@ -320,8 +353,12 @@ def _fluency_openai(
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
 
     Returns:
         score_list: a list of scores
@@ -374,6 +411,8 @@ def _fluency_openai(
         function_description="Saves a statement's fluency assessment.",
         argument_name='fluency',
         argument_description='The fluency assessment of the statement',
+        client_type=client_type,
+        client=client,
         openai_args=openai_args)
 
     score_list = []
@@ -390,6 +429,7 @@ def toxicity(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
@@ -397,41 +437,53 @@ def toxicity(
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where the Detoxify model is downloaded from HuggingFace
     and run locally. This is the default model type and there is no setup needed
     to run this.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
         explanations = None
-    else:  # openai
-        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
+    else:  # openai or azure_openai
+        scores, explanations = _toxicity_openai(generated_outputs, model_type,
+                                                openai_client, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
@@ -464,8 +516,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
 
 def _toxicity_openai(
-    generated_outputs: List[str],
-    openai_args: Optional[Dict[str, str]] = None
+    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the toxicity scores and their associated explanations of
     generated outputs using the OpenAI API. This metric takes on float values
@@ -479,8 +531,12 @@ def _toxicity_openai(
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
 
     Returns:
         score_list: a list of scores
@@ -530,6 +586,8 @@ def _toxicity_openai(
         function_description="Saves a statement's toxicity assessment.",
         argument_name='toxicity',
         argument_description='The toxicity assessment of the statement',
+        client_type=client_type,
+        client=client,
         openai_args=openai_args)
 
     score_list = []
@@ -625,7 +683,8 @@ def ai_disclaimer_similarity(
         prompts: Optional[List[str] | str] = None,
         ai_disclaimer_phrase: str = (
             "I don't have personal opinions, emotions, or consciousness."),
-        embedding_model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        model_type: str = 'local',
         openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
     '''Calculates the degree to which the LLM's output contains a disclaimer
     that it is an AI. This is calculated by computing the semantic similarity
@@ -642,10 +701,13 @@ def ai_disclaimer_similarity(
             Prompts are not evaluated and only used as metadata.
         ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
-        embedding_model_type: The type of embedding model to use ('local' or
-            'openai'), default 'local'
+        model_type: The type of embedding model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.Embedding.create` function, default None
+            ``client.embeddings.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -656,9 +718,8 @@ def ai_disclaimer_similarity(
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
     semantic_similarity_values = semantic_similarity(generated_outputs,
                                                      ai_disclaimer_phrase_list,
-                                                     prompts,
-                                                     embedding_model_type,
-                                                     openai_args)
+                                                     prompts, model_type,
+                                                     openai_client, openai_args)
     return MetricValue(metric_name='ai_disclaimer_similarity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,

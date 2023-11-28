@@ -1,7 +1,9 @@
+import os
 from typing import Callable, Optional
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types import CreateEmbeddingResponse
 
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.zh import (HanLPTokenizer, rouge1, rouge2, rougeL,
@@ -105,14 +107,29 @@ def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
                          [("学习中文很快乐。", "学习中文很快乐。"),
                           (["学习中文很快乐。"], ["学习中文很快乐。"])])
 def test_semantic_similarity_openai(generated_outputs, reference_outputs):
-    mock_embedding_response = {'data': [{'embedding': [0.1, 0.2, 0.3]}]}
+    mock_embedding_response = Mock(spec=CreateEmbeddingResponse)
+    mock_embedding_response.data = [Mock(embedding=[0.1, 0.2, 0.3])]
     # Calling the openai.Embedding.create method requires an OpenAI API key, so
     # we mock the return value instead
-    with patch('openai.Embedding.create',
+    with patch('openai.resources.Embeddings.create',
                Mock(return_value=mock_embedding_response)):
+        # Set the necessary env vars for the 'openai' embedding model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
-                                           embedding_model_type='openai')
+                                           model_type='openai')
+        # Since the mock embeddings are the same for the generated and reference
+        # outputs, the semantic similarity should be 1.
+        assert 0.99 <= metric_value <= 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = semantic_similarity(generated_outputs,
+                                           reference_outputs,
+                                           model_type='azure_openai',
+                                           openai_args={'model': 'foo bar'})
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1
