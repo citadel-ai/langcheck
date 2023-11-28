@@ -31,7 +31,7 @@ def semantic_similarity(
     OpenAI embeddings, the cosine similarities tend to be skewed quite heavily
     towards higher numbers.)
 
-    We currently support two embedding model types:
+    We currently support three embedding model types:
 
     1. The 'local' type, where the 'BAAI/bge-base-zh-v1.5' model
     is downloaded from HuggingFace and run locally. This is the default model
@@ -45,6 +45,11 @@ def semantic_similarity(
     `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity

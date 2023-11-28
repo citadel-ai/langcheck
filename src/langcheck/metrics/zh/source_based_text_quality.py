@@ -33,7 +33,7 @@ def factual_consistency(
     sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
     could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
 
     1. The 'local' type, where the 'unieval-fact' model is downloaded
     from HuggingFace and run locally. This is the default model type and
@@ -51,6 +51,11 @@ def factual_consistency(
     `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
