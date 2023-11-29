@@ -106,8 +106,10 @@ def semantic_similarity(
                 generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
                 reference_embeddings,  # type: ignore[reportGeneralTypeIssues]
             )
-            # Numerical instability can cause the dot product of almost identical
-            # vectors to exceed 1.0 slightly, so we clip the outputs
+            # Numerical instability can cause
+            # the dot product of almost identical
+            # vectors to exceed 1.0 slightly,
+            # so we clip the outputs
             cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
             scores.extend(cosine_scores.tolist())
 
