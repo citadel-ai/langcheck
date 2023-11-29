@@ -112,8 +112,8 @@ def semantic_similarity(
         # For type checking
         assert openai_client is not None
         generated_embeddings = []
-        reference_embeddings = []          
-        
+        reference_embeddings = []
+
         for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
                               total=len(generated_outputs) // batch_size,
                               desc='Computing embeddings'):
@@ -121,9 +121,11 @@ def semantic_similarity(
             batch_reference_outputs = reference_outputs[i:i + batch_size]
             if openai_args is None:
                 batch_gen_embed_response = openai_client.embeddings.create(
-                    input=batch_generated_outputs, model='text-embedding-ada-002')
+                    input=batch_generated_outputs,
+                    model='text-embedding-ada-002')
                 batch_ref_embed_response = openai_client.embeddings.create(
-                    input=batch_reference_outputs, model='text-embedding-ada-002')
+                    input=batch_reference_outputs,
+                    model='text-embedding-ada-002')
             else:
                 batch_gen_embed_response = openai_client.embeddings.create(
                     input=batch_generated_outputs, **openai_args)
@@ -146,13 +148,13 @@ def semantic_similarity(
             batch_generated_embeddings = generated_embeddings[i:i + batch_size]
             batch_reference_embeddings = reference_embeddings[i:i + batch_size]
 
-            cosine_scores = util.pairwise_cos_sim(torch.tensor(batch_generated_embeddings),
-                                                  torch.tensor(batch_reference_embeddings))
+            cosine_scores = util.pairwise_cos_sim(
+                torch.tensor(batch_generated_embeddings),
+                torch.tensor(batch_reference_embeddings))
             # Numerical instability can cause the dot product of almost identical
             # vectors to exceed 1.0 slightly, so we clip the outputs
             cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
             scores.extend(cosine_scores.tolist())
-
 
     return MetricValue(metric_name='semantic_similarity',
                        prompts=prompts,
@@ -296,7 +298,8 @@ def _rouge(generated_outputs: List[str], reference_outputs: List[str],
     assert rouge_type in ["rouge1", "rouge2", "rougeLsum"]
     scorer = rouge_scorer.RougeScorer([rouge_type], use_stemmer=True)
     scores = []
-    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs), total=len(generated_outputs)):
+    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs),
+                                 total=len(generated_outputs)):
         score = scorer.score(gen, ref)
         scores.append(score[rouge_type].fmeasure)
     return scores

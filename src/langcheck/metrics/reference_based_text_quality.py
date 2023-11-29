@@ -27,7 +27,8 @@ def exact_match(generated_outputs: List[str] | str,
 
     # The values are binary: 1 if it's an exact match and 0 if not
     metric_values = []
-    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs), total=len(generated_outputs)):
+    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs),
+                                 total=len(generated_outputs)):
         if gen == ref:
             metric_values.append(1)
         else:

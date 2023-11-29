@@ -237,16 +237,15 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
                                        padding=True)
     batchsize = 8
     toxicity_scores = []
-    for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize), total=len(generated_outputs)//batchsize):
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize),
+                          total=len(generated_outputs) // batchsize):
         with torch.no_grad():
             batch_input_tokens = {
-                k: v[i:i + batchsize]
-                for k, v in input_tokens.items()
+                k: v[i:i + batchsize] for k, v in input_tokens.items()
             }
             batch_output = _toxicity_model(**batch_input_tokens)
             toxicity_scores.extend(
-                torch.sigmoid(batch_output.logits[:, 0]).tolist()
-            )
+                torch.sigmoid(batch_output.logits[:, 0]).tolist())
 
     return toxicity_scores
 
@@ -368,13 +367,11 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     with torch.no_grad():
         for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize)):
             batch_input_tokens = {
-                k: v[i:i + batchsize]
-                for k, v in input_tokens.items()
+                k: v[i:i + batchsize] for k, v in input_tokens.items()
             }
             batch_probs = torch.nn.functional.softmax(
                 _fluency_model(**batch_input_tokens).logits, dim=1)
             fluency_scores.extend(batch_probs[:, 1].tolist())
-
 
     return fluency_scores
 
@@ -451,7 +448,9 @@ def tateishi_ono_yamada_reading_ease(
             - 5.3 * _mean_str_length(katakana_runs)\
             - 4.6 * comma_period_ratio + 115.79
 
-    scores = [_get_reading_ease(text) for text in tqdm_wrapper(generated_outputs)]
+    scores = [
+        _get_reading_ease(text) for text in tqdm_wrapper(generated_outputs)
+    ]
     return MetricValue(metric_name='tateishi_ono_yamada_reading_ease',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
