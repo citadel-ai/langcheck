@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 import torch
 from openai import AzureOpenAI, OpenAI
@@ -19,7 +19,7 @@ def semantic_similarity(
         prompts: Optional[List[str] | str] = None,
         model_type: str = 'local',
         openai_client: Optional[OpenAI] = None,
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+        openai_args: Optional[Dict[str, Any]] = None) -> MetricValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
