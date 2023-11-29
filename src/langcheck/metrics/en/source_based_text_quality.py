@@ -96,8 +96,7 @@ def factual_consistency(
     for src, gen in tqdm_wrapper(
             zip(sources, generated_outputs),
             desc='Splitting generated outputs into sentences',
-            total=len(generated_outputs)
-    ):
+            total=len(generated_outputs)):
         gen_sentences = nltk.tokenize.sent_tokenize(gen)
         num_sentences_list.append(len(gen_sentences))
         gen_sentences_list += gen_sentences
@@ -202,7 +201,8 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 
     batch_size = 8
     score_list = []
-    for i in tqdm_wrapper(range(0, len(model_input_list), batch_size), total=len(model_input_list) // batch_size):
+    for i in tqdm_wrapper(range(0, len(model_input_list), batch_size),
+                          total=len(model_input_list) // batch_size):
         inputs = model_input_list[i:i + batch_size]
         targets = target_list[i:i + batch_size]
 
@@ -324,11 +324,9 @@ def _factual_consistency_openai(
     score_list = []
 
     explanation_list = []
-    for src, gen in tqdm_wrapper(
-            zip(srcs_list, gen_sentences_list),
-            desc='Calculating scores',
-            total=len(gen_sentences_list)
-    ):
+    for src, gen in tqdm_wrapper(zip(srcs_list, gen_sentences_list),
+                                 desc='Calculating scores',
+                                 total=len(gen_sentences_list)):
         score, explanation = oai_evaluator.get_score(
             _prompt(src=src, gen_output=gen), _function_call_prompt)
         score_list.append(score)
