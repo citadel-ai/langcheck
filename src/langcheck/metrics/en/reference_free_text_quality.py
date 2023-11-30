@@ -331,10 +331,9 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     batch_size = 8
     scores = []
     with torch.no_grad():
-        for i in tqdm_wrapper(
-                range(0, len(generated_outputs), batch_size),
-                total=(len(generated_outputs) + batch_size - 1) // batch_size
-        ):
+        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
+                              total=(len(generated_outputs) + batch_size - 1) //
+                              batch_size):
             batch_input_tokens = {
                 k: v[i:i + batch_size] for k, v in input_tokens.items()
             }
@@ -527,10 +526,9 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
     scores = []
     batch_size = 8
-    for i in tqdm_wrapper(
-            range(0, len(generated_outputs), batch_size),
-            total=(len(generated_outputs) + batch_size - 1) // batch_size
-    ):
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
+                          total=(len(generated_outputs) + batch_size - 1) //
+                          batch_size):
         scores.extend(
             _toxicity_model.predict(generated_outputs[i:i +
                                                       batch_size])['toxicity'])

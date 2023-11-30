@@ -237,10 +237,9 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
                                        padding=True)
     batchsize = 8
     toxicity_scores = []
-    for i in tqdm_wrapper(
-            range(0, len(generated_outputs), batchsize),
-            total=(len(generated_outputs) + batchsize - 1) // batchsize
-    ):
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize),
+                          total=(len(generated_outputs) + batchsize - 1) //
+                          batchsize):
         with torch.no_grad():
             batch_input_tokens = {
                 k: v[i:i + batchsize] for k, v in input_tokens.items()
