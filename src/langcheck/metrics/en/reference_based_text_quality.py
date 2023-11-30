@@ -81,9 +81,11 @@ def semantic_similarity(
         model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         generated_embeddings = []
         reference_embeddings = []
-        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                              total=len(generated_outputs) // batch_size,
-                              desc='Getting embeddings'):
+        for i in tqdm_wrapper(
+                range(0, len(generated_outputs), batch_size),
+                total=(len(generated_outputs) + batch_size - 1) // batch_size,
+                desc='Getting embeddings'
+        ):
             batch_generated_outputs = generated_outputs[i:i + batch_size]
             batch_reference_outputs = reference_outputs[i:i + batch_size]
             batch_generated_embeddings = model.encode(batch_generated_outputs)
@@ -114,9 +116,10 @@ def semantic_similarity(
         generated_embeddings = []
         reference_embeddings = []
 
-        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                              total=len(generated_outputs) // batch_size,
-                              desc='Computing embeddings'):
+        for i in tqdm_wrapper(
+                range(0, len(generated_outputs), batch_size),
+                total=(len(generated_outputs) + batch_size - 1) // batch_size,
+                desc='Computing embeddings'):
             batch_generated_outputs = generated_outputs[i:i + batch_size]
             batch_reference_outputs = reference_outputs[i:i + batch_size]
             if openai_args is None:
@@ -142,9 +145,11 @@ def semantic_similarity(
 
     scores = []
     with torch.no_grad():
-        for i in tqdm_wrapper(range(0, len(generated_embeddings), batch_size),
-                              total=len(generated_embeddings) // batch_size,
-                              desc='Computing semantic similarity'):
+        for i in tqdm_wrapper(
+            range(0, len(generated_embeddings), batch_size),
+            total=(len(generated_embeddings) + batch_size - 1) // batch_size,
+            desc='Computing semantic similarity'
+        ):
             batch_generated_embeddings = generated_embeddings[i:i + batch_size]
             batch_reference_embeddings = reference_embeddings[i:i + batch_size]
 

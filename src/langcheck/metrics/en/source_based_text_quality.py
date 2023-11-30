@@ -201,8 +201,10 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 
     batch_size = 8
     score_list = []
-    for i in tqdm_wrapper(range(0, len(model_input_list), batch_size),
-                          total=len(model_input_list) // batch_size):
+    for i in tqdm_wrapper(
+            range(0, len(model_input_list), batch_size),
+            total=(len(model_input_list) + batch_size - 1) // batch_size
+    ):
         inputs = model_input_list[i:i + batch_size]
         targets = target_list[i:i + batch_size]
 

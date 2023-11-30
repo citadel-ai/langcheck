@@ -96,8 +96,10 @@ def semantic_similarity(
     batch_size = 8
     scores = []
     with torch.no_grad():
-        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                              total=len(generated_outputs) // batch_size):
+        for i in tqdm_wrapper(
+                range(0, len(generated_outputs), batch_size),
+                total=(len(generated_outputs) + batch_size - 1) // batch_size
+        ):
             batch_generated_outputs = generated_outputs[i:i + batch_size]
             batch_reference_outputs = reference_outputs[i:i + batch_size]
             generated_embeddings = model.encode(batch_generated_outputs)
