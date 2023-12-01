@@ -16,8 +16,8 @@ classifiers = [
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
-    'detoxify >= 0.5',
-    'fugashi', # For tokenizer of metrics.ja.toxicity()
+    'detoxify == 0.5.0',  # Starting in 0.5.1, detoxify pins the transformers version (https://github.com/unitaryai/detoxify/releases/tag/v0.5.1)
+    'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
     "nlpaug",
     'nltk >= 3',
@@ -30,7 +30,7 @@ dependencies = [
     'tomli; python_version < "3.11"',
     'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
     'torch >= 2',
-    'transformers >= 4.6',
+    'transformers >= 4.6, !=4.25.1, !=4.26.0, !=4.26.1',  # [4.25.1 - 4.26.1] breaks detoxify, see https://github.com/unitaryai/detoxify/issues/75#issuecomment-1457974898
     "unidic-lite >= 1.0.1"  # For tokenizer of metrics.ja.toxicity()
 ]
 requires-python = ">=3.8"
