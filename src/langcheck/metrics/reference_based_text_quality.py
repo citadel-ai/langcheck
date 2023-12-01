@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 def exact_match(generated_outputs: List[str] | str,
@@ -26,7 +27,8 @@ def exact_match(generated_outputs: List[str] | str,
 
     # The values are binary: 1 if it's an exact match and 0 if not
     metric_values = []
-    for gen, ref in zip(generated_outputs, reference_outputs):
+    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs),
+                                 total=len(generated_outputs)):
         if gen == ref:
             metric_values.append(1)
         else:
