@@ -22,12 +22,16 @@ _sentiment_tokenizer = None
 _sentiment_model = None
 
 _toxicity_model_path = "Alnusjaponica/toxicity-score-multi-classification"
-_toxicity_tokenizer_path = "line-corporation/line-distilbert-base-japanese"
+# TODO: Use line-corporation/line-distilbert-base-japanese after the
+# tokenizer issue is fixed
+_toxicity_tokenizer_path = "liwii/line-distilbert-base-japanese-fork"
 _toxicity_tokenizer = None
 _toxicity_model = None
 
 _fluency_model_path = "liwii/fluency-score-classification-ja"
-_fluency_tokenizer_path = "line-corporation/line-distilbert-base-japanese"
+# TODO: Use line-corporation/line-distilbert-base-japanese after the
+# tokenizer issue is fixed
+_fluency_tokenizer_path = "liwii/line-distilbert-base-japanese-fork"
 _fluency_tokenizer = None
 _fluency_model = None
 
