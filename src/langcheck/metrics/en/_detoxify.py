@@ -7,7 +7,7 @@ from transformers import BertForSequenceClassification, BertTokenizer
 def load_checkpoint(
     device: str
 ) -> Tuple[BertForSequenceClassification, BertTokenizer, List[str]]:
-    checkpoint_url = "https://github.com/unitaryai/detoxify/releases/download/v0.1-alpha/toxic_original-c1212f89.ckpt"
+    checkpoint_url = "https://github.com/unitaryai/detoxify/releases/download/v0.1-alpha/toxic_original-c1212f89.ckpt"  # NOQA: E501
     loaded = torch.hub.load_state_dict_from_url(checkpoint_url,
                                                 map_location=device)
     class_names = loaded["config"]["dataset"]["args"]["classes"]
