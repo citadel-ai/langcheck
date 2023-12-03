@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Tuple
 
 import torch
-from detoxify import Detoxify
 from openai import OpenAI
 from transformers.models.auto.modeling_auto import \
     AutoModelForSequenceClassification
@@ -11,6 +10,7 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
+from langcheck.metrics.en._detoxify import Detoxify
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity
@@ -522,7 +522,7 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     '''
     global _toxicity_model
     if _toxicity_model is None:
-        _toxicity_model = Detoxify('original')
+        _toxicity_model = Detoxify()
 
     scores = []
     batch_size = 8
