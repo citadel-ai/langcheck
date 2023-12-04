@@ -37,10 +37,12 @@ def sentiment(
     are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
     also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where the IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment
     model is downloaded from HuggingFace and run locally. This is the default
     model type and there is no setup needed to run this.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
@@ -48,6 +50,11 @@ def sentiment(
     `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Ref:
         https://huggingface.co/IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment
@@ -121,12 +128,14 @@ def toxicity(
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where a model file is downloaded from HuggingFace and
     run locally. This is the default model type and there is no setup needed to
     run this.
     The model (alibaba-pai/pai-bert-base-zh-llm-risk-detection) is a
     risky detection model for LLM generated content released by Alibaba group.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
@@ -134,6 +143,11 @@ def toxicity(
     `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Ref:
         https://huggingface.co/alibaba-pai/pai-bert-base-zh-llm-risk-detection
