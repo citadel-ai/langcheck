@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import pickle
+from math import e
+from pathlib import PosixPath
 from typing import Dict, List, Optional
 
+import hanlp
 import regex as re
 import torch
 from openai import OpenAI
@@ -210,3 +214,88 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
                 toxicity_scores.append(1 - label_proba['score'])  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
             # yapf: enable
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]
+
+
+def xuyaochen_report_readability(generated_outputs: List[str]) -> List[float]:
+    '''Calculates the readibility scores of generated outputs introduced in
+    "中文年报可读性"(Chinese annual report readability). This metrics calcuate
+    average words per sentence as r1, average adverb numbres and connection
+    words as r2, then, refer to the Fog Indexto combine the r1 and r2.
+    This function use HanLP Tokenizer and Pos at the same time, POS
+    in CTB style https://hanlp.hankcs.com/docs/annotations/pos/ctb.html。
+    This lower the score is, the better the readability. the score is mainly
+    influenced by r1, the average words in readabilities.
+
+    Ref:
+        Refer [徐巍,姚振晔,陈冬华.中文年报可读性：衡量与检验[J].会计研究,2021(03):28-44]
+        https://mp.weixin.qq.com/s?__biz=MzUxNjk0MjAxNQ==&mid=2247488505&idx=1&sn=b630299c8f20e0529dc9663ee93fa53a&chksm=f99ee229cee96b3f562a64051795f94e6f24dc7c8b06aa9d70377c9b83c10caeac041a9fc925&token=1812526478&lang=zh_CN#rd
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+
+    Returns:
+        A list of scores
+    '''
+    # yapf: disable
+    # split generated_outputs into sentence
+    generated_outputs, _ = validate_parameters_reference_free(generated_outputs,
+                                                              prompts=None)
+
+    tokenizer = hanlp.load(
+        hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+    )
+    postagger = hanlp.load(
+        hanlp.pretrained.pos.CTB9_POS_RADICAL_ELECTRA_SMALL   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+    )
+
+    pos_pipeline = hanlp.pipeline().\
+        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+    pos_pipeline = pos_pipeline.append(tokenizer).append(postagger)
+
+    tokenize_pipeline = hanlp.pipeline().\
+        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+    tokenize_pipeline = tokenize_pipeline.append(tokenizer)
+    # OUTPUT: List[List[List[TOKEN]]]
+    output_tokens = list(map(tokenize_pipeline, generated_outputs))
+    # List[List[List[POS]]]
+    output_pos = list(map(pos_pipeline, generated_outputs))
+
+    def count_tokens(sent_tokens: List[str]) -> int:
+        count = sum([
+            not hanlp.utils.string_util.ispunct(token) for token in   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+            sent_tokens
+        ])
+        return count
+
+    def count_postags(sent_poses: List[str]) -> int:
+        # AD: adverb, CC: coordinating conjunction,
+        # CS: subordinating conjunction
+        count = sum([pos in ['AD', 'CC', 'CS'] for pos in sent_poses])
+        return count
+
+    def calc_r1(content: List[List[str]]) -> float:
+        token_count_by_sentence = list(map(count_tokens, content))
+        if len(token_count_by_sentence) == 0:
+            return 0
+        else:
+            return sum(token_count_by_sentence) / len(token_count_by_sentence)
+
+    def calc_r2(content: List[List[str]]) -> float:
+        pos_count_by_sentnece = list(map(count_postags, content))
+        if len(pos_count_by_sentnece) == 0:
+            return 0
+        else:
+            return sum(pos_count_by_sentnece) / len(pos_count_by_sentnece)
+
+    r1 = list(map(calc_r1, output_tokens))   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+    r2 = list(map(calc_r2, output_pos))   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+    r3 = [(r1_score + r2_score) * 0.5 for r1_score, r2_score in zip(r1, r2)]
+    # yapf: enable
+    return MetricValue(metric_name='readability',
+                       prompts=None,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       explanations=None,
+                       metric_values=r3,
+                       language='zh')  # type: ignore[reportGeneralTypeIssues]
