@@ -230,7 +230,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]
 
 
-def xuyaochen_report_readability(generated_outputs: List[str]) -> List[float]:
+def xuyaochen_report_readability(
+        generated_outputs: List[str]) -> MetricValue[float]:
     '''Calculates the readibility scores of generated outputs introduced in
     "中文年报可读性"(Chinese annual report readability). This metrics calcuate
     average words per sentence as r1, average adverb numbres and connection
