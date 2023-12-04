@@ -13,6 +13,7 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _factual_consistency_model_path = 'MingZhong/unieval-fact'
 _factual_consistency_config = None
@@ -92,7 +93,10 @@ def factual_consistency(
     # (https://github.com/maszhongming/UniEval/blob/509075cc87bb64f239180ece460025466b260383/metric/evaluator.py#L261)
     srcs_list, gen_sentences_list = [], []
     num_sentences_list = []
-    for src, gen in zip(sources, generated_outputs):
+    for src, gen in tqdm_wrapper(
+            zip(sources, generated_outputs),
+            desc='Splitting generated outputs into sentences',
+            total=len(generated_outputs)):
         gen_sentences = nltk.tokenize.sent_tokenize(gen)
         num_sentences_list.append(len(gen_sentences))
         gen_sentences_list += gen_sentences
@@ -110,7 +114,8 @@ def factual_consistency(
     score_per_output = []
     explanation_per_output = []
     start_idx = 0
-    for num in num_sentences_list:
+    for num in tqdm_wrapper(num_sentences_list, desc='Calculating scores'):
+
         scores_for_output = score_list[start_idx:start_idx + num]
         if None in scores_for_output:
             score_per_output.append(None)
@@ -196,7 +201,9 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 
     batch_size = 8
     score_list = []
-    for i in range(0, len(model_input_list), batch_size):
+    for i in tqdm_wrapper(range(0, len(model_input_list), batch_size),
+                          total=(len(model_input_list) + batch_size - 1) //
+                          batch_size):
         inputs = model_input_list[i:i + batch_size]
         targets = target_list[i:i + batch_size]
 
@@ -316,8 +323,11 @@ def _factual_consistency_openai(
         openai_args=openai_args)
 
     score_list = []
+
     explanation_list = []
-    for src, gen in zip(srcs_list, gen_sentences_list):
+    for src, gen in tqdm_wrapper(zip(srcs_list, gen_sentences_list),
+                                 desc='Calculating scores',
+                                 total=len(gen_sentences_list)):
         score, explanation = oai_evaluator.get_score(
             _prompt(src=src, gen_output=gen), _function_call_prompt)
         score_list.append(score)
