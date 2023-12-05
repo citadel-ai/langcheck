@@ -300,17 +300,17 @@ def xuyaochen_report_readability(
 
     def calc_r2(content: List[List[str]]) -> float:
         pos_count_by_sentence = list(map(count_postags, content))
-        if len(pos_count_by_sentnece) == 0:
+        if len(pos_count_by_sentence) == 0:
             return 0
         else:
-            return sum(pos_count_by_sentnece) / len(pos_count_by_sentnece)
+            return sum(pos_count_by_sentence) / len(pos_count_by_sentence)
 
     r1 = list(map(calc_r1, output_tokens))   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
     r2 = list(map(calc_r2, output_pos))   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
     r3 = [(r1_score + r2_score) * 0.5 for r1_score, r2_score in zip(r1, r2)]
     # yapf: enable
     return MetricValue(metric_name='readability',
-                       prompts=prompts,
+                       prompts=prompts,  # type: ignore[reportGeneralTypeIssues]
                        generated_outputs=generated_outputs,
                        sources=None,
                        reference_outputs=None,
