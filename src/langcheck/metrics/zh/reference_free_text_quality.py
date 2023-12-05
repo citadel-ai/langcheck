@@ -299,7 +299,7 @@ def xuyaochen_report_readability(
             return sum(token_count_by_sentence) / len(token_count_by_sentence)
 
     def calc_r2(content: List[List[str]]) -> float:
-        pos_count_by_sentnece = list(map(count_postags, content))
+        pos_count_by_sentence = list(map(count_postags, content))
         if len(pos_count_by_sentnece) == 0:
             return 0
         else:
@@ -310,7 +310,7 @@ def xuyaochen_report_readability(
     r3 = [(r1_score + r2_score) * 0.5 for r1_score, r2_score in zip(r1, r2)]
     # yapf: enable
     return MetricValue(metric_name='readability',
-                       prompts=None,
+                       prompts=prompts,
                        generated_outputs=generated_outputs,
                        sources=None,
                        reference_outputs=None,
