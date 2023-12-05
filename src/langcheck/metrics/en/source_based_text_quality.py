@@ -30,14 +30,11 @@ def factual_consistency(
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
-    the sources. The factual consistency score for one generated output is
-    computed as the average of the per-sentence consistencies of the generated
-    output with the source text. This metric takes on float values between
-    [0, 1], where 0 means that the output is not at all consistent with the
-    source text, and 1 means that the output is fully consistent with the source
-    text. (NOTE: when using the OpenAI model, the factuality score for each
-    sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
-    could not be computed.)
+    the sources. This metric takes on float values between [0, 1], where 0
+    means that the output is not at all consistent with the source text, and 1
+    means that the output is fully consistent with the source text. (NOTE: when
+    using the OpenAI model, the factuality scores are either 0.0, 0.5, or 1.0.
+    The score may also be `None` if it could not be computed.)
 
     We currently support three model types:
 
@@ -101,9 +98,11 @@ def factual_consistency(
 def _factual_consistency_local(generated_outputs: List[str],
                                sources: List[str]) -> List[float]:
     '''Calculates the factual consistency between each generated sentence and
-    its corresponding source text. The consistency is computed by querying the
-    UniEval-fact model that has been pre-trained to evaluate factual
-    consistency.
+    its corresponding source text. The factual consistency score for one
+    generated output is computed as the average of the per-sentence
+    consistencies of the generated output with the source text The consistency
+    is computed by querying the UniEval-fact model that has been pre-trained to
+    evaluate factual consistency.
 
     Ref:
         https://github.com/maszhongming/UniEval
