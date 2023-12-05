@@ -236,11 +236,11 @@ def xuyaochen_report_readability(
     '''Calculates the readibility scores of generated outputs introduced in
     "中文年报可读性"(Chinese annual report readability). This metrics calcuate
     average words per sentence as r1, average adverb numbres and connection
-    words as r2, then, refer to the Fog Indexto combine the r1 and r2.
+    words as r2, then, refer to the Fog Index to combine the r1 and r2.
     This function uses HanLP Tokenizer and POS at the same time, POS
     in CTB style https://hanlp.hankcs.com/docs/annotations/pos/ctb.html.
     The lower the score is, the better the readability. The score is mainly
-    influenced by r1, the average words in readabilities.
+    influenced by r1, the average words in sentences.
 
     Ref:
         Refer Chinese annual report readability: measurement and test
