@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 import regex as re
 import torch
+from openai import OpenAI
 from transformers.models.auto.modeling_auto import \
     AutoModelForSequenceClassification
 from transformers.models.auto.tokenization_auto import AutoTokenizer
@@ -15,6 +16,7 @@ from langcheck.metrics.en.reference_free_text_quality import (_fluency_openai,
 from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA: E501
 _sentiment_tokenizer = None
@@ -35,6 +37,7 @@ def sentiment(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
@@ -43,17 +46,24 @@ def sentiment(
     are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
     also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where the Twitter-roBERTa-base-sentiment-multilingual
     model is downloaded from HuggingFace and run locally. This is the default
     model type and there is no setup needed to run this.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Ref:
         https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
@@ -62,25 +72,29 @@ def sentiment(
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     # The English prompt works well enough for Japanese
     # TODO: Investigate the performance improvement with Japanese prompt
-    if model_type == 'openai':
+    if model_type == 'openai' or model_type == 'azure_openai':
         metric_value = en_sentiment(generated_outputs, prompts, model_type,
-                                    openai_args)
+                                    openai_client, openai_args)
         metric_value.language = 'ja'
         return metric_value
 
@@ -121,6 +135,7 @@ def toxicity(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
@@ -128,20 +143,27 @@ def toxicity(
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where a model file is downloaded from HuggingFace and
     run locally. This is the default model type and there is no setup needed to
     run this.
     The model (Alnusjaponica/toxicity-score-multi-classification) is a
     fine-tuned model based on line-corporation/line-distilbert-base-japanese
     model.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Ref:
         https://huggingface.co/line-corporation/line-distilbert-base-japanese
@@ -151,25 +173,30 @@ def toxicity(
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
         scores = _toxicity_local(generated_outputs)
         explanations = None
-    else:  # openai
-        scores, explanations = _toxicity_openai(generated_outputs, openai_args)
+    else:  # openai or azure_openai
+        scores, explanations = _toxicity_openai(generated_outputs, model_type,
+                                                openai_client, openai_args)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,
@@ -208,8 +235,18 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     input_tokens = _toxicity_tokenizer(generated_outputs,
                                        return_tensors='pt',
                                        padding=True)
-    output = _toxicity_model(**input_tokens)
-    toxicity_scores = torch.sigmoid(output.logits[:, 0]).tolist()
+    batchsize = 8
+    toxicity_scores = []
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize),
+                          total=(len(generated_outputs) + batchsize - 1) //
+                          batchsize):
+        with torch.no_grad():
+            batch_input_tokens = {
+                k: v[i:i + batchsize] for k, v in input_tokens.items()
+            }
+            batch_output = _toxicity_model(**batch_input_tokens)
+            toxicity_scores.extend(
+                torch.sigmoid(batch_output.logits[:, 0]).tolist())
 
     return toxicity_scores
 
@@ -218,6 +255,7 @@ def fluency(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
@@ -226,19 +264,26 @@ def fluency(
     (poor), 0.5 (fair), or 1.0 (good). The score may also be `None` if it could
     not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
+
     1. The 'local' type, where a model file is downloaded from HuggingFace and
     run locally. This is the default model type and there is no setup needed to
     run this.
     The model (liwii/fluency-score-classification-ja) is a fine-tuned model
     based on line-corporation/line-distilbert-base-japanese model.
+
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
     is configurable, please make sure to use one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Ref:
         https://huggingface.co/line-corporation/line-distilbert-base-japanese
@@ -248,25 +293,30 @@ def fluency(
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
         scores = _fluency_local(generated_outputs)
         explanations = None
-    else:  # openai
-        scores, explanations = _fluency_openai(generated_outputs, openai_args)
+    else:  # openai or azure_openai
+        scores, explanations = _fluency_openai(generated_outputs, model_type,
+                                               openai_client, openai_args)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
@@ -313,12 +363,16 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     input_tokens = _fluency_tokenizer(generated_outputs,
                                       return_tensors='pt',
                                       padding=True)
+    batchsize = 8
+    fluency_scores = []
     with torch.no_grad():
-        # Probabilities of [not_fluent, fluent]
-        probs = torch.nn.functional.softmax(
-            _fluency_model(**input_tokens).logits, dim=1)
-
-    fluency_scores = probs[:, 1].tolist()
+        for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize)):
+            batch_input_tokens = {
+                k: v[i:i + batchsize] for k, v in input_tokens.items()
+            }
+            batch_probs = torch.nn.functional.softmax(
+                _fluency_model(**batch_input_tokens).logits, dim=1)
+            fluency_scores.extend(batch_probs[:, 1].tolist())
 
     return fluency_scores
 
@@ -395,7 +449,9 @@ def tateishi_ono_yamada_reading_ease(
             - 5.3 * _mean_str_length(katakana_runs)\
             - 4.6 * comma_period_ratio + 115.79
 
-    scores = [_get_reading_ease(text) for text in generated_outputs]
+    scores = [
+        _get_reading_ease(text) for text in tqdm_wrapper(generated_outputs)
+    ]
     return MetricValue(metric_name='tateishi_ono_yamada_reading_ease',
                        prompts=prompts,
                        generated_outputs=generated_outputs,

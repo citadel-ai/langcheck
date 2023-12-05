@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import nltk
 import torch
 import torch.nn as nn
+from openai import OpenAI
 from transformers.models.auto.configuration_auto import AutoConfig
 from transformers.models.auto.modeling_auto import AutoModelForSeq2SeqLM
 from transformers.models.auto.tokenization_auto import AutoTokenizer
@@ -12,6 +13,7 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _factual_consistency_model_path = 'MingZhong/unieval-fact'
 _factual_consistency_config = None
@@ -24,6 +26,7 @@ def factual_consistency(
     sources: List[str] | str,
     prompts: Optional[List[str] | str] = None,
     model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
@@ -32,11 +35,11 @@ def factual_consistency(
     output with the source text. This metric takes on float values between
     [0, 1], where 0 means that the output is not at all consistent with the
     source text, and 1 means that the output is fully consistent with the source
-    text. (NOTE: when uing the OpenAI model, the factuality score for each
+    text. (NOTE: when using the OpenAI model, the factuality score for each
     sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
     could not be computed.)
 
-    We currently support two model types:
+    We currently support three model types:
 
     1. The 'local' type, where the 'unieval-fact' model is downloaded
     from HuggingFace and run locally. This is the default model type and
@@ -46,28 +49,37 @@ def factual_consistency(
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local' or 'openai'),
-            default 'local'
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``client.chat.completions.create`` function, default None
 
     Returns:
         An MetricValue object
     '''
     generated_outputs, sources, prompts = validate_parameters_source_based(
         generated_outputs, sources, prompts)
-    assert model_type in ['local', 'openai'
-                         ], ('Unsupported model type. '
-                             'The supported ones are ["local", "openai"]')
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     # Confirm necessary data for nltk.tokenize.sent_tokenize() exists
     try:
@@ -81,7 +93,10 @@ def factual_consistency(
     # (https://github.com/maszhongming/UniEval/blob/509075cc87bb64f239180ece460025466b260383/metric/evaluator.py#L261)
     srcs_list, gen_sentences_list = [], []
     num_sentences_list = []
-    for src, gen in zip(sources, generated_outputs):
+    for src, gen in tqdm_wrapper(
+            zip(sources, generated_outputs),
+            desc='Splitting generated outputs into sentences',
+            total=len(generated_outputs)):
         gen_sentences = nltk.tokenize.sent_tokenize(gen)
         num_sentences_list.append(len(gen_sentences))
         gen_sentences_list += gen_sentences
@@ -90,15 +105,17 @@ def factual_consistency(
     if model_type == 'local':
         score_list = _factual_consistency_local(gen_sentences_list, srcs_list)
         explanation_list = None
-    else:  # openai
+    else:  # openai or azure_openai
         score_list, explanation_list = _factual_consistency_openai(
-            gen_sentences_list, srcs_list, openai_args)
+            gen_sentences_list, srcs_list, model_type, openai_client,
+            openai_args)
 
     # The score for each output is the average of the scores of its sentences
     score_per_output = []
     explanation_per_output = []
     start_idx = 0
-    for num in num_sentences_list:
+    for num in tqdm_wrapper(num_sentences_list, desc='Calculating scores'):
+
         scores_for_output = score_list[start_idx:start_idx + num]
         if None in scores_for_output:
             score_per_output.append(None)
@@ -147,7 +164,7 @@ def _factual_consistency_local(gen_sentences_list: List[str],
     Args:
         gen_sentences_list: A list of model generated sentences to evaluate
         srcs_list: The list of source texts for each generated sentence in
-            `gen_sentences_list`
+            ``gen_sentences_list``
 
     Returns:
         A list of scores
@@ -184,7 +201,9 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 
     batch_size = 8
     score_list = []
-    for i in range(0, len(model_input_list), batch_size):
+    for i in tqdm_wrapper(range(0, len(model_input_list), batch_size),
+                          total=(len(model_input_list) + batch_size - 1) //
+                          batch_size):
         inputs = model_input_list[i:i + batch_size]
         targets = target_list[i:i + batch_size]
 
@@ -213,9 +232,8 @@ def _factual_consistency_local(gen_sentences_list: List[str],
 
 
 def _factual_consistency_openai(
-    gen_sentences_list: List[str],
-    srcs_list: List[str],
-    openai_args: Optional[Dict[str, str]] = None
+    gen_sentences_list: List[str], srcs_list: List[str], client_type: str,
+    client: Optional[OpenAI], openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
     between each generated sentence and its corresponding source text. The
@@ -232,9 +250,13 @@ def _factual_consistency_openai(
     Args:
         gen_sentences_list: A list of model generated sentences to evaluate
         srcs_list: The list of source texts for each generated sentence in
-            `gen_sentences_list`
-        openai_args: Dict of additional args to pass in to the
-            `openai.ChatCompletion.create` function, default None
+            ``gen_sentences_list``
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
 
     Returns:
         score_list: a list of scores
@@ -296,11 +318,16 @@ def _factual_consistency_openai(
             "Saves a submitted claim's factual consistency assessment."),
         argument_name='factuality',
         argument_description='The factual consistency assessment of the claim',
+        client_type=client_type,
+        client=client,
         openai_args=openai_args)
 
     score_list = []
+
     explanation_list = []
-    for src, gen in zip(srcs_list, gen_sentences_list):
+    for src, gen in tqdm_wrapper(zip(srcs_list, gen_sentences_list),
+                                 desc='Calculating scores',
+                                 total=len(gen_sentences_list)):
         score, explanation = oai_evaluator.get_score(
             _prompt(src=src, gen_output=gen), _function_call_prompt)
         score_list.append(score)

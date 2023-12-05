@@ -1,6 +1,8 @@
+import os
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types.chat import ChatCompletion
 
 from langcheck.metrics.ja import factual_consistency
 
@@ -28,22 +30,31 @@ def test_factual_consistency(generated_outputs, sources):
                          [('東京は日本の首都です。', "東京は日本の首都です。"),
                           (['東京は日本の首都です。'], ["東京は日本の首都です。"])])
 def test_factual_consistency_openai(generated_outputs, sources):
-    mock_chat_response = {
-        'choices': [{
-            'message': {
-                'function_call': {
-                    'arguments': "{\n  \"factuality\": \"Fully Consistent\"\n}"
-                },
-                'content': 'foo bar'
-            }
-        }]
-    }
-    # Calling the openai.ChatCompletion.create method requires an OpenAI API
-    # key, so we mock the return value instead
-    with patch('openai.ChatCompletion.create',
-               Mock(return_value=mock_chat_response)):
+    mock_chat_completion = Mock(spec=ChatCompletion)
+    mock_chat_completion.choices = [
+        Mock(message=Mock(function_call=Mock(
+            arguments="{\n  \"factuality\": \"Fully Consistent\"\n}")))
+    ]
+
+    # Calling the openai.resources.chat.Completions.create method requires an
+    # OpenAI API key, so we mock the return value instead
+    with patch('openai.resources.chat.Completions.create',
+               return_value=mock_chat_completion):
+        # Set the necessary env vars for the 'openai' model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = factual_consistency(generated_outputs,
                                            sources,
                                            model_type='openai')
+        # "Fully Consistent" gets a value of 1.0
+        assert metric_value == 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = factual_consistency(generated_outputs,
+                                           sources,
+                                           model_type='azure_openai',
+                                           openai_args={'model': 'foo bar'})
         # "Fully Consistent" gets a value of 1.0
         assert metric_value == 1
