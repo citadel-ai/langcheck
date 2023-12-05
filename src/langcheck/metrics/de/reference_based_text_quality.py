@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import os
 from typing import Any, Dict, List, Optional
 
 import torch
-from openai import AzureOpenAI, OpenAI
+from openai import OpenAI
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 from sentence_transformers import SentenceTransformer, util
@@ -107,6 +106,7 @@ def semantic_similarity(
     batch_size = 8
 
     model = SentenceTransformer(MODEL_NAME)
+    print(f"Using model {MODEL_NAME}")
     generated_embeddings = []
     reference_embeddings = []
     for i in tqdm_wrapper(
