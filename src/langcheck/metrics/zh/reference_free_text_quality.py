@@ -242,8 +242,8 @@ def xuyaochen_report_readability(
     influenced by r1, the average words in readabilities.
 
     Ref:
-        Refer [徐巍,姚振晔,陈冬华.中文年报可读性：衡量与检验[J].会计研究,2021(03):28-44]
-        https://mp.weixin.qq.com/s?__biz=MzUxNjk0MjAxNQ==&mid=2247488505&idx=1&sn=b630299c8f20e0529dc9663ee93fa53a&chksm=f99ee229cee96b3f562a64051795f94e6f24dc7c8b06aa9d70377c9b83c10caeac041a9fc925&token=1812526478&lang=zh_CN#rd
+        Refer Chinese annual report readability: measurement and test
+        Link: https://www.tandfonline.com/doi/full/10.1080/21697213.2019.1701259
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -314,3 +314,4 @@ def xuyaochen_report_readability(
                        explanations=None,
                        metric_values=r3,
                        language='zh')  # type: ignore[reportGeneralTypeIssues]
+
