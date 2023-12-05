@@ -221,7 +221,7 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     )
     # labels except Normal are all risky, toxicity_score = 1-score['Normal']
     toxicity_scores = []
-    for item_predict_proba in _predict_results:
+    for item_predict_proba in _predict_results:  # type: ignore[reportOptionalIterable]  # NOQA: E501
         for label_proba in item_predict_proba:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
             # yapf: disable
             if label_proba['label'] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
