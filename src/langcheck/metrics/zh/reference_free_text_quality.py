@@ -309,9 +309,8 @@ def xuyaochen_report_readability(
     return MetricValue(metric_name='readability',
                        prompts=None,
                        generated_outputs=generated_outputs,
-                       reference_outputs=None,
                        sources=None,
+                       reference_outputs=None,
                        explanations=None,
                        metric_values=r3,
                        language='zh')  # type: ignore[reportGeneralTypeIssues]
-
