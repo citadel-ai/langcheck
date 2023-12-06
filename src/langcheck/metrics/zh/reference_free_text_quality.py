@@ -250,15 +250,16 @@ def xuyaochen_report_readability(
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
 
     Returns:
         A list of scores
     '''
-    # yapf: disable
     # split generated_outputs into sentence
-    generated_outputs, _ = validate_parameters_reference_free(generated_outputs,
-                                                              prompts=None)
-
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts=prompts)
+    # yapf: disable
     tokenizer = hanlp.load(
         hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
     )
@@ -309,12 +310,11 @@ def xuyaochen_report_readability(
     r2 = list(map(calc_r2, output_pos))   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
     r3 = [(r1_score + r2_score) * 0.5 for r1_score, r2_score in zip(r1, r2)]
     # yapf: enable
-    return MetricValue(
-        metric_name='readability',
-        prompts=prompts,  # type: ignore[reportGeneralTypeIssues]
-        generated_outputs=generated_outputs,
-        sources=None,
-        reference_outputs=None,
-        explanations=None,
-        metric_values=r3,
-        language='zh')  # type: ignore[reportGeneralTypeIssues]
+    return MetricValue(metric_name='readability',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       sources=None,
+                       reference_outputs=None,
+                       explanations=None,
+                       metric_values=r3,
+                       language='zh')
