@@ -98,12 +98,15 @@ def factual_consistency(
     en_source = [
         cast(str,
              d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
-        for d in _factual_consistency_translation_pipeline(sources)
+        for d in _factual_consistency_translation_pipeline(
+            sources)  # type: ignore[reportOptionalIterable]  # NOQA: E501
     ]
     en_generated_outputs = [
         cast(str,
              d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
-        for d in _factual_consistency_translation_pipeline(generated_outputs)
+        for d in _factual_consistency_translation_pipeline(
+            generated_outputs
+        )  # type: ignore[reportOptionalIterable]  # NOQA: E501
     ]
     # Compute the factual consistency scores in English.
     factual_consistency_scores = en_factual_consistency(

@@ -16,6 +16,7 @@ from langcheck.metrics.en.reference_free_text_quality import (_fluency_openai,
 from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _sentiment_model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual"  # NOQA: E501
 _sentiment_tokenizer = None
@@ -234,8 +235,18 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     input_tokens = _toxicity_tokenizer(generated_outputs,
                                        return_tensors='pt',
                                        padding=True)
-    output = _toxicity_model(**input_tokens)
-    toxicity_scores = torch.sigmoid(output.logits[:, 0]).tolist()
+    batchsize = 8
+    toxicity_scores = []
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize),
+                          total=(len(generated_outputs) + batchsize - 1) //
+                          batchsize):
+        with torch.no_grad():
+            batch_input_tokens = {
+                k: v[i:i + batchsize] for k, v in input_tokens.items()
+            }
+            batch_output = _toxicity_model(**batch_input_tokens)
+            toxicity_scores.extend(
+                torch.sigmoid(batch_output.logits[:, 0]).tolist())
 
     return toxicity_scores
 
@@ -352,12 +363,16 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     input_tokens = _fluency_tokenizer(generated_outputs,
                                       return_tensors='pt',
                                       padding=True)
+    batchsize = 8
+    fluency_scores = []
     with torch.no_grad():
-        # Probabilities of [not_fluent, fluent]
-        probs = torch.nn.functional.softmax(
-            _fluency_model(**input_tokens).logits, dim=1)
-
-    fluency_scores = probs[:, 1].tolist()
+        for i in tqdm_wrapper(range(0, len(generated_outputs), batchsize)):
+            batch_input_tokens = {
+                k: v[i:i + batchsize] for k, v in input_tokens.items()
+            }
+            batch_probs = torch.nn.functional.softmax(
+                _fluency_model(**batch_input_tokens).logits, dim=1)
+            fluency_scores.extend(batch_probs[:, 1].tolist())
 
     return fluency_scores
 
@@ -434,7 +449,9 @@ def tateishi_ono_yamada_reading_ease(
             - 5.3 * _mean_str_length(katakana_runs)\
             - 4.6 * comma_period_ratio + 115.79
 
-    scores = [_get_reading_ease(text) for text in generated_outputs]
+    scores = [
+        _get_reading_ease(text) for text in tqdm_wrapper(generated_outputs)
+    ]
     return MetricValue(metric_name='tateishi_ono_yamada_reading_ease',
                        prompts=prompts,
                        generated_outputs=generated_outputs,

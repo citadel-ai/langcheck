@@ -4,7 +4,8 @@ from unittest.mock import Mock, patch
 import pytest
 from openai.types.chat import ChatCompletion
 
-from langcheck.metrics.zh import sentiment, toxicity
+from langcheck.metrics.zh import (sentiment, toxicity,
+                                  xuyaochen_report_readability)
 from tests.utils import is_close
 
 ################################################################################
@@ -93,3 +94,12 @@ def test_toxicity_openai(generated_outputs):
                                 openai_args={'model': 'foo bar'})
         # "5" gets a value of 1.0
         assert metric_value == 1
+
+
+@pytest.mark.parametrize('generated_outputs,metric_values', [
+    ("这一句话很长很难懂，你最好把他改一下。", [11.0]),
+    (["今天天气很好。一起去散步吧！"], [2.5]),
+])
+def test_xuyaochen_report_readability(generated_outputs, metric_values):
+    metric_value = xuyaochen_report_readability(generated_outputs)
+    assert is_close(metric_value.metric_values, metric_values)

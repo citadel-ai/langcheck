@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Tuple
 
 import torch
-from detoxify import Detoxify
 from openai import OpenAI
 from transformers.models.auto.modeling_auto import \
     AutoModelForSequenceClassification
@@ -11,11 +10,13 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
+from langcheck.metrics.en._detoxify import Detoxify
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.stats import compute_stats
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _sentiment_model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 _sentiment_tokenizer = None
@@ -217,8 +218,9 @@ def _sentiment_openai(
         openai_args=openai_args)
 
     score_list = []
+
     explanation_list = []
-    for gen in generated_outputs:
+    for gen in tqdm_wrapper(generated_outputs):
         score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
                                                      _function_call_prompt)
         score_list.append(score)
@@ -326,12 +328,20 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
                                       return_tensors='pt',
                                       padding=True)
 
+    batch_size = 8
+    scores = []
     with torch.no_grad():
-        # Probabilities of [negative, neutral, positive]
-        probs = torch.nn.functional.softmax(
-            _fluency_model(**input_tokens).logits, dim=1)
-
-    return probs[:, 1].tolist()
+        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
+                              total=(len(generated_outputs) + batch_size - 1) //
+                              batch_size):
+            batch_input_tokens = {
+                k: v[i:i + batch_size] for k, v in input_tokens.items()
+            }
+            # Probabilities of [negative, neutral, positive]
+            probs = torch.nn.functional.softmax(
+                _fluency_model(**batch_input_tokens).logits, dim=1)
+            scores.extend(probs[:, 1].tolist())
+    return scores
 
 
 def _fluency_openai(
@@ -416,8 +426,9 @@ def _fluency_openai(
         openai_args=openai_args)
 
     score_list = []
+
     explanation_list = []
-    for gen in generated_outputs:
+    for gen in tqdm_wrapper(generated_outputs):
         score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
                                                      _function_call_prompt)
         score_list.append(score)
@@ -511,8 +522,18 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     '''
     global _toxicity_model
     if _toxicity_model is None:
-        _toxicity_model = Detoxify('original')
-    return _toxicity_model.predict(generated_outputs)['toxicity']
+        _toxicity_model = Detoxify()
+
+    scores = []
+    batch_size = 8
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
+                          total=(len(generated_outputs) + batch_size - 1) //
+                          batch_size):
+        scores.extend(
+            _toxicity_model.predict(generated_outputs[i:i +
+                                                      batch_size])['toxicity'])
+
+    return scores
 
 
 def _toxicity_openai(
@@ -592,7 +613,7 @@ def _toxicity_openai(
 
     score_list = []
     explanation_list = []
-    for gen in generated_outputs:
+    for gen in tqdm_wrapper(generated_outputs):
         score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
                                                      _function_call_prompt)
         score_list.append(score)
@@ -623,7 +644,10 @@ def flesch_reading_ease(
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
 
-    output_stats = [compute_stats(output) for output in generated_outputs]
+    output_stats = [
+        compute_stats(output)
+        for output in tqdm_wrapper(generated_outputs, desc='Computing stats')
+    ]
     scores = [
         206.835 - 1.015 * (stat.num_words / stat.num_sentences) - 84.6 *
         (stat.num_syllables / stat.num_words) for stat in output_stats
@@ -663,7 +687,10 @@ def flesch_kincaid_grade(
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
 
-    output_stats = [compute_stats(output) for output in generated_outputs]
+    output_stats = [
+        compute_stats(output)
+        for output in tqdm_wrapper(generated_outputs, desc='Computing stats')
+    ]
     scores = [
         0.39 * (stat.num_words / stat.num_sentences) + 11.8 *
         (stat.num_syllables / stat.num_words) - 15.59 for stat in output_stats
