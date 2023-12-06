@@ -30,14 +30,11 @@ def factual_consistency(
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
-    the sources. The factual consistency score for one generated output is
-    computed as the average of the per-sentence consistencies of the generated
-    output with the source text. This metric takes on float values between
-    [0, 1], where 0 means that the output is not at all consistent with the
-    source text, and 1 means that the output is fully consistent with the source
-    text. (NOTE: when using the OpenAI model, the factuality score for each
-    sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
-    could not be computed.)
+    the sources. This metric takes on float values between [0, 1], where 0
+    means that the output is not at all consistent with the source text, and 1
+    means that the output is fully consistent with the source text. (NOTE: when
+    using the OpenAI model, the factuality scores are either 0.0, 0.5, or 1.0.
+    The score may also be `None` if it could not be computed.)
 
     We currently support three model types:
 
@@ -81,6 +78,42 @@ def factual_consistency(
     ], ('Unsupported model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
 
+    if model_type == 'local':
+        scores = _factual_consistency_local(generated_outputs, sources)
+        explanations = None
+    else:  # openai or azure_openai
+        scores, explanations = _factual_consistency_openai(
+            generated_outputs, sources, model_type, openai_client, openai_args)
+
+    return MetricValue(metric_name='factual_consistency',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=sources,
+                       explanations=explanations,
+                       metric_values=scores,
+                       language='en')
+
+
+def _factual_consistency_local(generated_outputs: List[str],
+                               sources: List[str]) -> List[float]:
+    '''Calculates the factual consistency between each generated sentence and
+    its corresponding source text. The factual consistency score for one
+    generated output is computed as the average of the per-sentence
+    consistencies of the generated output with the source text The consistency
+    is computed by querying the UniEval-fact model that has been pre-trained to
+    evaluate factual consistency.
+
+    Ref:
+        https://github.com/maszhongming/UniEval
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        sources: The source text(s), one string per generated output
+
+    Returns:
+        A list of scores
+    '''
     # Confirm necessary data for nltk.tokenize.sent_tokenize() exists
     try:
         nltk.data.find('tokenizers/punkt')
@@ -102,73 +135,6 @@ def factual_consistency(
         gen_sentences_list += gen_sentences
         srcs_list += [src] * len(gen_sentences)
 
-    if model_type == 'local':
-        score_list = _factual_consistency_local(gen_sentences_list, srcs_list)
-        explanation_list = None
-    else:  # openai or azure_openai
-        score_list, explanation_list = _factual_consistency_openai(
-            gen_sentences_list, srcs_list, model_type, openai_client,
-            openai_args)
-
-    # The score for each output is the average of the scores of its sentences
-    score_per_output = []
-    explanation_per_output = []
-    start_idx = 0
-    for num in tqdm_wrapper(num_sentences_list, desc='Calculating scores'):
-
-        scores_for_output = score_list[start_idx:start_idx + num]
-        if None in scores_for_output:
-            score_per_output.append(None)
-        else:
-            score_per_output.append(
-                sum(scores_for_output) /  # type: ignore
-                num)
-
-        # The explanation for each output is the list of all the explanations
-        # for each sentence
-        if explanation_list:
-            explanations_for_output = explanation_list[start_idx:start_idx +
-                                                       num]
-            if None in explanations_for_output:
-                explanation_per_output.append(None)
-            elif len(explanations_for_output) == 1:
-                explanation_per_output.append(explanations_for_output[0])
-            else:
-                # TODO: This just converts the list of explanations into a
-                # string, which is not the best. We should instead just generate
-                # one clean explanation for each output.
-                explanation_per_output.append(str(explanations_for_output))
-        start_idx += num
-
-    return MetricValue(metric_name='factual_consistency',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=sources,
-                       explanations=None
-                       if explanation_list is None else explanation_per_output,
-                       metric_values=score_per_output,
-                       language='en')
-
-
-def _factual_consistency_local(gen_sentences_list: List[str],
-                               srcs_list: List[str]) -> List[float]:
-    '''Calculates the factual consistency between each generated sentence and
-    its corresponding source text. The consistency is computed by querying the
-    UniEval-fact model that has been pre-trained to evaluate factual
-    consistency.
-
-    Ref:
-        https://github.com/maszhongming/UniEval
-
-    Args:
-        gen_sentences_list: A list of model generated sentences to evaluate
-        srcs_list: The list of source texts for each generated sentence in
-            ``gen_sentences_list``
-
-    Returns:
-        A list of scores
-    '''
     global _factual_consistency_config, _factual_consistency_tokenizer, \
         _factual_consistency_model
     if _factual_consistency_config is None:
@@ -228,15 +194,23 @@ def _factual_consistency_local(gen_sentences_list: List[str],
             score_list += [
                 x.item() for x in pos_score / (pos_score + neg_score)
             ]
-    return score_list
+
+    # The score for each output is the average of the scores of its sentences
+    score_per_output = []
+    start_idx = 0
+    for num in tqdm_wrapper(num_sentences_list, desc='Calculating scores'):
+        scores_for_output = score_list[start_idx:start_idx + num]
+        score_per_output.append(sum(scores_for_output) / num)
+        start_idx += num
+    return score_per_output
 
 
 def _factual_consistency_openai(
-    gen_sentences_list: List[str], srcs_list: List[str], client_type: str,
+    generated_outputs: List[str], sources: List[str], client_type: str,
     client: Optional[OpenAI], openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
-    between each generated sentence and its corresponding source text. The
+    between each generated output and its corresponding source text. The
     consistency is computed by calling the OpenAI API, with a prompt similar to
     the one used in OpenAI Evals. We leverage the function calling API to make
     sure that the output is structured such that we can compute a score. If a
@@ -248,9 +222,8 @@ def _factual_consistency_openai(
         https://platform.openai.com/docs/guides/gpt/function-calling
 
     Args:
-        gen_sentences_list: A list of model generated sentences to evaluate
-        srcs_list: The list of source texts for each generated sentence in
-            ``gen_sentences_list``
+        generated_outputs: The model generated output(s) to evaluate
+        sources: The source text(s), one string per generated output
         client_type: The type of OpenAI client ('openai' or 'azure_openai')
         client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
             will attempt to create a default client depending on the
@@ -325,9 +298,9 @@ def _factual_consistency_openai(
     score_list = []
 
     explanation_list = []
-    for src, gen in tqdm_wrapper(zip(srcs_list, gen_sentences_list),
+    for src, gen in tqdm_wrapper(zip(sources, generated_outputs),
                                  desc='Calculating scores',
-                                 total=len(gen_sentences_list)):
+                                 total=len(generated_outputs)):
         score, explanation = oai_evaluator.get_score(
             _prompt(src=src, gen_output=gen), _function_call_prompt)
         score_list.append(score)
