@@ -235,14 +235,14 @@ def xuyaochen_report_readability(
         prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
     '''Calculates the readability scores of generated outputs introduced in
     "中文年报可读性"(Chinese annual report readability). This metric calculates
-    average words per sentence as r1, average of the sum of the numerbers of
-    adverbs and coordinating conjunction words in a sentence in given genereated
+    average words per sentence as r1, average of the sum of the numbers of
+    adverbs and coordinating conjunction words in a sentence in given generated
     outputs as r2, then, refer to the Fog Index that combine r1 with r2 by
-    arithmatic mean as the final outpus. This function uses HanLP Tokenizer and
+    arithmetic mean as the final outputs. This function uses HanLP Tokenizer and
     POS at the same time, POS in CTB style
     https://hanlp.hankcs.com/docs/annotations/pos/ctb.html.
     The lower the score is, the better the readability. The score is mainly
-    influenced by r1, the average words in sentences.
+    influenced by r1, the average number of words in sentences.
 
     Ref:
         Refer Chinese annual report readability: measurement and test
