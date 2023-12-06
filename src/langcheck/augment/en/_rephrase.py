@@ -67,7 +67,7 @@ def rephrase(
     instances = [instances] if isinstance(instances, str) else instances
     rephrased_instances = []
     for instance in instances:
-        for _ in range(num_perturbations):
+        for i in range(num_perturbations):
             prompt = f'''
             Please rephrase the following prompt without altering its meaning,
             ensuring you adjust the word order appropriately.
@@ -85,11 +85,12 @@ def rephrase(
                 if openai_args is None:
                     response = chat_completions.create(
                         model="gpt-3.5-turbo",
-                        messages=messages  # type: ignore
-                    )
+                        messages=messages,  # type: ignore
+                        seed=i)
                 else:
                     response = chat_completions.create(  # type: ignore
                         messages=messages,  # type: ignore
+                        seed=i,
                         **openai_args,  # type: ignore
                     )
                 rephrased_instance = response.choices[0].message.content
