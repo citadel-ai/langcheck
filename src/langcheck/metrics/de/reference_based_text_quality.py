@@ -19,6 +19,7 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 MODEL_NAME = "sentence-transformers/distiluse-base-multilingual-cased-v1"
 # according to https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
 # v1 supports only 15 langages (German included) but is strongrer than v2 that supports 50+ languages
+# NOTE: it's cased!
 LANG = "de"
 
 

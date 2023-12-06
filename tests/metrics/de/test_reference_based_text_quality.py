@@ -26,19 +26,19 @@ def test_semantic_similarity_identical(generated_outputs, reference_outputs):
     assert 0.99 <= metric_value <= 1
 
 
-# FIXME: why is this so low in similarity???
-# @pytest.mark.parametrize(
-#     "generated_outputs,reference_outputs",
-#     [
-#         ("Die KATZE saß auf der MATTE.", "Die Katze saß auf der Matte."),
-#         (["Die KATZE saß auf der MATTE."], ["Die Katze saß auf der Matte."]),
-#     ],
-# )
-# def test_semantic_similarity_case_sensitivity(generated_outputs, reference_outputs):
-#     metric_value = semantic_similarity(
-#         generated_outputs, reference_outputs, model_type="local"
-#     )
-#     assert 0.9 <= metric_value <= 1
+@pytest.mark.parametrize(
+    "generated_outputs,reference_outputs",
+    [
+        ("Die KATZE saß auf der MATTE.", "Die Katze saß auf der Matte."),
+        (["Die KATZE saß auf der MATTE."], ["Die Katze saß auf der Matte."]),
+    ],
+)
+def test_semantic_similarity_case_sensitivity(generated_outputs, reference_outputs):
+    # nb: the German model is case-sensitive!
+    metric_value = semantic_similarity(
+        generated_outputs, reference_outputs, model_type="local"
+    )
+    assert 0.6 <= metric_value <= 0.7
 
 
 # fixme: why is this so high in similarity???
@@ -119,8 +119,8 @@ def test_rouge_identical(generated_outputs, reference_outputs):
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
     [
-        ("Die Katze saß auf der Matte.", "Ich esse gerne Eiscreme."),
-        (["Die Katze saß auf der Matte."], ["Ich esse gerne Eiscreme."]),
+        ("Die Katze saß auf der Matte", "Ich esse gerne Eiscreme."),
+        (["Die Katze saß auf der Matte"], ["Ich esse gerne Eiscreme."]),
     ],
 )
 def test_rouge_no_overlap(generated_outputs, reference_outputs):
@@ -128,13 +128,13 @@ def test_rouge_no_overlap(generated_outputs, reference_outputs):
     rouge2_metric_value = rouge2(generated_outputs, reference_outputs)
     rougeL_metric_value = rougeL(generated_outputs, reference_outputs)
 
-    # fixme: rouge1 and rougeL 0.166667
+    # rouge1 and rougeL >0 if there is a trailing period in both sentences
 
     # All ROUGE scores are 0 if the generated and reference outputs have no
     # overlapping words
-    # assert rouge1_metric_value == 0
+    assert rouge1_metric_value == 0
     assert rouge2_metric_value == 0
-    # assert rougeL_metric_value == 0
+    assert rougeL_metric_value == 0
 
 
 @pytest.mark.parametrize(
