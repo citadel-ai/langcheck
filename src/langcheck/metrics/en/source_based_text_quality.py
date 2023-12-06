@@ -200,14 +200,9 @@ def _factual_consistency_local(generated_outputs: List[str],
     start_idx = 0
     for num in tqdm_wrapper(num_sentences_list, desc='Calculating scores'):
         scores_for_output = score_list[start_idx:start_idx + num]
-        if None in scores_for_output:
-            score_per_output.append(None)
-        else:
-            score_per_output.append(
-                sum(scores_for_output) /  # type: ignore
-                num)
+        score_per_output.append(sum(scores_for_output) / num)
         start_idx += num
-    return score_list
+    return score_per_output
 
 
 def _factual_consistency_openai(
