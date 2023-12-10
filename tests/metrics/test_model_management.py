@@ -14,6 +14,18 @@ def test_initialization_with_mock_file():
         raise err
 
 
+def test_get_metric_model_with_mock_file():
+    try:
+        mock_file_content = "[zh]\nsemantic_similarity=test_model\n"
+        with patch('builtins.open', mock_open(read_data=mock_file_content)):
+            config = ModelConfig()
+            model_name = config.get_metric_model(
+                language='zh', metric_type='semantic_similarity')  # NOQA:E501
+            assert model_name == 'test_model'
+    except AssertionError as err:
+        raise err
+
+
 def test_list_metric_model_with_mock_file(capsys):
     try:
         mock_file_content = "[zh]\nsemantic_similarity=test_model\n"
