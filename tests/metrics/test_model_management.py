@@ -1,4 +1,5 @@
 from unittest.mock import mock_open, patch
+
 from langcheck.metrics._model_management import ModelConfig
 
 
@@ -7,7 +8,8 @@ def test_initialization_with_mock_file():
         mock_file_content = "[zh]\nsemantic_similarity=test_model\n"
         with patch('builtins.open', mock_open(read_data=mock_file_content)):
             config = ModelConfig()
-            assert config.model_config['zh']['semantic_similarity'] == 'test_model'  # NOQA:E501
+            assert config.model_config['zh'][
+                'semantic_similarity'] == 'test_model'  # NOQA:E501
     except AssertionError as err:
         raise err
 
@@ -33,6 +35,7 @@ def test_set_model_for_metric_with_mock_file():
             config.set_model_for_metric(model_name='another_test_model',
                                         language='zh',
                                         metric_type='semantic_similarity')
-            assert config.model_config['zh']['semantic_similarity'] == 'another_test_model'  # NOQA:E501
+            assert config.model_config['zh'][
+                'semantic_similarity'] == 'another_test_model'  # NOQA:E501
     except AssertionError as err:
         raise err
