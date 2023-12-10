@@ -18,6 +18,7 @@ _model_manager = ModelConfig()
 reset_model_config = _model_manager.reset
 set_model_for_metric = _model_manager.set_model_for_metric
 list_metric_model = _model_manager.list_metric_model
+get_metric_model = _model_manager.get_metric_model
 load_config_from_file = _model_manager.load_config_from_file
 save_config_to_disk = _model_manager.save_config_to_disk
 
@@ -51,5 +52,6 @@ __all__ = [
     'list_metric_model',
     'load_config_from_file',
     'save_config_to_disk',
-    'reset_model_config'
+    'reset_model_config',
+    'get_metric_model'
 ]

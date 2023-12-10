@@ -36,6 +36,27 @@ class ModelConfig:
         ''' reset all model used in langcheck to default'''
         self.__init__config()
 
+    def get_metric_model(self, language: str, metric_type: str):
+        """
+        return the model used in current metric for a given language.
+
+        Args:
+            language: The language for which to get the model.
+            metric_type: The metric name.
+
+        Raises:
+            KeyError: If the specified language or model type is not found.
+        """
+        if language in self.model_config:
+            if metric_type in self.model_config[language]:
+                return self.model_config[language][metric_type]
+            else:
+                raise KeyError(
+                    f"Model type '{metric_type}' not found for language '{language}'."  # NOQA:E501
+                )
+        else:
+            raise KeyError(f"Language '{language}' not supported.")
+
     def list_metric_model(self, language: str, metric_type: str):
         """
         list the model used in current metric for a given language.
