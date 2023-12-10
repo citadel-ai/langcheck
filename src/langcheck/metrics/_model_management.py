@@ -37,21 +37,18 @@ class ModelConfig:
 
     def list_metric_model(self, language: str, metric_type: str):
         """
-        return the model used in current metric for a given language.
+        list the model used in current metric for a given language.
 
         Args:
             language: The language for which to get the model.
             metric_type: The metric name.
-
-        Returns:
-            str: The name of the specified model.
 
         Raises:
             KeyError: If the specified language or model type is not found.
         """
         if language in self.model_config:
             if metric_type in self.model_config[language]:
-                return self.model_config[language][metric_type]
+                print(self.model_config[language][metric_type])
             else:
                 raise KeyError(f"Model type '{metric_type}' not found for language '{language}'.")  # NOQA:E501
         else:
