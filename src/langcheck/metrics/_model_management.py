@@ -1,6 +1,6 @@
 import os
-import configparser
 import collections
+import configparser
 from pathlib import Path
 
 
@@ -28,8 +28,9 @@ class ModelConfig:
         self.model_config = collections.defaultdict(dict)
         for lang in cfg.sections():
             for metric_type in cfg[lang]:
-                self.model_config[lang][metric_type] = cfg.get(section=lang,
-                                                               option=metric_type)  # type: ignore[reportGeneralIssue]  # NOQA:E501
+                self.model_config[lang][metric_type] = cfg.get(
+                    section=lang, option=metric_type
+                )  # type: ignore[reportGeneralIssue]  # NOQA:E501
 
     def reset(self):
         ''' reset all model used in langcheck to default'''
@@ -50,12 +51,14 @@ class ModelConfig:
             if metric_type in self.model_config[language]:
                 print(self.model_config[language][metric_type])
             else:
-                raise KeyError(f"Model type '{metric_type}' not found for language '{language}'.")  # NOQA:E501
+                raise KeyError(
+                    f"Model type '{metric_type}' not found for language '{language}'."
+                )  # NOQA:E501
         else:
             raise KeyError(f"Language '{language}' not supported.")
 
-    def set_model_for_metric(self, language: str,
-                             metric_type: str, model_name: str):
+    def set_model_for_metric(self, language: str, metric_type: str,
+                             model_name: str):
         """
         Sets a specific model used in metric_type for a given language.
 
@@ -93,7 +96,8 @@ class ModelConfig:
             if lanuage_section in self.model_config:
                 for metric_type, model_name in config[lanuage_section].items():
                     if metric_type in self.model_config[lanuage_section]:
-                        self.model_config[lanuage_section][metric_type] = model_name  # NOQA:E501
+                        self.model_config[lanuage_section][
+                            metric_type] = model_name  # NOQA:E501
 
     def save_config_to_disk(self, output_path: str):
         """

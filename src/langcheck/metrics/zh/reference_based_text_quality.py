@@ -92,10 +92,12 @@ def semantic_similarity(
         return metric_value
     # lazy import
     from langcheck.metrics import _model_manager
-    print(_model_manager.list_metric_model(language='zh',
-                                           metric_type='semantic_similarity'))
-    model = SentenceTransformer(_model_manager.list_metric_model(language='zh',
-                                                                 metric_type='semantic_similarity'))  # NOQA: E501
+    print(
+        _model_manager.list_metric_model(language='zh',
+                                         metric_type='semantic_similarity'))
+    model = SentenceTransformer(
+        _model_manager.list_metric_model(
+            language='zh', metric_type='semantic_similarity'))  # NOQA: E501
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
     cosine_scores = util.pairwise_cos_sim(

@@ -1,5 +1,5 @@
-from langcheck.metrics._model_management import ModelConfig
 from langcheck.metrics import en, ja, zh
+from langcheck.metrics._model_management import ModelConfig
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (
