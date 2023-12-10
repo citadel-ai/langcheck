@@ -1,6 +1,6 @@
-import os
 import collections
 import configparser
+import os
 from pathlib import Path
 
 
@@ -52,8 +52,8 @@ class ModelConfig:
                 print(self.model_config[language][metric_type])
             else:
                 raise KeyError(
-                    f"Model type '{metric_type}' not found for language '{language}'."
-                )  # NOQA:E501
+                    f"Model type '{metric_type}' not found for language '{language}'."  # NOQA:E501
+                )
         else:
             raise KeyError(f"Language '{language}' not supported.")
 
