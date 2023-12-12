@@ -15,6 +15,7 @@ classifiers = [
 ]
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
+    'chikkarpy',
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
