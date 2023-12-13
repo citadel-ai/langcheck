@@ -10,7 +10,8 @@ from transformers.models.auto.configuration_auto import AutoConfig
 from transformers.models.auto.modeling_auto import AutoModelForSeq2SeqLM
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
-from langcheck.metrics._validation import validate_parameters_source_based
+from langcheck.metrics._validation import (
+    validate_parameters_context_relevance, validate_parameters_source_based)
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
@@ -345,11 +346,7 @@ def context_relevance(
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
     '''
-    # TODO: Move this to validation
-    if isinstance(prompts, str):
-        prompts = [prompts]
-    if isinstance(sources, str):
-        sources = [sources]
+    prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
     def _prompt(src: str, user_query: str) -> str:
         return f'''
