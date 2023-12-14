@@ -19,7 +19,7 @@ class MetricValue(Generic[NumericType]):
     metric_name: str
     metric_values: List[NumericType]
     prompts: Optional[List[str]]
-    generated_outputs: List[str]
+    generated_outputs: Optional[List[str]]
     reference_outputs: Optional[List[str]]
     sources: Optional[List[str]]
     explanations: Optional[List[Optional[
