@@ -27,6 +27,7 @@ dependencies = [
     'rouge_score >= 0.1.2',
     'sentence_transformers >= 2',
     'sentencepiece>=0.1.95',
+    'sudachidict_core',
     'sudachipy',
     'tomli; python_version < "3.11"',
     'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
