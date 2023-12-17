@@ -68,7 +68,7 @@ def _scatter_one_metric_value(metric_value: MetricValue,
     df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
     df['explanation'] = df['explanation'].fillna('None').apply(
         _format_text_for_hover)
-    df['generated_output'] = df['generated_output'].apply(
+    df['generated_output'] = df['generated_output'].fillna('None').apply(
         _format_text_for_hover)
 
     # Define layout of the Dash app (chart + search boxes)
@@ -213,7 +213,7 @@ def _scatter_two_metric_values(metric_value: MetricValue,
     df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
     df['explanation'] = df['explanation'].fillna('None').apply(
         _format_text_for_hover)
-    df['generated_output'] = df['generated_output'].apply(
+    df['generated_output'] = df['generated_output'].fillna('None').apply(
         _format_text_for_hover)
 
     # Define layout of the Dash app (chart + search boxes)

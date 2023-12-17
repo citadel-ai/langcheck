@@ -6,10 +6,13 @@ from openai import OpenAI
 from transformers.pipelines import pipeline
 from transformers.pipelines.base import Pipeline
 
-from langcheck.metrics._validation import validate_parameters_source_based
+from langcheck.metrics._validation import (
+    validate_parameters_context_relevance, validate_parameters_source_based)
+from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.source_based_text_quality import \
     factual_consistency as en_factual_consistency
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-ja-en'
 _factual_consistency_translation_pipeline: Pipeline | None = None
@@ -24,14 +27,11 @@ def factual_consistency(
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
-    the sources. The factual consistency score for one generated output is
-    computed as the average of the per-sentence consistencies of the generated
-    output with the source text. This metric takes on float values between
-    [0, 1], where 0 means that the output is not at all consistent with the
-    source text, and 1 means that the output is fully consistent with the source
-    text. (NOTE: when using the OpenAI model, the factuality score for each
-    sentence is either 0.0, 0.5, or 1.0. The score may also be `None` if it
-    could not be computed.)
+    the sources. This metric takes on float values between [0, 1], where 0
+    means that the output is not at all consistent with the source text, and 1
+    means that the output is fully consistent with the source text. (NOTE: when
+    using the OpenAI model, the factuality scores are either 0.0, 0.5, or 1.0.
+    The score may also be `None` if it could not be computed.)
 
     We currently support three model types:
 
@@ -120,4 +120,113 @@ def factual_consistency(
                        sources=sources,
                        explanations=None,
                        metric_values=factual_consistency_scores,
+                       language='ja')
+
+
+def context_relevance(
+    sources: List[str] | str,
+    prompts: List[str] | str,
+    model_type: str = 'openai',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
+    '''Calculates the relevance of the sources to the prompts. This metric takes
+    on float values between [0, 1], where 0 means that the source text is not at
+    all relevant to the prompt, and 1 means that the source text is fully
+    relevant to the prompt.
+
+    We currently support two model types:
+
+    1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
+    for examples on setting up the OpenAI API key.
+
+    2. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+
+    Args:
+        sources: The source text(s), one string per prompt
+        prompts: The prompt(s)
+        model_type: The type of model to use ('openai' or 'azure_openai'),
+            default 'openai'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None, we will attempt to create a default client.
+        openai_args: Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function, default None
+    '''
+    prompts, sources = validate_parameters_context_relevance(prompts, sources)
+
+    def _prompt(src: str, user_query: str) -> str:
+        return f'''
+        ユーザーの質問に対してソースの関連性を評価してください。データは以下の通りです:
+        [BEGIN DATA]
+        ************
+        [ソース]: {src}
+        ************
+        [ユーザーの質問]: {user_query}
+        ************
+        [END DATA]
+
+        ユーザーの質問に対応するために必要な、関連性のある情報がソースに含まれているかを判断
+        してください。利用可能な評価は以下の通りです:
+        `完全に関連` - ソーステキストには、ユーザーの質問に対応するために必要な情報が
+        含まれています。
+        `部分的に関連` - ソーステキストはユーザーの質問に部分的に関連していますが、質問に
+        対応するために必要なすべての情報を含んでいません。
+        `関連なし` - ソーステキストはユーザーの質問に関連していません。
+
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        以下はソースの関連性に関する評価です:
+        ************
+        [評価]: {long_assessment}
+        ************
+
+        結果として出た評価を保存してください。利用可能な評価は以下の通りです:
+        `完全に関連`
+        `部分的に関連`
+        `関連なし`
+        '''
+
+    context_relevance_assessment_to_score = {
+        '完全に関連': 1.0,
+        '部分的に関連': 0.5,
+        '関連なし': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=context_relevance_assessment_to_score,
+        function_name='save_context_relevance_assessment',
+        function_description=("Saves a context relevance assessment."),
+        argument_name='context_relevance',
+        argument_description='The context relevance assessment',
+        client_type=model_type,
+        client=openai_client,
+        openai_args=openai_args)
+
+    score_list = []
+    explanation_list = []
+    for src, user_query in tqdm_wrapper(zip(sources, prompts),
+                                        desc='Calculating scores',
+                                        total=len(prompts)):
+        score, explanation = oai_evaluator.get_score(
+            _prompt(src=src, user_query=user_query), _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+
+    return MetricValue(metric_name='context_relevance',
+                       prompts=prompts,
+                       generated_outputs=None,
+                       reference_outputs=None,
+                       sources=sources,
+                       explanations=explanation_list,
+                       metric_values=score_list,
                        language='ja')

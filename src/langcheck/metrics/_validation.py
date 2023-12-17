@@ -103,6 +103,39 @@ def validate_parameters_source_based(
     return _generated_outputs, _sources, _prompts
 
 
+def validate_parameters_context_relevance(
+        prompts: List[str] | str,
+        sources: List[str] | str) -> tuple[List[str], List[str]]:
+    '''Validates and parses function parameters for the context relevance
+    metric.
+
+    Args:
+        prompts: The prompt(s)
+        sources: The source(s)
+
+    Returns:
+        A tuple (prompts, sources) of the parsed parameters, converted to lists
+        of strings.
+    '''
+    # Convert single-string parameters to lists
+    if isinstance(prompts, str):
+        prompts = [prompts]
+    if isinstance(sources, str):
+        sources = [sources]
+
+    # Check that prompts and sources are not empty
+    if not prompts:
+        raise ValueError('Please specify at least one prompt')
+    if not sources:
+        raise ValueError('Please specify at least one source')
+
+    # Check that the lengths of lists match
+    if len(prompts) != len(sources):
+        raise ValueError('The number of prompts and sources do not match')
+
+    return prompts, sources
+
+
 def _validate_parameters(
     generated_outputs: List[str] | str, prompts: Optional[List[str] | str],
     reference_outputs: Optional[List[str] | str],
