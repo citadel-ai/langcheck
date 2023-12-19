@@ -7,6 +7,7 @@ import pytest
 from langcheck.augment.ja import synonym
 
 
+@pytest.mark.optional
 @pytest.mark.parametrize(
     "instances, num_perturbations, expected",
     [

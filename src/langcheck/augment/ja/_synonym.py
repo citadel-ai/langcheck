@@ -27,6 +27,14 @@ def synonym(
 
     Returns:
         A list of perturbed instances.
+
+
+    .. note::
+        This function requires `sudachidict_core` and `sudachipy` to be
+        installed in your environment.
+        Please refer to the `official instruction <https://github.com/
+        WorksApplications/SudachiPy?tab=readme-ov-file#setup>`_ to install them.
+
     '''
     chikkar = Chikkar()
     chikkar.add_dictionary(chikkardict())
