@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import random
+from contextlib import suppress
 
 from chikkarpy import Chikkar
 from chikkarpy.dictionarylib import Dictionary as chikkardict
-from sudachipy import Dictionary
 
-_SudachiDict = Dictionary()
+with suppress(ImportError):
+    from sudachipy import Dictionary  # type: ignore[reportMissingImports]
 
 
 def synonym(
@@ -36,6 +37,8 @@ def synonym(
         WorksApplications/SudachiPy?tab=readme-ov-file#setup>`_ to install them.
 
     '''
+    _SudachiDict = Dictionary()  # type: ignore[reportUnboundVariable]
+
     chikkar = Chikkar()
     chikkar.add_dictionary(chikkardict())
     sudachi_tokenizer = _SudachiDict.create()
