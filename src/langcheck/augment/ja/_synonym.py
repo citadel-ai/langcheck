@@ -44,8 +44,7 @@ def synonym(
                 synonym = token.surface()
                 if (synonyms := chikkar.find(token.normalized_form())
                    ) and random.random() < kwargs["aug_p"]:
-                    while synonym == token.surface():
-                        synonym = random.choice(synonyms)
+                    synonym = random.choice(synonyms)
                 perturbed_instance += synonym
             perturbed_instances.append(perturbed_instance)
     return perturbed_instances
