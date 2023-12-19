@@ -24,5 +24,4 @@ def test_synonym(instances: list[str] | str, num_perturbations: int,
     seed = 42
     random.seed(seed)
     actual = synonym(instances, num_perturbations=num_perturbations)
-    print(actual)
     assert actual == expected
