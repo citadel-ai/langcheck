@@ -22,21 +22,8 @@ def synonym(
         instances: A single string or a list of strings to be augmented.
         num_perturbations: The number of perturbed instances to generate for
             each string in instances
-        aug_p: Percentage of words which will be augmented. Defaults to `0.1`.
-        aug_max: Maximum number of words which will be augmented. Defaults to
-            `None`.
-
-    .. note::
-        Any argument that can be passed to
-        `nlpaug.augmenter.word.SynonymAug
-        <https://nlpaug.readthedocs.io/en/latest/_modules/nlpaug/augmenter/word/synonym.html>`_
-        is acceptable. Some of the more useful ones from the `nlpaug`
-        documention are listed below:
-
-          - ``aug_p`` (float): Percentage of words which will be augmented.
-
-        Note that the default values for these arguments may be different from
-        the ``nlpaug`` defaults.
+        aug_p: Percentage of words with synonymous which will be augmented.
+            Defaults to `0.8`.
 
     Returns:
         A list of perturbed instances.
