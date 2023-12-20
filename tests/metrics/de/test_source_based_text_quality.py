@@ -75,7 +75,8 @@ def test_context_relevance_openai(prompts, sources):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"context_relevance\": \"Fully Relevant\"\n}")))
+            arguments="{\n  \"context_relevance\": \"Vollständig relevant\"\n}")
+                         ))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
