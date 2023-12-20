@@ -13,9 +13,9 @@ from langcheck.metrics._validation import validate_parameters_reference_free
 from langcheck.metrics.de._detoxify import Detoxify
 from langcheck.metrics.de.reference_based_text_quality import \
     semantic_similarity
-# flesch_kincaid_grade is the same in English and German
-# ref: https://de.wikipedia.org/wiki/Lesbarkeitsindex#Flesch-Kincaid-Grade-Level
 from langcheck.metrics.en.reference_free_text_quality import _toxicity_openai
+from langcheck.metrics.en.reference_free_text_quality import \
+    flesch_kincaid_grade as en_flesch_kincaid_grade
 from langcheck.metrics.en.reference_free_text_quality import \
     fluency as en_fluency
 from langcheck.metrics.en.reference_free_text_quality import \
@@ -31,7 +31,7 @@ _sentiment_model = None
 
 _fluency_model_path = "prithivida/parrot_fluency_model"
 
-# _toxicity_model_path = "citizenlab/distilbert-base-multilingual-cased-toxicity"
+# _toxicity_model_path = "citizenlab/distilbert-base-multilingual-cased-toxicity" # NOQA: E501
 _toxicity_model = None
 
 LANG = 'de'
@@ -166,9 +166,9 @@ def toxicity(
 
     We currently support three model types:
 
-    1. The 'local' type, where the multilingual Detoxify model is downloaded from GitHub
-    and run locally. This is the default model type and there is no setup needed
-    to run this.
+    1. The 'local' type, where the multilingual Detoxify model is downloaded
+    from GitHub and run locally. This is the default model type and there is
+    no setup needed to run this.
 
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default, in the same way as english counterpart. While the model you use
@@ -252,6 +252,19 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     return scores
 
 
+def flesch_kincaid_grade(
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
+    '''Calculates the readability of generated outputs using the Flesch-Kincaid.
+    It is the same as in English (but higher):
+    ref:
+    https://de.wikipedia.org/wiki/Lesbarkeitsindex#Flesch-Kincaid-Grade-Level
+    '''
+    metric_value = en_flesch_kincaid_grade(generated_outputs, prompts)
+    metric_value.language = LANG
+    return metric_value
+
+
 def flesch_reading_ease(
         generated_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
@@ -264,7 +277,7 @@ def flesch_reading_ease(
     text. See "How to Write Plain English" by Rudolf Franz Flesch for more
     details.
     For the German Formula, see
-    https://de.wikipedia.org/wiki/Lesbarkeitsindex#Flesch-Reading-Ease    
+    https://de.wikipedia.org/wiki/Lesbarkeitsindex#Flesch-Reading-Ease
     FRE(Deutsch) = 180 - ASL - 58.5 * ASW
 
     Args:
