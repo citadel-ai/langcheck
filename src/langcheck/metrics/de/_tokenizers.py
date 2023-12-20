@@ -1,3 +1,5 @@
+from typing import List
+
 from nltk.stem.cistem import Cistem
 from nltk.tokenize import word_tokenize
 
@@ -15,7 +17,7 @@ class DeTokenizer(BaseTokenizer):
         if stemmer:
             self.stemmer = Cistem()
 
-    def tokenize(self, text: str) -> list[str]:
+    def tokenize(self, text: str) -> List[str]:
         if self.stemmer:
             text = self.stemmer.segment(text)
         return word_tokenize(text)

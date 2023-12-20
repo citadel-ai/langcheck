@@ -17,6 +17,7 @@ from langcheck.metrics.text_structure import (contains_all_strings,
 __all__ = [
     'en',
     'ja',
+    'de',
     'ai_disclaimer_similarity',
     'contains_all_strings',
     'contains_any_strings',
