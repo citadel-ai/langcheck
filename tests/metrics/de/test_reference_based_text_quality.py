@@ -20,9 +20,9 @@ from tests.utils import is_close
     ],
 )
 def test_semantic_similarity_identical(generated_outputs, reference_outputs):
-    metric_value = semantic_similarity(
-        generated_outputs, reference_outputs, model_type="local"
-    )
+    metric_value = semantic_similarity(generated_outputs,
+                                       reference_outputs,
+                                       model_type="local")
     assert 0.99 <= metric_value <= 1
 
 
@@ -33,11 +33,12 @@ def test_semantic_similarity_identical(generated_outputs, reference_outputs):
         (["Die KATZE saß auf der MATTE."], ["Die Katze saß auf der Matte."]),
     ],
 )
-def test_semantic_similarity_case_sensitivity(generated_outputs, reference_outputs):
+def test_semantic_similarity_case_sensitivity(generated_outputs,
+                                              reference_outputs):
     # nb: the German model is case-sensitive!
-    metric_value = semantic_similarity(
-        generated_outputs, reference_outputs, model_type="local"
-    )
+    metric_value = semantic_similarity(generated_outputs,
+                                       reference_outputs,
+                                       model_type="local")
     assert 0.6 <= metric_value <= 0.7
 
 
@@ -50,9 +51,9 @@ def test_semantic_similarity_case_sensitivity(generated_outputs, reference_outpu
     ],
 )
 def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
-    metric_value = semantic_similarity(
-        generated_outputs, reference_outputs, model_type="local"
-    )
+    metric_value = semantic_similarity(generated_outputs,
+                                       reference_outputs,
+                                       model_type="local")
     print(metric_value)
     assert 0.0 <= metric_value <= 0.1
 
@@ -70,14 +71,13 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
 
     # Calling the openai.resources.Embeddings.create method requires an OpenAI
     # API key, so we mock the return value instead
-    with patch(
-        "openai.resources.Embeddings.create", Mock(return_value=mock_embedding_response)
-    ):
+    with patch("openai.resources.Embeddings.create",
+               Mock(return_value=mock_embedding_response)):
         # Set the necessary env vars for the 'openai' embedding model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
-        metric_value = semantic_similarity(
-            generated_outputs, reference_outputs, model_type="openai"
-        )
+        metric_value = semantic_similarity(generated_outputs,
+                                           reference_outputs,
+                                           model_type="openai")
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1

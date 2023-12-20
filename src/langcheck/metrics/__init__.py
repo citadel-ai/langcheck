@@ -1,4 +1,4 @@
-from langcheck.metrics import en, ja, de
+from langcheck.metrics import de, en, ja
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (

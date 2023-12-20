@@ -9,16 +9,16 @@ from rouge_score.tokenizers import Tokenizer
 from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
-from langcheck.metrics.en.reference_based_text_quality import (
-    semantic_similarity as en_semantic_similarity,
-)
 from langcheck.metrics.de._tokenizers import DeTokenizer
+from langcheck.metrics.en.reference_based_text_quality import \
+    semantic_similarity as en_semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 MODEL_NAME = "sentence-transformers/distiluse-base-multilingual-cased-v1"
-# according to https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
-# v1 supports only 15 langages (German included) but is strongrer than v2 that supports 50+ languages
+# https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
+# v1 supports only 15 langages (German included) but is strongrer than v2 that
+# supports 50+ languages
 # NOTE: it's cased!
 LANG = "de"
 
@@ -82,12 +82,11 @@ def semantic_similarity(
         reference_outputs,
         prompts,
     ) = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts
-    )
-    assert model_type in ["local", "openai", "azure_openai"], (
-        "Unsupported embedding model type. "
-        'The supported ones are ["local", "openai", "azure_openai"]'
-    )
+        generated_outputs, reference_outputs, prompts)
+    assert model_type in [
+        "local", "openai", "azure_openai"
+    ], ("Unsupported embedding model type. "
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == "openai" or model_type == "azure_openai":
         # We can use the same API as english semantic_similarity to compare the
@@ -111,12 +110,12 @@ def semantic_similarity(
     generated_embeddings = []
     reference_embeddings = []
     for i in tqdm_wrapper(
-        range(0, len(generated_outputs), batch_size),
-        total=(len(generated_outputs) + batch_size - 1) // batch_size,
-        desc="Getting embeddings",
+            range(0, len(generated_outputs), batch_size),
+            total=(len(generated_outputs) + batch_size - 1) // batch_size,
+            desc="Getting embeddings",
     ):
-        batch_generated_outputs = generated_outputs[i : i + batch_size]
-        batch_reference_outputs = reference_outputs[i : i + batch_size]
+        batch_generated_outputs = generated_outputs[i:i + batch_size]
+        batch_reference_outputs = reference_outputs[i:i + batch_size]
         batch_generated_embeddings = model.encode(batch_generated_outputs)
         batch_reference_embeddings = model.encode(batch_reference_outputs)
         generated_embeddings.extend(batch_generated_embeddings)
@@ -125,12 +124,13 @@ def semantic_similarity(
     scores = []
     with torch.no_grad():
         for i in tqdm_wrapper(
-            range(0, len(generated_embeddings), batch_size),
-            total=(len(generated_embeddings) + batch_size - 1) // batch_size,
-            desc="Computing semantic similarity",
+                range(0, len(generated_embeddings), batch_size),
+                total=(len(generated_embeddings) + batch_size - 1) //
+                batch_size,
+                desc="Computing semantic similarity",
         ):
-            batch_generated_embeddings = generated_embeddings[i : i + batch_size]
-            batch_reference_embeddings = reference_embeddings[i : i + batch_size]
+            batch_generated_embeddings = generated_embeddings[i:i + batch_size]
+            batch_reference_embeddings = reference_embeddings[i:i + batch_size]
 
             cosine_scores = util.pairwise_cos_sim(
                 torch.tensor(batch_generated_embeddings),
@@ -185,10 +185,12 @@ def rouge1(
         reference_outputs,
         prompts,
     ) = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts
-    )
+        generated_outputs, reference_outputs, prompts)
 
-    scores = _rouge(generated_outputs, reference_outputs, "rouge1", tokenizer=tokenizer)
+    scores = _rouge(generated_outputs,
+                    reference_outputs,
+                    "rouge1",
+                    tokenizer=tokenizer)
     return MetricValue(
         metric_name="rouge1",
         prompts=prompts,
@@ -231,10 +233,12 @@ def rouge2(
         reference_outputs,
         prompts,
     ) = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts
-    )
+        generated_outputs, reference_outputs, prompts)
 
-    scores = _rouge(generated_outputs, reference_outputs, "rouge2", tokenizer=tokenizer)
+    scores = _rouge(generated_outputs,
+                    reference_outputs,
+                    "rouge2",
+                    tokenizer=tokenizer)
     return MetricValue(
         metric_name="rouge2",
         prompts=prompts,
@@ -277,8 +281,7 @@ def rougeL(
         reference_outputs,
         prompts,
     ) = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts
-    )
+        generated_outputs, reference_outputs, prompts)
 
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
     # - 1) sentence-level, where newline characters are ignored
@@ -290,9 +293,10 @@ def rougeL(
     # Python wrapper around original perl script implementation.
     #
     # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA: E501
-    scores = _rouge(
-        generated_outputs, reference_outputs, "rougeLsum", tokenizer=tokenizer
-    )
+    scores = _rouge(generated_outputs,
+                    reference_outputs,
+                    "rougeLsum",
+                    tokenizer=tokenizer)
     return MetricValue(
         metric_name="rougeL",
         prompts=prompts,
@@ -328,13 +332,12 @@ def _rouge(
 
     # The tokenizer is default to JanomeTokenizer
     tokenizer = tokenizer or DeTokenizer()
-    scorer = rouge_scorer.RougeScorer(
-        [rouge_type], use_stemmer=True, tokenizer=tokenizer
-    )
+    scorer = rouge_scorer.RougeScorer([rouge_type],
+                                      use_stemmer=True,
+                                      tokenizer=tokenizer)
     scores = []
-    for gen, ref in tqdm_wrapper(
-        zip(generated_outputs, reference_outputs), total=len(generated_outputs)
-    ):
+    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs),
+                                 total=len(generated_outputs)):
         score = scorer.score(gen, ref)
         scores.append(score[rouge_type].fmeasure)
     return scores

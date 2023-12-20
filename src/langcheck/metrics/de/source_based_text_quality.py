@@ -16,6 +16,7 @@ _factual_consistency_translation_pipeline: Pipeline | None = None
 
 LANG = 'de'
 
+
 def factual_consistency(
     generated_outputs: List[str] | str,
     sources: List[str] | str,
