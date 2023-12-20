@@ -15,8 +15,7 @@ from langcheck.metrics.de.reference_based_text_quality import \
     semantic_similarity
 # flesch_kincaid_grade is the same in English and German
 # ref: https://de.wikipedia.org/wiki/Lesbarkeitsindex#Flesch-Kincaid-Grade-Level
-from langcheck.metrics.en.reference_free_text_quality import (
-    _toxicity_openai, flesch_kincaid_grade)
+from langcheck.metrics.en.reference_free_text_quality import _toxicity_openai
 from langcheck.metrics.en.reference_free_text_quality import \
     fluency as en_fluency
 from langcheck.metrics.en.reference_free_text_quality import \
