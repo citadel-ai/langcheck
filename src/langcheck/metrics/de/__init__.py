@@ -3,10 +3,12 @@ from langcheck.metrics.de.reference_based_text_quality import (
 from langcheck.metrics.en.reference_free_text_quality import (
     ai_disclaimer_similarity, flesch_kincaid_grade, flesch_reading_ease,
     fluency, sentiment, toxicity)
-from langcheck.metrics.en.source_based_text_quality import factual_consistency
+from langcheck.metrics.en.source_based_text_quality import (context_relevance,
+                                                            factual_consistency)
 
 __all__ = [
     'ai_disclaimer_similarity',
+    'context_relevance',
     'factual_consistency',
     'flesch_kincaid_grade',
     'flesch_reading_ease',
