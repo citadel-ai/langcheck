@@ -38,7 +38,7 @@ class ModelConfig:
 
     def get_metric_model(self, language: str, metric_type: str):
         """
-        list the model used in current metric for a given language.
+        return the model used in current metric for a given language.
 
         Args:
             language: The language for which to get the model.
