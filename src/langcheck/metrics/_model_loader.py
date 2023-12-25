@@ -1,9 +1,10 @@
-from typing import Tuple, Optional
-from click import Option
-from transformers.pipelines import pipeline
-from transformers.models.auto.tokenization_auto import AutoTokenizer
-from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification  # NOQA:E501
+from typing import Optional, Tuple
+
 from sentence_transformers import SentenceTransformer
+from transformers.models.auto.modeling_auto import \
+    AutoModelForSequenceClassification
+from transformers.models.auto.tokenization_auto import AutoTokenizer
+from transformers.pipelines import pipeline
 
 
 def load_sentence_transformers(model_name: str) -> SentenceTransformer:

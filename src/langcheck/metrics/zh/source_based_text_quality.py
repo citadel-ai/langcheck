@@ -87,9 +87,9 @@ def factual_consistency(
     global _factual_consistency_translation_pipeline
     if _factual_consistency_translation_pipeline is None:
         from langcheck.metrics import _model_manager
-        tokenizer, model = _model_manager.fetch_model(language='zh', metric_type='factual')
+        tokenizer, model = _model_manager.fetch_model(language='zh', metric_type='factual')   # NOQA: E501
         _factual_consistency_translation_pipeline = pipeline(
-            'translation', model=model, tokenizer=tokenizer)
+            'translation', model=model, tokenizer=tokenizer)  # type: ignore
 
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since

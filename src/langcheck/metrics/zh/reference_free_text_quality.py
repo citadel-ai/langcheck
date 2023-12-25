@@ -94,7 +94,7 @@ def sentiment(
     )  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
     # # {0:"Negative", 1:'Positive'}
     from langcheck.metrics import _model_manager
-    tokenizer, model = _model_manager.fetch_model(lanaguage='zh', metric_type='sentiment')
+    tokenizer, model = _model_manager.fetch_model(lanaguage='zh', metric='sentiment')   # NOQA: E501
     _sentiment_pipeline = pipeline(
         'sentiment-analysis', model=model, tokenizer=tokenizer)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
     _model_id2label = _sentiment_pipeline.model.config.id2label
@@ -220,7 +220,7 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
     _toxicity_pipeline = pipeline('text-classification',
                                   model=model,
-                                  tokenizer=tokenizer,
+                                  tokenizer=tokenizer,  # type: ignore[reportOptionalIterable]  # NOQA: E501
                                   top_k=5)
 
     # {'Normal': 0, 'Pulp': 1, 'Sex': 2, 'Other Risk': 3, 'Adult': 4}

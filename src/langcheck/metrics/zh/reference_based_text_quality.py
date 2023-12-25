@@ -95,8 +95,8 @@ def semantic_similarity(
     model = _model_manager.fetch_model(language='zh',
                                        metric_type="semantic_similarity")
 
-    generated_embeddings = model.encode(generated_outputs)
-    reference_embeddings = model.encode(reference_outputs)
+    generated_embeddings = model.encode(generated_outputs)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    reference_embeddings = model.encode(reference_outputs)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
     cosine_scores = util.pairwise_cos_sim(
         generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
         reference_embeddings  # type: ignore[reportGeneralTypeIssues]
