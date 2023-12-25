@@ -1,4 +1,5 @@
 from typing import Tuple, Optional
+from click import Option
 from transformers.pipelines import pipeline
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification  # NOQA:E501
@@ -16,7 +17,8 @@ def load_sentence_transformers(model_name: str) -> SentenceTransformer:
 
 
 def load_auto_model_for_text_classification(model_name: str,
-                                            tokenizer_name: Optional[str])\
+                                            tokenizer_name: Optional[str],
+                                            revision: Optional[str])\
                             -> Tuple[AutoTokenizer,
                                      AutoModelForSequenceClassification]:
     """
@@ -25,9 +27,10 @@ def load_auto_model_for_text_classification(model_name: str,
     Args:
         model_name: The name of a sequenceclassification model on huggingface hub.  # NOQA:E501
         tokenizer_name: the name of a tokenizer on huggingface hub.
+        revisoin: the shorted sha1 string of a model
     """
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, revision=revision)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, revision=revision)  # NOQA: E501
     return tokenizer, model
 
 

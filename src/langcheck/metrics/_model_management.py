@@ -1,10 +1,24 @@
-import collections
-import configparser
+from copy import deepcopy
 import os
+import requests
+
 from pathlib import Path
+from pprint import pprint
+from typing import Optional
+from functools import lru_cache
+from configobj import ConfigObj
+from ._model_loader import (load_auto_model_for_text_classification,
+                            load_sentence_transformers)
+import pandas as pd
+
+# TODO: Use a ENUM class to parse these
+VALID_METRIC_NAME = ['factual_consistency', 'toxicity',
+                     'sentiment', 'semantic_similarity'
+                     ]
+VALID_LANGUAGE = ['zh']
 
 
-class ModelConfig:
+class ModelManager:
     """
     A class to manage different models for multiple languages in the
     langcheck.
@@ -18,116 +32,119 @@ class ModelConfig:
         Initializes the ModelConfig with empty model dictionaries for each
         language.
         """
+        self.config = None
         self.__init__config()
+        self.validate_config()
 
     def __init__config(self):
         cwd = os.path.dirname(__file__)
-        cfg = configparser.ConfigParser()
-        # Initial DEFAULT config from modelconfig.ini
-        cfg.read(os.path.join(Path(cwd), 'modelconfig.ini'))
-        self.model_config = collections.defaultdict(dict)
-        for lang in cfg.sections():
-            for metric_type in cfg[lang]:
-                self.model_config[lang][metric_type] = cfg.get(
-                    section=lang, option=metric_type
-                )  # type: ignore[reportGeneralIssue]  # NOQA:E501
+        self.config = ConfigObj(os.path.join(Path(cwd),
+                                             'config',
+                                             'metric_config.ini'))  # NOQA:E501
 
-    def reset(self):
-        ''' reset all model used in langcheck to default'''
-        self.__init__config()
-
-    def get_metric_model(self, language: str, metric_type: str):
+    @lru_cache
+    def fetch_model(self, language: str, metric_type: str):
         """
         return the model used in current metric for a given language.
 
         Args:
             language: The language for which to get the model.
             metric_type: The metric name.
-
-        Raises:
-            KeyError: If the specified language or model type is not found.
         """
-        if language in self.model_config:
-            if metric_type in self.model_config[language]:
-                return self.model_config[language][metric_type]
+        if language in self.config:  # type: ignore
+            if metric_type in self.config[language]:  # type: ignore
+                # deep copy the confguration
+                # any action on config would not distrub self.config 
+                config = deepcopy(self.config[language][metric_type])  # type: ignore[reportGeneralTypeIssues]  # NOQA:E501
+                # get model name, model loader type
+                model_name, loader_type = config['model_name'], config['loader']  # type: ignore[reportGeneralTypeIssues]  # NOQA:E501
+                # check if model version fixed
+                revision = config.pop("revision", None)
+                if loader_type == 'sentence-transformers':
+                    if revision is not None:
+                        print('Info: Sentence-Transformers do not support model version fixed yet')  # NOQA: E501
+                    model = load_sentence_transformers(model_name=model_name)
+                    return model
+                elif loader_type == 'huggingface':
+                    tokenizer_name = config.pop('tokenizer_name', None)
+                    return load_auto_model_for_text_classification(model_name=model_name,  # NOQA:E501
+                                                                   tokenizer_name=tokenizer_name,  # NOQA:E501
+                                                                   revision=revision   # NOQA:E501
+                                                                   )
+                else:
+                    raise KeyError(f'Loader {loader_type} not supported yet.')
             else:
-                raise KeyError(
-                    f"Model type '{metric_type}' not found for language '{language}'."  # NOQA:E501
-                )
+                raise KeyError(f'Metric {metric_type} not supported yet.')
         else:
-            raise KeyError(f"Language '{language}' not supported.")
+            raise KeyError(f'language {language} not supported yet')
 
-    def list_metric_model(self, language: str, metric_type: str):
-        """
-        list the model used in current metric for a given language.
+    def list_current_model_in_use(self, language='all', metric='all'):
+        """ list model in use.
 
         Args:
-            language: The language for which to get the model.
-            metric_type: The metric name.
-
-        Raises:
-            KeyError: If the specified language or model type is not found.
+            language: The abbrevation name of language.
+            metric: The evaluation metric name.
         """
-        if language in self.model_config:
-            if metric_type in self.model_config[language]:
-                print(self.model_config[language][metric_type])
+        df = pd.DataFrame.from_records(
+            [
+                (lang, metric_name, key, value)
+                for lang, lang_model_settings in self.config.items()
+                for metric_name, model_settings in lang_model_settings.items()
+                for key, value in model_settings.items()
+            ],
+            columns=['language', 'metric_name', 'attribute', 'value'])
+
+        # the code below would generate a dataframe:
+        # |index| language | metric_name | loader | model_name | revision |
+        # |.....|..........|.............|........|............|..........|
+        df_pivot = df.pivot_table(index=['language', 'metric_name'],
+                                  columns="attribute", values="value",
+                                  aggfunc='first').reset_index().\
+                                  drop(columns=["attribute"]).reset_index()
+        df_pivot.columns = ['language', 'metric_name', 'loader', 'model_name', 'revision']  # NOQA:E501
+
+        if language == 'all' and metric == 'all':
+            pprint(df_pivot)
+        else:
+            if language != "all":
+                df_pivot = df_pivot.loc[df_pivot.language == language]
+            if metric != 'all':
+                df_pivot = df_pivot.loc[df_pivot.metric_name == metric]
+            pprint(df_pivot)
+
+    def validate_config(self, language='all', metric='all'):
+        """validate configuration.
+
+        Args:
+            language (str, optional):the name of the language. Defaults to 'all'.
+            metric (str, optional): the name of evaluation metric. Defaults to 'all'.
+        """
+        def check_model_availability(model_name, revision):
+            if revision is None:
+                url = f"https://huggingface.co/api/models/{model_name}"
             else:
-                raise KeyError(
-                    f"Model type '{metric_type}' not found for language '{language}'."  # NOQA:E501
-                )
-        else:
-            raise KeyError(f"Language '{language}' not supported.")
+                url = f"https://huggingface.co/api/models/{model_name}/revision/{revision}"
+            response = requests.get(url)
+            return response.status_code == 200
 
-    def set_model_for_metric(self, language: str, metric_type: str,
-                             model_name: str):
-        """
-        Sets a specific model used in metric_type for a given language.
-
-        Args:
-            language: The language for which to set the model.
-            metric_type: The type of the model (e.g., 'sentiment_model').
-            model_name: The name of the model.
-
-        Raises:
-            KeyError: If the specified language is not supported.
-        """
-        if language in self.model_config:
-            if metric_type in self.model_config[language]:
-                self.model_config[language][metric_type] = model_name
-            else:
-                raise KeyError(f"Metrics '{metric_type}' not used in metric.")
-        else:
-            raise KeyError(f"Language '{language}' not supported.")
-
-    def load_config_from_file(self, file_path: str):
-        """
-        Loads model configurations from a specified configuration file.
-
-        The configuration file should have sections for each language with
-        key-value pairs for each metrics and model_name.
-
-        Args:
-            file_path: The path to the configuration file containing model
-            configurations.
-        """
-        config = configparser.ConfigParser()
-        config.read(file_path)
-
-        for lanuage_section in config.sections():
-            if lanuage_section in self.model_config:
-                for metric_type, model_name in config[lanuage_section].items():
-                    if metric_type in self.model_config[lanuage_section]:
-                        self.model_config[lanuage_section][
-                            metric_type] = model_name  # NOQA:E501
-
-    def save_config_to_disk(self, output_path: str):
-        """
-        Save Model Configuration to output path.
-        Args:
-            output_path: The path to save the configuration file
-        """
-        cfg = configparser.ConfigParser()
-        cfg.read_dict(self.model_config)
-
-        with open(output_path, 'w') as f:
-            cfg.write(f)
+        config = deepcopy(self.config)
+        for lang, lang_setting in config.items():
+            if language == 'all' or lang == language:
+                for metric_name, model_setting in lang_setting.items():
+                    if metric == 'all' or metric_name == metric:
+                        # if model name not set
+                        if 'model_name' not in model_setting:
+                            raise KeyError(f'{lang} metrics {metric_name} need a model, but found None!')  # NOQA:E501
+                        if 'loader' not in model_setting:
+                            raise KeyError(f'Metrics {metric_name} need a loader, but found None!')  # NOQA:E501
+                        # check if the model and revision is available on huggingface Hub  # NOQA:E501
+                        loader_type = model_setting.pop('loader')
+                        if loader_type == 'huggingface':
+                            model_name = model_setting.pop('model_name')
+                            revision = model_setting.pop('revision', None)
+                            if not check_model_availability(model_name, revision):  # NOQA:E501
+                                raise ValueError(f"""Cannot find {model_name} with  # NOQA:E501
+                                                {revision} and Huggingface Hub""")
+                        # may also need other validate method for other loader
+                        # not found yet
+        print('Configuration Validation Passed')
