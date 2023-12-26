@@ -2,12 +2,14 @@ from langcheck.metrics.ja._tokenizers import JanomeTokenizer, MeCabTokenizer
 from langcheck.metrics.ja.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.ja.reference_free_text_quality import (
-    fluency, sentiment, tateishi_ono_yamada_reading_ease, toxicity)
+    answer_relevance, fluency, sentiment, tateishi_ono_yamada_reading_ease,
+    toxicity)
 from langcheck.metrics.ja.source_based_text_quality import (context_relevance,
                                                             factual_consistency)
 
 __all__ = [
-    'context_relevance', 'factual_consistency', 'JanomeTokenizer',
-    'MeCabTokenizer', 'rouge1', 'rouge2', 'rougeL', 'semantic_similarity',
-    'fluency', 'sentiment', 'tateishi_ono_yamada_reading_ease', 'toxicity'
+    'answer_relevance', 'context_relevance', 'factual_consistency',
+    'JanomeTokenizer', 'MeCabTokenizer', 'rouge1', 'rouge2', 'rougeL',
+    'semantic_similarity', 'fluency', 'sentiment',
+    'tateishi_ono_yamada_reading_ease', 'toxicity'
 ]

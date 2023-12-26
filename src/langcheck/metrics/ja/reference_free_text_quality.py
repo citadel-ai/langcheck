@@ -10,7 +10,9 @@ from transformers.models.auto.modeling_auto import \
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
-from langcheck.metrics._validation import validate_parameters_reference_free
+from langcheck.metrics._validation import (validate_parameters_answer_relevance,
+                                           validate_parameters_reference_free)
+from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_free_text_quality import (_fluency_openai,
                                                               _toxicity_openai)
 from langcheck.metrics.en.reference_free_text_quality import \
@@ -459,4 +461,107 @@ def tateishi_ono_yamada_reading_ease(
                        sources=None,
                        explanations=None,
                        metric_values=scores,
+                       language='ja')
+
+
+def answer_relevance(
+    generated_outputs: List[str] | str,
+    prompts: List[str] | str,
+    model_type: str = 'openai',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
+    '''Calculates the relevance of generated outputs to the prompt. This metric
+    takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
+    Relevant), or 1.0 (Fully Relevant). The score may also be `None` if it could
+    not be computed.
+
+    We currently support two model types:
+
+    1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
+    for examples on setting up the OpenAI API key.
+
+    2. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    '''
+    generated_outputs, prompts = validate_parameters_answer_relevance(
+        generated_outputs, prompts)
+    assert model_type in [
+        'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["openai", "azure_openai"]')
+
+    def _prompt(gen_output: str, user_query: str) -> str:
+        return f'''
+        ユーザーの質問に対する回答の関連性を評価してください。データは以下の通りです:
+        [BEGIN DATA]
+        ************
+        [ユーザーの質問]: {user_query}
+        ************
+        [回答]: {gen_output}
+        ************
+        [END DATA]
+
+        ユーザーの質問に対して回答が関連性のあるものかどうかを判断してください。利用可能な評価
+        は以下の通りです:
+        `完全に関連` - 回答はユーザーの質問に完全に関連し、十分に答えています。
+        `部分的に関連` - 回答はユーザーの質問に部分的に関連していますが、質問に完全に答えて
+        いないか、関連しない情報が含まれています。
+        `関連なし` - 回答はユーザーの質問に関連していない、または質問に適切に対応していません。
+
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        以下はユーザーの質問に対する回答の関連性に関する評価です:
+        ************
+        [評価]: {long_assessment}
+        ************
+
+        結果として出た評価を保存してください。利用可能な評価は以下の通りです:
+        `完全に関連`
+        `部分的に関連`
+        `関連なし`
+        '''
+
+    answer_relevance_assessment_to_score = {
+        '完全に関連': 1.0,
+        '部分的に関連': 0.5,
+        '関連なし': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=answer_relevance_assessment_to_score,
+        function_name='save_answer_relevance_assessment',
+        function_description=("Saves an answer relevance assessment."),
+        argument_name='answer_relevance',
+        argument_description='The answer relevance assessment',
+        client_type=model_type,
+        client=openai_client,
+        openai_args=openai_args)
+
+    score_list = []
+    explanation_list = []
+    for gen, user_query in tqdm_wrapper(zip(generated_outputs, prompts),
+                                        desc='Calculating scores',
+                                        total=len(prompts)):
+        score, explanation = oai_evaluator.get_score(_prompt(gen, user_query),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+
+    return MetricValue(metric_name='answer_relevance',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       explanations=explanation_list,
+                       metric_values=score_list,
                        language='ja')
