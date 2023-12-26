@@ -755,3 +755,107 @@ def ai_disclaimer_similarity(
                        explanations=None,
                        metric_values=semantic_similarity_values.metric_values,
                        language='en')
+
+
+def answer_relevance(
+    generated_outputs: List[str] | str,
+    prompts: List[str] | str,
+    model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
+    '''Calculates the relevance of generated outputs to the prompt. This metric
+    takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
+    Relevant), or 1.0 (Fully Relevant). The score may also be `None` if it could
+    not be computed.
+
+    We currently support two model types:
+
+    1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
+    for examples on setting up the OpenAI API key.
+
+    2. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    '''
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
+
+    def _prompt(gen_output: str, user_query: str) -> str:
+        return f'''
+        You are evaluating the relevance of the answer to a user's query. Here
+        is the data:
+        [BEGIN DATA]
+        ************
+        [User Query]: {user_query}
+        ************
+        [Answer]: {gen_output}
+        ************
+        [END DATA]
+
+        Determine whether the answer is a relevant response to the user's query.
+        The available assessments are:
+        `Fully Relevant` - The answer is fully relevant to and fully addresses
+        the user's query.
+        `Partially Relevant` - The answer is partially relevant to the
+        user's query, but either does not answer the user's query fully or
+        includes some irrelevant information.
+        `Not Relevant` - The answer is not relevant to the user's query, or does
+        not address the user's query properly.
+
+        Take a deep breath and work on this problem step-by-step.
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        The following is an assessment on the relevance of an answer to a user's
+        query:
+        ************
+        [Assessment]: {long_assessment}
+        ************
+
+        Save the resulting assessment. The available assessments are:
+        `Fully Relevant`
+        `Partially Relevant`
+        `Not Relevant`
+        '''
+
+    answer_relevance_assessment_to_score = {
+        'Fully Relevant': 1.0,
+        'Partially Relevant': 0.5,
+        'Not Relevant': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=answer_relevance_assessment_to_score,
+        function_name='save_answer_relevance_assessment',
+        function_description=("Saves an answer relevance assessment."),
+        argument_name='answer_relevance',
+        argument_description='The answer relevance assessment',
+        client_type=model_type,
+        client=openai_client,
+        openai_args=openai_args)
+
+    score_list = []
+    explanation_list = []
+    for gen, user_query in tqdm_wrapper(zip(generated_outputs, prompts),
+                                        desc='Calculating scores',
+                                        total=len(prompts)):
+        score, explanation = oai_evaluator.get_score(_prompt(gen, user_query),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+
+    return MetricValue(metric_name='answer_relevance',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       explanations=explanation_list,
+                       metric_values=score_list,
+                       language='en')
