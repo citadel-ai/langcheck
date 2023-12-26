@@ -761,7 +761,7 @@ def ai_disclaimer_similarity(
 def answer_relevance(
     generated_outputs: List[str] | str,
     prompts: List[str] | str,
-    model_type: str = 'local',
+    model_type: str = 'openai',
     openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
@@ -787,6 +787,10 @@ def answer_relevance(
     '''
     generated_outputs, prompts = validate_parameters_answer_relevance(
         generated_outputs, prompts)
+    assert model_type in [
+        'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["openai", "azure_openai"]')
 
     def _prompt(gen_output: str, user_query: str) -> str:
         return f'''
