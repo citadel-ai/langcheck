@@ -9,7 +9,8 @@ from transformers.models.auto.modeling_auto import \
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
-from langcheck.metrics._validation import validate_parameters_reference_free
+from langcheck.metrics._validation import (validate_parameters_answer_relevance,
+                                           validate_parameters_reference_free)
 from langcheck.metrics.en._detoxify import Detoxify
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_based_text_quality import \
@@ -784,7 +785,7 @@ def answer_relevance(
     model deployment to use in ``openai_args``, e.g.
     ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
     '''
-    generated_outputs, prompts = validate_parameters_reference_free(
+    generated_outputs, prompts = validate_parameters_answer_relevance(
         generated_outputs, prompts)
 
     def _prompt(gen_output: str, user_query: str) -> str:
