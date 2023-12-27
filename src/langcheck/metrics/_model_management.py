@@ -58,17 +58,17 @@ class ModelManager:
         '''
         if language in self.config:
             if metric in self.config[language]:
-                # deep copy the confguration
-                # any action on config would not distrub self.config
+                # Deep copy the confguration so that changes to `config` would
+                # not affect the original `self.config`.
                 config = deepcopy(self.config[language][metric])
-                # get model name, model loader type
+                # Get model name, model loader type
                 model_name, loader_type = config['model_name'], config['loader']
-                # check if model version fixed
+                # Check if the model version is fixed
                 revision = config.pop("revision", None)
                 if loader_type == 'sentence-transformers':
                     if revision is not None:
                         print(
-                            'Info: Sentence-Transformers do not support model version fixed yet'  # NOQA:E501
+                            'Info: Sentence-Transformers do not support fixed model versions yet'  # NOQA:E501
                         )
                     model = load_sentence_transformers(model_name=model_name)
                     return model
@@ -101,7 +101,7 @@ class ModelManager:
              for key, value in model_settings.items()],
             columns=['language', 'metric_name', 'attribute', 'value'])
 
-        # the code below would generate a dataframe:
+        # The code below would generate a dataframe:
         # |index| language | metric_name | loader | model_name | revision |
         # |.....|..........|.............|........|............|..........|
         df_pivot = df.pivot_table(index=['language', 'metric_name'],
@@ -144,7 +144,7 @@ class ModelManager:
             if language == 'all' or lang == language:
                 for metric_name, model_setting in lang_setting.items():
                     if metric == 'all' or metric_name == metric:
-                        # if model name not set
+                        # If model name not set
                         if 'model_name' not in model_setting:
                             raise KeyError(
                                 f'{lang} metrics {metric_name} need a model, but found None!'  # NOQA:E501
@@ -167,7 +167,7 @@ class ModelManager:
                         elif loader_type not in VALID_LOADER:
                             raise ValueError(
                                 f'loader type should in {VALID_LOADER}')
-                        # may also need other validate method for other loader
+                        # TODO: May also need other validations for other loader
                         # not found yet
         print('Configuration Validation Passed')
 
@@ -196,20 +196,20 @@ class ModelManager:
             config = self.config[language][metric]
             config['loader'] = loader
             config['model_name'] = model_name
-            # if tokenizer_name is different with model
+            # If tokenizer_name is different from model_name
             tokenizer_name = kwargs.pop('tokenizer_name', None)
             if tokenizer_name:
                 config['tokenizer_name'] = tokenizer_name
-            # if model's revision is pinned
+            # If model's revision is pinned
             revision = kwargs.pop('revision', None)
             if revision:
                 config['revision'] = revision
-            # validate the change
+            # Validate the change
             if self.validate_config(language=language, metric=metric):
-                # clear the LRU cache to make the config change
-                # reflected imediately
+                # Clear the LRU cache to make the config change reflected
+                # immediately
                 self.fetch_model.cache_clear()
         except (ValueError, KeyError) as err:
-            # trace back the configuration
+            # Trace back the configuration
             self.config = config_copy
             raise err
