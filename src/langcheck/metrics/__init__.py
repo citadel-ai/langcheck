@@ -2,8 +2,8 @@ from langcheck.metrics import en, ja
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (
-    ai_disclaimer_similarity, flesch_kincaid_grade, flesch_reading_ease,
-    fluency, sentiment, toxicity)
+    ai_disclaimer_similarity, answer_relevance, flesch_kincaid_grade,
+    flesch_reading_ease, fluency, sentiment, toxicity)
 from langcheck.metrics.en.source_based_text_quality import (context_relevance,
                                                             factual_consistency)
 from langcheck.metrics.metric_value import MetricValue
@@ -18,6 +18,7 @@ __all__ = [
     'en',
     'ja',
     'ai_disclaimer_similarity',
+    'answer_relevance',
     'contains_all_strings',
     'contains_any_strings',
     'contains_regex',
