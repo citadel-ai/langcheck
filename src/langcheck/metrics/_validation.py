@@ -136,6 +136,40 @@ def validate_parameters_context_relevance(
     return prompts, sources
 
 
+def validate_parameters_answer_relevance(
+        generated_outputs: List[str] | str,
+        prompts: List[str] | str) -> tuple[List[str], List[str]]:
+    '''Validates and parses function parameters for the answer relevance
+    metric.
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompt(s)
+
+    Returns:
+        A tuple (generated_outputs, prompts) of the parsed parameters, converted
+        to lists of strings.
+    '''
+    # Convert single-string parameters to lists
+    if isinstance(generated_outputs, str):
+        generated_outputs = [generated_outputs]
+    if isinstance(prompts, str):
+        prompts = [prompts]
+
+    # Check that generated_outputs and prompts are not empty
+    if not generated_outputs:
+        raise ValueError('Please specify at least one generated output')
+    if not prompts:
+        raise ValueError('Please specify at least one prompt')
+
+    # Check that the lengths of lists match
+    if len(generated_outputs) != len(prompts):
+        raise ValueError(
+            'The number of generated_outputs and prompts and do not match')
+
+    return generated_outputs, prompts
+
+
 def _validate_parameters(
     generated_outputs: List[str] | str, prompts: Optional[List[str] | str],
     reference_outputs: Optional[List[str] | str],
