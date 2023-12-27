@@ -46,9 +46,10 @@ class ModelManager:
             os.path.join(Path(cwd), 'config', 'metric_config.ini'))
 
     @lru_cache
-    def fetch_model(self, language: str, metric: str)\
-        -> Union[Tuple[AutoTokenizer, AutoModelForSequenceClassification],
-                 SentenceTransformer]:
+    def fetch_model(
+        self, language: str, metric: str
+    ) -> Union[Tuple[AutoTokenizer, AutoModelForSequenceClassification],
+               SentenceTransformer]:
         '''
         Return the model used for the given metric and language.
 
