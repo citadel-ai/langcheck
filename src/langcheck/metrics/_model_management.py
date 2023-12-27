@@ -2,7 +2,7 @@ import os
 from copy import deepcopy
 from functools import lru_cache
 from pathlib import Path
-from pprint import pprint
+from tabulate import tabulate
 from typing import Optional, Tuple, Union
 
 import pandas as pd
@@ -85,7 +85,7 @@ class ModelManager:
             else:
                 raise KeyError(f'Metric {metric} not supported yet.')
         else:
-            raise KeyError(f'language {language} not supported yet')
+            raise KeyError(f'Language {language} not supported yet')
 
     def list_current_model_in_use(self, language='all', metric='all'):
         '''
@@ -101,27 +101,28 @@ class ModelManager:
              for metric_name, model_settings in lang_model_settings.items()
              for key, value in model_settings.items()],
             columns=['language', 'metric_name', 'attribute', 'value'])
-
         # The code below would generate a dataframe:
         # |index| language | metric_name | loader | model_name | revision |
         # |.....|..........|.............|........|............|..........|
         df_pivot = df.pivot_table(index=['language', 'metric_name'],
                                   columns="attribute",
                                   values="value",
-                                  aggfunc='first').reset_index().drop(
-                                      columns=["attribute"]).reset_index()
+                                  aggfunc='first').reset_index().rename_axis(
+                                  None, axis=1)
         df_pivot.columns = [
             'language', 'metric_name', 'loader', 'model_name', 'revision'
         ]
 
         if language == 'all' and metric == 'all':
-            pprint(df_pivot)
+            print(tabulate(df_pivot, headers=df_pivot.columns,
+                           tablefmt="github"))
         else:
             if language != "all":
                 df_pivot = df_pivot.loc[df_pivot.language == language]
             if metric != 'all':
                 df_pivot = df_pivot.loc[df_pivot.metric_name == metric]
-            pprint(df_pivot)
+            print(tabulate(df_pivot, headers=df_pivot.columns,
+                           tablefmt="github"))
 
     def validate_config(self, language='all', metric='all'):
         '''
@@ -142,34 +143,36 @@ class ModelManager:
 
         config = deepcopy(self.config)
         for lang, lang_setting in config.items():
-            if language == 'all' or lang == language:
-                for metric_name, model_setting in lang_setting.items():
-                    if metric == 'all' or metric_name == metric:
-                        # If model name not set
-                        if 'model_name' not in model_setting:
-                            raise KeyError(
-                                f'{lang} metrics {metric_name} need a model, but found None!'  # NOQA:E501
-                            )
-                        if 'loader' not in model_setting:
-                            raise KeyError(
-                                f'Metrics {metric_name} need a loader, but found None!'  # NOQA:E501
-                            )
-                        # Check if the model and revision is available on
-                        # Hugging Face Hub
-                        loader_type = model_setting.pop('loader')
-                        if loader_type == 'huggingface':
-                            model_name = model_setting.pop('model_name')
-                            revision = model_setting.pop('revision', None)
-                            if not check_model_availability(
-                                    model_name, revision):
-                                raise ValueError(
-                                    f'Cannot find {model_name} with {revision} and Huggingface Hub'  # NOQA:E501
-                                )
-                        elif loader_type not in VALID_LOADER:
-                            raise ValueError(
-                                f'loader type should in {VALID_LOADER}')
-                        # TODO: May also need other validations for other loader
-                        # not found yet
+            if language != 'all' and lang != language:
+                continue
+            for metric_name, model_setting in lang_setting.items():
+                if metric != 'all' and metric_name != metric:
+                    continue
+                # If model name not set
+                if 'model_name' not in model_setting:
+                    raise KeyError(
+                        f'{lang} metrics {metric_name} need a model, but found None!'  # NOQA:E501
+                    )
+                if 'loader' not in model_setting:
+                    raise KeyError(
+                        f'Metrics {metric_name} need a loader, but found None!'  # NOQA:E501
+                    )
+                # Check if the model and revision is available on
+                # Hugging Face Hub
+                loader_type = model_setting.pop('loader')
+                if loader_type == 'huggingface':
+                    model_name = model_setting.pop('model_name')
+                    revision = model_setting.pop('revision', None)
+                    if not check_model_availability(
+                            model_name, revision):
+                        raise ValueError(
+                            f'Cannot find {model_name} with {revision} and Huggingface Hub'  # NOQA:E501
+                        )
+                elif loader_type not in VALID_LOADER:
+                    raise ValueError(
+                        f'loader type should in {VALID_LOADER}')
+                # TODO: May also need other validations for other loader
+                # not found yet
         print('Configuration Validation Passed')
 
     def set_model_for_metric(self, language: str, metric: str, model_name: str,
@@ -182,16 +185,16 @@ class ModelManager:
             metric: The name of the evaluation metrics
             model_name: The name of the model
             loader: The loader of the model
-            tokenizer_name: (Optional) the name of the tokenizer
-            revision: (Optional) a version string of the model
+            tokenizer_name: (Optional) The name of the tokenizer
+            revision: (Optional) A version string of the model
         '''
         config_copy = deepcopy(self.config)
         try:
             if language not in VALID_LANGUAGE:
-                raise ValueError('Language {language} not supported yet')
+                raise KeyError('Language {language} not supported yet')
 
             if metric not in self.config[language]:
-                raise ValueError(
+                raise KeyError(
                     'Language {language} not supported {metric} yet')
 
             config = self.config[language][metric]
