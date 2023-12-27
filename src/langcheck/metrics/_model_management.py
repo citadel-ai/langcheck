@@ -37,7 +37,6 @@ class ModelManager:
         Initializes the ModelConfig with empty model dictionaries for each
         language.
         '''
-        self.config = None
         self.__init__config()
         self.validate_config()
 
@@ -57,16 +56,13 @@ class ModelManager:
             language: The language for which to get the model
             metric_type: The metric name
         '''
-        if language in self.config:  # type: ignore
-            if metric in self.config[language]:  # type: ignore
+        if language in self.config:
+            if metric in self.config[language]:
                 # deep copy the confguration
                 # any action on config would not distrub self.config
-                config = deepcopy(self.config[language][
-                    metric]  # type: ignore[reportGeneralTypeIssues]  # NOQA:E501
-                                 )
+                config = deepcopy(self.config[language][metric])
                 # get model name, model loader type
-                model_name, loader_type = config['model_name'], config[
-                    'loader']  # type: ignore[reportGeneralTypeIssues]  # NOQA:E501
+                model_name, loader_type = config['model_name'], config['loader']
                 # check if model version fixed
                 revision = config.pop("revision", None)
                 if loader_type == 'sentence-transformers':
@@ -100,14 +96,10 @@ class ModelManager:
             metric: The evaluation metric name
         '''
         df = pd.DataFrame.from_records(
-            [
-                (lang, metric_name, key, value)
-                for lang, lang_model_settings in
-                self.config.items()  # type: ignore  # NOQA:E501
-                for metric_name, model_settings in
-                lang_model_settings.items()  # type: ignore  # NOQA:E501
-                for key, value in model_settings.items()
-            ],
+            [(lang, metric_name, key, value)
+             for lang, lang_model_settings in self.config.items()
+             for metric_name, model_settings in lang_model_settings.items()
+             for key, value in model_settings.items()],
             columns=['language', 'metric_name', 'attribute', 'value'])
 
         # the code below would generate a dataframe:
@@ -150,10 +142,9 @@ class ModelManager:
             return response.status_code == 200
 
         config = deepcopy(self.config)
-        for lang, lang_setting in config.items():  # type: ignore  # NOQA:E501
+        for lang, lang_setting in config.items():
             if language == 'all' or lang == language:
-                for metric_name, model_setting in lang_setting.items(  # type: ignore  # NOQA:E501
-                ):
+                for metric_name, model_setting in lang_setting.items():
                     if metric == 'all' or metric_name == metric:
                         # if model name not set
                         if 'model_name' not in model_setting:
@@ -201,12 +192,12 @@ class ModelManager:
             if language not in VALID_LANGUAGE:
                 raise ValueError('Language {language} not supported yet')
 
-            if metric not in self.config[language]:  # type: ignore  # NOQA:E501
+            if metric not in self.config[language]:
                 raise ValueError(
                     'Language {language} not supported {metric} yet'
                 )  # NOQA:E501
 
-            config = self.config[language][metric]  # type: ignore  # NOQA:E501
+            config = self.config[language][metric]
             config['loader'] = loader
             config['model_name'] = model_name
             # if tokenizer_name is different with model
