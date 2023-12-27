@@ -43,7 +43,7 @@ class ModelManager:
     def __init__config(self):
         cwd = os.path.dirname(__file__)
         self.config = ConfigObj(
-            os.path.join(Path(cwd), 'config', 'metric_config.ini'))  # NOQA:E501
+            os.path.join(Path(cwd), 'config', 'metric_config.ini'))
 
     @lru_cache
     def fetch_model(self, language: str, metric: str)\
@@ -68,17 +68,16 @@ class ModelManager:
                 if loader_type == 'sentence-transformers':
                     if revision is not None:
                         print(
-                            'Info: Sentence-Transformers do not support model version fixed yet'  # NOQA: E501
+                            'Info: Sentence-Transformers do not support model version fixed yet'  # NOQA:E501
                         )
                     model = load_sentence_transformers(model_name=model_name)
                     return model
                 elif loader_type == 'huggingface':
                     tokenizer_name = config.pop('tokenizer_name', None)
                     tokenizer, model = load_auto_model_for_text_classification(
-                        model_name=model_name,  # NOQA:E501
-                        tokenizer_name=tokenizer_name,  # NOQA:E501
-                        revision=revision  # NOQA:E501
-                    )
+                        model_name=model_name,
+                        tokenizer_name=tokenizer_name,
+                        revision=revision)
                     return tokenizer, model
                 else:
                     raise KeyError(f'Loader {loader_type} not supported yet.')
@@ -105,15 +104,14 @@ class ModelManager:
         # the code below would generate a dataframe:
         # |index| language | metric_name | loader | model_name | revision |
         # |.....|..........|.............|........|............|..........|
-        df_pivot = df.pivot_table(
-            index=['language', 'metric_name'],
-            columns="attribute",
-            values="value",
-            aggfunc='first').reset_index().drop(
-                columns=["attribute"]).reset_index()  # NOQA:E501
+        df_pivot = df.pivot_table(index=['language', 'metric_name'],
+                                  columns="attribute",
+                                  values="value",
+                                  aggfunc='first').reset_index().drop(
+                                      columns=["attribute"]).reset_index()
         df_pivot.columns = [
             'language', 'metric_name', 'loader', 'model_name', 'revision'
-        ]  # NOQA:E501
+        ]
 
         if language == 'all' and metric == 'all':
             pprint(df_pivot)
@@ -155,21 +153,20 @@ class ModelManager:
                             raise KeyError(
                                 f'Metrics {metric_name} need a loader, but found None!'  # NOQA:E501
                             )
-                        # check if the model and revision is available on huggingface Hub  # NOQA:E501
+                        # Check if the model and revision is available on
+                        # Hugging Face Hub
                         loader_type = model_setting.pop('loader')
                         if loader_type == 'huggingface':
                             model_name = model_setting.pop('model_name')
                             revision = model_setting.pop('revision', None)
                             if not check_model_availability(
-                                    model_name, revision):  # NOQA:E501
+                                    model_name, revision):
                                 raise ValueError(
-                                    f"""Cannot find {model_name} with  # NOQA:E501
-                                                {revision} and Huggingface Hub"""
+                                    f'Cannot find {model_name} with {revision} and Huggingface Hub'  # NOQA:E501
                                 )
                         elif loader_type not in VALID_LOADER:
                             raise ValueError(
-                                f'loader type should in {VALID_LOADER}'
-                            )  # NOQA: E501
+                                f'loader type should in {VALID_LOADER}')
                         # may also need other validate method for other loader
                         # not found yet
         print('Configuration Validation Passed')
@@ -194,8 +191,7 @@ class ModelManager:
 
             if metric not in self.config[language]:
                 raise ValueError(
-                    'Language {language} not supported {metric} yet'
-                )  # NOQA:E501
+                    'Language {language} not supported {metric} yet')
 
             config = self.config[language][metric]
             config['loader'] = loader
