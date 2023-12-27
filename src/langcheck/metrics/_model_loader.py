@@ -17,11 +17,9 @@ def load_sentence_transformers(model_name: str) -> SentenceTransformer:
     return SentenceTransformer(model_name)
 
 
-def load_auto_model_for_text_classification(model_name: str,
-                                            tokenizer_name: Optional[str],
-                                            revision: Optional[str])\
-                            -> Tuple[AutoTokenizer,
-                                     AutoModelForSequenceClassification]:
+def load_auto_model_for_text_classification(
+    model_name: str, tokenizer_name: Optional[str], revision: Optional[str]
+) -> Tuple[AutoTokenizer, AutoModelForSequenceClassification]:
     '''
     Return a Hugging Face sequence-classification model.
 
