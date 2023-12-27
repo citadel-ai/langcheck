@@ -25,19 +25,18 @@ VALID_LOADER = ['huggingface', 'sentence-transformers']
 
 
 class ModelManager:
-    """
-    A class to manage different models for multiple languages in the
-    langcheck.
-    This class allows setting and retrieving different model names.
-    (like sentiment_model, semantic_similarity_model, etc.) for each language.
+    '''
+    A class to manage different models for multiple languages in LangCheck.
+    This class allows setting and retrieving different model names (like
+    sentiment_model, semantic_similarity_model, etc.) for each language.
     It also supports loading model configurations from a file.
-    """
+    '''
 
     def __init__(self):
-        """
+        '''
         Initializes the ModelConfig with empty model dictionaries for each
         language.
-        """
+        '''
         self.config = None
         self.__init__config()
         self.validate_config()
@@ -51,20 +50,20 @@ class ModelManager:
     def fetch_model(self, language: str, metric: str)\
         -> Union[Tuple[AutoTokenizer, AutoModelForSequenceClassification],
                  SentenceTransformer]:
-        """
-        return the model used in current metric for a given language.
+        '''
+        Return the model used for the given metric and language.
 
         Args:
-            language: The language for which to get the model.
-            metric_type: The metric name.
-        """
+            language: The language for which to get the model
+            metric_type: The metric name
+        '''
         if language in self.config:  # type: ignore
             if metric in self.config[language]:  # type: ignore
                 # deep copy the confguration
                 # any action on config would not distrub self.config
-                config = deepcopy(
-                    self.config[language][metric]  # type: ignore[reportGeneralTypeIssues]  # NOQA:E501
-                )
+                config = deepcopy(self.config[language][
+                    metric]  # type: ignore[reportGeneralTypeIssues]  # NOQA:E501
+                                 )
                 # get model name, model loader type
                 model_name, loader_type = config['model_name'], config[
                     'loader']  # type: ignore[reportGeneralTypeIssues]  # NOQA:E501
@@ -93,12 +92,13 @@ class ModelManager:
             raise KeyError(f'language {language} not supported yet')
 
     def list_current_model_in_use(self, language='all', metric='all'):
-        """ list model in use.
+        '''
+        List the models currently in use.
 
         Args:
-            language: The abbrevation name of language.
-            metric: The evaluation metric name.
-        """
+            language: The abbrevation name of language
+            metric: The evaluation metric name
+        '''
         df = pd.DataFrame.from_records(
             [
                 (lang, metric_name, key, value)
@@ -133,12 +133,13 @@ class ModelManager:
             pprint(df_pivot)
 
     def validate_config(self, language='all', metric='all'):
-        """validate configuration.
+        '''
+        Validate configuration.
 
         Args:
-            language (str, optional):the name of the language. Defaults to 'all'.  # NOQA:E501
-            metric (str, optional): the name of evaluation metric. Defaults to 'all'.  # NOQA:E501
-        """
+            language: The name of the language. Defaults to 'all'.
+            metric: The name of the metric. Defaults to 'all'.
+        '''
 
         def check_model_availability(model_name, revision):
             if revision is None:
@@ -184,16 +185,17 @@ class ModelManager:
 
     def set_model_for_metric(self, language: str, metric: str, model_name: str,
                              loader: Optional[str], **kwargs):
-        """set model for specified metric in specified language
+        '''
+        Set model for specified metric in specified language.
 
         Args:
-            language (str): the name of the lanuage,
-            metric (str): the name of the evaluation metrics,
-            loader(str): the loader of the model, optional,
-            model_name(str): the name of the model,
-            tokenizer_name(str): optional, the name of the tokenizer,
-            revision(str): a version string of the model.
-        """
+            language: The name of the language
+            metric: The name of the evaluation metrics
+            model_name: The name of the model
+            loader: The loader of the model
+            tokenizer_name: (Optional) the name of the tokenizer
+            revision: (Optional) a version string of the model
+        '''
         config_copy = deepcopy(self.config)
         try:
             if language not in VALID_LANGUAGE:
