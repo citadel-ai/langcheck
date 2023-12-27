@@ -8,12 +8,12 @@ from transformers.pipelines import pipeline
 
 
 def load_sentence_transformers(model_name: str) -> SentenceTransformer:
-    """
-    return a sentence-transformer model.
+    '''
+    Return a Hugging Face sentence-transformer model.
 
     Args:
-        model_name: The model name of a sentence-transformers model
-    """
+        model_name: The name of a sentence-transformer model
+    '''
     return SentenceTransformer(model_name)
 
 
@@ -22,25 +22,26 @@ def load_auto_model_for_text_classification(model_name: str,
                                             revision: Optional[str])\
                             -> Tuple[AutoTokenizer,
                                      AutoModelForSequenceClassification]:
-    """
-    return a Huggingface text-classification pipeline.
+    '''
+    Return a Hugging Face sequence-classification model.
 
     Args:
-        model_name: The name of a sequenceclassification model on huggingface hub.  # NOQA:E501
-        tokenizer_name: the name of a tokenizer on huggingface hub.
-        revisoin: the shorted sha1 string of a model
-    """
+        model_name: The name of a sequence-classification model on Hugging Face
+        tokenizer_name: The name of a tokenizer on Hugging Face
+        revision: The shortened sha1 string of a model
+    '''
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, revision=revision)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, revision=revision)  # NOQA: E501
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name, revision=revision)  # NOQA: E501
     return tokenizer, model
 
 
 def load_pipeline_for_text_classification(model_name: str, **kwargs):
-    """
-    return a Huggingface text-classification pipeline.
+    '''
+    Return a Hugging Face text-classification pipeline.
 
     Args:
-        model_name: A huggingface model model for text classification.
-    """
+        model_name: The name of a text-classification pipeline on Hugging Face
+    '''
     top_k = kwargs.pop('top_k', None)
     return pipeline('text-classification', model=model_name, top_k=top_k)
