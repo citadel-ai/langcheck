@@ -90,13 +90,17 @@ def sentiment(
     global _sentiment_model_path
 
     _sentiment_pipeline = pipeline(
-        'sentiment-analysis', model=_sentiment_model_path
-    )  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-    # # {0:"Negative", 1:'Positive'}
+        'sentiment-analysis',
+        model=_sentiment_model_path)  # type: ignore[reportGeneralTypeIssues]
+    # {0:"Negative", 1:'Positive'}
     from langcheck.metrics import _model_manager
-    tokenizer, model = _model_manager.fetch_model(lanaguage='zh', metric='sentiment')   # NOQA: E501
+    tokenizer, model = _model_manager.fetch_model(lanaguage='zh',
+                                                  metric='sentiment')
     _sentiment_pipeline = pipeline(
-        'sentiment-analysis', model=model, tokenizer=tokenizer)  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+        'sentiment-analysis',
+        model=model,  # type: ignore[reportGeneralTypeIssues]
+        tokenizer=tokenizer  # type: ignore[reportGeneralTypeIssues]
+    )
     _model_id2label = _sentiment_pipeline.model.config.id2label
     _predict_result = _sentiment_pipeline(
         generated_outputs
@@ -218,10 +222,11 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     tokenizer, model = _model_manager.fetch_model(language='zh',
                                                   metric_type="toxicity")
 
-    _toxicity_pipeline = pipeline('text-classification',
-                                  model=model,
-                                  tokenizer=tokenizer,  # type: ignore[reportOptionalIterable]  # NOQA: E501
-                                  top_k=5)
+    _toxicity_pipeline = pipeline(
+        'text-classification',
+        model=model,  # type: ignore[reportOptionalIterable]
+        tokenizer=tokenizer,  # type: ignore[reportOptionalIterable]
+        top_k=5)
 
     # {'Normal': 0, 'Pulp': 1, 'Sex': 2, 'Other Risk': 3, 'Adult': 4}
     _model_id2label = _toxicity_pipeline.model.config.id2label
