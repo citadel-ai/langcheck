@@ -28,6 +28,8 @@ def load_auto_model_for_text_classification(
         tokenizer_name: The name of a tokenizer on Hugging Face
         revision: The shortened sha1 string of a model
     '''
+    if tokenizer_name is None:
+        tokenizer_name = model_name
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, revision=revision)
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name, revision=revision)  # NOQA: E501
