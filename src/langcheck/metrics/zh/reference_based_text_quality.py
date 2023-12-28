@@ -90,14 +90,13 @@ def semantic_similarity(
                                               openai_args)
         metric_value.language = 'zh'
         return metric_value
+    # lazy import
+    from langcheck.metrics import _model_manager
+    model = _model_manager.fetch_model(language='zh',
+                                       metric_type="semantic_similarity")
 
-    # According to the C-MTEB Benchmark
-    # (https://github.com/FlagOpen/FlagEmbedding/tree/master/C_MTEB)
-    # the 3 models of different sizes provided BAAI are the best on the
-    # embedding task
-    # Ref: https://huggingface.co/BAAI/bge-base-zh-v1.5
-    # Using this model, it is hard to find two sentence where cos_sim < 0.25.
-    model = SentenceTransformer('BAAI/bge-base-zh-v1.5')
+    # For type checking
+    assert isinstance(model, SentenceTransformer)
     generated_embeddings = model.encode(generated_outputs)
     reference_embeddings = model.encode(reference_outputs)
     cosine_scores = util.pairwise_cos_sim(
