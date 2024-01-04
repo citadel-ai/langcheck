@@ -15,6 +15,7 @@ classifiers = [
 ]
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
+    'chikkarpy',
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
@@ -47,7 +48,11 @@ dev = [
     "myst-parser",
     "ipykernel"
 ]
-optional = ["mecab-python3 >= 1.0.4"]
+optional = [
+    "mecab-python3 >= 1.0.4",
+    'sudachidict_core',
+    'sudachipy'
+]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
