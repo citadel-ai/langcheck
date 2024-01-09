@@ -31,7 +31,6 @@ _sentiment_model = None
 
 _fluency_model_path = "prithivida/parrot_fluency_model"
 
-# _toxicity_model_path = "citizenlab/distilbert-base-multilingual-cased-toxicity" # NOQA: E501
 _toxicity_model = None
 
 LANG = 'de'
@@ -323,7 +322,7 @@ def ai_disclaimer_similarity(
     between the generated outputs and a reference AI disclaimer phrase; by
     default, this phrase is "I don't have personal opinions, emotions, or
     consciousness.", but you can also pass in a custom phrase. Please refer to
-    :func:`~langcheck.eval.en.reference_based_text_quality.semantic_similarity`
+    :func:`~langcheck.eval.de.reference_based_text_quality.semantic_similarity`
     for details on the typical output ranges and the supported embedding model
     types.
 

@@ -42,7 +42,6 @@ def test_semantic_similarity_case_sensitivity(generated_outputs,
     assert 0.6 <= metric_value <= 0.7
 
 
-# fixme: why is this so high in similarity???
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
     [
