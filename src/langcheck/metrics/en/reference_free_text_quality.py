@@ -9,9 +9,9 @@ from transformers.models.auto.modeling_auto import \
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
+from langcheck.metrics._detoxify import Detoxify
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
-from langcheck.metrics.en._detoxify import Detoxify
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity

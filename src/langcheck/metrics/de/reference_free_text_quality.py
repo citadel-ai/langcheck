@@ -9,8 +9,8 @@ from transformers.models.auto.modeling_auto import \
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
+from langcheck.metrics._detoxify import Detoxify
 from langcheck.metrics._validation import validate_parameters_reference_free
-from langcheck.metrics.de._detoxify import Detoxify
 from langcheck.metrics.de.reference_based_text_quality import \
     semantic_similarity
 from langcheck.metrics.en.reference_free_text_quality import _toxicity_openai
@@ -238,7 +238,7 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     '''
     global _toxicity_model
     if _toxicity_model is None:
-        _toxicity_model = Detoxify()
+        _toxicity_model = Detoxify(lang=LANG)
 
     scores = []
     batch_size = 8
