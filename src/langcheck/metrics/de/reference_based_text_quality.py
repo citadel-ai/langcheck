@@ -330,7 +330,7 @@ def _rouge(
     """
     assert rouge_type in ["rouge1", "rouge2", "rougeLsum"]
 
-    # The tokenizer is default to JanomeTokenizer
+    # The tokenizer is default to DeTokenizer
     tokenizer = tokenizer or DeTokenizer()
     scorer = rouge_scorer.RougeScorer([rouge_type],
                                       use_stemmer=True,
