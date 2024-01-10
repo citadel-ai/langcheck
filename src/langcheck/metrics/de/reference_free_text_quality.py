@@ -158,12 +158,11 @@ def fluency(
 
     # Translate to English
     generated_outputs_en = [
-        cast(
-            str,
-            list(
-                cast(List[Dict[str, str]],
-                     _translation_pipeline(generated_output))[0]
-                ['translation_text'])) for generated_output in generated_outputs
+        cast(str,
+             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
+        for d in _translation_pipeline(
+            generated_outputs
+        )  # type: ignore[reportOptionalIterable]  # NOQA: E501
     ]
 
     _metric_value = en_fluency(generated_outputs_en, prompts, model_type,
