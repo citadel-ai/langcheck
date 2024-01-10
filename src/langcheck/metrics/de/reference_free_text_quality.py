@@ -7,6 +7,8 @@ from openai import OpenAI
 from transformers.models.auto.modeling_auto import \
     AutoModelForSequenceClassification
 from transformers.models.auto.tokenization_auto import AutoTokenizer
+from transformers.pipelines import pipeline
+from transformers.pipelines.base import Pipeline
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._detoxify import Detoxify
@@ -24,12 +26,13 @@ from langcheck.metrics.metric_value import MetricValue
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-# this model seems to work much better than the cardiffnlp one
+# this model seems to work much better than the cardiffnlp one; typo in the name
 _sentiment_model_path = "citizenlab/twitter-xlm-roberta-base-sentiment-finetunned"  # NOQA: E501
 _sentiment_tokenizer = None
 _sentiment_model = None
 
-_fluency_model_path = "prithivida/parrot_fluency_model"
+_translation_model_path = 'Helsinki-NLP/opus-mt-de-en'
+_translation_pipeline: Pipeline | None = None
 
 _toxicity_model = None
 
@@ -141,13 +144,24 @@ def fluency(
     openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
-    '''We use the Parrot fluency model to calculate the fluency scores, from the
-    English counterpart, since it is based on T5 that does have some support for
-    German.
+    ''' We first translate the generated outputs to English and then calculate,
+    then use the Parrot fluency model to calculate the fluency scores, from the
+    English counterpart.
     '''
-    metric_value = en_fluency(generated_outputs, prompts, model_type,
+    global _translation_pipeline
+    if _translation_pipeline is None:
+        _translation_pipeline = pipeline('translation',
+                                         model=_translation_model_path)
+
+    # Translate to English
+    generated_outputs_en = [
+        _translation_pipeline(generated_output)[0]['translation_text']
+        for generated_output in generated_outputs
+    ]
+    metric_value = en_fluency(generated_outputs_en, prompts, model_type,
                               openai_client, openai_args)
     metric_value.language = LANG
+    metric_value.generated_outputs = generated_outputs
     return metric_value
 
 
