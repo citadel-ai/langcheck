@@ -15,11 +15,6 @@ from langcheck.metrics.en.reference_based_text_quality import \
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-MODEL_NAME = "sentence-transformers/distiluse-base-multilingual-cased-v1"
-# https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
-# v1 supports only 15 languages (German included) but is stronger than v2 that
-# supports 50+ languages
-# NOTE: it's cased!
 LANG = "de"
 
 
@@ -104,9 +99,12 @@ def semantic_similarity(
 
     # we're using 'local' now
     batch_size = 8
-
-    model = SentenceTransformer(MODEL_NAME)
-    print(f"Using model {MODEL_NAME}")
+    # https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
+    # v1 supports only 15 languages (German included) but is stronger than v2
+    # that supports 50+ languages
+    # NOTE: it's cased! "Das ist ein Test." != "das ist ein test."
+    model = SentenceTransformer(
+        "sentence-transformers/distiluse-base-multilingual-cased-v1")
     generated_embeddings = []
     reference_embeddings = []
     for i in tqdm_wrapper(

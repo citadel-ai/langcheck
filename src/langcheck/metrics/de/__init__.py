@@ -1,3 +1,4 @@
+from langcheck.metrics.de._tokenizers import DeTokenizer
 from langcheck.metrics.de.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.de.reference_free_text_quality import (
@@ -19,4 +20,5 @@ __all__ = [
     'semantic_similarity',
     'sentiment',
     'toxicity',
+    'DeTokenizer',
 ]
