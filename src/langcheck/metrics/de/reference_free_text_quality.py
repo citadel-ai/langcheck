@@ -334,8 +334,9 @@ def ai_disclaimer_similarity(
     '''Calculates the degree to which the LLM's output contains a disclaimer
     that it is an AI. This is calculated by computing the semantic similarity
     between the generated outputs and a reference AI disclaimer phrase; by
-    default, this phrase is "I don't have personal opinions, emotions, or
-    consciousness.", but you can also pass in a custom phrase. Please refer to
+    default, this phrase is "Ich habe keine persönlichen Meinungen, Emotionen
+    oder Bewusstsein." (the most common reply from chatGPT in German),
+    but you can also pass in a custom phrase. Please refer to
     :func:`~langcheck.eval.de.reference_based_text_quality.semantic_similarity`
     for details on the typical output ranges and the supported embedding model
     types.
