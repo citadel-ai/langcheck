@@ -29,15 +29,23 @@ from langcheck.metrics.ja import fluency  # Japanese fluency metric
 from langcheck.metrics import is_json_array  # Language-agnostic metric
 ```
 
+The same is true for German text:
+
+```python
+from langcheck.metrics.de import fluency  # Japanese fluency metric
+from langcheck.metrics import is_json_array  # Language-agnostic metric
+```
+
+
 ## Metric Types
 
 LangCheck metrics are categorized by metric type, which correspond to the kind of ground truth data that's required.
 
 |                                Type of Metric                                 |                                                     Examples                                                     |   Languages   |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------- |
-| [Reference-Free Text Quality Metrics](#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA        |
-| [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA        |
-| [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA        |
+| [Reference-Free Text Quality Metrics](#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA, DE        |
+| [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, DE        |
+| [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, DE        |
 | [Text Structure Metrics](#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages |
 
 (reference-free-text-quality-metrics)=
