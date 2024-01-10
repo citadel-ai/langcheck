@@ -182,9 +182,7 @@ def rouge1(
     ) = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
 
-    scores = _rouge(generated_outputs,
-                    reference_outputs,
-                    "rouge1")
+    scores = _rouge(generated_outputs, reference_outputs, "rouge1")
     return MetricValue(
         metric_name="rouge1",
         prompts=prompts,
@@ -227,9 +225,7 @@ def rouge2(
     ) = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
 
-    scores = _rouge(generated_outputs,
-                    reference_outputs,
-                    "rouge2")
+    scores = _rouge(generated_outputs, reference_outputs, "rouge2")
     return MetricValue(
         metric_name="rouge2",
         prompts=prompts,
@@ -282,9 +278,7 @@ def rougeL(
     # Python wrapper around original perl script implementation.
     #
     # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA: E501
-    scores = _rouge(generated_outputs,
-                    reference_outputs,
-                    "rougeLsum")
+    scores = _rouge(generated_outputs, reference_outputs, "rougeLsum")
     return MetricValue(
         metric_name="rougeL",
         prompts=prompts,
