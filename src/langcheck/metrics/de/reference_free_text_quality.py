@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 import torch
 from openai import OpenAI
@@ -153,15 +153,30 @@ def fluency(
         _translation_pipeline = pipeline('translation',
                                          model=_translation_model_path)
 
+    if isinstance(generated_outputs, str):
+        generated_outputs = [generated_outputs]
+
     # Translate to English
     generated_outputs_en = [
-        _translation_pipeline(generated_output)[0]['translation_text']
-        for generated_output in generated_outputs
+        cast(
+            str,
+            list(
+                cast(List[Dict[str, str]],
+                     _translation_pipeline(generated_output))[0]
+                ['translation_text'])) for generated_output in generated_outputs
     ]
-    metric_value = en_fluency(generated_outputs_en, prompts, model_type,
-                              openai_client, openai_args)
-    metric_value.language = LANG
-    metric_value.generated_outputs = generated_outputs
+
+    _metric_value = en_fluency(generated_outputs_en, prompts, model_type,
+                               openai_client, openai_args)
+    metric_value = MetricValue(
+        metric_name=_metric_value.metric_name,
+        prompts=_metric_value.prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=_metric_value.reference_outputs,
+        sources=_metric_value.sources,
+        explanations=_metric_value.explanations,
+        metric_values=_metric_value.metric_values,
+        language=LANG)
     return metric_value
 
 
