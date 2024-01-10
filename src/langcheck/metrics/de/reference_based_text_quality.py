@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional
 import torch
 from openai import OpenAI
 from rouge_score import rouge_scorer
-from rouge_score.tokenizers import Tokenizer
 from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
@@ -157,8 +156,6 @@ def rouge1(
     generated_outputs: List[str] | str,
     reference_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
-    *,
-    tokenizer: Optional[Tokenizer] = None,
 ) -> MetricValue[float]:
     """Calculates the F1 metrics of the ROUGE-1 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of unigrams
@@ -187,8 +184,7 @@ def rouge1(
 
     scores = _rouge(generated_outputs,
                     reference_outputs,
-                    "rouge1",
-                    tokenizer=tokenizer)
+                    "rouge1")
     return MetricValue(
         metric_name="rouge1",
         prompts=prompts,
@@ -205,8 +201,6 @@ def rouge2(
     generated_outputs: List[str] | str,
     reference_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
-    *,
-    tokenizer: Optional[Tokenizer] = None,
 ) -> MetricValue[float]:
     """Calculates the F1 metrics of the ROUGE-2 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of bigrams
@@ -235,8 +229,7 @@ def rouge2(
 
     scores = _rouge(generated_outputs,
                     reference_outputs,
-                    "rouge2",
-                    tokenizer=tokenizer)
+                    "rouge2")
     return MetricValue(
         metric_name="rouge2",
         prompts=prompts,
@@ -253,8 +246,6 @@ def rougeL(
     generated_outputs: List[str] | str,
     reference_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
-    *,
-    tokenizer: Optional[Tokenizer] = None,
 ) -> MetricValue[float]:
     """Calculates the F1 metrics of the ROUGE-L scores between the generated
     outputs and the reference outputs. It evaluates the longest common
@@ -293,8 +284,7 @@ def rougeL(
     # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA: E501
     scores = _rouge(generated_outputs,
                     reference_outputs,
-                    "rougeLsum",
-                    tokenizer=tokenizer)
+                    "rougeLsum")
     return MetricValue(
         metric_name="rougeL",
         prompts=prompts,
@@ -307,13 +297,8 @@ def rougeL(
     )
 
 
-def _rouge(
-    generated_outputs: List[str],
-    reference_outputs: List[str],
-    rouge_type: str,
-    *,
-    tokenizer: Optional[Tokenizer] = None,
-) -> List[float]:
+def _rouge(generated_outputs: List[str], reference_outputs: List[str],
+           rouge_type: str) -> List[float]:
     """Helper function for computing the rouge1, rouge2, and rougeL metrics.
     This uses Google Research's implementation of ROUGE:
     https://github.com/google-research/google-research/tree/master/rouge
@@ -328,8 +313,7 @@ def _rouge(
     """
     assert rouge_type in ["rouge1", "rouge2", "rougeLsum"]
 
-    # The tokenizer is default to DeTokenizer
-    tokenizer = tokenizer or DeTokenizer()
+    tokenizer = DeTokenizer()
     scorer = rouge_scorer.RougeScorer([rouge_type],
                                       use_stemmer=True,
                                       tokenizer=tokenizer)
