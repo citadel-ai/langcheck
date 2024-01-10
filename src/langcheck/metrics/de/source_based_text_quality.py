@@ -40,7 +40,7 @@ def factual_consistency(
     1. The 'local' type, where the 'unieval-fact' model is downloaded
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
-    This function wraps :func:`~langcheck.metrics.en.en_factual_consistency`
+    This function wraps :func:`~langcheck.metrics.en.factual_consistency`
     using the translation model ``Helsinki-NLP/opus-mt-de-en`` to translate the
     German texts to English before computing the factual consistency
     scores. This is because the UniEval-fact model is trained on English
