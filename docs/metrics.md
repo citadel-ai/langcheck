@@ -32,7 +32,7 @@ from langcheck.metrics import is_json_array  # Language-agnostic metric
 The same is true for German text:
 
 ```python
-from langcheck.metrics.de import fluency  # Japanese fluency metric
+from langcheck.metrics.de import fluency  # German fluency metric
 from langcheck.metrics import is_json_array  # Language-agnostic metric
 ```
 
