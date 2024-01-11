@@ -144,9 +144,9 @@ def fluency(
     openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
-    ''' We first translate the generated outputs to English and then calculate,
-    then use the Parrot fluency model to calculate the fluency scores, from the
-    English counterpart.
+    ''' We first translate the generated outputs to English, and then use the
+    Parrot fluency model to calculate the fluency scores, from the English
+    counterpart.
     '''
     global _translation_pipeline
     if _translation_pipeline is None:
