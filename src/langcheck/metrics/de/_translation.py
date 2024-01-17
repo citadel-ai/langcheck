@@ -45,7 +45,6 @@ class Translate:
             texts_ = [texts]
         texts_en = []
         for text in texts_:
-            print(text)
             text_en = [
                 str(d['translation_text'])  # type: ignore
                 for d in self._translation_pipeline(text)  # type: ignore
