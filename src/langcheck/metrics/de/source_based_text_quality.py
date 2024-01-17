@@ -34,16 +34,19 @@ def _translate(texts: str, _translation_pipeline: Pipeline) -> str:
     '''
     tokenization = _translation_pipeline.tokenizer(
         texts, return_tensors="pt")  # type: ignore
-    max_length = _translation_pipeline.model.config.max_length
-    blocks = floor(tokenization.input_ids.shape[1] / max_length) + 3
-    sentences = sent_tokenize(texts)
-    # Split sentences into a number of blocks, e.g., 2 blocks = 2 groups
-    len_block = floor(len(sentences) / blocks) + 1
-    # print(len_block, len(sentences), blocks)
-    sentences_list = []
-    for i in range(blocks):
-        sentences_list.append(sentences[i * len_block:(i + 1) * len_block])
-    texts_ = [" ".join(sent) for sent in sentences_list]
+    if tokenization.input_ids.shape[1] > (_translation_pipeline.model.config.max_length / 2):
+        max_length = _translation_pipeline.model.config.max_length
+        blocks = floor(tokenization.input_ids.shape[1] / max_length) + 3
+        sentences = sent_tokenize(texts)
+        # Split sentences into a number of blocks, e.g., 2 blocks = 2 groups
+        len_block = floor(len(sentences) / blocks) + 1
+        # print(len_block, len(sentences), blocks)
+        sentences_list = []
+        for i in range(blocks):
+            sentences_list.append(sentences[i * len_block:(i + 1) * len_block])
+        texts_ = [" ".join(sent) for sent in sentences_list]
+    else:
+        texts_ = [texts]
     texts_en = []
     for text in texts_:
         text_en = [
