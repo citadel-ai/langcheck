@@ -34,7 +34,8 @@ def _translate(texts: str, _translation_pipeline: Pipeline) -> str:
     '''
     tokenization = _translation_pipeline.tokenizer(
         texts, return_tensors="pt")  # type: ignore
-    if tokenization.input_ids.shape[1] > (_translation_pipeline.model.config.max_length / 2):
+    if tokenization.input_ids.shape[1] > (
+            _translation_pipeline.model.config.max_length / 2):
         max_length = _translation_pipeline.model.config.max_length
         blocks = floor(tokenization.input_ids.shape[1] / max_length) + 3
         sentences = sent_tokenize(texts)
