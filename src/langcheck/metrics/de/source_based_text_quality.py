@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from math import floor
-from typing import Dict, List, Optional, cast
+from typing import Dict, List, Optional
 
-from nltk.tokenize import sent_tokenize
 from openai import OpenAI
-from transformers.pipelines import pipeline
-from transformers.pipelines.base import Pipeline
 
 from langcheck.metrics._validation import (
     validate_parameters_context_relevance, validate_parameters_source_based)
+from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.source_based_text_quality import \
     factual_consistency as en_factual_consistency
@@ -17,46 +14,8 @@ from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 _factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-de-en'
-_factual_consistency_translation_pipeline: Pipeline | None = None
 
 LANG = 'de'
-
-
-def _translate(texts: str, _translation_pipeline: Pipeline) -> str:
-    '''Translate the texts using the translation pipeline.
-    It splits the texts into blocks and translates each block separately,
-    avoiding problems with long texts.
-    Args:
-        texts: The texts to translate
-        _translation_pipeline: The translation pipeline
-    Returns:
-        The translated texts
-    '''
-    tokenization = _translation_pipeline.tokenizer(
-        texts, return_tensors="pt")  # type: ignore
-    if tokenization.input_ids.shape[1] > (
-            _translation_pipeline.model.config.max_length / 2):
-        max_length = _translation_pipeline.model.config.max_length
-        blocks = floor(tokenization.input_ids.shape[1] / max_length) + 3
-        sentences = sent_tokenize(texts)
-        # Split sentences into a number of blocks, e.g., 2 blocks = 2 groups
-        len_block = floor(len(sentences) / blocks) + 1
-        # print(len_block, len(sentences), blocks)
-        sentences_list = []
-        for i in range(blocks):
-            sentences_list.append(sentences[i * len_block:(i + 1) * len_block])
-        texts_ = [" ".join(sent) for sent in sentences_list]
-    else:
-        texts_ = [texts]
-    texts_en = []
-    for text in texts_:
-        text_en = [
-            str(d['translation_text'])  # type: ignore
-            for d in _translation_pipeline(text)  # type: ignore
-        ]
-        texts_en.append(" ".join(text_en))
-    text_en_final = " ".join(texts_en)
-    return text_en_final
 
 
 def factual_consistency(
@@ -128,21 +87,14 @@ def factual_consistency(
         metric_value.language = LANG
         return metric_value
 
-    global _factual_consistency_translation_pipeline
-    if _factual_consistency_translation_pipeline is None:
-        _factual_consistency_translation_pipeline = pipeline(
-            'translation', model=_factual_consistency_translation_model_path)
+    translation = Translate(_factual_consistency_translation_model_path)
 
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since
     # too diverse types can be returned.
-    en_source = [
-        _translate(source, _factual_consistency_translation_pipeline)
-        for source in sources
-    ]
+    en_source = [translation(source) for source in sources]
     en_generated_outputs = [
-        _translate(gen_out, _factual_consistency_translation_pipeline)
-        for gen_out in generated_outputs
+        translation(gen_out) for gen_out in generated_outputs
     ]
     # Compute the factual consistency scores in English.
     factual_consistency_scores = en_factual_consistency(

@@ -7,12 +7,11 @@ from openai import OpenAI
 from transformers.models.auto.modeling_auto import \
     AutoModelForSequenceClassification
 from transformers.models.auto.tokenization_auto import AutoTokenizer
-from transformers.pipelines import pipeline
-from transformers.pipelines.base import Pipeline
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._detoxify import Detoxify
 from langcheck.metrics._validation import validate_parameters_reference_free
+from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.de.reference_based_text_quality import \
     semantic_similarity
 from langcheck.metrics.en.reference_free_text_quality import _toxicity_openai
@@ -32,7 +31,6 @@ _sentiment_tokenizer = None
 _sentiment_model = None
 
 _translation_model_path = 'Helsinki-NLP/opus-mt-de-en'
-_translation_pipeline: Pipeline | None = None
 
 _toxicity_model = None
 
@@ -148,22 +146,13 @@ def fluency(
     Parrot fluency model to calculate the fluency scores, from the English
     counterpart.
     '''
-    global _translation_pipeline
-    if _translation_pipeline is None:
-        _translation_pipeline = pipeline('translation',
-                                         model=_translation_model_path)
+    translation = Translate(_translation_model_path)
 
     if isinstance(generated_outputs, str):
         generated_outputs = [generated_outputs]
 
     # Translate to English
-    generated_outputs_en = [
-        cast(str,
-             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
-        for d in _translation_pipeline(
-            generated_outputs
-        )  # type: ignore[reportOptionalIterable]  # NOQA: E501
-    ]
+    generated_outputs_en = [translation(str) for str in generated_outputs]
 
     _metric_value = en_fluency(generated_outputs_en, prompts, model_type,
                                openai_client, openai_args)
