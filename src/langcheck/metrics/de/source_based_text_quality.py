@@ -81,7 +81,7 @@ def factual_consistency(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     # The English prompt works well enough for German, like with Japanese
-    # TODO: Investigate the performance improvement with German prompt or translation
+    # TODO: Investigate performance improvement with German prompt / translation
     if model_type == 'openai' or model_type == 'azure_openai':
         metric_value = en_factual_consistency(generated_outputs, sources,
                                               prompts, model_type,
