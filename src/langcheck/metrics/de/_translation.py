@@ -34,8 +34,8 @@ class Translate:
             # Split the text into blocks, if it is too long
             # adding 2 blocks to avoid problems with long texts
             # NB: this comes from a few 100 tests, but it is not a science
-            blocks = floor(
-                tokenization.input_ids.shape[1] / self._max_length) + 3
+            blocks = floor(2 * tokenization.input_ids.shape[1] /
+                           self._max_length)
             sentences = sent_tokenize(texts)
             # Split sentences into a number of blocks, e.g., 2 blocks = 2 groups
             len_block = floor(len(sentences) / blocks) + 1
