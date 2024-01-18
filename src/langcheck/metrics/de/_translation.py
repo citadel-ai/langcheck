@@ -43,18 +43,18 @@ class Translate:
             for i in range(blocks):
                 sentences_list.append(sentences[i * len_block:(i + 1) *
                                                 len_block])
-            texts = [" ".join(sent) for sent in sentences_list]
+            text_list = [" ".join(sent) for sent in sentences_list]
         else:
-            texts_ = [texts]
+            text_list = [texts]
         translated_texts = []
-        for text in texts_:
+        for text in text_list:
             text_en = [
                 str(d['translation_text'])  # type: ignore
                 for d in self._translation_pipeline(text)  # type: ignore
             ]
             translated_texts.append(" ".join(text_en))
-        text_en_final = " ".join(translated_texts)
-        return text_en_final
+        text_translated_final = " ".join(translated_texts)
+        return text_translated_final
 
     def __call__(self, text: str) -> str:
         '''Translate the text using the translation pipeline.
