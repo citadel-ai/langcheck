@@ -31,6 +31,9 @@ class Translate:
         tokenization = self._translation_pipeline.tokenizer(
             texts, return_tensors="pt")  # type: ignore
         if tokenization.input_ids.shape[1] > (self._max_length / 2):
+            # Split the text into blocks, if it is too long
+            # adding 2 blocks to avoid problems with long texts
+            # NB: this comes from a few 100 tests, but it is not a science
             blocks = floor(
                 tokenization.input_ids.shape[1] / self._max_length) + 3
             sentences = sent_tokenize(texts)
@@ -40,17 +43,17 @@ class Translate:
             for i in range(blocks):
                 sentences_list.append(sentences[i * len_block:(i + 1) *
                                                 len_block])
-            texts_ = [" ".join(sent) for sent in sentences_list]
+            texts = [" ".join(sent) for sent in sentences_list]
         else:
             texts_ = [texts]
-        texts_en = []
+        translated_texts = []
         for text in texts_:
             text_en = [
                 str(d['translation_text'])  # type: ignore
                 for d in self._translation_pipeline(text)  # type: ignore
             ]
-            texts_en.append(" ".join(text_en))
-        text_en_final = " ".join(texts_en)
+            translated_texts.append(" ".join(text_en))
+        text_en_final = " ".join(translated_texts)
         return text_en_final
 
     def __call__(self, text: str) -> str:
