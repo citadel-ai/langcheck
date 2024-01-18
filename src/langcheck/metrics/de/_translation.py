@@ -43,7 +43,7 @@ class Translate:
             for i in range(blocks):
                 sentences_list.append(sentences[i * len_block:(i + 1) *
                                                 len_block])
-            texts_ = [" ".join(sent) for sent in sentences_list]
+            texts = [" ".join(sent) for sent in sentences_list]
         else:
             texts_ = [texts]
         translated_texts = []
