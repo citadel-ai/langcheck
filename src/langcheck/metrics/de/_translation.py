@@ -32,7 +32,7 @@ class Translate:
             texts, return_tensors="pt")  # type: ignore
         if tokenization.input_ids.shape[1] > (self._max_length / 2):
             # Split the text into blocks, if it is too long
-            # adding 2 blocks to avoid problems with long texts
+            # starting from 2 * num_tokens / max_length to be sure
             # NB: this comes from a few 100 tests, but it is not a science
             blocks = floor(2 * tokenization.input_ids.shape[1] /
                            self._max_length)
