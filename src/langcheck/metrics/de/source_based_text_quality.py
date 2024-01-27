@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from openai import OpenAI
 
@@ -83,34 +83,139 @@ def factual_consistency(
     # The English prompt works well enough for German, like with Japanese
     # TODO: Investigate performance improvement with German prompt / translation
     if model_type == 'openai' or model_type == 'azure_openai':
-        metric_value = en_factual_consistency(generated_outputs, sources,
-                                              prompts, model_type,
-                                              openai_client, openai_args)
-        metric_value.language = LANG
-        return metric_value
+        scores, explanations = _factual_consistency_openai(
+            generated_outputs, sources, model_type, openai_client, openai_args)
 
-    translation = Translate(_factual_consistency_translation_model_path)
+        return MetricValue(metric_name='factual_consistency',
+                           prompts=prompts,
+                           generated_outputs=generated_outputs,
+                           reference_outputs=None,
+                           sources=sources,
+                           explanations=explanations,
+                           metric_values=scores,
+                           language=LANG)
 
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since
     # too diverse types can be returned.
+    translation = Translate(_factual_consistency_translation_model_path)
+
     en_source = [translation(source) for source in sources]
     en_generated_outputs = [
         translation(gen_out) for gen_out in generated_outputs
     ]
 
     # Compute the factual consistency scores in English.
-    factual_consistency_scores = en_factual_consistency(
-        generated_outputs=en_generated_outputs, sources=en_source).metric_values
+    metric_value = en_factual_consistency(
+        generated_outputs=en_generated_outputs, sources=en_source)
+    metric_value.language = LANG
+    return metric_value
 
-    return MetricValue(metric_name='factual_consistency',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=sources,
-                       explanations=None,
-                       metric_values=factual_consistency_scores,
-                       language=LANG)
+
+def _factual_consistency_openai(
+    generated_outputs: List[str], sources: List[str], client_type: str,
+    client: Optional[OpenAI], openai_args: Optional[Dict[str, str]]
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+    '''Calculates the factual consistency and their associated explanations
+    between each generated output and its corresponding source text. The
+    consistency is computed by calling the OpenAI API, with a prompt similar to
+    the one used in OpenAI Evals. We leverage the function calling API to make
+    sure that the output is structured such that we can compute a score. If a
+    score could not be computed, `None` is inserted to the score and explanation
+    lists.
+
+    Ref:
+        https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
+        https://platform.openai.com/docs/guides/gpt/function-calling
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        sources: The source text(s), one string per generated output
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
+
+    Returns:
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
+    '''
+
+    # TODO: The prompt formation, and the scoring system, can do with some
+    # improvement. There are some cases where consistent outputs get incorrectly
+    # assessed as "Partially Consistent", and there's no differentiation
+    # between an output that is unrelated to the source and an output that is
+    # straight up contradictory.
+    def _prompt(src: str, gen_output: str) -> str:
+        return f'''
+        Sie bewerten die faktische Konsistenz einer eingereichten Behauptung.
+        Hier sind die Daten:
+        [BEGINN DER DATEN]
+        ************
+        [Quelle]: {src}
+        ************
+        [Benutzeranfrage]: {gen_output}
+        ************
+        [ENDE DER DATEN]
+
+        Bestimmen Sie, ob die eingereichte Behauptung faktisch konsistent mit
+        der Quelle ist. Die verfügbaren Bewertungen sind:
+        `Vollständig Konsistent` - Die eingereichte Behauptung ist vollständig
+        faktisch konsistent mit dem Quelltext.
+        `Teilweise Konsistent` - Die eingereichte Behauptung ist teilweise
+        faktisch konsistent mit dem Quelltext. Es gibt einige Aspekte der
+        Behauptung, die faktisch konsistent sind, aber auch einige, die es
+         nicht sind.
+        `Nicht Konsistent` - Die eingereichte Behauptung ist nicht faktisch
+        konsistent mit dem Quelltext.
+
+        Atmen Sie tief durch und bearbeiten Sie dieses Problem Schritt für
+        Schritt.
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        Folgendes ist eine Bewertung zur faktischen Konsistenz einer Behauptung:
+        ************
+        [Bewertung]: {long_assessment}
+        ************
+
+        Speichern Sie die resultierende Bewertung. Die verfügbaren Bewertungen
+         sind:
+        `Vollständig Konsistent`
+        `Teilweise Konsistent`
+        `Nicht Konsistent`
+        '''
+
+    factuality_assessment_to_score = {
+        'Vollständig Konsistent': 1.0,
+        'Teilweise Konsistent': 0.5,
+        'Nicht Konsistent': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=factuality_assessment_to_score,
+        function_name='save_factual_consistency_assessment',
+        function_description=(
+            "Saves a submitted claim's factual consistency assessment."),
+        argument_name='factuality',
+        argument_description='The factual consistency assessment of the claim',
+        client_type=client_type,
+        client=client,
+        openai_args=openai_args)
+
+    score_list = []
+
+    explanation_list = []
+    for src, gen in tqdm_wrapper(zip(sources, generated_outputs),
+                                 desc='Calculating scores',
+                                 total=len(generated_outputs)):
+        score, explanation = oai_evaluator.get_score(
+            _prompt(src=src, gen_output=gen), _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+    return score_list, explanation_list
 
 
 def context_relevance(
