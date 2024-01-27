@@ -30,7 +30,7 @@ def test_sentiment_openai(generated_outputs):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"sentiment\": \"Positive\"\n}")))
+            arguments="{\n  \"sentiment\": \"Positiv\"\n}")))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
