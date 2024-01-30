@@ -10,7 +10,8 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._detoxify import Detoxify
-from langcheck.metrics._validation import validate_parameters_reference_free
+from langcheck.metrics._validation import (validate_parameters_answer_relevance,
+                                           validate_parameters_reference_free)
 from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.de.reference_based_text_quality import \
     semantic_similarity
@@ -92,8 +93,6 @@ def sentiment(
     ], ('Unsupported model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
 
-    # The English prompt works well enough for German
-    # TODO: Investigate the performance improvement with German prompt
     if model_type == 'openai' or model_type == 'azure_openai':
         scores, explanations = _sentiment_openai(generated_outputs, model_type,
                                                  openai_client, openai_args)
@@ -231,30 +230,136 @@ def fluency(
     openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
-    ''' We first translate the generated outputs to English, and then use the
-    Parrot fluency model to calculate the fluency scores, from the English
-    counterpart.
+    ''' If using the local models, we first translate the generated outputs
+    to English, and then use the Parrot fluency model to calculate the fluency
+    scores, from the English counterpart. If using the OpenAI models, we use
+    the OpenAI API to calculate the fluency scores. This metric takes on float
     '''
-    translation = Translate(_translation_model_path)
+    generated_outputs, prompts = validate_parameters_reference_free(
+        generated_outputs, prompts)
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
     if isinstance(generated_outputs, str):
         generated_outputs = [generated_outputs]
+    if model_type == 'local':
+        # Translate to English
+        translation = Translate(_translation_model_path)
+        generated_outputs_en = [translation(str) for str in generated_outputs]
 
-    # Translate to English
-    generated_outputs_en = [translation(str) for str in generated_outputs]
+        _metric_value = en_fluency(generated_outputs_en, prompts, model_type,
+                                   openai_client, openai_args)
+        scores = _metric_value.metric_values
+        explanations = None
+    else:  # openai or azure_openai
+        scores, explanations = _fluency_openai(generated_outputs, model_type,
+                                               openai_client, openai_args)
 
-    _metric_value = en_fluency(generated_outputs_en, prompts, model_type,
-                               openai_client, openai_args)
-    metric_value = MetricValue(
-        metric_name=_metric_value.metric_name,
-        prompts=_metric_value.prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=_metric_value.reference_outputs,
-        sources=_metric_value.sources,
-        explanations=_metric_value.explanations,
-        metric_values=_metric_value.metric_values,
-        language=LANG)
-    return metric_value
+    return MetricValue(metric_name='fluency',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       explanations=explanations,
+                       metric_values=scores,
+                       language=LANG)
+
+
+def _fluency_openai(
+    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]]
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+    '''Calculates the fluency scores and their associated explanations of
+    generated outputs using the OpenAI API, using a prompt that is similar to
+    the one used in G-Eval (see the Ref below). This metric takes on float
+    values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
+    "fair" fluency, and 1 is "good" fluency. We leverage the function calling
+    API to make sure that the output is structured such that we can compute a
+    score. If a score could not be computed, `None` is inserted to the score
+    and explanation lists.
+
+    Ref:
+        https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
+        https://platform.openai.com/docs/guides/gpt/function-calling
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
+
+    Returns:
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
+    '''
+
+    def _prompt(gen_output: str) -> str:
+        return f'''
+        Sie bewerten die Flüssigkeit einer eingereichten Aussage. Hier sind die
+        Daten:
+        [BEGINN DATEN]
+        ************
+        [Benutzeranfrage]: {gen_output}
+        ************
+        [ENDE DATEN]
+
+        Bestimmen Sie die Flüssigkeit der eingereichten Aussage. Die verfügbaren
+        Bewertungen sind:
+        `Schlecht` - Die Aussage hat viele Fehler, die sie schwer verständlich
+        oder unnatürlich wirken lassen.
+        `Ausreichend` - Die Aussage hat einige Fehler, die die Klarheit oder
+        Flüssigkeit des Textes beeinträchtigen, aber die Hauptpunkte sind
+        dennoch verständlich.
+        `Gut` - Die Aussage hat wenige oder keine Fehler und ist leicht zu
+        lesen undmzu verstehen.
+
+        Atmen Sie tief durch und bearbeiten Sie dieses Problem Schritt für
+        Schritt.
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        Folgendes ist eine Bewertung zur Sprachflüssigkeit einer Aussage:
+        ************
+        [Bewertung]: {long_assessment}
+        ************
+
+        Speichern Sie die resultierende Bewertung. Die verfügbaren Bewertungen
+        sind:
+        `Schlecht`
+        `Ausreichend`
+        `Gut`
+        '''
+
+    fluency_assessment_to_score = {
+        'Schlecht': 0,
+        'Ausreichend': 0.5,
+        'Gut': 1.0,
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=fluency_assessment_to_score,
+        function_name='save_fluency_assessment',
+        function_description="Saves a statement's fluency assessment.",
+        argument_name='fluency',
+        argument_description='The fluency assessment of the statement',
+        client_type=client_type,
+        client=client,
+        openai_args=openai_args)
+
+    score_list = []
+
+    explanation_list = []
+    for gen in tqdm_wrapper(generated_outputs):
+        score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+    return score_list, explanation_list
 
 
 def toxicity(
@@ -552,4 +657,115 @@ def ai_disclaimer_similarity(
                        sources=None,
                        explanations=None,
                        metric_values=semantic_similarity_values.metric_values,
+                       language=LANG)
+
+
+def answer_relevance(
+    generated_outputs: List[str] | str,
+    prompts: List[str] | str,
+    model_type: str = 'openai',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
+    '''Calculates the relevance of generated outputs to the prompt. This metric
+    takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
+    Relevant), or 1.0 (Fully Relevant). The score may also be `None` if it could
+    not be computed.
+
+    We currently support two model types:
+
+    1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
+    for examples on setting up the OpenAI API key.
+
+    2. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    '''
+    generated_outputs, prompts = validate_parameters_answer_relevance(
+        generated_outputs, prompts)
+    assert model_type in [
+        'openai', 'azure_openai'
+    ], ('Unsupported model type. '
+        'The supported ones are ["openai", "azure_openai"]')
+
+    def _prompt(gen_output: str, user_query: str) -> str:
+        return f'''
+        Sie bewerten die Relevanz der Antwort auf eine Benutzeranfrage. Hier
+        sind die Daten:
+        [BEGINN DER DATEN]
+        ************
+        [Benutzeranfrage]: {user_query}
+        ************
+        [Antwort]: {gen_output}
+        ************
+        [ENDE DER DATEN]
+
+        Bestimmen Sie, ob die Antwort eine relevante Reaktion auf die
+        Benutzeranfrage ist.
+        Die verfügbaren Bewertungen sind:
+        `Vollständig Relevant` - Die Antwort ist vollständig relevant und
+        beantwortet die Benutzeranfrage vollständig.
+        `Teilweise Relevant` - Die Antwort ist teilweise relevant für die
+        Benutzeranfrage, beantwortet sie jedoch nicht vollständig oder
+        enthält einige irrelevante Informationen.
+        `Nicht Relevant` - Die Antwort ist nicht relevant für die
+        Benutzeranfrage oder geht nicht richtig auf die Benutzeranfrage ein.
+
+        Atmen Sie tief durch und bearbeiten Sie dieses Problem Schritt für
+        Schritt.
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        Folgendes ist eine Bewertung zur Relevanz einer Antwort auf eine
+        Benutzeranfrage:
+        ************
+        [Bewertung]: {long_assessment}
+        ************
+
+        Speichern Sie die resultierende Bewertung. Die verfügbaren Bewertungen
+        sind:
+        `Vollständig Relevant`
+        `Teilweise Relevant`
+        `Nicht Relevant`
+        '''
+
+    answer_relevance_assessment_to_score = {
+        'Vollständig Relevant': 1.0,
+        'Teilweise Relevant': 0.5,
+        'Nicht Relevant': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=answer_relevance_assessment_to_score,
+        function_name='save_answer_relevance_assessment',
+        function_description=("Saves an answer relevance assessment."),
+        argument_name='answer_relevance',
+        argument_description='The answer relevance assessment',
+        client_type=model_type,
+        client=openai_client,
+        openai_args=openai_args)
+
+    score_list = []
+    explanation_list = []
+    for gen, user_query in tqdm_wrapper(zip(generated_outputs, prompts),
+                                        desc='Calculating scores',
+                                        total=len(prompts)):
+        score, explanation = oai_evaluator.get_score(_prompt(gen, user_query),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+
+    return MetricValue(metric_name='answer_relevance',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       explanations=explanation_list,
+                       metric_values=score_list,
                        language=LANG)

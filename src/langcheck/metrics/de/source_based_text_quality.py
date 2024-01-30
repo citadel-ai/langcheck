@@ -80,8 +80,6 @@ def factual_consistency(
     ], ('Unsupported model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
 
-    # The English prompt works well enough for German, like with Japanese
-    # TODO: Investigate performance improvement with German prompt / translation
     if model_type == 'openai' or model_type == 'azure_openai':
         scores, explanations = _factual_consistency_openai(
             generated_outputs, sources, model_type, openai_client, openai_args)

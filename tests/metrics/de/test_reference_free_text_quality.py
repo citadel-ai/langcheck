@@ -5,7 +5,7 @@ import pytest
 from openai.types import CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion
 
-from langcheck.metrics.de import (ai_disclaimer_similarity,
+from langcheck.metrics.de import (ai_disclaimer_similarity, answer_relevance,
                                   flesch_kincaid_grade, flesch_reading_ease,
                                   fluency, sentiment, toxicity)
 from tests.utils import is_close
@@ -73,7 +73,7 @@ def test_fluency_openai(generated_outputs):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"fluency\": \"Good\"\n}")))
+            arguments="{\n  \"fluency\": \"Gut\"\n}")))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
@@ -240,3 +240,39 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
         # the AI disclaimer phrase, the AI disclaimer language similarity should
         # be 1.
         assert 0.99 <= metric_value <= 1
+
+
+@pytest.mark.parametrize('generated_outputs,prompts',
+                         [("Tokio ist die Hauptstadt von Japan.",
+                           'Was ist die Hauptstadt von Japan?'),
+                          (["Tokio ist die Hauptstadt von Japan."
+                           ], ['Was ist die Hauptstadt von Japan?'])])
+def test_answer_relevance_openai(generated_outputs, prompts):
+    mock_chat_completion = Mock(spec=ChatCompletion)
+    mock_chat_completion.choices = [
+        Mock(message=Mock(function_call=Mock(
+            arguments="{\n  \"answer_relevance\": \"Vollständig Relevant\"\n}"))
+            )  # noqa: E123
+    ]
+    # Calling the openai.resources.chat.Completions.create method requires an
+    # OpenAI API key, so we mock the return value instead
+    with patch('openai.resources.chat.Completions.create',
+               return_value=mock_chat_completion):
+        # Set the necessary env vars for the 'openai' model type
+        os.environ["OPENAI_API_KEY"] = "dummy_key"
+        metric_value = answer_relevance(generated_outputs,
+                                        prompts,
+                                        model_type='openai')
+        # "Fully Relevant" gets a value of 1.0
+        assert metric_value == 1
+
+        # Set the necessary env vars for the 'azure_openai' model type
+        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["OPENAI_API_VERSION"] = "dummy_version"
+        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        metric_value = answer_relevance(generated_outputs,
+                                        prompts,
+                                        model_type='azure_openai',
+                                        openai_args={'model': 'foo bar'})
+        # "Fully Relevant" gets a value of 1.0
+        assert metric_value == 1
