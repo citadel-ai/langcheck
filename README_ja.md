@@ -14,7 +14,9 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 [利用例](#利用例) •
 [クイックスタート](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [ドキュメント](https://langcheck.readthedocs.io/en/latest/index.html) •
-[English](README.md)
+[English](README.md) •
+[Deutsch](README_de.md)
+
 
 </div>
 
