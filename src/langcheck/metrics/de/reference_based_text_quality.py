@@ -39,7 +39,7 @@ def semantic_similarity(
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
 
-    2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
+    2. The 'openai' type, where we use OpenAI's 'text-embedding-3-small' model
     by default (this is configurable). See
     `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
