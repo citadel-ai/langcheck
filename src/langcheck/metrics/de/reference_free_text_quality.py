@@ -230,11 +230,47 @@ def fluency(
     openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
-    ''' If using the local models, we first translate the generated outputs
-    to English, and then use the Parrot fluency model to calculate the fluency
-    scores, from the English counterpart. If using the OpenAI models, we use
-    the OpenAI API to calculate the fluency scores. This metric takes on float
+    ''' Calculates the fluency scores of generated outputs. This metric takes on
+    float values between [0, 1], where 0 is low fluency and 1 is high fluency.
+    (NOTE: when using the OpenAI model, the fluency scores are either 0.0
+    (poor), 0.5 (fair), or 1.0 (good). The score may also be `None` if it could
+    not be computed.)
+
+    We currently support three model types:
+
+    1. The 'local' type, we first translate the generated outputs
+    to English, then use the Parrot fluency model for the English counterpart.
+    This is the default model type and there is no setup needed to run this.
+
+    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
+    for examples on setting up the OpenAI API key.
+
+    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s). Prompts are
+            optional metadata and not used to calculate the metric.
+        model_type: The type of model to use ('local', 'openai', or
+            'azure_openai'), default 'local'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None but ``model_type`` is 'openai' or 'azure_openai', we will
+            attempt to create a default client.
+        openai_args: Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function, default None
+
+    Returns:
+        An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
+
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
     assert model_type in [

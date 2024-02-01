@@ -263,7 +263,7 @@ def test_answer_relevance_openai(generated_outputs, prompts):
         metric_value = answer_relevance(generated_outputs,
                                         prompts,
                                         model_type='openai')
-        # "Fully Relevant" gets a value of 1.0
+        # "Vollständig Relevant" gets a value of 1.0
         assert metric_value == 1
 
         # Set the necessary env vars for the 'azure_openai' model type
