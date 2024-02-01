@@ -27,9 +27,7 @@ def semantic_similarity(
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
     takes on float values between [-1, 1], but typically ranges between 0 and 1
-    where 0 is minimum similarity and 1 is maximum similarity. (NOTE: when using
-    OpenAI embeddings, the cosine similarities tend to be skewed quite heavily
-    towards higher numbers.)
+    where 0 is minimum similarity and 1 is maximum similarity.
 
     We currently support three embedding model types:
 
@@ -37,7 +35,7 @@ def semantic_similarity(
     is downloaded from HuggingFace and run locally. This is the default model
     type and there is no setup needed to run this.
 
-    2. The 'openai' type, where we use OpenAI's 'text-embedding-ada-002' model
+    2. The 'openai' type, where we use OpenAI's 'text-embedding-3-small' model
     by default (this is configurable). See
     `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
@@ -51,7 +49,7 @@ def semantic_similarity(
     Ref:
         https://huggingface.co/tasks/sentence-similarity
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
-        https://openai.com/blog/new-and-improved-embedding-model
+        https://openai.com/blog/new-embedding-models-and-api-updates
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
