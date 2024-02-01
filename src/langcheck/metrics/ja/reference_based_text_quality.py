@@ -49,7 +49,7 @@ def semantic_similarity(
     Ref:
         https://huggingface.co/tasks/sentence-similarity
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
-        https://openai.com/blog/new-and-improved-embedding-model
+        https://openai.com/blog/new-embedding-models-and-api-updates
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
