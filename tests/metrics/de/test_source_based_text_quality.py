@@ -39,7 +39,7 @@ def test_factual_consistency_openai(generated_outputs, sources):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"factuality\": \"Fully Consistent\"\n}")))
+            arguments="{\n  \"factuality\": \"Vollständig Konsistent\"\n}")))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
