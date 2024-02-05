@@ -1,5 +1,5 @@
 from langcheck.metrics import en, ja, zh
-from langcheck.metrics._model_management import ModelManager
+from langcheck.metrics import model_manager
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (
@@ -13,8 +13,6 @@ from langcheck.metrics.text_structure import (contains_all_strings,
                                               contains_regex, is_float, is_int,
                                               is_json_array, is_json_object,
                                               matches_regex, validation_fn)
-
-_model_manager = ModelManager()
 
 __all__ = [
     'en',
@@ -42,4 +40,5 @@ __all__ = [
     'semantic_similarity',
     'sentiment',
     'toxicity',
+    'model_manager'
 ]

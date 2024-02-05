@@ -1,0 +1,19 @@
+zh:
+  semantic_similarity:
+    model_name: BAAI/bge-base-zh-v1.5
+    model_revision: f03589c
+    loader_func: load_sentence_transformers
+  
+  sentiment:
+    model_name: IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment
+    loader_func: load_auto_model_for_text_classification
+
+  toxicity:
+    model_name: alibaba-pai/pai-bert-base-zh-llm-risk-detection
+    model_revision: 0a61c79744cb0173216f015ffecc1ea81c4e0229
+    loader_func: load_auto_model_for_text_classification
+
+  factual_consistency:
+    model_name: Helsinki-NLP/opus-mt-zh-en
+    model_revision: cf109095479db38d6df799875e34039d4938aaa6
+    loader_func: load_auto_model_for_seq2seq
