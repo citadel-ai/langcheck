@@ -91,9 +91,9 @@ def semantic_similarity(
         metric_value.language = 'zh'
         return metric_value
     # lazy import
-    from langcheck.metrics import _model_manager
-    model = _model_manager.fetch_model(language='zh',
-                                       metric_type="semantic_similarity")
+    from langcheck.metrics.model_manager import manager
+    model = manager.fetch_model(language='zh',
+                                metric="semantic_similarity")
 
     # For type checking
     assert isinstance(model, SentenceTransformer)

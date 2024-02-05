@@ -93,9 +93,8 @@ def sentiment(
         'sentiment-analysis',
         model=_sentiment_model_path)  # type: ignore[reportGeneralTypeIssues]
     # {0:"Negative", 1:'Positive'}
-    from langcheck.metrics import _model_manager
-    tokenizer, model = _model_manager.fetch_model(language='zh',
-                                                  metric='sentiment')
+    from langcheck.metrics.model_manager import manager
+    tokenizer, model = manager.fetch_model(language='zh', metric='sentiment')
     _sentiment_pipeline = pipeline(
         'sentiment-analysis',
         model=model,  # type: ignore[reportGeneralTypeIssues]
@@ -218,9 +217,9 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     global _toxicity_model_path
     # this pipeline output predict probability for each text on each label.
     # the output format is List[List[Dict(str)]]
-    from langcheck.metrics import _model_manager
-    tokenizer, model = _model_manager.fetch_model(language='zh',
-                                                  metric="toxicity")
+    from langcheck.metrics.model_manager import manager
+    tokenizer, model = manager.fetch_model(language='zh',
+                                           metric="toxicity")
 
     _toxicity_pipeline = pipeline(
         'text-classification',
