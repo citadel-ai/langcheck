@@ -1,16 +1,16 @@
 from typing import Optional, Tuple
 
 from sentence_transformers import SentenceTransformer
-from transformers.models.auto.modeling_auto import (AutoModelForSeq2SeqLM,
-                                                    AutoModelForSequenceClassification)  # NOQA:E501
-
+from transformers.models.auto.modeling_auto import (  # NOQA:E501
+    AutoModelForSeq2SeqLM, AutoModelForSequenceClassification)
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.pipelines import pipeline
 
 
-def load_sentence_transformers(model_name: str,
-                               tokenizer_name: Optional[str] = None,
-                               revision: Optional[str] = None) -> SentenceTransformer:  # NOQA:E501
+def load_sentence_transformers(
+        model_name: str,
+        tokenizer_name: Optional[str] = None,
+        revision: Optional[str] = None) -> SentenceTransformer:  # NOQA:E501
     '''
     Return a sequence embeddiing model parsed by sentence-transformer library.
 
@@ -27,7 +27,8 @@ def load_sentence_transformers(model_name: str,
 
 
 def load_auto_model_for_text_classification(
-    model_name: str, tokenizer_name: Optional[str] = None,
+    model_name: str,
+    tokenizer_name: Optional[str] = None,
     revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSequenceClassification]:
     '''
@@ -47,7 +48,8 @@ def load_auto_model_for_text_classification(
 
 
 def load_auto_model_for_seq2seq(
-    model_name: str, tokenizer_name: Optional[str] = None,
+    model_name: str,
+    tokenizer_name: Optional[str] = None,
     revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSequenceClassification]:
     '''

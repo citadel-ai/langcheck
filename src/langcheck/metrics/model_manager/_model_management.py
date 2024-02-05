@@ -2,38 +2,41 @@ import os
 from copy import deepcopy
 from functools import lru_cache
 from pathlib import Path
-from tabulate import tabulate
 from typing import Optional, Tuple, Union
 
-import requests
 import pandas as pd
+import requests
 from omegaconf import OmegaConf
-
 from sentence_transformers import SentenceTransformer
-from transformers.models.auto.modeling_auto import (AutoModelForSeq2SeqLM,
-                                                    AutoModelForSequenceClassification)  # NOQA:E501
+from tabulate import tabulate
+from transformers.models.auto.modeling_auto import (  # NOQA:E501
+    AutoModelForSeq2SeqLM, AutoModelForSequenceClassification)
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
-from ._model_loader import (load_sentence_transformers,
+from ._model_loader import (load_auto_model_for_seq2seq,
                             load_auto_model_for_text_classification,
-                            load_auto_model_for_seq2seq)
+                            load_sentence_transformers)
 
 LOADER_MAP = {
-    "load_sentence_transformers": load_sentence_transformers,
-    "load_auto_model_for_text_classification": load_auto_model_for_text_classification,  # NOQA:E501
-    "load_auto_model_for_seq2seq": load_auto_model_for_seq2seq
+    "load_sentence_transformers":
+        load_sentence_transformers,
+    "load_auto_model_for_text_classification":
+        load_auto_model_for_text_classification,  # NOQA:E501
+    "load_auto_model_for_seq2seq":
+        load_auto_model_for_seq2seq
 }
 VALID_LOADER_FUNCTION = LOADER_MAP.keys()  # NOQA:E501
-VALID_METRICS = ['semantic_similarity', 'sentiment',
-                 'toxicity', 'factual_consistency']
+VALID_METRICS = [
+    'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency'
+]
 
-VALID_METRIC_ATTRIBUTE = ['model_revision', 'model_revision',
-                          'loader', 'tokenizer_name']
+VALID_METRIC_ATTRIBUTE = [
+    'model_revision', 'model_revision', 'loader', 'tokenizer_name'
+]
 VALID_LANGUAGE = ['zh']
 
 
-def check_model_availability(model_name: str,
-                             revision: Optional[str]):
+def check_model_availability(model_name: str, revision: Optional[str]):
     # TODO: add local cached model availability check for offline environment
     if revision is None:
         url = f"https://huggingface.co/api/models/{model_name}"
@@ -69,17 +72,16 @@ class ModelManager:
             for metric_name, metric_conf in lang_conf.items():
                 # check model availbility, if key not in conf
                 # omega conf will return None in default
-                self.__set_model_for_metric(
-                    language=lang, metric=metric_name,
-                    **metric_conf)
+                self.__set_model_for_metric(language=lang,   # type: ignore  # NOQA:E501
+                                            metric=metric_name,
+                                            **metric_conf)
         print('Configuration Load Successed!')
 
     @lru_cache
     def fetch_model(
         self, language: str, metric: str
-    ) -> Union[Tuple[AutoTokenizer, AutoModelForSequenceClassification],
-               Tuple[AutoTokenizer, AutoModelForSeq2SeqLM],
-               SentenceTransformer]:
+    ) -> Union[Tuple[AutoTokenizer, AutoModelForSequenceClassification], Tuple[
+            AutoTokenizer, AutoModelForSeq2SeqLM], SentenceTransformer]:
         '''
         Return the model used for the given metric and language.
 
@@ -158,8 +160,7 @@ class ModelManager:
                 raise KeyError('Language {language} not supported yet')
 
             if metric not in VALID_METRICS:
-                raise KeyError(
-                    'Language {language} not supported {metric} yet')
+                raise KeyError('Language {language} not supported {metric} yet')
 
             # initialize configuration structure if it is empty.
             if self.config.get(language) is None:
@@ -181,7 +182,8 @@ class ModelManager:
                 detail_config['revision'] = revision
             # Validate the change
             if ModelManager.validate_config(self.config,
-                                            language=language, metric=metric):
+                                            language=language,
+                                            metric=metric):
                 # Clear the LRU cache to make the config change reflected
                 # immediately
                 self.fetch_model.cache_clear()
@@ -211,18 +213,18 @@ class ModelManager:
                                   columns="attribute",
                                   values="value",
                                   aggfunc='first').reset_index().rename_axis(
-                                  None, axis=1)
+                                      None, axis=1)
         df_pivot.columns = [
             'language', 'metric_name', 'loader', 'model_name', 'revision'
         ]
 
         if language == 'all' and metric == 'all':
-            print(tabulate(df_pivot, headers=df_pivot.columns,
-                           tablefmt="github"))
+            print(
+                tabulate(df_pivot, headers=df_pivot.columns, tablefmt="github"))  # type: ignore  # NOQA:E501
         else:
             if language != "all":
                 df_pivot = df_pivot.loc[df_pivot.language == language]
             if metric != 'all':
                 df_pivot = df_pivot.loc[df_pivot.metric_name == metric]
-            print(tabulate(df_pivot, headers=df_pivot.columns,
-                           tablefmt="github"))
+            print(
+                tabulate(df_pivot, headers=df_pivot.columns, tablefmt="github"))   # type: ignore  # NOQA:E501
