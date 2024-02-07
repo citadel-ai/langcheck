@@ -31,6 +31,10 @@ jobs:
           pip install --upgrade pip
           pip install .[dev]
 
+      - name: Check Disk Space
+        run: |
+          df -h
+
       # Run integration tests
       - name: Test
         run: |
