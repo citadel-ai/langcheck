@@ -82,3 +82,9 @@ ignore = [
 markers = [
     "optional: marks tests as optional",
 ]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+langcheck.metrics.model_manager.config = ["*.yaml"]
