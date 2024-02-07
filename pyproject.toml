@@ -87,4 +87,4 @@ markers = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-langcheck = ["*.yaml"]
+langcheck = ["metrics/model_manager/config/*.yaml"]
