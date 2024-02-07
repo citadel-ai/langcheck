@@ -227,4 +227,5 @@ class ModelManager:
             if metric != 'all':
                 df_pivot = df_pivot.loc[df_pivot.metric_name == metric]
             print(
-                tabulate(df_pivot, headers=df_pivot.columns, tablefmt="github"))   # type: ignore  # NOQA:E501
+                tabulate(df_pivot, headers=df_pivot.columns,  # type: ignore  # NOQA:E501
+                         tablefmt="github"))

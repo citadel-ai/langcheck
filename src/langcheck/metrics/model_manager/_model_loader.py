@@ -23,7 +23,8 @@ def load_sentence_transformers(
     if tokenizer_name is not None:
         print("Tokenizer customize not supported in Sentence-Transformers yet.")
 
-    return SentenceTransformer(model_name)
+    model = SentenceTransformer(model_name)
+    return model
 
 
 def load_auto_model_for_text_classification(
