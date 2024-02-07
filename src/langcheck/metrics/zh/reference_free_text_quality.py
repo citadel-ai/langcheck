@@ -19,10 +19,6 @@ from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
 
-_sentiment_model_path = 'IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment'  # NOQA: E501
-
-_toxicity_model_path = "alibaba-pai/pai-bert-base-zh-llm-risk-detection"
-
 
 def sentiment(
     generated_outputs: List[str] | str,
@@ -87,11 +83,6 @@ def sentiment(
         metric_value.language = 'zh'
         return metric_value
 
-    global _sentiment_model_path
-
-    _sentiment_pipeline = pipeline(
-        'sentiment-analysis',
-        model=_sentiment_model_path)  # type: ignore[reportGeneralTypeIssues]
     # {0:"Negative", 1:'Positive'}
     from langcheck.metrics.model_manager import manager
     tokenizer, model = manager.fetch_model(language='zh', metric='sentiment')

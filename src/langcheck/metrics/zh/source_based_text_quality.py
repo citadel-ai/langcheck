@@ -11,9 +11,6 @@ from langcheck.metrics.en.source_based_text_quality import \
     factual_consistency as en_factual_consistency
 from langcheck.metrics.metric_value import MetricValue
 
-_factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-zh-en'
-_factual_consistency_translation_pipeline: Pipeline | None = None
-
 
 def factual_consistency(
     generated_outputs: List[str] | str,
@@ -84,13 +81,11 @@ def factual_consistency(
         metric_value.language = 'zh'
         return metric_value
 
-    global _factual_consistency_translation_pipeline
-    if _factual_consistency_translation_pipeline is None:
-        from langcheck.metrics.model_manager import manager
-        tokenizer, model = manager.fetch_model(language='zh',
-                                               metric='factual_consistency')  # NOQA:E501
-        _factual_consistency_translation_pipeline = pipeline(
-            'translation', model=model, tokenizer=tokenizer)  # type: ignore
+    from langcheck.metrics.model_manager import manager
+    tokenizer, model = manager.fetch_model(language='zh',
+                                           metric='factual_consistency')  # NOQA:E501
+    _factual_consistency_translation_pipeline = pipeline(
+        'translation', model=model, tokenizer=tokenizer)  # type: ignore
 
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since
