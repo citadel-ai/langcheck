@@ -10,18 +10,27 @@ from transformers.pipelines import pipeline
 def load_sentence_transformers(
         model_name: str,
         tokenizer_name: Optional[str] = None,
-        revision: Optional[str] = None) -> SentenceTransformer:  # NOQA:E501
+        revision: Optional[str] = None) -> SentenceTransformer:
     '''
-    Return a sequence embeddiing model parsed by sentence-transformer library.
+    Loads a SentenceTransformer model.
+
+    This function currently does not support specifying a tokenizer or a
+    revision. If these arguments are provided, a warning message will be
+    printed.
 
     Args:
-        model_name: The name of a sentence-transformer model
+        model_name: The name of the SentenceTransformer model to load.
+        tokenizer_name: The name of the tokenizer to use. Currently not
+            supported.
+        revision: The model revision to load. Currently not supported.
+
+    Returns:
+        model: The loaded SentenceTransformer model.
     '''
     if revision is not None:
-        print("Version Pined not supported in Sentence-Transformers yet.")
-
+        print("Warning: Specifying a revision is not currently supported.")
     if tokenizer_name is not None:
-        print("Tokenizer customize not supported in Sentence-Transformers yet.")
+        print("Warning: Customizing the tokenizer is not currently supported.")
 
     model = SentenceTransformer(model_name)
     return model
