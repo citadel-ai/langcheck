@@ -117,11 +117,12 @@ class ModelManager:
             raise KeyError(f'Language {language} not supported yet')
 
     @staticmethod
-    def validate_config(config, language='all', metric='all'):
+    def validate_config(config, language='all', metric='all') -> None:
         '''
         Validate configuration.
 
         Args:
+            config: The configuration dictionary to validate.
             language: The name of the language. Defaults to 'all'.
             metric: The name of the metric. Defaults to 'all'.
         '''
@@ -132,7 +133,8 @@ class ModelManager:
             for metric_name, model_setting in lang_setting.items():
                 if metric != 'all' and metric_name != metric:
                     continue
-                # If model name not set
+
+                # Check that the model name and loader function are set
                 if 'model_name' not in model_setting:
                     raise KeyError(
                         f'{lang} metrics {metric_name} need a model, but found None!'  # NOQA:E501
@@ -141,14 +143,15 @@ class ModelManager:
                     raise KeyError(
                         f'Metrics {metric_name} need a loader, but found None!'  # NOQA:E501
                     )
-                # Check if the model and revision is available on
-                # Hugging Face Hub
-                model_name = model_setting.pop('model_name')
-                revision = model_setting.pop('revision', None)
                 loader_func = model_setting.pop('loader_func', None)
                 if loader_func not in VALID_LOADER_FUNCTION:
                     raise ValueError(
                         f'loader type should in {VALID_LOADER_FUNCTION}')
+
+                # Check that the model and revision are available on the Hugging
+                # Face Hub
+                model_name = model_setting.pop('model_name')
+                revision = model_setting.pop('revision', None)
                 if not check_model_availability(model_name, revision):
                     raise ValueError(
                         f'Cannot find {model_name} with {revision} and Huggingface Hub'  # NOQA:E501
