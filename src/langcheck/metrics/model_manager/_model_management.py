@@ -155,15 +155,16 @@ class ModelManager:
                     )
 
     def __set_model_for_metric(self, language: str, metric: str,
-                               model_name: str, loader_func: str, **kwargs):
+                               model_name: str, loader_func: str,
+                               **kwargs) -> None:
         '''
         Set model for specified metric in specified language.
 
         Args:
             language: The name of the language
-            metric: The name of the evaluation metrics
+            metric: The name of the evaluation metric
             model_name: The name of the model
-            loader: The loader of the model
+            loader_func: The loader function of the model
             tokenizer_name: (Optional) The name of the tokenizer
             revision: (Optional) A version string of the model
         '''
@@ -173,18 +174,22 @@ class ModelManager:
                 raise KeyError('Language {language} not supported yet')
 
             if metric not in VALID_METRICS:
-                raise KeyError('Language {language} not supported {metric} yet')
+                raise KeyError(
+                    f'Metric {metric} not supported for language {language} yet'
+                )
 
-            # initialize configuration structure if it is empty.
+            # Initialize the configuration for the language and metric if it
+            # doesn't exist
             if self.config.get(language) is None:
                 self.config[language] = {}
             if self.config.get(language).get(metric) is None:
                 self.config[language][metric] = {}
 
             detail_config = self.config[language][metric]
-            # set metric attribute
+            # Set the loader function and model name
             detail_config['loader_func'] = loader_func
             detail_config['model_name'] = model_name
+
             # If tokenizer_name is different from model_name
             tokenizer_name = kwargs.pop('tokenizer_name', None)
             if tokenizer_name:
@@ -193,6 +198,7 @@ class ModelManager:
             revision = kwargs.pop('model_revision', None)
             if revision:
                 detail_config['revision'] = revision
+
             # Validate the change
             if ModelManager.validate_config(self.config,
                                             language=language,
@@ -201,7 +207,7 @@ class ModelManager:
                 # immediately
                 self.fetch_model.cache_clear()
         except (ValueError, KeyError) as err:
-            # Trace back the configuration
+            # If an error occurred, restore the original configuration
             self.config = config_copy
             raise err
 
