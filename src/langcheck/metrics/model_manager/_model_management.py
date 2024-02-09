@@ -9,7 +9,7 @@ import requests
 from omegaconf import OmegaConf
 from sentence_transformers import SentenceTransformer
 from tabulate import tabulate
-from transformers.models.auto.modeling_auto import (  # NOQA:E501
+from transformers.models.auto.modeling_auto import (
     AutoModelForSeq2SeqLM, AutoModelForSequenceClassification)
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
@@ -21,11 +21,11 @@ LOADER_MAP = {
     "load_sentence_transformers":
         load_sentence_transformers,
     "load_auto_model_for_text_classification":
-        load_auto_model_for_text_classification,  # NOQA:E501
+        load_auto_model_for_text_classification,
     "load_auto_model_for_seq2seq":
         load_auto_model_for_seq2seq
 }
-VALID_LOADER_FUNCTION = LOADER_MAP.keys()  # NOQA:E501
+VALID_LOADER_FUNCTION = LOADER_MAP.keys()
 VALID_METRICS = [
     'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency'
 ]
@@ -36,7 +36,7 @@ VALID_METRIC_ATTRIBUTE = [
 VALID_LANGUAGE = ['zh']
 
 
-def check_model_availability(model_name: str, revision: Optional[str]):
+def check_model_availability(model_name: str, revision: Optional[str]) -> bool:
     # TODO: add local cached model availability check for offline environment
     if revision is None:
         url = f"https://huggingface.co/api/models/{model_name}"
@@ -211,7 +211,7 @@ class ModelManager:
             self.config = config_copy
             raise err
 
-    def list_current_model_in_use(self, language='all', metric='all'):
+    def list_current_model_in_use(self, language='all', metric='all') -> None:
         '''
         List the models currently in use.
 
