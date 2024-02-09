@@ -89,20 +89,27 @@ class ModelManager:
     ) -> Union[Tuple[AutoTokenizer, AutoModelForSequenceClassification], Tuple[
             AutoTokenizer, AutoModelForSeq2SeqLM], SentenceTransformer]:
         '''
-        Return the model used for the given metric and language.
+        Return the model (and if applicable, the tokenizer) used for the given
+        metric and language.
 
         Args:
             language: The language for which to get the model
             metric_type: The metric name
+
+        Returns:
+            A (tokenizer, modle) tuple, or just the model depending on the
+            loader function.
         '''
         if language in self.config:
             if metric in self.config[language]:
                 # Deep copy the confguration so that changes to `config` would
                 # not affect the original `self.config`.
                 config = deepcopy(self.config[language][metric])
-                # Get model name, model loader type
+                # Get model loader function
                 loader_func = config.pop('loader_func')
                 loader = LOADER_MAP[loader_func]
+                # Call the loader function with the model_name, tokenizer_name
+                # (optional), and revision (optional) as arguments
                 return loader(**config)
             else:
                 raise KeyError(f'Metric {metric} not supported yet.')
