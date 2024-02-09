@@ -65,17 +65,23 @@ class ModelManager:
                                                 "metric_config.yaml")
         self.__load_config(default_config_file_path)
 
-    def __load_config(self, path: str):
+    def __load_config(self, path: str) -> None:
+        '''
+        Loads the model configuration from a file.
+
+        Args:
+            path: The path to the configuration file.
+        '''
         conf = OmegaConf.load(path)
 
         for lang, lang_conf in conf.items():
             for metric_name, metric_conf in lang_conf.items():
                 # check model availbility, if key not in conf
                 # omega conf will return None in default
-                self.__set_model_for_metric(language=lang,   # type: ignore  # NOQA:E501
+                self.__set_model_for_metric(language=lang,
                                             metric=metric_name,
                                             **metric_conf)
-        print('Configuration Load Successed!')
+        print('Configuration Load Succeeded!')
 
     @lru_cache
     def fetch_model(
@@ -220,12 +226,17 @@ class ModelManager:
 
         if language == 'all' and metric == 'all':
             print(
-                tabulate(df_pivot, headers=df_pivot.columns, tablefmt="github"))  # type: ignore  # NOQA:E501
+                tabulate(
+                    df_pivot,  # type: ignore
+                    headers=df_pivot.columns,  # type: ignore
+                    tablefmt="github"))
         else:
             if language != "all":
                 df_pivot = df_pivot.loc[df_pivot.language == language]
             if metric != 'all':
                 df_pivot = df_pivot.loc[df_pivot.metric_name == metric]
             print(
-                tabulate(df_pivot, headers=df_pivot.columns,  # type: ignore  # NOQA:E501
-                         tablefmt="github"))
+                tabulate(
+                    df_pivot,  # type: ignore
+                    headers=df_pivot.columns,  # type: ignore
+                    tablefmt="github"))
