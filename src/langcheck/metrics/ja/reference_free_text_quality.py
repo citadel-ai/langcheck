@@ -14,8 +14,6 @@ from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_free_text_quality import _fluency_openai
-from langcheck.metrics.en.reference_free_text_quality import \
-    sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
