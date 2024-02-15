@@ -91,14 +91,38 @@ def sentiment(
     ], ('Unsupported model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
 
-    # The English prompt works well enough for Japanese
-    # TODO: Investigate the performance improvement with Japanese prompt
-    if model_type == 'openai' or model_type == 'azure_openai':
-        metric_value = en_sentiment(generated_outputs, prompts, model_type,
-                                    openai_client, openai_args)
-        metric_value.language = 'ja'
-        return metric_value
+    if model_type == 'local':
+        scores = _sentiment_local(generated_outputs)
+        explanations = None
+    else:  # openai or azure_openai
+        scores, explanations = _sentiment_openai(generated_outputs, model_type,
+                                                 openai_client, openai_args)
 
+    return MetricValue(metric_name='sentiment',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=None,
+                       sources=None,
+                       explanations=explanations,
+                       metric_values=scores,
+                       language='ja')
+
+
+def _sentiment_local(generated_outputs: List[str]) -> List[float]:
+    '''Calculates the sentiment scores of generated outputs using the
+    Twitter-roBERTa-base-sentiment-multilingual model. This metric takes on
+    float values between [0, 1], where 0 is negative sentiment and 1 is positive
+    sentiment.
+
+    Ref:
+        https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+
+    Returns:
+        A list of scores
+    '''
     global _sentiment_tokenizer, _sentiment_model
 
     if _sentiment_tokenizer is None or _sentiment_model is None:
@@ -121,15 +145,92 @@ def sentiment(
             _sentiment_model(**input_tokens).logits, dim=1)
 
     scores = (probs[:, 1] / 2 + probs[:, 2]).tolist()
+    return scores
 
-    return MetricValue(metric_name='sentiment',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=None,
-                       metric_values=scores,
-                       language='ja')
+
+def _sentiment_openai(
+    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]]
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+    '''Calculates the sentiment scores and their associated explanations of
+    generated outputs using the OpenAI API. This metric takes on float values
+    that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is neutral
+    sentiment, and 1 is positive sentiment.  We leverage the function calling
+    API to make sure that the output is structured such that we can compute a
+    score. If a score could not be computed, `None` is inserted to the score
+    and explanation lists.
+
+    Ref:
+        https://platform.openai.com/docs/guides/gpt/function-calling
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
+
+    Returns:
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
+    '''
+
+    def _prompt(gen_output: str) -> str:
+        return f'''
+        提出されたテキストのセンチメントを評価してください。データは以下の通りです:
+        [BEGIN DATA]
+        ************
+        [テキスト]: {gen_output}
+        ************
+        [END DATA]
+
+        提出されたテキストの主要なセンチメントを判断してください。利用可能な評価は以下の通りです:
+        `Positive` - 提出されたテキストには主にポジティブなセンチメントがあります
+        `Negative` - 提出されたテキストには主にネガティブなセンチメントがあります
+        `Neutral` - 提出されたテキストにはポジティブでもネガティブでもないセンチメントがあります
+
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        以下はテキストのセンチメントに関する評価です:
+        ************
+        [評価]: {long_assessment}
+        ************
+
+        結果として出た評価を保存してください。利用可能な評価は以下の通りです:
+        `Positive`
+        `Neutral`
+        `Negative`
+        '''
+
+    sentiment_assessment_to_score = {
+        'Positive': 1.0,
+        'Neutral': 0.5,
+        'Negative': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=sentiment_assessment_to_score,
+        function_name='save_sentiment_assessment',
+        function_description="Saves a statement's sentiment assessment.",
+        argument_name='sentiment',
+        argument_description='The sentiment assessment of the statement',
+        client_type=client_type,
+        client=client,
+        openai_args=openai_args)
+
+    score_list = []
+
+    explanation_list = []
+    for gen in tqdm_wrapper(generated_outputs):
+        score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+    return score_list, explanation_list
 
 
 def toxicity(
