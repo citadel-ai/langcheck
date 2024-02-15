@@ -23,10 +23,10 @@ jobs:
         # GitHub Actions doesn't support Python 3.8 and 3.9 on M1 macOS yet:
         # https://github.com/actions/setup-python/issues/696
         exclude:
-          - os: macos-latest
-            python-version: "3.8"
-          - os: macos-latest
-            version: "3.9"
+          - python-version: "3.8"
+            os: macos-14
+          - python-version: "3.9"
+            os: macos-14
 
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
