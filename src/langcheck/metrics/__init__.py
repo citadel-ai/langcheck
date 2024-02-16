@@ -39,5 +39,4 @@ __all__ = [
     'semantic_similarity',
     'sentiment',
     'toxicity',
-    'model_manager'
 ]

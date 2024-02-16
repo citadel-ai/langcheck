@@ -55,9 +55,11 @@ def load_auto_model_for_text_classification(
     '''
     if tokenizer_name is None:
         tokenizer_name = model_name
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, revision=revision)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name,
+                                              trust_remote_code=True,
+                                              revision=revision)
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, revision=revision)
+        model_name, revision=revision, trust_remote_code=True)
     return tokenizer, model  # type: ignore
 
 
@@ -81,7 +83,9 @@ def load_auto_model_for_seq2seq(
     '''
     if tokenizer_name is None:
         tokenizer_name = model_name
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, revision=revision)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name,
+                                              revision=revision,
+                                              trust_remote_code=True)
     model = AutoModelForSeq2SeqLM.from_pretrained(
-        model_name, revision=revision)  # NOQA: E501
+        model_name, revision=revision, trust_remote_code=True)  # NOQA: E501
     return tokenizer, model  # type: ignore

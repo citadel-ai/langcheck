@@ -37,7 +37,7 @@ VALID_LANGUAGE = ['zh']
 
 def check_model_availability(model_name: str, revision: Optional[str]) -> bool:
     # TODO: add local cached model availability check for offline environment
-    if revision is None:
+    if revision is None or revision == "":
         url = f"https://huggingface.co/api/models/{model_name}"
     else:
         url = f"https://huggingface.co/api/models/{model_name}/revision/{revision}"  # NOQA:E501
@@ -77,6 +77,7 @@ class ModelManager:
             for metric_name, metric_conf in lang_conf.items():
                 # check model availbility, if key not in conf
                 # omega conf will return None in default
+                assert isinstance(lang, str)
                 self.__set_model_for_metric(language=lang,
                                             metric=metric_name,
                                             **metric_conf)
@@ -202,12 +203,12 @@ class ModelManager:
                 detail_config['revision'] = revision
 
             # Validate the change
-            if ModelManager.validate_config(self.config,
-                                            language=language,
-                                            metric=metric):
-                # Clear the LRU cache to make the config change reflected
-                # immediately
-                self.fetch_model.cache_clear()
+            ModelManager.validate_config(self.config,
+                                         language=language,
+                                         metric=metric)
+            # Clear the LRU cache to make the config change reflected
+            # immediately
+            self.fetch_model.cache_clear()
         except (ValueError, KeyError) as err:
             # If an error occurred, restore the original configuration
             self.config = config_copy

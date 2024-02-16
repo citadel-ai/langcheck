@@ -1,3 +1,9 @@
+# LANG:
+#   METRIC_NAME:
+#     model_name: str
+#     model_revisoin: str
+#     tokenizer_name:str
+#     loader_func: str
 zh:
   semantic_similarity:
     model_name: BAAI/bge-base-zh-v1.5
