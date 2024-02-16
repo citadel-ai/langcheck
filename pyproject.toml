@@ -82,6 +82,7 @@ ignore = [
 markers = [
     "optional: marks tests as optional",
 ]
+disable_test_id_escaping_and_forfeit_all_rights_to_community_support = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
