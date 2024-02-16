@@ -205,19 +205,15 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     Returns:
         A list of scores
     '''
-    global _toxicity_model_path
     # this pipeline output predict probability for each text on each label.
     # the output format is List[List[Dict(str)]]
     from langcheck.metrics.model_manager import manager
-    tokenizer, model = manager.fetch_model(language='zh',
-                                           metric="toxicity")
-
+    tokenizer, model = manager.fetch_model(language='zh', metric="toxicity")
     _toxicity_pipeline = pipeline(
         'text-classification',
         model=model,  # type: ignore[reportOptionalIterable]
         tokenizer=tokenizer,  # type: ignore[reportOptionalIterable]
         top_k=5)
-
     # {'Normal': 0, 'Pulp': 1, 'Sex': 2, 'Other Risk': 3, 'Adult': 4}
     _model_id2label = _toxicity_pipeline.model.config.id2label
     _predict_results = _toxicity_pipeline(

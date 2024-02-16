@@ -82,8 +82,8 @@ def factual_consistency(
         return metric_value
 
     from langcheck.metrics.model_manager import manager
-    tokenizer, model = manager.fetch_model(language='zh',
-                                           metric='factual_consistency')  # NOQA:E501
+    tokenizer, model = manager.fetch_model(
+        language='zh', metric='factual_consistency')  # NOQA:E501
     _factual_consistency_translation_pipeline = pipeline(
         'translation', model=model, tokenizer=tokenizer)  # type: ignore
 
