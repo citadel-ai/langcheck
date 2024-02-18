@@ -13,7 +13,6 @@ from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
-from langcheck.metrics.en.reference_free_text_quality import _fluency_openai
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
@@ -559,6 +558,93 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
             fluency_scores.extend(batch_probs[:, 1].tolist())
 
     return fluency_scores
+
+
+def _fluency_openai(
+    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]]
+) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+    '''Calculates the fluency scores and their associated explanations of
+    generated outputs using the OpenAI API, using a prompt that is similar to
+    the one used in G-Eval (see the Ref below). This metric takes on float
+    values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
+    "fair" fluency, and 1 is "good" fluency. We leverage the function calling
+    API to make sure that the output is structured such that we can compute a
+    score. If a score could not be computed, `None` is inserted to the score
+    and explanation lists.
+
+    Ref:
+        https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
+        https://platform.openai.com/docs/guides/gpt/function-calling
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        client_type: The type of OpenAI client ('openai' or 'azure_openai')
+        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
+            will attempt to create a default client depending on the
+            ``client_type``.
+        openai_args: (Optional) Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function
+
+    Returns:
+        score_list: a list of scores
+        explanation_list: a list of explanations for the scores
+    '''
+
+    def _prompt(gen_output: str) -> str:
+        return f'''
+        提出されたテキストの流暢さを評価してください。データは以下の通りです:
+        [BEGIN DATA]
+        ************
+        [テキスト]: {gen_output}
+        ************
+        [END DATA]
+
+        提出されたテキストの流暢さを判断してください。利用可能な評価は以下の通りです:
+        `Poor` - テキストには多くのエラーがあり、理解が難しく、または不自然に聞こえます。
+        `Fair` - テキストにはいくつかのエラーがあり、テキストの明瞭さや滑らかさに影響しますが、主要なポイントはまだ理解できます。
+        `Good` - テキストにはほとんどエラーがなく、読みやすく、理解しやすいです。
+
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
+        '''
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        以下はテキストの流暢さに関する評価です:
+        ************
+        [評価]: {long_assessment}
+        ************
+
+        結果として出た評価を保存してください。利用可能な評価は以下の通りです:
+        `Poor`
+        `Fair`
+        `Good`
+        '''
+
+    fluency_assessment_to_score = {
+        'Poor': 0,
+        'Fair': 0.5,
+        'Good': 1.0,
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=fluency_assessment_to_score,
+        function_name='save_fluency_assessment',
+        function_description="Saves a statement's fluency assessment.",
+        argument_name='fluency',
+        argument_description='The fluency assessment of the statement',
+        client_type=client_type,
+        client=client,
+        openai_args=openai_args)
+
+    score_list = []
+
+    explanation_list = []
+    for gen in tqdm_wrapper(generated_outputs):
+        score, explanation = oai_evaluator.get_score(_prompt(gen_output=gen),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+    return score_list, explanation_list
 
 
 def tateishi_ono_yamada_reading_ease(
