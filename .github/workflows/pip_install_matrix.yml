@@ -42,7 +42,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install MeCab (if necessary)
-        if: ${{ matrix.os }} == 'ubuntu-latest' && ${{ matrix.python-version }} == '3.12'
+        if: ${{ matrix.os  == 'ubuntu-latest' && matrix.python-version  == '3.12' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y mecab libmecab-dev mecab-ipadic-utf8
