@@ -20,13 +20,17 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-14]
 
-        # GitHub Actions doesn't support Python 3.8 and 3.9 on M1 macOS yet:
-        # https://github.com/actions/setup-python/issues/696
         exclude:
+          # GitHub Actions doesn't support Python 3.8 and 3.9 on M1 macOS yet:
+          # https://github.com/actions/setup-python/issues/696
           - python-version: "3.8"
             os: macos-14
           - python-version: "3.9"
             os: macos-14
+          # TODO: We need to manually install MeCab on Windows to install
+          # LangCheck on Python 3.12 since there are no wheels for `fugashi`
+          - python-version: "3.12"
+            os: windows-latest
 
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
