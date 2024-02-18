@@ -41,29 +41,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: test1
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          echo ${{ matrix.os }}
-          echo ${{ matrix.os == 'ubuntu-latest' }}
-
-      - name: test2
-        if: ${{ matrix.python-version == '3.12' }}
-        run: |
-          echo ${{ matrix.python-version }}
-          echo ${{ matrix.python-version == '3.12' }}
-
-      - name: test3
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
-        run: |
-          echo ${{ matrix.os }}
-          echo ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
-
-      - name: Install MeCab (if necessary)
+      - name: Install MeCab on Ubuntu (if necessary)
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y mecab libmecab-dev mecab-ipadic-utf8
+
+      - name: Install MeCab on macOS (if necessary)
+        if: ${{ matrix.os == 'macos-14' && matrix.python-version == '3.12' }}
+        run: |
+          brew update
+          brew install mecab
 
       - name: Install Core LangCheck
         run: |
