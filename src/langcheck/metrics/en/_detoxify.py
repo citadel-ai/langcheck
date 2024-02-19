@@ -1,7 +1,9 @@
 from typing import List, Tuple
 
 import torch
-from transformers import BertForSequenceClassification, BertTokenizer
+from transformers.models.bert.modeling_bert import \
+    BertForSequenceClassification
+from transformers.models.bert.tokenization_bert import BertTokenizer
 
 
 def load_checkpoint(
