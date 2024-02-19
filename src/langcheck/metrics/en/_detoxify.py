@@ -1,8 +1,7 @@
 from typing import List, Tuple
 
 import torch
-from transformers.models.bert.modeling_bert import \
-    BertForSequenceClassification
+from transformers.models.bert.modeling_bert import BertForSequenceClassification
 from transformers.models.bert.tokenization_bert import BertTokenizer
 
 
