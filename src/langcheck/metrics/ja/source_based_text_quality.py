@@ -131,15 +131,12 @@ def _factual_consistency_openai(
     client: Optional[OpenAI], openai_args: Optional[Dict[str, str]]
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
-    between each generated output and its corresponding source text. The
-    consistency is computed by calling the OpenAI API, with a prompt similar to
-    the one used in OpenAI Evals. We leverage the function calling API to make
-    sure that the output is structured such that we can compute a score. If a
-    score could not be computed, `None` is inserted to the score and explanation
-    lists.
+    between each generated output and its corresponding source text. We leverage
+    the function calling API to make sure that the output is structured such
+    that we can compute a score. If a score could not be computed, `None` is
+    inserted to the score and explanation lists.
 
     Ref:
-        https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
         https://platform.openai.com/docs/guides/gpt/function-calling
 
     Args:
@@ -164,7 +161,7 @@ def _factual_consistency_openai(
     # straight up contradictory.
     def _prompt(src: str, gen_output: str) -> str:
         return f'''
-        提出されたテキストの事実上の一貫性を評価してください。データは以下の通りです:
+        提出されたテキストの論理的な一貫性を評価してください。データは以下の通りです:
         [BEGIN DATA]
         ************
         [ソース]: {src}
@@ -173,11 +170,11 @@ def _factual_consistency_openai(
         ************
         [END DATA]
 
-        提出されたテキストがソースと事実上一致しているかどうかを判断してください。利用可能な評価は以下の通りです:
-        `Fully Consistent` - 提出されたテキストはソーステキストと完全に事実上一致しています。
-        `Partially Consistent` - 提出されたテキストはソーステキストと部分的に事実上一致しています。
-        提出されたテキストのいくつかの側面は事実上一致していますが、一致していない側面もあります。
-        `Not Consistent` - 提出されたテキストはソーステキストと事実上一致していません。
+        ソーステキストと提出されたテキストの関係を判断してください。利用可能な評価は以下の通りです:
+        `Fully Consistent` - ソーステキストが提出されたテキストを含意する。
+        `Partially Consistent` - ソーステキストが提出されたテキストを含意するか、
+        または二つのテキストが矛盾するか、判断できない。
+        `Not Consistent` - ソーステキストと提出されたテキストが矛盾する。
 
         深呼吸をして、この問題をステップバイステップで取り組んでください。
         '''
