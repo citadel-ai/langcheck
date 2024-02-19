@@ -61,8 +61,9 @@ def test_model_manager_initiation(mock_model_manager):
 
 
 def test_model_manager_fetch_model(mock_model_manager):
-    with patch.dict(
-        'langcheck.metrics.model_manager._model_management.LOADER_MAP',
-        {'load_auto_model_for_text_classification': MagicMock()}):
+    with \
+        patch.dict(
+            'langcheck.metrics.model_manager._model_management.LOADER_MAP',
+            {'load_auto_model_for_text_classification': MagicMock()}):
         model = mock_model_manager.fetch_model(language='zh', metric='toxicity')
         assert model is not None
