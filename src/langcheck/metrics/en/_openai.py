@@ -53,7 +53,7 @@ class OpenAIBasedEvaluator:
                 "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT")
             }
             self._client = AzureOpenAI(**kargs)  # type: ignore
-            self._async_client = AsyncAzureOpenAI(**kargs)
+            self._async_client = AsyncAzureOpenAI(**kargs)  # type: ignore
         else:
             raise AssertionError(f'Unexpected client type "{client_type}"')
 
