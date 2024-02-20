@@ -511,10 +511,10 @@ def answer_relevance(
 
         ユーザーの質問に対して回答が関連性のあるものかどうかを判断してください。利用可能な評価
         は以下の通りです:
-        `完全に関連` - 回答はユーザーの質問に完全に関連し、十分に答えています。
-        `部分的に関連` - 回答はユーザーの質問に部分的に関連していますが、質問に完全に答えて
+        `Fully Relevant` - 回答はユーザーの質問に完全に関連し、十分に答えています。
+        `Partially Relevant` - 回答はユーザーの質問に部分的に関連していますが、質問に完全に答えて
         いないか、関連しない情報が含まれています。
-        `関連なし` - 回答はユーザーの質問に関連していない、または質問に適切に対応していません。
+        `Not Relevant` - 回答はユーザーの質問に関連していない、または質問に適切に対応していません。
 
         深呼吸をして、この問題をステップバイステップで取り組んでください。
         '''
@@ -527,15 +527,15 @@ def answer_relevance(
         ************
 
         結果として出た評価を保存してください。利用可能な評価は以下の通りです:
-        `完全に関連`
-        `部分的に関連`
-        `関連なし`
+        `Fully Relevant`
+        `Partially Relevant`
+        `Not Relevant`
         '''
 
     answer_relevance_assessment_to_score = {
-        '完全に関連': 1.0,
-        '部分的に関連': 0.5,
-        '関連なし': 0.0
+        'Fully Relevant': 1.0,
+        'Partially Relevant': 0.5,
+        'Not Relevant': 0.0
     }
     oai_evaluator = OpenAIBasedEvaluator(
         assessment_to_score_mapping=answer_relevance_assessment_to_score,
