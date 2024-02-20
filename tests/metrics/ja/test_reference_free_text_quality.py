@@ -145,7 +145,7 @@ def test_answer_relevance_openai(generated_outputs, prompts):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"answer_relevance\": \"完全に関連\"\n}")))
+            arguments="{\n  \"answer_relevance\": \"Fully Relevant\"\n}")))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
@@ -157,7 +157,7 @@ def test_answer_relevance_openai(generated_outputs, prompts):
         metric_value = answer_relevance(generated_outputs,
                                         prompts,
                                         model_type='openai')
-        # "完全に関連" gets a value of 1.0
+        # "Fully Relevant" gets a value of 1.0
         assert metric_value == 1
 
         # Set the necessary env vars for the 'azure_openai' model type
@@ -168,5 +168,5 @@ def test_answer_relevance_openai(generated_outputs, prompts):
                                         prompts,
                                         model_type='azure_openai',
                                         openai_args={'model': 'foo bar'})
-        # "完全に関連" gets a value of 1.0
+        # "Fully Relevant" gets a value of 1.0
         assert metric_value == 1

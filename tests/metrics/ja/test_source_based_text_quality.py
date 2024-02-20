@@ -67,7 +67,7 @@ def test_context_relevance_openai(prompts, sources):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"context_relevance\": \"完全に関連\"\n}")))
+            arguments="{\n  \"context_relevance\": \"Fully Relevant\"\n}")))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
@@ -77,7 +77,7 @@ def test_context_relevance_openai(prompts, sources):
         # Set the necessary env vars for the 'openai' model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         metric_value = context_relevance(prompts, sources, model_type='openai')
-        # "完全に関連" gets a value of 1.0
+        # "Fully Relevant" gets a value of 1.0
         assert metric_value == 1
 
         # Set the necessary env vars for the 'azure_openai' model type
@@ -88,5 +88,5 @@ def test_context_relevance_openai(prompts, sources):
                                          sources,
                                          model_type='azure_openai',
                                          openai_args={'model': 'foo bar'})
-        # "完全に関連" gets a value of 1.0
+        # "Fully Relevant" gets a value of 1.0
         assert metric_value == 1
