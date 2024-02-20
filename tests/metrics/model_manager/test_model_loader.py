@@ -45,13 +45,13 @@ def test_load_auto_model_for_seq2seq(model_name, tokenizer_name, revision):
                          [("bert-base-uncased", None, "main"),
                           ("bert-base-uncased", "bert-large-uncased", "main")])
 def test_load_auto_model_for_text_classification(model_name, tokenizer_name,
-                                                 revision):  # NOQA:E501
+                                                 revision):
     with patch('transformers.AutoTokenizer.from_pretrained',
                return_value=MockTokenizer) as mock_tokenizer, \
          patch('transformers.AutoModelForSequenceClassification.from_pretrained',  # NOQA:E501
                return_value=MockSeqClassifcationModel) as mock_model:
         tokenizer, model = load_auto_model_for_text_classification(
-            model_name, tokenizer_name, revision)  # NOQA:E501
+            model_name, tokenizer_name, revision)
 
         # Check if the tokenizer was loaded correctly
         if tokenizer_name is None:

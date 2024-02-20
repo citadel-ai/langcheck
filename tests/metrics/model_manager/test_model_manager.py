@@ -9,14 +9,23 @@ from langcheck.metrics.model_manager._model_management import (
 
 
 @pytest.fixture
-def temp_config_path(tmp_path):
-    config = """
+def temp_config_path(tmp_path) -> str:
+    '''
+    Fixture that creates a temporary configuration file for testing.
+
+    Args:
+        tmp_path: A unique temporary directory path provided by pytest.
+
+    Returns:
+        The path to the temporary configuration file.
+    '''
+    config = '''
     zh:
       toxicity:
         model_name: "Alnusjaponica/toxicity-score-multi-classification"
         tokenizer_name: "line-corporation/line-distilbert-base-japanese"
         loader_func: "load_auto_model_for_text_classification"
-    """
+    '''
     config_path = tmp_path / "metric_config.yaml"
     config_path.write_text(config)
     return str(config_path)
@@ -24,6 +33,19 @@ def temp_config_path(tmp_path):
 
 @pytest.fixture
 def mock_model_manager(temp_config_path):
+    '''
+    Fixture that creates a mock ModelManager for testing.
+
+    The ModelManager is patched to use the temporary configuration file
+    created by the temp_config_path fixture, and to always return True
+    when checking model availability.
+
+    Args:
+        temp_config_path: The path to the temporary configuration file.
+
+    Returns:
+        The mock ModelManager.
+    '''
     with patch("os.path.join", return_value=temp_config_path), \
          patch('langcheck.metrics.model_manager._model_management.check_model_availability',  # NOQA:E501
                return_value=True):
@@ -52,7 +74,7 @@ def test_check_model_availability(mock_get, model_name, revision, status_code):
 def test_model_manager_initiation(mock_model_manager):
     mock_config = mock_model_manager.config
     assert "toxicity" in mock_config["zh"]
-    assert mock_config["zh"]["toxicity"]["model_name"] ==\
+    assert mock_config["zh"]["toxicity"]["model_name"] == \
         "Alnusjaponica/toxicity-score-multi-classification"
     assert mock_config["zh"]["toxicity"]["tokenizer_name"] == \
         "line-corporation/line-distilbert-base-japanese"

@@ -9,7 +9,7 @@ zh:
     model_name: BAAI/bge-base-zh-v1.5
     model_revision: f03589c
     loader_func: load_sentence_transformers
-  
+
   sentiment:
     model_name: IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment
     loader_func: load_auto_model_for_text_classification
