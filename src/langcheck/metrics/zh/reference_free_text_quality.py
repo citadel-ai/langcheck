@@ -1,20 +1,13 @@
 from __future__ import annotations
 
-import pickle
-from math import e
-from pathlib import PosixPath
 from typing import Dict, List, Optional
 
 import hanlp
-import regex as re
-import torch
 from openai import OpenAI
 from transformers.pipelines import pipeline
 
-from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import validate_parameters_reference_free
-from langcheck.metrics.en.reference_free_text_quality import (_fluency_openai,
-                                                              _toxicity_openai)
+from langcheck.metrics.en.reference_free_text_quality import _toxicity_openai
 from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
 from langcheck.metrics.metric_value import MetricValue
