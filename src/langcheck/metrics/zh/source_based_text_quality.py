@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, cast
 
 from openai import OpenAI
 from transformers.pipelines import pipeline
-from transformers.pipelines.base import Pipeline
 
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en.source_based_text_quality import \
