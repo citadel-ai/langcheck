@@ -1,8 +1,9 @@
+import asyncio
 import json
 import os
 from typing import Callable, Dict, Optional, Tuple
 
-from openai import AzureOpenAI, OpenAI
+from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
 
 class OpenAIBasedEvaluator:
@@ -43,13 +44,16 @@ class OpenAIBasedEvaluator:
             self._client = client
         elif self._client_type == 'openai':
             self._client = OpenAI()
+            self._async_client = AsyncOpenAI()
         elif self._client_type == 'azure_openai':
             # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
-            self._client = AzureOpenAI(
-                api_key=os.getenv("AZURE_OPENAI_KEY"),
-                api_version=os.getenv("OPENAI_API_VERSION"),
-                azure_endpoint=os.getenv(
-                    "AZURE_OPENAI_ENDPOINT"))  # type: ignore
+            kargs = {
+                "api_key": os.getenv("AZURE_OPENAI_KEY"),
+                "api_version": os.getenv("OPENAI_API_VERSION"),
+                "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT")
+            }
+            self._client = AzureOpenAI(**kargs)  # type: ignore
+            self._async_client = AsyncAzureOpenAI(**kargs)
         else:
             raise AssertionError(f'Unexpected client type "{client_type}"')
 
@@ -61,7 +65,10 @@ class OpenAIBasedEvaluator:
         self._openai_args = openai_args
 
     def get_score(
-        self, prompt: str, function_call_prompt_template: Callable
+        self,
+        prompt: str,
+        function_call_prompt_template: Callable,
+        no_async: bool = True,
     ) -> Tuple[Optional[float], Optional[str]]:
         '''
         Retrieves the score and unstructured assessment for a given prompt using
@@ -91,16 +98,13 @@ class OpenAIBasedEvaluator:
         # should include both the assessment itself and the model's reasoning
         # for that assessment.
         messages = [{"role": "user", "content": prompt}]
+        kargs = {"model": "gpt-3.5-turbo", "seed": 123, "messages": messages}
+        kargs.update(self._openai_args or {})
         try:
-            if self._openai_args is None:
-                response = self._client.chat.completions.create(
-                    model="gpt-3.5-turbo", seed=123,
-                    messages=messages)  # type: ignore
+            if no_async:
+                response = self._client.chat.completions.create(**kargs)
             else:
-                response = self._client.chat.completions.create(
-                    messages=messages,  # type: ignore
-                    seed=123,
-                    **self._openai_args)  # type: ignore
+                response = asyncio.run(_async_chat_completions(self, **kargs))
             unstructured_assessment = response.choices[0].message.content
         except Exception as e:
             print(f'OpenAI failed to return an unstructured assessment: {e}')
@@ -129,22 +133,21 @@ class OpenAIBasedEvaluator:
                 "required": [self._argument_name],
             },
         }]
+        kargs = {
+            "messages": fn_call_messages,
+            "seed": 123,
+            "functions": functions,
+            "function_call": {
+                "name": self._function_name
+            },
+            "model": "gpt-3.5-turbo",
+        }
+        kargs.update(self._openai_args or {})
         try:
-            if self._openai_args is None:
-                response = self._client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=fn_call_messages,  # type: ignore
-                    seed=123,
-                    functions=functions,  # type: ignore
-                    function_call={"name": self._function_name})
+            if no_async:
+                response = self._client.chat.completions.create(**kargs)
             else:
-                response = self._client.chat.completions.create(  # type: ignore
-                    messages=fn_call_messages,  # type: ignore
-                    seed=123,
-                    functions=functions,  # type: ignore
-                    function_call={"name": self._function_name},
-                    **self._openai_args)  # type: ignore
-            # For type checking
+                response = asyncio.run(_async_chat_completions(self, **kargs))
             assert response.choices[0].message.function_call is not None
             function_args = json.loads(
                 response.choices[0].message.function_call.arguments)
@@ -164,3 +167,12 @@ class OpenAIBasedEvaluator:
 
         return self._assessment_to_score_mapping[
             assessment], unstructured_assessment
+
+
+async def _async_chat_completions(evaluator: OpenAIBasedEvaluator, **kargs):
+    try:
+        response = await evaluator._async_client.chat.completions.create(**kargs
+                                                                        )
+        return response
+    except Exception as e:
+        raise e
