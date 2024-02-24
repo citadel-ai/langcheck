@@ -97,18 +97,32 @@ def factual_consistency(
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since
     # too diverse types can be returned.
-    en_source = [
-        cast(str,
-             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
-        for d in _factual_consistency_translation_pipeline(
-            sources)  # type: ignore[reportGeneralTypeIssues]
-    ]
-    en_generated_outputs = [
-        cast(str,
-             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
-        for d in _factual_consistency_translation_pipeline(
-            generated_outputs)  # type: ignore[reportGeneralTypeIssues]
-    ]
+    batch_size = 8
+    en_source = []
+    for i in tqdm_wrapper(range(0, len(sources), batch_size),
+                          desc='Translating sources',
+                          total=(len(sources) + batch_size - 1) // batch_size):
+        batch_sources = sources[i:i + batch_size]
+        en_source.extend([
+            cast(str,
+                 d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
+            for d in _factual_consistency_translation_pipeline(
+                batch_sources)  # type: ignore[reportGeneralTypeIssues]
+        ])
+    en_generated_outputs = []
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
+                          desc='Translating generated outputs',
+                          total=(len(generated_outputs) + batch_size - 1) //
+                          batch_size):
+        batch_generated_outputs = generated_outputs[i:i + batch_size]
+        en_generated_outputs.extend([
+            cast(str,
+                 d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
+            for d in _factual_consistency_translation_pipeline(
+                batch_generated_outputs
+            )  # type: ignore[reportGeneralTypeIssues]
+        ])
+
     # Compute the factual consistency scores in English.
     factual_consistency_scores = en_factual_consistency(
         generated_outputs=en_generated_outputs, sources=en_source).metric_values
