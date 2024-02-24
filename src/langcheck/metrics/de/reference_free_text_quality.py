@@ -113,12 +113,21 @@ def sentiment(
                                             return_tensors='pt',
                                             padding=True)
 
+        batch_size = 8
+        scores = []
         with torch.no_grad():
-            # Probabilities of [negative, neutral, positive]
-            probs = torch.nn.functional.softmax(
-                _sentiment_model(**input_tokens).logits, dim=1)
+            for i in tqdm_wrapper(
+                    range(0, len(generated_outputs), batch_size),
+                    total=(len(generated_outputs) + batch_size - 1) //
+                    batch_size):
+                batch_input_tokens = {
+                    k: v[i:i + batch_size] for k, v in input_tokens.items()
+                }
+                # Probabilities of [negative, neutral, positive]
+                probs = torch.nn.functional.softmax(
+                    _sentiment_model(**batch_input_tokens).logits, dim=1)
+                scores.extend((probs[:, 1] / 2 + probs[:, 2]).tolist())
 
-        scores = (probs[:, 1] / 2 + probs[:, 2]).tolist()
         explanations = None
 
     return MetricValue(metric_name='sentiment',
