@@ -8,8 +8,9 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 def load_sentence_transformers(
         model_name: str,
+        model_revision: Optional[str] = None,
         tokenizer_name: Optional[str] = None,
-        revision: Optional[str] = None) -> SentenceTransformer:
+        tokenizer_revision: Optional[str] = None) -> SentenceTransformer:
     '''
     Loads a SentenceTransformer model.
 
@@ -21,12 +22,14 @@ def load_sentence_transformers(
         model_name: The name of the SentenceTransformer model to load.
         tokenizer_name: The name of the tokenizer to use. Currently not
             supported.
-        revision: The model revision to load. Currently not supported.
+        model_revision: The model revision to load. Currently not supported.
+        tokenizerl_revision: The tokenizedr revision to load. Currently not
+        supported.
 
     Returns:
         model: The loaded SentenceTransformer model.
     '''
-    if revision is not None:
+    if model_revision is not None or tokenizer_revision is not None:
         print("Warning: Specifying a revision is not currently supported.")
     if tokenizer_name is not None:
         print("Warning: Customizing the tokenizer is not currently supported.")
@@ -36,9 +39,10 @@ def load_sentence_transformers(
 
 
 def load_auto_model_for_text_classification(
-    model_name: str,
-    tokenizer_name: Optional[str] = None,
-    revision: Optional[str] = None
+        model_name: str,
+        model_revision: Optional[str] = None,
+        tokenizer_name: Optional[str] = None,
+        tokenizer_revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSequenceClassification]:
     '''
     Loads a sequence classification model and its tokenizer.
@@ -47,7 +51,8 @@ def load_auto_model_for_text_classification(
         model_name: The name of the sequence-classification model to load.
         tokenizer_name: The name of the tokenizer to load. If None, the
             tokenizer associated with the model will be loaded.
-        revision: The model revision to load.
+        model_revision: The model revision to load.
+        tokenizer_revision: the tokenizer revision to load.
 
     Returns:
         tokenizer: The loaded tokenizer.
@@ -56,17 +61,17 @@ def load_auto_model_for_text_classification(
     if tokenizer_name is None:
         tokenizer_name = model_name
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name,
-                                              trust_remote_code=True,
-                                              revision=revision)
+                                              revision=tokenizer_revision)
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, revision=revision, trust_remote_code=True)
+        model_name, revision=model_revision)
     return tokenizer, model  # type: ignore
 
 
 def load_auto_model_for_seq2seq(
-    model_name: str,
-    tokenizer_name: Optional[str] = None,
-    revision: Optional[str] = None
+        model_name: str,
+        model_revision: Optional[str] = None,
+        tokenizer_name: Optional[str] = None,
+        tokenizer_revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSeq2SeqLM]:
     '''
     Loads a sequence-to-sequence model and its tokenizer.
@@ -75,7 +80,8 @@ def load_auto_model_for_seq2seq(
         model_name: The name of the sequence-classification model to load.
         tokenizer_name: The name of the tokenizer to load. If None, the
             tokenizer associated with the model will be loaded.
-        revision: The model revision to load.
+        model_revision: The model revision to load.
+        tokenizer_revision: the tokenizer revision to load
 
     Returns:
         tokenizer: The loaded tokenizer.
@@ -84,8 +90,7 @@ def load_auto_model_for_seq2seq(
     if tokenizer_name is None:
         tokenizer_name = model_name
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name,
-                                              revision=revision,
-                                              trust_remote_code=True)
-    model = AutoModelForSeq2SeqLM.from_pretrained(
-        model_name, revision=revision, trust_remote_code=True)  # NOQA: E501
+                                              revision=tokenizer_revision)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name,
+                                                  revision=model_revision)
     return tokenizer, model  # type: ignore

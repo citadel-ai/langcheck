@@ -28,10 +28,6 @@ VALID_LOADER_FUNCTION = LOADER_MAP.keys()
 VALID_METRICS = [
     'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency'
 ]
-
-VALID_METRIC_ATTRIBUTE = [
-    'model_revision', 'model_revision', 'loader', 'tokenizer_name'
-]
 VALID_LANGUAGE = ['zh']
 
 
@@ -143,19 +139,27 @@ class ModelManager:
                     raise KeyError(
                         f'Metrics {metric_name} need a loader, but found None!'  # NOQA:E501
                     )
-                loader_func = model_setting.pop('loader_func', None)
+                loader_func = model_setting.get('loader_func')
                 if loader_func not in VALID_LOADER_FUNCTION:
                     raise ValueError(
                         f'loader type should in {VALID_LOADER_FUNCTION}')
 
-                # Check that the model and revision are available on the Hugging
-                # Face Hub
-                model_name = model_setting.pop('model_name')
-                revision = model_setting.pop('revision', None)
-                if not check_model_availability(model_name, revision):
+                # Check model availability with revision if specified.
+                model_name = model_setting.get('model_name')
+                model_revision = model_setting.get('model_revision')
+                if not check_model_availability(model_name, model_revision):
                     raise ValueError(
-                        f'Cannot find {model_name} with {revision} and Huggingface Hub'  # NOQA:E501
+                        f'Cannot find {model_name} with {model_revision} at Huggingface Hub'  # NOQA:E501
                     )
+                # Check tokenizer availability with revision if specified.
+                tokenizer_name = model_setting.get('tokenizer_name')
+                if tokenizer_name is not None and tokenizer_name != model_name:
+                    tokenizer_revision = model_setting.get('tokenizer_revision')
+                    if not check_model_availability(tokenizer_name,
+                                                    tokenizer_revision):
+                        raise ValueError(
+                            f'Cannot find {tokenizer_name} with {tokenizer_revision} ay Huggingface Hub'  # NOQA:E501
+                        )
 
     def __set_model_for_metric(self, language: str, metric: str,
                                model_name: str, loader_func: str,
@@ -169,7 +173,10 @@ class ModelManager:
             model_name: The name of the model
             loader_func: The loader function of the model
             tokenizer_name: (Optional) The name of the tokenizer
-            revision: (Optional) A version string of the model
+            model_revision: (Optional) A version string of the model, if not
+            specified, load latest model in default.
+            model_revision: (Optional) A version string of the tokenizer, same
+            with model's revision in default.
         '''
         config_copy = deepcopy(self.config)
         try:
@@ -194,14 +201,17 @@ class ModelManager:
             detail_config['model_name'] = model_name
 
             # If tokenizer_name is different from model_name
-            tokenizer_name = kwargs.pop('tokenizer_name', None)
+            tokenizer_name = kwargs.get('tokenizer_name')
             if tokenizer_name:
                 detail_config['tokenizer_name'] = tokenizer_name
             # If model's revision is pinned
-            revision = kwargs.pop('model_revision', None)
-            if revision:
-                detail_config['revision'] = revision
-
+            model_revision = kwargs.get('model_revision')
+            if model_revision:
+                detail_config['model_revision'] = model_revision
+            # If model's revision is pinned
+            tokenzier_revision = kwargs.get('tokenizer_revision')
+            if tokenzier_revision:
+                detail_config['tokenizer_revision'] = tokenzier_revision
             # Validate the change
             ModelManager.validate_config(self.config,
                                          language=language,

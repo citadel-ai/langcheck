@@ -1,8 +1,9 @@
 # LANG:
 #   METRIC_NAME:
 #     model_name: str
-#     model_revisoin: str
-#     tokenizer_name:str
+#     model_revision: str
+#     tokenizer_name: str
+#     tokenizer_revision: str
 #     loader_func: str
 zh:
   semantic_similarity:
