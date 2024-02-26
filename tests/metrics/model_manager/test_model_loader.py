@@ -25,10 +25,9 @@ def test_load_auto_model_for_seq2seq(model_name, tokenizer_name, revision):
                return_value=MockTokenizer) as mock_tokenizer, \
          patch('transformers.AutoModelForSeq2SeqLM.from_pretrained',
                return_value=MockSeq2SeqModel) as mock_model:
-        tokenizer, model = load_auto_model_for_seq2seq(model_name,
-                                                       tokenizer_name, revision)
-
-        # Check if the tokenizer was loaded correctly
+        tokenizer, model = load_auto_model_for_seq2seq(
+            model_name=model_name, tokenizer_name=tokenizer_name,
+            model_revision=revision, tokenizer_revision=revision)
         if tokenizer_name is None:
             tokenizer_name = model_name
 
@@ -51,9 +50,8 @@ def test_load_auto_model_for_text_classification(model_name, tokenizer_name,
          patch('transformers.AutoModelForSequenceClassification.from_pretrained',  # NOQA:E501
                return_value=MockSeqClassifcationModel) as mock_model:
         tokenizer, model = load_auto_model_for_text_classification(
-            model_name, tokenizer_name, revision)
-
-        # Check if the tokenizer was loaded correctly
+            model_name=model_name, tokenizer_name=tokenizer_name,
+            model_revision=revision, tokenizer_revision=revision)
         if tokenizer_name is None:
             tokenizer_name = model_name
 
@@ -72,7 +70,9 @@ def test_load_auto_model_for_text_classification(model_name, tokenizer_name,
 def test_load_sentence_transformers(model_name, tokenizer_name, revision):
     with patch.object(SentenceTransformer, '__init__',
                       return_value=None) as mock_init:
-        model = load_sentence_transformers(model_name, tokenizer_name, revision)
+        model = load_sentence_transformers(
+            model_name=model_name, tokenizer_name=tokenizer_name,
+            model_revision=revision, tokenizer_revision=revision)
         # Check if the model was loaded correctly
         mock_init.assert_called_once_with(model_name)
 
