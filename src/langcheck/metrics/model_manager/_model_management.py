@@ -209,9 +209,9 @@ class ModelManager:
             if model_revision:
                 detail_config['model_revision'] = model_revision
             # If tokenizer's revision is pinned
-            tokenzier_revision = kwargs.get('tokenizer_revision')
-            if tokenzier_revision:
-                detail_config['tokenizer_revision'] = tokenzier_revision
+            tokenizer_revision = kwargs.get('tokenizer_revision')
+            if tokenizer_revision:
+                detail_config['tokenizer_revision'] = tokenizer_revision
             # Validate the change
             ModelManager.validate_config(self.config,
                                          language=language,
