@@ -38,9 +38,11 @@ jobs:
         run: |
           echo "Available disk space (before):"
           df -h
+
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/lib/android
+
           echo "Available disk space (after):"
           df -h
 

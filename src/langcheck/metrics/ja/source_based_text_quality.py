@@ -175,11 +175,11 @@ def context_relevance(
 
         ユーザーの質問に対応するために必要な、関連性のある情報がソースに含まれているかを判断
         してください。利用可能な評価は以下の通りです:
-        `完全に関連` - ソーステキストには、ユーザーの質問に対応するために必要な情報が
+        `Fully Relevant` - ソーステキストには、ユーザーの質問に対応するために必要な情報が
         含まれています。
-        `部分的に関連` - ソーステキストはユーザーの質問に部分的に関連していますが、質問に
+        `Partially Relevant` - ソーステキストはユーザーの質問に部分的に関連していますが、質問に
         対応するために必要なすべての情報を含んでいません。
-        `関連なし` - ソーステキストはユーザーの質問に関連していません。
+        `Not Relevant` - ソーステキストはユーザーの質問に関連していません。
 
         深呼吸をして、この問題をステップバイステップで取り組んでください。
         '''
@@ -192,15 +192,15 @@ def context_relevance(
         ************
 
         結果として出た評価を保存してください。利用可能な評価は以下の通りです:
-        `完全に関連`
-        `部分的に関連`
-        `関連なし`
+        `Fully Relevant`
+        `Partially Relevant`
+        `Not Relevant`
         '''
 
     context_relevance_assessment_to_score = {
-        '完全に関連': 1.0,
-        '部分的に関連': 0.5,
-        '関連なし': 0.0
+        'Fully Relevant': 1.0,
+        'Partially Relevant': 0.5,
+        'Not Relevant': 0.0
     }
     oai_evaluator = OpenAIBasedEvaluator(
         assessment_to_score_mapping=context_relevance_assessment_to_score,
