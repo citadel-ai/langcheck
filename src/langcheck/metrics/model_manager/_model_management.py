@@ -173,10 +173,10 @@ class ModelManager:
             model_name: The name of the model
             loader_func: The loader function of the model
             tokenizer_name: (Optional) The name of the tokenizer
-            model_revision: (Optional) A version string of the model, if not
-            specified, load latest model in default.
-            model_revision: (Optional) A version string of the tokenizer, same
-            with model's revision in default.
+            model_revision: (Optional) A version string of the model. If not
+                specified, load the latest model by default.
+            tokenizer_revision: (Optional) A version string of the tokenizer. If
+                not specified, load the latest tokenizer by default.
         '''
         config_copy = deepcopy(self.config)
         try:
@@ -208,7 +208,7 @@ class ModelManager:
             model_revision = kwargs.get('model_revision')
             if model_revision:
                 detail_config['model_revision'] = model_revision
-            # If model's revision is pinned
+            # If tokenizer's revision is pinned
             tokenzier_revision = kwargs.get('tokenizer_revision')
             if tokenzier_revision:
                 detail_config['tokenizer_revision'] = tokenzier_revision
