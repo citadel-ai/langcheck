@@ -4,15 +4,11 @@ from typing import Dict, List, Optional, cast
 
 from openai import OpenAI
 from transformers.pipelines import pipeline
-from transformers.pipelines.base import Pipeline
 
 from langcheck.metrics._validation import validate_parameters_source_based
 from langcheck.metrics.en.source_based_text_quality import \
     factual_consistency as en_factual_consistency
 from langcheck.metrics.metric_value import MetricValue
-
-_factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-zh-en'
-_factual_consistency_translation_pipeline: Pipeline | None = None
 
 
 def factual_consistency(
@@ -84,10 +80,11 @@ def factual_consistency(
         metric_value.language = 'zh'
         return metric_value
 
-    global _factual_consistency_translation_pipeline
-    if _factual_consistency_translation_pipeline is None:
-        _factual_consistency_translation_pipeline = pipeline(
-            'translation', model=_factual_consistency_translation_model_path)
+    from langcheck.metrics.model_manager import manager
+    tokenizer, model = manager.fetch_model(language='zh',
+                                           metric='factual_consistency')
+    _factual_consistency_translation_pipeline = pipeline(
+        'translation', model=model, tokenizer=tokenizer)  # type: ignore
 
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since
@@ -96,14 +93,13 @@ def factual_consistency(
         cast(str,
              d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(
-            sources)  # type: ignore[reportOptionalIterable]  # NOQA: E501
+            sources)  # type: ignore[reportOptionalIterable]
     ]
     en_generated_outputs = [
         cast(str,
              d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(
-            generated_outputs
-        )  # type: ignore[reportOptionalIterable]  # NOQA: E501
+            generated_outputs)  # type: ignore[reportOptionalIterable]
     ]
     # Compute the factual consistency scores in English.
     factual_consistency_scores = en_factual_consistency(
