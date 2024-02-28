@@ -8,94 +8,98 @@
 [![Downloads](https://static.pepy.tech/badge/langcheck)](https://pepy.tech/project/langcheck)
 ![GitHub](https://img.shields.io/github/license/citadel-ai/langcheck)
 
-Simple, Pythonic building blocks to evaluate LLM applications.
+Einfache, pythonische Bausteine zur Bewertung von LLM-Anwendungen.
 
-[Install](#install) •
-[Examples](#examples) •
-[Quickstart](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
+[Installieren](#install) •
+[Beispiele](#examples) •
+[Schnellstart](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [Docs](https://langcheck.readthedocs.io/en/latest/index.html) •
-[日本語](README_ja.md) •
-[Deutsch](README_de.md)
+[English](README.md) •
+[日本語](README_ja.md)
 
 </div>
 
-## Install
+## Installieren
 
 ```shell
 pip install langcheck
 ```
 
-## Examples
+## Beispiele
 
-### Evaluate Text
+### Text bewerten
 
-Use LangCheck's suite of metrics to evaluate LLM-generated text.
+Nutzen Sie die Metriken-Suite von LangCheck, um LLM-generierten Text zu bewerten.
 
 ```python
 import langcheck
 
-# Generate text with any LLM library
+# Text mit jeder LLM-Bibliothek generieren
 generated_outputs = [
-    'Black cat the',
-    'The black cat is sitting',
-    'The big black cat is sitting on the fence'
+    'Schwarze Katze die',
+    'Die schwarze Katze ist.',
+    'Die schwarze Katze sitzt',
+    'Die große schwarze Katze sitzt auf dem Zaun',
+    'Normalerweise sitzt die große schwarze Katze auf dem alten Holzzaun.'
 ]
 
-# Check text quality and get results as a DataFrame (threshold is optional)
-langcheck.metrics.fluency(generated_outputs) > 0.5
+# Textqualität überprüfen und Ergebnisse als DataFrame erhalten
+langcheck.metrics.de.fluency(generated_outputs)
 ```
 
-![MetricValueWithThreshold screenshot](docs/_static/MetricValueWithThreshold_output.png)
+![MetricValueWithThreshold screenshot](docs/_static/MetricValueWithThreshold_output_de.png)
 
-It's easy to turn LangCheck metrics into unit tests, just use `assert`:
+Es ist einfach, LangCheck-Metriken in Unit-Tests umzuwandeln, verwenden Sie einfach `assert`:
 
 ```python
-assert langcheck.metrics.fluency(generated_outputs) > 0.5
+assert langcheck.metrics.de.fluency(generated_outputs) > 0.5
 ```
 
-LangCheck includes several types of metrics to evaluate LLM applications. Some examples:
+LangCheck umfasst mehrere Arten von Metriken zur Bewertung von LLM-Anwendungen. Einige Beispiele:
 
-|                                                            Type of Metric                                                            |                                                     Examples                                                     |   Languages   |
+|                                                            Art der Metrik                                                            |                                                     Beispiele                                                     |   Sprachen   |
 | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------- |
 | [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA, DE        |
 | [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, DE        |
 | [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, DE        |
 | [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages |
 
-### Visualize Metrics
+### Metriken visualisieren.
 
-LangCheck comes with built-in, interactive visualizations of metrics.
+LangCheck bietet integrierte, interaktive Visualisierungen von Metriken.
 
 ```python
-# Choose some metrics
-fluency_values = langcheck.metrics.fluency(generated_outputs)
-sentiment_values = langcheck.metrics.sentiment(generated_outputs)
+# Einige Metriken auswählen
+fluency_values = langcheck.metrics.de.fluency(generated_outputs)
+sentiment_values = langcheck.metrics.de.sentiment(generated_outputs)
 
-# Interactive scatter plot of one metric
+# Interaktives Streudiagramm einer Metrik
 fluency_values.scatter()
 ```
 
-![Scatter plot for one metric](docs/_static/scatter_one_metric.gif)
+![Scatter plot for one metric](docs/_static/scatter_one_metric_de.gif)
 
 ```python
-# Interactive scatter plot of two metrics
+# Interaktives Streudiagramm von zwei Metriken
 langcheck.plot.scatter(fluency_values, sentiment_values)
 ```
 
-![Scatter plot for two metrics](docs/_static/scatter_two_metrics.png)
+![Scatter plot for two metrics](docs/_static/scatter_two_metrics_de.png)
 
 ```python
-# Interactive histogram of a single metric
+# Interaktives Histogramm einer einzelnen Metrik
 fluency_values.histogram()
 ```
 
-![Histogram for one metric](docs/_static/histogram.png)
+![Histogram for one metric](docs/_static/histogram_de.png)
 
-### Augment Data
+### Daten erweitern
 
-Text augmentations can automatically generate reworded prompts, typos, gender changes, and more to evaluate model robustness.
+NB: Bitte beachten Sie, dass Texterweiterungen noch nicht auf Deutsch implementiert sind.
 
-For example, to measure how the model responds to different genders:
+Texterweiterungen können automatisch umformulierte Aufforderungen, Tippfehler, Geschlechtsänderungen und mehr generieren, um die Robustheit des Modells zu bewerten.
+
+Zum Beispiel, um zu messen, wie das Modell auf verschiedene Geschlechter reagiert:
 
 ```python
 male_prompts = langcheck.augment.gender(prompts, to_gender='male')
@@ -110,14 +114,14 @@ langcheck.metrics.sentiment(female_generated_outputs)
 
 ### Unit Testing
 
-You can write test cases for your LLM application using LangCheck metrics.
+Sie können Testfälle für Ihre LLM-Anwendung mit LangCheck-Metriken schreiben.
 
-For example, if you only have a list of prompts to test against:
+Zum Beispiel, wenn Sie nur eine Liste von Aufforderungen zum Testen haben:
 
 ```python
 from langcheck.utils import load_json
 
-# Run the LLM application once to generate text
+# Führen Sie die LLM-Anwendung einmal aus, um Text zu generieren
 prompts = load_json('test_prompts.json')
 generated_outputs = [my_llm_app(prompt) for prompt in prompts]
 
@@ -135,31 +139,31 @@ def test_json_structure(generated_outputs):
 
 ### Monitoring
 
-You can monitor the quality of your LLM outputs in production with LangCheck metrics.
+Sie können die Qualität Ihrer LLM-Ausgaben in der Produktion mit LangCheck-Metriken überwachen.
 
-Just save the outputs and pass them into LangCheck.
+Speichern Sie einfach die Ausgaben und geben Sie sie in LangCheck ein.
 
 ```python
 production_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
 
-# Evaluate and display toxic outputs in production logs
+# Toxische Ausgaben in Produktionsprotokollen bewerten und anzeigen
 langcheck.metrics.toxicity(production_outputs) > 0.75
 
-# Or if your app outputs structured text
+# Oder wenn Ihre App strukturierten Text ausgibt
 langcheck.metrics.is_json_array(production_outputs)
 ```
 
 ### Guardrails
 
-You can provide guardrails on LLM outputs with LangCheck metrics.
+Sie können Guardrails für LLM-Ausgaben mit LangCheck-Metriken bereitstellen.
 
-Just filter candidate outputs through LangCheck.
+Filtern Sie einfach Kandidatenausgaben durch LangCheck.
 
 ```python
-# Get a candidate output from the LLM app
+# Erhalten Sie eine Kandidatenausgabe aus der LLM-App
 raw_output = my_llm_app(random_user_prompt)
 
-# Filter the output before it reaches the user
+# Filtern Sie die Ausgabe, bevor sie den Benutzer erreicht
 while langcheck.metrics.contains_any_strings(raw_output, blacklist_words).any():
     raw_output = my_llm_app(random_user_prompt)
 ```

@@ -2,24 +2,20 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
 
-import nltk
-import torch
-import torch.nn as nn
 from openai import OpenAI
-from transformers.models.auto.configuration_auto import AutoConfig
-from transformers.models.auto.modeling_auto import AutoModelForSeq2SeqLM
-from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck.metrics._validation import (
     validate_parameters_context_relevance, validate_parameters_source_based)
+from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
+from langcheck.metrics.en.source_based_text_quality import \
+    factual_consistency as en_factual_consistency
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-_factual_consistency_model_path = 'MingZhong/unieval-fact'
-_factual_consistency_config = None
-_factual_consistency_tokenizer = None
-_factual_consistency_model = None
+_factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-de-en'
+
+LANG = 'de'
 
 
 def factual_consistency(
@@ -42,12 +38,17 @@ def factual_consistency(
     1. The 'local' type, where the 'unieval-fact' model is downloaded
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
+    This function wraps :func:`~langcheck.metrics.en.factual_consistency`
+    using the translation model ``Helsinki-NLP/opus-mt-de-en`` to translate the
+    German texts to English before computing the factual consistency
+    scores. This is because the UniEval-fact model is trained on English
+    text.
 
     2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
     by default. While the model you use is configurable, please make sure to use
     one that supports function calling
     (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
+    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
     #computing-metrics-with-openai-models>`__
     for examples on setting up the OpenAI API key.
 
@@ -79,131 +80,34 @@ def factual_consistency(
     ], ('Unsupported model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'local':
-        scores = _factual_consistency_local(generated_outputs, sources)
-        explanations = None
-    else:  # openai or azure_openai
+    if model_type == 'openai' or model_type == 'azure_openai':
         scores, explanations = _factual_consistency_openai(
             generated_outputs, sources, model_type, openai_client, openai_args)
 
-    return MetricValue(metric_name='factual_consistency',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=sources,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language='en')
+        return MetricValue(metric_name='factual_consistency',
+                           prompts=prompts,
+                           generated_outputs=generated_outputs,
+                           reference_outputs=None,
+                           sources=sources,
+                           explanations=explanations,
+                           metric_values=scores,
+                           language=LANG)
 
+    # Translate the sources and generated outputs to English.
+    # Currently, the type checks are not working for the pipeline, since
+    # too diverse types can be returned.
+    translation = Translate(_factual_consistency_translation_model_path)
 
-def _factual_consistency_local(generated_outputs: List[str],
-                               sources: List[str]) -> List[float]:
-    '''Calculates the factual consistency between each generated sentence and
-    its corresponding source text. The factual consistency score for one
-    generated output is computed as the average of the per-sentence
-    consistencies of the generated output with the source text The consistency
-    is computed by querying the UniEval-fact model that has been pre-trained to
-    evaluate factual consistency.
+    en_source = [translation(source) for source in sources]
+    en_generated_outputs = [
+        translation(gen_out) for gen_out in generated_outputs
+    ]
 
-    Ref:
-        https://github.com/maszhongming/UniEval
-
-    Args:
-        generated_outputs: The model generated output(s) to evaluate
-        sources: The source text(s), one string per generated output
-
-    Returns:
-        A list of scores
-    '''
-    # Confirm necessary data for nltk.tokenize.sent_tokenize() exists
-    try:
-        nltk.data.find('tokenizers/punkt')
-    except LookupError:
-        nltk.download('punkt')
-
-    # Split the generated outputs into individual sentences. This is consistent
-    # with how UniEval calculates factual consistency, where the factual
-    # consistency of each generated sentence gets averaged.
-    # (https://github.com/maszhongming/UniEval/blob/509075cc87bb64f239180ece460025466b260383/metric/evaluator.py#L261)
-    srcs_list, gen_sentences_list = [], []
-    num_sentences_list = []
-    for src, gen in tqdm_wrapper(
-            zip(sources, generated_outputs),
-            desc='Splitting generated outputs into sentences',
-            total=len(generated_outputs)):
-        gen_sentences = nltk.tokenize.sent_tokenize(gen)
-        num_sentences_list.append(len(gen_sentences))
-        gen_sentences_list += gen_sentences
-        srcs_list += [src] * len(gen_sentences)
-
-    global _factual_consistency_config, _factual_consistency_tokenizer, \
-        _factual_consistency_model
-    if _factual_consistency_config is None:
-        _factual_consistency_config = AutoConfig.from_pretrained(
-            _factual_consistency_model_path)
-    if _factual_consistency_tokenizer is None:
-        _factual_consistency_tokenizer = AutoTokenizer.from_pretrained(
-            _factual_consistency_model_path)
-    if _factual_consistency_model is None:
-        _factual_consistency_model = AutoModelForSeq2SeqLM.from_pretrained(
-            _factual_consistency_model_path, config=_factual_consistency_config)
-        _factual_consistency_model.eval()
-
-    pos_id = _factual_consistency_tokenizer('Yes')['input_ids'][0]
-    neg_id = _factual_consistency_tokenizer('No')['input_ids'][0]
-    softmax = nn.Softmax(dim=1)
-
-    model_input_list = []
-    for src, gen in zip(srcs_list, gen_sentences_list):
-        model_input = (
-            f'question: Is this claim consistent with the document? </s> '
-            f'claim: {gen} </s> '
-            f'document: {src}')
-
-        model_input_list.append(model_input)
-
-    # Specifying the targets is required to run the model, but has no effect on
-    # the score
-    target_list = ["No" for _ in range(len(model_input_list))]
-
-    batch_size = 8
-    score_list = []
-    for i in tqdm_wrapper(range(0, len(model_input_list), batch_size),
-                          total=(len(model_input_list) + batch_size - 1) //
-                          batch_size):
-        inputs = model_input_list[i:i + batch_size]
-        targets = target_list[i:i + batch_size]
-
-        with torch.no_grad():
-            encoded_inputs = _factual_consistency_tokenizer(inputs,
-                                                            truncation=True,
-                                                            padding=True,
-                                                            return_tensors='pt')
-            encoded_targets = _factual_consistency_tokenizer(
-                targets, truncation=True, padding=True, return_tensors='pt')
-            inputs_tokens = encoded_inputs['input_ids']
-            inputs_mask = encoded_inputs['attention_mask']
-            targets_tokens = encoded_targets['input_ids'][:, 0].unsqueeze(-1)
-
-            outputs = _factual_consistency_model(input_ids=inputs_tokens,
-                                                 attention_mask=inputs_mask,
-                                                 labels=targets_tokens)
-            logits = outputs.logits.view(
-                -1, _factual_consistency_model.config.vocab_size)
-            pos_score = softmax(logits)[:, pos_id]
-            neg_score = softmax(logits)[:, neg_id]
-            score_list += [
-                x.item() for x in pos_score / (pos_score + neg_score)
-            ]
-
-    # The score for each output is the average of the scores of its sentences
-    score_per_output = []
-    start_idx = 0
-    for num in tqdm_wrapper(num_sentences_list, desc='Calculating scores'):
-        scores_for_output = score_list[start_idx:start_idx + num]
-        score_per_output.append(sum(scores_for_output) / num)
-        start_idx += num
-    return score_per_output
+    # Compute the factual consistency scores in English.
+    metric_value = en_factual_consistency(
+        generated_outputs=en_generated_outputs, sources=en_source)
+    metric_value.language = LANG
+    return metric_value
 
 
 def _factual_consistency_openai(
@@ -244,46 +148,49 @@ def _factual_consistency_openai(
     # straight up contradictory.
     def _prompt(src: str, gen_output: str) -> str:
         return f'''
-        You are evaluating the factual consistency of a submitted claim. Here is
-        the data:
-        [BEGIN DATA]
+        Sie bewerten die faktische Konsistenz einer eingereichten Behauptung.
+        Hier sind die Daten:
+        [BEGINN DER DATEN]
         ************
-        [Source]: {src}
+        [Quelle]: {src}
         ************
-        [Submission]: {gen_output}
+        [Benutzeranfrage]: {gen_output}
         ************
-        [END DATA]
+        [ENDE DER DATEN]
 
-        Determine whether the submitted claim is factually consistent with the
-        source. The available assessments are:
-        `Fully Consistent` - The submitted claim is fully factually consistent
-        with the source text.
-        `Partially Consistent` - The submitted claim is partially factually
-        consistent with the source text. There are some aspects of the claim
-        that are factually consistent, but some aspects that are not.
-        `Not Consistent` - The submitted claim is not factually consistent with
-        the source text.
+        Bestimmen Sie, ob die eingereichte Behauptung faktisch konsistent mit
+        der Quelle ist. Die verfügbaren Bewertungen sind:
+        `Vollständig Konsistent` - Die eingereichte Behauptung ist vollständig
+        faktisch konsistent mit dem Quelltext.
+        `Teilweise Konsistent` - Die eingereichte Behauptung ist teilweise
+        faktisch konsistent mit dem Quelltext. Es gibt einige Aspekte der
+        Behauptung, die faktisch konsistent sind, aber auch einige, die es
+         nicht sind.
+        `Nicht Konsistent` - Die eingereichte Behauptung ist nicht faktisch
+        konsistent mit dem Quelltext.
 
-        Take a deep breath and work on this problem step-by-step.
+        Atmen Sie tief durch und bearbeiten Sie dieses Problem Schritt für
+        Schritt.
         '''
 
     def _function_call_prompt(long_assessment: str) -> str:
         return f'''
-        The following is an assessment on the factual consistency of a claim:
+        Folgendes ist eine Bewertung zur faktischen Konsistenz einer Behauptung:
         ************
-        [Assessment]: {long_assessment}
+        [Bewertung]: {long_assessment}
         ************
 
-        Save the resulting assessment. The available assessments are:
-        `Fully Consistent`
-        `Partially Consistent`
-        `Not Consistent`
+        Speichern Sie die resultierende Bewertung. Die verfügbaren Bewertungen
+         sind:
+        `Vollständig Konsistent`
+        `Teilweise Konsistent`
+        `Nicht Konsistent`
         '''
 
     factuality_assessment_to_score = {
-        'Fully Consistent': 1.0,
-        'Partially Consistent': 0.5,
-        'Not Consistent': 0.0
+        'Vollständig Konsistent': 1.0,
+        'Teilweise Konsistent': 0.5,
+        'Nicht Konsistent': 0.0
     }
     oai_evaluator = OpenAIBasedEvaluator(
         assessment_to_score_mapping=factuality_assessment_to_score,
@@ -350,46 +257,49 @@ def context_relevance(
 
     def _prompt(src: str, user_query: str) -> str:
         return f'''
-        You are evaluating the relevance of the source to a user's query. Here
-        is the data:
-        [BEGIN DATA]
+        Sie bewerten die Relevanz der Quelle für eine Benutzeranfrage. Hier
+        sind die Daten:
+        [BEGINN DATEN]
         ************
-        [Source]: {src}
+        [Quelle]: {src}
         ************
-        [User Query]: {user_query}
+        [Benutzeranfrage]: {user_query}
         ************
-        [END DATA]
+        [ENDE DATEN]
 
-        Determine whether the source contains the relevant and necessary
-        information needed to respond to the user's query. The available
-        assessments are:
-        `Fully Relevant` - The source text contains the information necessary to
-        respond to the user's query.
-        `Partially Relevant` - The source text is partially relevant to the
-        user's query, but does not contain all the information necessary to
-        respond to the user's query.
-        `Not Relevant` - The source text is not relevant to the user's query.
+        Bestimmen Sie, ob die Quelle die relevanten und notwendigen
+        Informationen enthält, um auf die Anfrage des Benutzers zu antworten.
+        Die verfügbaren Bewertungen sind:
+        `Vollständig relevant` - Der Quelltext enthält die Informationen, die
+        notwendig sind, um auf die Anfrage des Benutzers zu antworten.
+        `Teilweise relevant` - Der Quelltext ist teilweise relevant für die
+        Anfrage des Benutzers, enthält aber nicht alle Informationen,
+        die notwendig sind, um auf die Anfrage des Benutzers zu antworten.
+        `Nicht relevant` - Der Quelltext ist nicht relevant für die Anfrage des
+        Benutzers.
 
-        Take a deep breath and work on this problem step-by-step.
+        Atmen Sie tief durch und arbeiten Sie Schritt für Schritt an diesem
+        Problem.
         '''
 
     def _function_call_prompt(long_assessment: str) -> str:
         return f'''
-        The following is an assessment on the relevance of a source:
+        Folgendes ist eine Bewertung über die Relevanz einer Quelle:
         ************
-        [Assessment]: {long_assessment}
+        [Bewertung]: {long_assessment}
         ************
 
-        Save the resulting assessment. The available assessments are:
-        `Fully Relevant`
-        `Partially Relevant`
-        `Not Relevant`
+        Speichern Sie die resultierende Bewertung. Die verfügbaren Bewertungen
+        sind:
+        `Vollständig relevant`
+        `Teilweise relevant`
+        `Nicht relevant`
         '''
 
     context_relevance_assessment_to_score = {
-        'Fully Relevant': 1.0,
-        'Partially Relevant': 0.5,
-        'Not Relevant': 0.0
+        'Vollständig relevant': 1.0,
+        'Teilweise relevant': 0.5,
+        'Nicht relevant': 0.0
     }
     oai_evaluator = OpenAIBasedEvaluator(
         assessment_to_score_mapping=context_relevance_assessment_to_score,
@@ -418,4 +328,4 @@ def context_relevance(
                        sources=sources,
                        explanations=explanation_list,
                        metric_values=score_list,
-                       language='en')
+                       language=LANG)

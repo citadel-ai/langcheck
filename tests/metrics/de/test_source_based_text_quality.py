@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 from openai.types.chat import ChatCompletion
 
-from langcheck.metrics.ja import context_relevance, factual_consistency
+from langcheck.metrics.de import context_relevance, factual_consistency
 
 ################################################################################
 # Tests
@@ -13,27 +13,33 @@ from langcheck.metrics.ja import context_relevance, factual_consistency
 
 @pytest.mark.parametrize(
     'generated_outputs,sources',
-    [('東京は日本の首都です。', '東京は日本の首都です。'),
-     (['東京は日本の首都です。', '地球は平面です。'], ['東京は日本の首都です。', '地球は球体です。'])])
+    [('Tokio ist die Hauptstadt von Japan.',
+      "Tokio ist die Hauptstadt von Japan."),
+     (['Tokio ist die Hauptstadt von Japan.', 'Die Erde ist flach.'
+      ], ["Tokio ist die Hauptstadt von Japan.", 'Die Erde ist rund.'])])
 def test_factual_consistency(generated_outputs, sources):
-    metric_value = factual_consistency(generated_outputs, sources)
+    metric_value = factual_consistency(generated_outputs,
+                                       sources,
+                                       model_type='local')
     factual_consistency_high = metric_value.metric_values[0]
     assert factual_consistency_high is not None
     assert 0.9 <= factual_consistency_high <= 1
-    if len(metric_value.metric_values) == 2:
+    if len(generated_outputs) == 2:
         factual_consistency_low = metric_value.metric_values[1]
         assert factual_consistency_low is not None
         assert 0.0 <= factual_consistency_low <= 0.1
 
 
 @pytest.mark.parametrize('generated_outputs,sources',
-                         [('東京は日本の首都です。', "東京は日本の首都です。"),
-                          (['東京は日本の首都です。'], ["東京は日本の首都です。"])])
+                         [('Tokio ist die Hauptstadt von Japan.',
+                           "Tokio ist Japans Hauptstadtstadt."),
+                          (['Tokio ist die Hauptstadt von Japan.'
+                           ], ["Tokio ist Japans Hauptstadtstadt."])])
 def test_factual_consistency_openai(generated_outputs, sources):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"factuality\": \"Fully Consistent\"\n}")))
+            arguments="{\n  \"factuality\": \"Vollständig Konsistent\"\n}")))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
@@ -61,13 +67,16 @@ def test_factual_consistency_openai(generated_outputs, sources):
 
 
 @pytest.mark.parametrize('prompts,sources',
-                         [('日本の首都は何ですか？', "東京は日本の首都です。"),
-                          (['日本の首都は何ですか？'], ["東京は日本の首都です。"])])
+                         [('Was ist die Hauptstadt von Japan?',
+                           "Tokio ist die Hauptstadtstadt von Japan."),
+                          (['Was ist die Hauptstadt von Japan?'
+                           ], ["Tokio ist die Hauptstadtstadt von Japan."])])
 def test_context_relevance_openai(prompts, sources):
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"context_relevance\": \"Fully Relevant\"\n}")))
+            arguments="{\n  \"context_relevance\": \"Vollständig relevant\"\n}")
+                         ))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an

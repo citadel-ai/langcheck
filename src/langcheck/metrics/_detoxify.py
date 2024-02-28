@@ -1,14 +1,30 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import torch
-from transformers.models.bert.modeling_bert import BertForSequenceClassification
-from transformers.models.bert.tokenization_bert import BertTokenizer
+from transformers import (BertForSequenceClassification, BertTokenizer,
+                          XLMRobertaForSequenceClassification,
+                          XLMRobertaTokenizer)
+
+_checkpoints = {
+    "en":
+        "https://github.com/unitaryai/detoxify/releases/download/v0.1-alpha/toxic_original-c1212f89.ckpt",  # NOQA: E501
+    "de":
+        "https://github.com/unitaryai/detoxify/releases/download/v0.4-alpha/multilingual_debiased-0b549669.ckpt"  # NOQA: E501
+}
+
+_model_types = {
+    "en": (BertForSequenceClassification, BertTokenizer),
+    "de": (XLMRobertaForSequenceClassification, XLMRobertaTokenizer)
+}
 
 
 def load_checkpoint(
-    device: str
-) -> Tuple[BertForSequenceClassification, BertTokenizer, List[str]]:
-    checkpoint_url = "https://github.com/unitaryai/detoxify/releases/download/v0.1-alpha/toxic_original-c1212f89.ckpt"  # NOQA: E501
+    device: str, lang: str
+) -> Tuple[Union[BertForSequenceClassification,
+                 XLMRobertaForSequenceClassification], Union[
+                     BertTokenizer, XLMRobertaTokenizer], List[str]]:
+    checkpoint_url = _checkpoints[lang]
+    class_model_type, tokenizer_type = _model_types[lang]
     loaded = torch.hub.load_state_dict_from_url(checkpoint_url,
                                                 map_location=device)
     class_names = loaded["config"]["dataset"]["args"]["classes"]
@@ -22,14 +38,14 @@ def load_checkpoint(
     num_classes = loaded["config"]["arch"]["args"]["num_classes"]
     state_dict = loaded["state_dict"]
 
-    model = BertForSequenceClassification.from_pretrained(
+    model = class_model_type.from_pretrained(
         pretrained_model_name_or_path=model_type,
         num_labels=num_classes,
         state_dict=state_dict)
-    tokenizer = BertTokenizer.from_pretrained(model_type)
+    tokenizer = tokenizer_type.from_pretrained(model_type)
 
     # For type check
-    assert isinstance(model, BertForSequenceClassification)
+    assert isinstance(model, class_model_type)
     return model, tokenizer, class_names
 
 
@@ -45,8 +61,9 @@ class Detoxify:
         results: dictionary of output scores for each class
     '''
 
-    def __init__(self, device: str = "cpu"):
-        self.model, self.tokenizer, self.class_names = load_checkpoint(device)
+    def __init__(self, device: str = "cpu", lang: str = "en"):
+        self.model, self.tokenizer, self.class_names = load_checkpoint(
+            device, lang)
         self.device = device
         self.model.to(self.device)  # type: ignore
 

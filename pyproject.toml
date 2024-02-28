@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langcheck"
-version = "0.3.0"
+version = "0.4.0"
 description = "Simple, Pythonic building blocks to evaluate LLM-based applications"
 readme = "README.md"
 authors = [{ name = "Citadel AI", email = "info@citadel.co.jp" }]
@@ -15,6 +15,7 @@ classifiers = [
 ]
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
+    'chikkarpy',
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
     'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
@@ -50,7 +51,11 @@ dev = [
     "myst-parser",
     "ipykernel"
 ]
-optional = ["mecab-python3 >= 1.0.4"]
+optional = [
+    "mecab-python3 >= 1.0.4",
+    'sudachidict_core',
+    'sudachipy'
+]
 
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
