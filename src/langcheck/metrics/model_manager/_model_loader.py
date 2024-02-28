@@ -39,10 +39,10 @@ def load_sentence_transformers(
 
 
 def load_auto_model_for_text_classification(
-        model_name: str,
-        model_revision: Optional[str] = None,
-        tokenizer_name: Optional[str] = None,
-        tokenizer_revision: Optional[str] = None
+    model_name: str,
+    model_revision: Optional[str] = None,
+    tokenizer_name: Optional[str] = None,
+    tokenizer_revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSequenceClassification]:
     '''
     Loads a sequence classification model and its tokenizer.
@@ -68,10 +68,10 @@ def load_auto_model_for_text_classification(
 
 
 def load_auto_model_for_seq2seq(
-        model_name: str,
-        model_revision: Optional[str] = None,
-        tokenizer_name: Optional[str] = None,
-        tokenizer_revision: Optional[str] = None
+    model_name: str,
+    model_revision: Optional[str] = None,
+    tokenizer_name: Optional[str] = None,
+    tokenizer_revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSeq2SeqLM]:
     '''
     Loads a sequence-to-sequence model and its tokenizer.
