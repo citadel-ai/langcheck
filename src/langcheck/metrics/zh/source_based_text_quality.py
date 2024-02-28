@@ -81,8 +81,8 @@ def factual_consistency(
         return metric_value
 
     from langcheck.metrics.model_manager import manager
-    tokenizer, model = manager.fetch_model(
-        language='zh', metric='factual_consistency')  # NOQA:E501
+    tokenizer, model = manager.fetch_model(language='zh',
+                                           metric='factual_consistency')
     _factual_consistency_translation_pipeline = pipeline(
         'translation', model=model, tokenizer=tokenizer)  # type: ignore
 
@@ -93,14 +93,13 @@ def factual_consistency(
         cast(str,
              d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(
-            sources)  # type: ignore[reportOptionalIterable]  # NOQA: E501
+            sources)  # type: ignore[reportOptionalIterable]
     ]
     en_generated_outputs = [
         cast(str,
              d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(
-            generated_outputs
-        )  # type: ignore[reportOptionalIterable]  # NOQA: E501
+            generated_outputs)  # type: ignore[reportOptionalIterable]
     ]
     # Compute the factual consistency scores in English.
     factual_consistency_scores = en_factual_consistency(
