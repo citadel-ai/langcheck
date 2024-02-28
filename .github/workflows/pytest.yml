@@ -31,6 +31,19 @@ jobs:
           pip install --upgrade pip
           pip install .[dev]
 
+      # Remove unneeded system libraries to maximize disk space
+      # https://github.com/easimon/maximize-build-space/blob/master/action.yml
+      # https://github.com/actions/virtual-environments/issues/2840#issuecomment-790492173
+      - name: Maximize disk space
+        run: |
+          echo "Available disk space (before):"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
+          echo "Available disk space (after):"
+          df -h
+
       # Run integration tests
       - name: Test
         run: |
