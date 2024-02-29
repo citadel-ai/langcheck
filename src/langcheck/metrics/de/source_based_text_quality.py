@@ -97,11 +97,21 @@ def factual_consistency(
     # Currently, the type checks are not working for the pipeline, since
     # too diverse types can be returned.
     translation = Translate(_factual_consistency_translation_model_path)
-
-    en_source = [translation(source) for source in sources]
-    en_generated_outputs = [
-        translation(gen_out) for gen_out in generated_outputs
-    ]
+    batch_size = 8
+    en_source = []
+    for i in tqdm_wrapper(range(0, len(sources), batch_size),
+                          desc='Translating sources',
+                          total=(len(sources) + batch_size - 1) // batch_size):
+        batch_sources = sources[i:i + batch_size]
+        en_source.extend([translation(src) for src in batch_sources])
+    en_generated_outputs = []
+    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
+                          desc='Translating generated outputs',
+                          total=(len(generated_outputs) + batch_size - 1) //
+                          batch_size):
+        batch_generated_outputs = generated_outputs[i:i + batch_size]
+        en_generated_outputs.extend(
+            [translation(gen_out) for gen_out in batch_generated_outputs])
 
     # Compute the factual consistency scores in English.
     metric_value = en_factual_consistency(
