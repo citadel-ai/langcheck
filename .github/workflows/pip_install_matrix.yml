@@ -1,0 +1,75 @@
+name: Pip Install Matrix
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request events
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "pip_install"
+  pip_install:
+    # Define the matrix of environments to test installation on
+    strategy:
+      fail-fast: false  # Continue running jobs even if another fails
+      matrix:
+        # We specify Python versions as strings so 3.10 doesn't become 3.1
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest, macos-14]
+
+        exclude:
+          # GitHub Actions doesn't support Python 3.8 and 3.9 on M1 macOS yet:
+          # https://github.com/actions/setup-python/issues/696
+          - python-version: "3.8"
+            os: macos-14
+          - python-version: "3.9"
+            os: macos-14
+          # TODO: Figure out how to install MeCab on Windows to install
+          # LangCheck on Python 3.12 since there are no wheels for `fugashi`
+          - python-version: "3.12"
+            os: windows-latest
+
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks out this repository so this job can access it
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # We need to manually install MeCab on Ubuntu to install LangCheck on
+      # Python 3.12 since there are no wheels for `fugashi`
+      - name: Install MeCab on Ubuntu (if necessary)
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mecab libmecab-dev mecab-ipadic-utf8
+
+      # We need to manually install MeCab on macOS to install LangCheck on
+      # Python 3.12 since there are no wheels for `fugashi`
+      - name: Install MeCab on macOS (if necessary)
+        if: ${{ matrix.os == 'macos-14' && matrix.python-version == '3.12' }}
+        run: |
+          brew update
+          brew install mecab
+
+      - name: Install Core LangCheck
+        run: |
+          pip install --upgrade pip
+          pip install .
+
+      - name: Install Core LangCheck with Optional Dependencies
+        run: |
+          pip install .[optional]
+
+      - name: Import LangCheck
+        run: |
+          python -c "import langcheck"
