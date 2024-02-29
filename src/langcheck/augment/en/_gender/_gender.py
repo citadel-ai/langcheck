@@ -11,15 +11,6 @@ from nltk.tokenize.treebank import TreebankWordDetokenizer
 from langcheck.augment.en._gender._gender_pronouns import (_PRONOUNS_DICT,
                                                            _BaseGenderPronouns)
 
-try:
-    nltk.data.find('averaged_perceptron_tagger')
-except LookupError:
-    nltk.download('averaged_perceptron_tagger')
-try:
-    nltk.data.find('punkt')
-except LookupError:
-    nltk.download('punkt')
-
 # This dictionary is used to determine the form of the pronoun.
 # Note that his and hers are not included in this dictionary because they can be
 # either of two different forms depending on the context.
@@ -80,6 +71,14 @@ def _replace_gender_pronouns(
     Returns:
         str: Augmented text.
     """
+    try:
+        nltk.data.find('averaged_perceptron_tagger')
+    except LookupError:
+        nltk.download('averaged_perceptron_tagger')
+    try:
+        nltk.data.find('punkt')
+    except LookupError:
+        nltk.download('punkt')
     tagged_words = pos_tag(word_tokenize(text))
     augmented_words = [
         _replace_pronoun(word, tag, target_pronouns)
