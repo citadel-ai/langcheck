@@ -25,6 +25,8 @@ Simple, Pythonic building blocks to evaluate LLM applications.
 pip install langcheck
 ```
 
+Having installation issues? [See the FAQ](https://langcheck.readthedocs.io/en/latest/installation.html#installation-faq).
+
 ## Examples
 
 ### Evaluate Text
