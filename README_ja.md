@@ -26,6 +26,8 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 pip install langcheck
 ```
 
+インストールがうまくいかない場合、[FAQ(英語)](https://langcheck.readthedocs.io/en/latest/installation.html#installation-faq)もご覧ください。
+
 ## 利用例
 
 ### テキスト評価
