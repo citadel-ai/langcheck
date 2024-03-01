@@ -72,7 +72,7 @@ def _replace_gender_pronouns(
         str: Augmented text.
     """
     try:
-        nltk.data.find('averaged_perceptron_tagger')
+        nltk.data.find('taggers/averaged_perceptron_tagger')
     except LookupError:
         nltk.download('averaged_perceptron_tagger')
     try:
