@@ -76,7 +76,7 @@ def _replace_gender_pronouns(
     except LookupError:
         nltk.download('averaged_perceptron_tagger')
     try:
-        nltk.data.find('punkt')
+        nltk.data.find('tokenizers/punkt')
     except LookupError:
         nltk.download('punkt')
     tagged_words = pos_tag(word_tokenize(text))
