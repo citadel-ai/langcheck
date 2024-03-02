@@ -235,12 +235,13 @@ def _sentiment_openai(
 
 
 def fluency(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        local_overflow_strategy: str = 'nullify'
+) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
     (NOTE: when using the OpenAI model, the fluency scores are either 0.0
@@ -277,6 +278,12 @@ def fluency(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        local_overflow_strategy: The strategy to handle the inputs that are too
+            long for the local model. The supported strategies are 'nullify',
+            'truncate', and 'raise'. If 'nullify', the outputs that are too long
+            will be assigned a score of None. If 'truncate', the outputs that
+            are too long will be truncated. If 'raise', an error will be raised
+            when the outputs are too long. The default value is 'nullify'.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -289,7 +296,7 @@ def fluency(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
-        scores = _fluency_local(generated_outputs)
+        scores = _fluency_local(generated_outputs, local_overflow_strategy)
         explanations = None
     else:  # openai or azure_openai
         scores, explanations = _fluency_openai(generated_outputs, model_type,
@@ -305,7 +312,8 @@ def fluency(
                        language='en')
 
 
-def _fluency_local(generated_outputs: List[str]) -> List[Optional[float]]:
+def _fluency_local(generated_outputs: List[str],
+                   overflow_strategy: str) -> List[Optional[float]]:
     '''Calculates the fluency scores of generated outputs using the Parrot
     fluency model. This metric takes on float values between [0, 1], where 0 is
     low fluency and 1 is high fluency.
@@ -320,8 +328,7 @@ def _fluency_local(generated_outputs: List[str]) -> List[Optional[float]]:
         A list of scores
     '''
     scorer = AutoModelForSequenceClassificationScorer(language='en',
-                                                      metric='fluency',
-                                                      validation_mode='null')
+                                                      metric='fluency', overflow_strategy=overflow_strategy)
     return scorer.score(generated_outputs)
 
 

@@ -97,5 +97,5 @@ def load_auto_model_for_seq2seq(
     # ignore it because that is intended.
     with _handle_logging_level():
         model = AutoModelForSeq2SeqLM.from_pretrained(model_name,
-                                                    revision=model_revision)
+                                                      revision=model_revision)
     return tokenizer, model  # type: ignore

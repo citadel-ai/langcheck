@@ -14,34 +14,40 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
     '''Scorer using Hugging Face's AutoModelForSequenceClassification.
     '''
 
-    def __init__(self, language, metric, validation_mode: str = 'raise'):
-        self.validation_mode = validation_mode
+    def __init__(self, language, metric, overflow_strategy: str = 'nullify'):
+        self.overflow_strategy = overflow_strategy
         from langcheck.metrics.model_manager import manager
         tokenizer, model = manager.fetch_model(language=language, metric=metric)
 
         self.tokenizer = tokenizer
         self.model = model
 
-    def _tokenize(self, inputs) -> Tuple[BatchEncoding, list[bool]]:
+    def _tokenize(self, inputs: list[str]) -> Tuple[BatchEncoding, list[bool]]:
         '''Tokenize the inputs. It also does the validation on the token length,
         and return the results as a list of boolean values. If the validation
         mode is 'raise', it raises an error when the token length is invalid.
         '''
+        truncated_tokens = self.tokenizer(  # type: ignore
+                inputs,
+                padding=True,
+                truncation=True,
+                return_tensors='pt')
+
+        if self.overflow_strategy == 'truncate':
+            return (truncated_tokens, [True] * len(inputs))
 
         input_validation_results = self._validate_inputs(inputs)
 
-        if self.validation_mode == 'raise' and not all(
+        if self.overflow_strategy == 'raise' and not all(
                 input_validation_results):
             raise ValueError('Some of the inputs are too long.')
+
+        assert self.overflow_strategy == 'nullify'
 
         # Return the padded & truncated tokens.
         # The user needs to exclude the invalid tokens from the results.
         return (
-            self.tokenizer(  # type: ignore
-                inputs,
-                padding=True,
-                truncation=True,
-                return_tensors='pt'),
+            truncated_tokens,
             input_validation_results)
 
     def _validate_inputs(self, inputs: list[str]) -> list[bool]:
