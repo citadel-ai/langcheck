@@ -26,9 +26,10 @@ LOADER_MAP = {
 }
 VALID_LOADER_FUNCTION = LOADER_MAP.keys()
 VALID_METRICS = [
-    'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency'
+    'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency',
+    'fluency'
 ]
-VALID_LANGUAGE = ['zh']
+VALID_LANGUAGE = ['zh', 'en']
 
 
 def check_model_availability(model_name: str, revision: Optional[str]) -> bool:

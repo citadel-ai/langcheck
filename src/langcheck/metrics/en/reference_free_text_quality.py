@@ -18,14 +18,11 @@ from langcheck.metrics.en.reference_based_text_quality import \
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.metrics.scorer.hf_models import AutoModelForSequenceClassificationScorer
 
 _sentiment_model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 _sentiment_tokenizer = None
 _sentiment_model = None
-
-_fluency_model_path = "prithivida/parrot_fluency_model"
-_fluency_tokenizer = None
-_fluency_model = None
 
 _toxicity_model = None
 
@@ -308,7 +305,7 @@ def fluency(
                        language='en')
 
 
-def _fluency_local(generated_outputs: List[str]) -> List[float]:
+def _fluency_local(generated_outputs: List[str]) -> List[Optional[float]]:
     '''Calculates the fluency scores of generated outputs using the Parrot
     fluency model. This metric takes on float values between [0, 1], where 0 is
     low fluency and 1 is high fluency.
@@ -322,35 +319,10 @@ def _fluency_local(generated_outputs: List[str]) -> List[float]:
     Returns:
         A list of scores
     '''
-    global _fluency_tokenizer, _fluency_model
-
-    if _fluency_tokenizer is None or _fluency_model is None:
-        _fluency_tokenizer = AutoTokenizer.from_pretrained(_fluency_model_path)
-
-        # There is a "Some weights are not used warning" but we ignore it
-        # because that is intended.
-        with _handle_logging_level():
-            _fluency_model = AutoModelForSequenceClassification.from_pretrained(
-                _fluency_model_path)
-
-    input_tokens = _fluency_tokenizer(generated_outputs,
-                                      return_tensors='pt',
-                                      padding=True)
-
-    batch_size = 8
-    scores = []
-    with torch.no_grad():
-        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                              total=(len(generated_outputs) + batch_size - 1) //
-                              batch_size):
-            batch_input_tokens = {
-                k: v[i:i + batch_size] for k, v in input_tokens.items()
-            }
-            # Probabilities of [negative, neutral, positive]
-            probs = torch.nn.functional.softmax(
-                _fluency_model(**batch_input_tokens).logits, dim=1)
-            scores.extend(probs[:, 1].tolist())
-    return scores
+    scorer = AutoModelForSequenceClassificationScorer(language='en',
+                                                      metric='fluency',
+                                                      validation_mode='null')
+    return scorer.score(generated_outputs)
 
 
 def _fluency_openai(

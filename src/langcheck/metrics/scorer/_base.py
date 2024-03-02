@@ -15,34 +15,23 @@ class BaseSingleScorer(Generic[_TokenType]):
     '''
     BASE_BATCH_SIZE = 8
 
-    def __init__(self, validation_mode: str = 'raise'):
-        if validation_mode not in ['raise', 'null']:
-            raise ValueError(f'Invalid validation mode: {validation_mode}')
-
-        self.validation_mode = validation_mode
-
     def _tokenize(self, inputs: list[str]) -> _TokenType:
         '''Tokenize the inputs. The returned type should be defined in the
         subclass.
         '''
         raise NotImplementedError
 
-    def _validate_tokens(self, tokens: _TokenType) -> list[bool]:
-        '''Validate the tokens. The returned list should have the same length
-        as the tokens. Each element in the list should be True if the token is
-        valid, False otherwise.
-        '''
-        raise NotImplementedError
-
-    def _score_tokens(self, tokens: _TokenType) -> list[float]:
+    def _score_tokens(self, tokens: _TokenType) -> list[Optional[float]]:
         '''Score the tokens. The returned list should have the same length as
         the tokens. Each element in the list should be the score of the token.
         '''
         raise NotImplementedError
 
-    def _slice_tokens(self, tokens: _TokenType,
-                      indices: list[int]) -> _TokenType:
+    def _slice_tokens(self, tokens: _TokenType, start_idx: int,
+                      end_idx: int) -> _TokenType:
         '''Slice the tokens. The returned type should be the same as the tokens.
+        It is equivalent to tokens[start_idx:end_idx] for slicable data types
+        such as list.
         '''
         raise NotImplementedError
 
@@ -51,34 +40,17 @@ class BaseSingleScorer(Generic[_TokenType]):
         '''
 
         tokens = self._tokenize(inputs)
-        valid_tokens = self._validate_tokens(tokens)
-
-        if self.validation_mode == 'raise':
-            if not all(valid_tokens):
-                raise ValueError('Invalid tokens')
 
         input_length = len(inputs)
 
-        scores: list[Optional[float]] = [None] * input_length
+        scores: list[Optional[float]] = []
         for i in tqdm_wrapper(range(0, input_length, self.BASE_BATCH_SIZE),
                               total=(input_length + self.BASE_BATCH_SIZE - 1) //
                               self.BASE_BATCH_SIZE):
-            batch_indices = list(
-                range(i, min(i + self.BASE_BATCH_SIZE, input_length)))
 
-            # Only apply _score_tokens to valid tokens
-            valid_batch_token_indices = [
-                j for j, valid in zip(batch_indices,
-                                      valid_tokens[i:i + self.BASE_BATCH_SIZE])
-                if valid
-            ]
-            valid_batch_tokens = self._slice_tokens(tokens,
-                                                    valid_batch_token_indices)
-            valid_batch_scores = self._score_tokens(valid_batch_tokens)
+            batch_tokens = self._slice_tokens(
+                tokens, i, min(i + self.BASE_BATCH_SIZE, input_length))
 
-            for j, score in zip(valid_batch_token_indices, valid_batch_scores):
-                scores[j] = score
+            scores.extend(self._score_tokens(batch_tokens))
 
         return scores
-
-

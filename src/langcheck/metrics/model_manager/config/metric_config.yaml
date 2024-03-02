@@ -24,3 +24,9 @@ zh:
     model_name: Helsinki-NLP/opus-mt-zh-en
     model_revision: cf109095479db38d6df799875e34039d4938aaa6
     loader_func: load_auto_model_for_seq2seq
+
+en:
+  fluency:
+    model_name: prithivida/parrot_fluency_model
+    model_revision: e5224ff5b4109cd949ce25b0a6dff8d8cbdec7be
+    loader_func: load_auto_model_for_text_classification
