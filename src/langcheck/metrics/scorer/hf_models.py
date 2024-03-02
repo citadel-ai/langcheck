@@ -7,6 +7,8 @@ import torch
 from ._base import BaseSingleScorer
 from transformers import BatchEncoding
 
+from langcheck._handle_logs import _handle_logging_level
+
 
 class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
     '''Scorer using Hugging Face's AutoModelForSequenceClassification.
@@ -50,7 +52,10 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
         max_valid_input_length: int = self.tokenizer.model_max_length  # type: ignore
         for input_str in inputs:
             # Tokenize the input and get the length of the input_ids
-            input_ids = self.tokenizer.encode(input_str)  # type: ignore
+            # Suppress the warning because we intentionally generate the
+            # tokens longer than the maximum length.
+            with _handle_logging_level():
+                input_ids = self.tokenizer.encode(input_str)  # type: ignore
             validation_results.append(len(input_ids) <= max_valid_input_length)
 
         return validation_results
