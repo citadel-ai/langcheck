@@ -71,7 +71,7 @@ And there you have it! We have now created a super basic RAG application over th
 
 ## LangCheckChat
 
-Now that we’ve seen the basics of how our RAG system over LangCheck documentation works under the hood, let’s switch over to [LangCheckChat](https://github.com/citadel-ai/langcheckchat), which is a simple web app built around the RAG system we coded above.
+Now that we’ve seen the basics of how our RAG system over LangCheck documentation works under the hood, let’s switch over to [LangCheckChat](https://github.com/citadel-ai/langcheckchat), which is a simple web app built around the RAG system we coded above. Please check out the [demo video](https://github.com/citadel-ai/langcheckchat/tree/main?tab=readme-ov-file#demo) to get a sense of you can do in LangCheckChat!
 
 LangCheckChat is composed of the following components:
 1. ***RAG system***: you can ask questions about LangCheck to the RAG system and receive responses.
