@@ -74,14 +74,14 @@ And there you have it! We have now created a super basic RAG application over th
 Now that we’ve seen the basics of how our RAG system over LangCheck documentation works under the hood, let’s switch over to [LangCheckChat](https://github.com/citadel-ai/langcheckchat), which is a simple web app built around the RAG system we coded above.
 
 LangCheckChat is composed of the following components:
-1. RAG system: you can ask questions about LangCheck to the RAG system and receive responses.
-2. Evaluation of the RAG system: the RAG system’s responses are evaluated using the three core categories of LangCheck text quality metrics.
-    - Reference-Free Text Quality Metrics: Metrics that LangCheck can calculate without any information sources or references.
-    - Source-Based Text Quality Metrics: Metrics calculated by LangCheck based on provided information sources.
-    - Reference-Based Text Quality Metrics: Metrics calculated based on references.
+1. ***RAG system***: you can ask questions about LangCheck to the RAG system and receive responses.
+2. ***Evaluation of the RAG system***: the RAG system’s responses are evaluated using the three core categories of LangCheck text quality metrics.
+    - [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.reference_free_text_quality.html): Metrics that LangCheck can calculate without any information sources or references.
+    - [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.source_based_text_quality.html): Metrics calculated by LangCheck based on provided information sources.
+    - [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.reference_based_text_quality.html): Metrics calculated based on references.
 
-    Please refer to the files calculate_metrics.py and calculate_reference_metrics.py to see how the LangCheck metrics are executed.
-3. Data Visualization: All related data (RAG system’s retrieved source data & generated output, evaluation results, etc.) are visualized in the UI. The interactions are also logged so that we can look back at past data.
+    Please refer to the files [calculate_metrics.py](https://github.com/citadel-ai/langcheckchat/blob/main/calculate_metrics.py) and [calculate_reference_metrics.py](https://github.com/citadel-ai/langcheckchat/blob/main/calculate_reference_metrics.py) to see how the LangCheck metrics are executed.
+3. ***Data Visualization***: All related data (RAG system’s retrieved source data & generated output, evaluation results, etc.) are visualized in the UI. The interactions are also logged so that we can look back at past data.
 
 Below is a step-by-step process on how to use the app.
 
