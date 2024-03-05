@@ -15,6 +15,7 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 [クイックスタート](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [ドキュメント](https://langcheck.readthedocs.io/en/latest/index.html) •
 [English](README.md) •
+[中文](README_zh.md) •
 [Deutsch](README_de.md)
 
 

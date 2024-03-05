@@ -15,6 +15,7 @@ Simple, Pythonic building blocks to evaluate LLM applications.
 [Quickstart](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [Docs](https://langcheck.readthedocs.io/en/latest/index.html) •
 [日本語](README_ja.md) •
+[中文](README_zh.md) •
 [Deutsch](README_de.md)
 
 </div>

@@ -15,6 +15,7 @@
 [快速开始](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [文档](https://langcheck.readthedocs.io/en/latest/index.html) •
 [English](README.md) •
+[日本語](README_ja.md) •
 [Deutsch](README_de.md)
 
 </div>

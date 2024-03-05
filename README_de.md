@@ -15,7 +15,8 @@ Einfache, pythonische Bausteine zur Bewertung von LLM-Anwendungen.
 [Schnellstart](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [Docs](https://langcheck.readthedocs.io/en/latest/index.html) •
 [English](README.md) •
-[日本語](README_ja.md)
+[日本語](README_ja.md) •
+[中文](README_zh.md)
 
 </div>
 
