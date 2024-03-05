@@ -129,9 +129,11 @@ factual_consistency_openai = langcheck.metrics.factual_consistency(
     output, source, model_type='openai')
 ```
 
-We use this metric to warn the user when a response may be a hallucination in LangCheckChat. Here's an example where the LLM outputted a nonsensical answer (because we asked it to do so) and the warning was shown.
+We use this metric to warn the user when a response may be a hallucination in LangCheckChat. Here's an example where the LLM outputted a nonsensical answer (because we asked it to do so) and a warning was shown.
 
 ![LangCheckChat 6](_static/LangCheckChat_6.png)
+
+LangCheckChat uses a threshold of `factual_consistency < 0.5` to determine when to show the red warning message above. You can see the implementation of this in [api_routes.py](https://github.com/citadel-ai/langcheckchat/blob/bf3a9d7856b0d84e651f50b1cad2146b0333852f/api_routes.py#L48) and [chat.js](https://github.com/citadel-ai/langcheckchat/blob/bf3a9d7856b0d84e651f50b1cad2146b0333852f/static/chat.js#L127).
 
 An example of a reference-free metric is [`toxicity`](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.reference_free_text_quality.html#langcheck.metrics.en.reference_free_text_quality.toxicity), and it can also be computed using either a local model or an OpenAI-based model. Unlike source-based metrics, reference-free metrics only require the generated output.
 
