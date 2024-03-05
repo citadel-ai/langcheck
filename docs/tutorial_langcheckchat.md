@@ -6,6 +6,14 @@ In this tutorial, we will explore how to build a very simple RAG system (which w
 
 [LangCheckChat](https://github.com/citadel-ai/langcheckchat) is fully open source, so please follow along by trying it yourself if you can!
 
+## Video Demo
+
+Here's a video preview of the LangCheckChat app that we'll discuss in this tutorial:
+
+```{youtube} Ett1IQGtSnw
+:width: 100%
+```
+
 ## What is RAG?
 
 Retrieval augmented generation (RAG for short) has emerged as one of the most common patterns for leveraging LLMs in real world applications. The high level concept of RAG is a very simple two-step process:

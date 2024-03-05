@@ -26,7 +26,8 @@ extensions = [
     'sphinx.ext.autodoc',  # Automatically generate "API Reference" pages from docstrings  # NOQA: E501
     'sphinx.ext.napoleon',  # Read Google-style docstrings
     'sphinx.ext.viewcode',  # Add links from docs to source code
-    'myst_parser'  # Enable Markdown support
+    'myst_parser',  # Enable Markdown support
+    'sphinxcontrib.youtube'  # Enable embedding YouTube videos
 ]
 myst_enable_extensions = [
     'colon_fence'  # Enable note/tip/warning "admonition" blocks in Markdown
