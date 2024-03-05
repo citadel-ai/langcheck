@@ -139,7 +139,7 @@ from langcheck.utils import load_json
 production_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
 
 # 检查输出是否存在高毒性。
-langcheck.metrics.ja.toxicity(production_outputs) > 0.75
+langcheck.metrics.zh.toxicity(production_outputs) > 0.75
 
 # 检查输出是否为JSON格式
 langcheck.metrics.is_json_array(production_outputs)
