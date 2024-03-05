@@ -39,7 +39,7 @@ from langcheck.metrics.zh import sentiment
 # 输入LLM生成的文本
 generated_outputs = [
     '很高兴能够帮到您。',
-    '我会回答您的问题。',
+    '我很高兴回答您的问题。',
     '我不太清楚，请自己查找。'
 ]
 
@@ -47,7 +47,7 @@ generated_outputs = [
 sentiment(generated_outputs) > 0.5
 ```
 
-![MetricValueWithThreshold 的屏幕截图](docs/_static/MetricValueWithThreshold_output_ja.png)
+![MetricValueWithThreshold 的屏幕截图](docs/_static/MetricValueWithThreshold_output_zh.png)
 
 通过使用`assert`，您可以轻松地将LangCheck的各种指标转换为单元测试。
 
@@ -69,7 +69,7 @@ LangCheck还包含了以下用于评估LLM应用程序的指标。
 LangCheck还可以使用交互式图表来可视化数值。
 
 ```python
-选择一些指标
+# 选择一些指标
 sentiment_values = langcheck.metrics.zh.sentiment(generated_outputs)
 toxicity_values = langcheck.metrics.zh.toxicity(generated_outputs)
 
