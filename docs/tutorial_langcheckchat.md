@@ -34,7 +34,7 @@ For this tutorial, we will use [LlamaIndex](https://github.com/run-llama/llama_i
 The first thing we need to do is ***load*** our data, which in our case is a list of documentation web pages for LangCheck. In LlamaIndex, we can load data like this:
 
 ```python
-from llama_index.readers import SimpleWebPageReader, StringIterableReader
+from llama_index.readers.web import SimpleWebPageReader
 
 
 # SimpleWebPageReader reads the text on the web page, turning html into
@@ -48,11 +48,9 @@ Next, we want to ***index*** the data, meaning we want to structure the data in 
 
 ```python
 import os
-from llama_index import VectorStoreIndex
-
+from llama_index.core import VectorStoreIndex
 
 os.environ['OPENAI_API_KEY'] = 'YOUR_OPENAI_API_KEY'
-
 
 # OpenAI's "text-embedding-ada-002" is used as the embedding model by default
 index = VectorStoreIndex.from_documents(documents)
@@ -117,6 +115,38 @@ Once the question is submitted, you should first see the RAG system’s response
 - [***Source-Based Text Quality Metrics***](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.source_based_text_quality.html): LangCheck metrics based on the source text
 - ***Metric Explanations***: Some metrics (the ones that have the question mark icon) also have explanations for why the metric was given a certain score. Hover over the icon to see the explanation.
 
+An example of a source-based metric is [`factual_consistency`](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.source_based_text_quality.html#langcheck.metrics.en.source_based_text_quality.factual_consistency), which measures how factually consistent the LLM's response is with the source. It can be computed using either a local model or an OpenAI-based model.
+
+```python
+import langcheck.metrics
+
+# Using a local model
+factual_consistency_local = langcheck.metrics.factual_consistency(
+    output, source)
+
+# Using an OpenAI model (gpt-3.5-turbo by default)
+factual_consistency_openai = langcheck.metrics.factual_consistency(
+    output, source, model_type='openai')
+```
+
+We use this metric to warn the user when a response may be a hallucination in LangCheckChat. Here's an example where the LLM outputted a nonsensical answer (because we asked it to do so) and the warning was shown.
+
+![LangCheckChat 6](_static/LangCheckChat_6.png)
+
+An example of a reference-free metric is [`toxicity`](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.reference_free_text_quality.html#langcheck.metrics.en.reference_free_text_quality.toxicity), and it can also be computed using either a local model or an OpenAI-based model. Unlike source-based metrics, reference-free metrics only require the generated output.
+
+```python
+import langcheck.metrics
+
+# Using a local model
+toxicity_local = langcheck.metrics.toxicity(output)
+
+# Using an OpenAI model (gpt-3.5-turbo by default)
+toxicity_openai = langcheck.metrics.toxicity(output, model_type='openai')
+```
+
+Please refer to the files [calculate_metrics.py](https://github.com/citadel-ai/langcheckchat/blob/main/calculate_metrics.py) to see how all of the source-based and reference-free metrics are being computed in LangCheckChat in more detail.
+
 ### Step 3: (Optional) Enter a reference answer
 Optionally, if you know what the answer should be to your question, you can enter the reference answer.
 
@@ -126,6 +156,20 @@ Optionally, if you know what the answer should be to your question, you can ente
 If you entered a reference answer as outlined in step 3, you should see a new metrics table called [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.reference_based_text_quality.html). These metrics compute how similar the LLM’s answer is to the reference text in various ways.
 
 ![LangCheckChat 4](_static/LangCheckChat_4.png)
+
+As shown above, [`semantic_similarity`](https://langcheck.readthedocs.io/en/latest/langcheck.metrics.en.reference_based_text_quality.html#langcheck.metrics.en.reference_based_text_quality.semantic_similarity) is one of the available reference-based metrics, which measures the similarity between the LLM's output and the reference output in embedding space. It can be computed using either a local embedding model or an OpenAI embedding model.
+
+```python
+import langcheck.metrics
+
+# Using a local embedding model
+semantic_similarity_local = langcheck.metrics.semantic_similarity(
+    output, reference)
+
+# Using an OpenAI embedding model (text-embedding-3-small by default)
+semantic_similarity_openai = langcheck.metrics.semantic_similarity(
+    output, reference, model_type='openai')
+```
 
 ### Step 5: (Optional) Check the logs of past interactions
 At the bottom of the page, there’s a link that says “See Q&A Logs”, and clicking that will take you to the logs page. You should see your latest interaction with LangCheckChat in the logs table, and all future interactions will be similarly tracked in this table.
