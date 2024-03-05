@@ -16,9 +16,10 @@ from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer.hf_models import \
+    AutoModelForSequenceClassificationScorer
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
-from langcheck.metrics.scorer.hf_models import AutoModelForSequenceClassificationScorer
 
 _sentiment_model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 _sentiment_tokenizer = None
@@ -327,8 +328,11 @@ def _fluency_local(generated_outputs: List[str],
     Returns:
         A list of scores
     '''
-    scorer = AutoModelForSequenceClassificationScorer(language='en',
-                                                      metric='fluency', overflow_strategy=overflow_strategy)
+    scorer = AutoModelForSequenceClassificationScorer(
+        language='en',
+        metric='fluency',
+        class_weights=[0, 1],
+        overflow_strategy=overflow_strategy)
     return scorer.score(generated_outputs)
 
 

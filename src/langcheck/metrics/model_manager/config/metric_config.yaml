@@ -30,3 +30,23 @@ en:
     model_name: prithivida/parrot_fluency_model
     model_revision: e5224ff5b4109cd949ce25b0a6dff8d8cbdec7be
     loader_func: load_auto_model_for_text_classification
+
+ja:
+  fluency:
+    model_name: liwii/fluency-score-classification-ja
+    model_revision: c3733331b98075eeb25234ea816a2243843aa72f
+    tokenizer_name: line-corporation/line-distilbert-base-japanese
+    tokenizer_revision: 93bd4811608eecb95ffaaba957646efd9a909cc8
+    loader_func: load_auto_model_for_text_classification
+
+  sentiment:
+    model_name: cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
+    model_revision: 4bbfd0204cabf80eb8081058bf838c1e6ef70a69
+    loader_func: load_auto_model_for_text_classification
+
+  toxicity:
+    model_name: Alnusjaponica/toxicity-score-multi-classification
+    model_revision: f05dea2ed024b186a15fa2d0c56bbd65fbc60dba
+    tokenizer_name: line-corporation/line-distilbert-base-japanese
+    tokenizer_revision: 93bd4811608eecb95ffaaba957646efd9a909cc8
+    loader_func: load_auto_model_for_text_classification

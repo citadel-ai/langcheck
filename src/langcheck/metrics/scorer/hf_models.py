@@ -1,26 +1,36 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
-
-from ._base import BaseSingleScorer
 from transformers import BatchEncoding
 
 from langcheck._handle_logs import _handle_logging_level
+
+from ._base import BaseSingleScorer
 
 
 class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
     '''Scorer using Hugging Face's AutoModelForSequenceClassification.
     '''
 
-    def __init__(self, language, metric, overflow_strategy: str = 'nullify'):
+    def __init__(self,
+                 language,
+                 metric,
+                 class_weights,
+                 overflow_strategy: str = 'nullify',
+                 max_input_length: Optional[int] = None):
         self.overflow_strategy = overflow_strategy
         from langcheck.metrics.model_manager import manager
         tokenizer, model = manager.fetch_model(language=language, metric=metric)
 
         self.tokenizer = tokenizer
         self.model = model
+        self.class_weights = class_weights
+        if max_input_length is not None:
+            self.max_input_length: int = max_input_length
+        else:
+            self.max_input_length = self.model.config.max_position_embeddings  # type: ignore
 
     def _tokenize(self, inputs: list[str]) -> Tuple[BatchEncoding, list[bool]]:
         '''Tokenize the inputs. It also does the validation on the token length,
@@ -28,10 +38,11 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
         mode is 'raise', it raises an error when the token length is invalid.
         '''
         truncated_tokens = self.tokenizer(  # type: ignore
-                inputs,
-                padding=True,
-                truncation=True,
-                return_tensors='pt')
+            inputs,
+            padding=True,
+            truncation=True,
+            max_length=self.max_input_length,
+            return_tensors='pt')
 
         if self.overflow_strategy == 'truncate':
             return (truncated_tokens, [True] * len(inputs))
@@ -46,23 +57,20 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
 
         # Return the padded & truncated tokens.
         # The user needs to exclude the invalid tokens from the results.
-        return (
-            truncated_tokens,
-            input_validation_results)
+        return (truncated_tokens, input_validation_results)
 
     def _validate_inputs(self, inputs: list[str]) -> list[bool]:
         '''Validation based on the maximum input length of the model.
         '''
 
         validation_results = []
-        max_valid_input_length: int = self.tokenizer.model_max_length  # type: ignore
         for input_str in inputs:
             # Tokenize the input and get the length of the input_ids
             # Suppress the warning because we intentionally generate the
             # tokens longer than the maximum length.
             with _handle_logging_level():
                 input_ids = self.tokenizer.encode(input_str)  # type: ignore
-            validation_results.append(len(input_ids) <= max_valid_input_length)
+            validation_results.append(len(input_ids) <= self.max_input_length)
 
         return validation_results
 
@@ -102,4 +110,9 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
         The users can override this method to customize the behavior.
         '''
         probs = torch.nn.functional.softmax(logits, dim=1)
-        return probs[:, 1].tolist()
+        scores = torch.zeros(probs.shape[0], dtype=torch.float32)
+
+        for i, class_weight in enumerate(self.class_weights):
+            scores += probs[:, i] * class_weight
+
+        return scores.tolist()

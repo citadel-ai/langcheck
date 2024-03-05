@@ -29,7 +29,7 @@ VALID_METRICS = [
     'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency',
     'fluency'
 ]
-VALID_LANGUAGE = ['zh', 'en']
+VALID_LANGUAGE = ['zh', 'en', 'ja', 'de']
 
 
 def check_model_availability(model_name: str, revision: Optional[str]) -> bool:
