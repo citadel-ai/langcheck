@@ -10,7 +10,7 @@ In this tutorial, we will explore how to build a very simple RAG system (which w
 
 Here's a video preview of the LangCheckChat app that we'll discuss in this tutorial:
 
-```{youtube} Ett1IQGtSnw
+```{vimeo} 919566889
 :width: 100%
 ```
 

@@ -27,7 +27,7 @@ extensions = [
     'sphinx.ext.napoleon',  # Read Google-style docstrings
     'sphinx.ext.viewcode',  # Add links from docs to source code
     'myst_parser',  # Enable Markdown support
-    'sphinxcontrib.youtube'  # Enable embedding YouTube videos
+    'sphinxcontrib.youtube'  # Enable embedding Vimeo/YouTube videos
 ]
 myst_enable_extensions = [
     'colon_fence'  # Enable note/tip/warning "admonition" blocks in Markdown
