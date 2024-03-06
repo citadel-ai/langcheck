@@ -34,6 +34,9 @@ VALID_LANGUAGE = ['zh', 'en', 'ja', 'de']
 
 def check_model_availability(model_name: str, revision: Optional[str]) -> bool:
     # TODO: add local cached model availability check for offline environment
+    print(
+        f"Checking model availability for {model_name} with revision {revision}"
+    )
     if revision is None or revision == "":
         url = f"https://huggingface.co/api/models/{model_name}"
     else:

@@ -26,6 +26,11 @@ zh:
     loader_func: load_auto_model_for_seq2seq
 
 en:
+  semantic_similarity:
+      model_name: sentence-transformers/all-mpnet-base-v2
+      model_revision: c46f31f8d119ac648208de9fba297c447a5a4474
+      loader_func: load_sentence_transformers
+
   fluency:
     model_name: prithivida/parrot_fluency_model
     model_revision: e5224ff5b4109cd949ce25b0a6dff8d8cbdec7be

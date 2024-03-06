@@ -7,7 +7,7 @@ from transformers import BatchEncoding
 
 from langcheck._handle_logs import _handle_logging_level
 
-from ._base import BaseSingleScorer
+from ._base import BaseSimilarityScorer, BaseSingleScorer
 
 
 class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
@@ -116,3 +116,16 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
             scores += probs[:, i] * class_weight
 
         return scores.tolist()
+
+
+class SentenceTransformerSimilarityScorer(BaseSimilarityScorer):
+    '''Scorer using SentenceTransformer.
+    '''
+
+    def __init__(self, language, metric='semantic_similarity'):
+
+        from langcheck.metrics.model_manager import manager
+        self.model = manager.fetch_model(language=language, metric=metric)
+
+    def _embed(self, inputs: list[str]) -> torch.Tensor:
+        return self.model.encode(inputs, convert_to_tensor=True)  # type: ignore
