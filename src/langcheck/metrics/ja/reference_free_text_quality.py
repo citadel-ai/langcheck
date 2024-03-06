@@ -3,13 +3,8 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Tuple
 
 import regex as re
-import torch
 from openai import OpenAI
-from transformers.models.auto.modeling_auto import \
-    AutoModelForSequenceClassification
-from transformers.models.auto.tokenization_auto import AutoTokenizer
 
-from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
