@@ -62,11 +62,14 @@ def load_auto_model_for_text_classification(
     '''
     if tokenizer_name is None:
         tokenizer_name = model_name
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name,
-                                              trust_remote_code=True,
-                                              revision=tokenizer_revision)
-    model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, revision=model_revision)
+    # There are "Some weights are not used warning" for some models, but we
+    # ignore it because that is intended.
+    with _handle_logging_level():
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name,
+                                                  trust_remote_code=True,
+                                                  revision=tokenizer_revision)
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_name, revision=model_revision)
     return tokenizer, model  # type: ignore
 
 

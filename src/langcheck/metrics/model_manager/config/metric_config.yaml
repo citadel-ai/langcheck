@@ -31,6 +31,11 @@ en:
     model_revision: e5224ff5b4109cd949ce25b0a6dff8d8cbdec7be
     loader_func: load_auto_model_for_text_classification
 
+  sentiment:
+    model_name: cardiffnlp/twitter-roberta-base-sentiment-latest
+    model_revision: 4ba3d4463bd152c9e4abd892b50844f30c646708
+    loader_func: load_auto_model_for_text_classification
+
 ja:
   fluency:
     model_name: liwii/fluency-score-classification-ja
