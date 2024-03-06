@@ -2,15 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-import torch
 from openai import OpenAI
 from rouge_score import rouge_scorer
-from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.de._tokenizers import DeTokenizer
-from langcheck.metrics.en.reference_based_text_quality import \
-    semantic_similarity as en_semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import \
     SentenceTransformerSimilarityScorer
