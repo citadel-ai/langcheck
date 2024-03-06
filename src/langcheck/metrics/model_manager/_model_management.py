@@ -34,9 +34,6 @@ VALID_LANGUAGE = ['zh', 'en', 'ja', 'de']
 
 def check_model_availability(model_name: str, revision: Optional[str]) -> bool:
     # TODO: add local cached model availability check for offline environment
-    print(
-        f"Checking model availability for {model_name} with revision {revision}"
-    )
     if revision is None or revision == "":
         url = f"https://huggingface.co/api/models/{model_name}"
     else:
@@ -148,22 +145,25 @@ class ModelManager:
                     raise ValueError(
                         f'loader type should in {VALID_LOADER_FUNCTION}')
 
-                # Check model availability with revision if specified.
-                model_name = model_setting.get('model_name')
-                model_revision = model_setting.get('model_revision')
-                if not check_model_availability(model_name, model_revision):
-                    raise ValueError(
-                        f'Cannot find {model_name} with {model_revision} at Huggingface Hub'  # NOQA:E501
-                    )
-                # Check tokenizer availability with revision if specified.
-                tokenizer_name = model_setting.get('tokenizer_name')
-                if tokenizer_name is not None and tokenizer_name != model_name:
-                    tokenizer_revision = model_setting.get('tokenizer_revision')
-                    if not check_model_availability(tokenizer_name,
-                                                    tokenizer_revision):
-                        raise ValueError(
-                            f'Cannot find {tokenizer_name} with {tokenizer_revision} ay Huggingface Hub'  # NOQA:E501
-                        )
+                # TODO: Check the model and tokenizer availability
+                # Given the number of models and tokenizers, it is highly likely
+                # that we get a read time out error.
+
+                # model_name = model_setting.get('model_name')
+                # model_revision = model_setting.get('model_revision')
+                # if not check_model_availability(model_name, model_revision):
+                #     raise ValueError(
+                #         f'Cannot find {model_name} with {model_revision} at Huggingface Hub'  # NOQA:E501
+                #     )
+
+                # tokenizer_name = model_setting.get('tokenizer_name')
+                # if tokenizer_name is not None and tokenizer_name != model_name:
+                #     tokenizer_revision = model_setting.get('tokenizer_revision')
+                #     if not check_model_availability(tokenizer_name,
+                #                                     tokenizer_revision):
+                #         raise ValueError(
+                #             f'Cannot find {tokenizer_name} with {tokenizer_revision} ay Huggingface Hub'  # NOQA:E501
+                #         )
 
     def __set_model_for_metric(self, language: str, metric: str,
                                model_name: str, loader_func: str,
