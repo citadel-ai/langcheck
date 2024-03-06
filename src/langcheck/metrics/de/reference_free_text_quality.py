@@ -2,13 +2,8 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
 
-import torch
 from openai import OpenAI
-from transformers.models.auto.modeling_auto import \
-    AutoModelForSequenceClassification
-from transformers.models.auto.tokenization_auto import AutoTokenizer
 
-from langcheck._handle_logs import _handle_logging_level
 from langcheck.metrics._detoxify import Detoxify
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
@@ -21,13 +16,10 @@ from langcheck.metrics.en.reference_free_text_quality import \
 from langcheck.metrics.en.reference_free_text_quality import \
     fluency as en_fluency
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer.hf_models import \
+    AutoModelForSequenceClassificationScorer
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
-
-# this model seems to work much better than the cardiffnlp one; typo in the name
-_sentiment_model_path = "citizenlab/twitter-xlm-roberta-base-sentiment-finetunned"  # NOQA: E501
-_sentiment_tokenizer = None
-_sentiment_model = None
 
 _translation_model_path = 'Helsinki-NLP/opus-mt-de-en'
 
@@ -37,12 +29,13 @@ LANG = 'de'
 
 
 def sentiment(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        local_overflow_strategy: str = 'nullify'
+) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
@@ -97,37 +90,7 @@ def sentiment(
         scores, explanations = _sentiment_openai(generated_outputs, model_type,
                                                  openai_client, openai_args)
     else:
-        global _sentiment_tokenizer, _sentiment_model
-
-        if _sentiment_tokenizer is None or _sentiment_model is None:
-            _sentiment_tokenizer = AutoTokenizer.from_pretrained(
-                _sentiment_model_path)
-
-            # There is a "Some weights are not used warning" but we ignore it
-            # because that is intended.
-            with _handle_logging_level():
-                _sentiment_model = (AutoModelForSequenceClassification.
-                                    from_pretrained(_sentiment_model_path))
-
-        input_tokens = _sentiment_tokenizer(generated_outputs,
-                                            return_tensors='pt',
-                                            padding=True)
-
-        batch_size = 8
-        scores = []
-        with torch.no_grad():
-            for i in tqdm_wrapper(
-                    range(0, len(generated_outputs), batch_size),
-                    total=(len(generated_outputs) + batch_size - 1) //
-                    batch_size):
-                batch_input_tokens = {
-                    k: v[i:i + batch_size] for k, v in input_tokens.items()
-                }
-                # Probabilities of [negative, neutral, positive]
-                probs = torch.nn.functional.softmax(
-                    _sentiment_model(**batch_input_tokens).logits, dim=1)
-                scores.extend((probs[:, 1] / 2 + probs[:, 2]).tolist())
-
+        scores = _sentiment_local(generated_outputs, local_overflow_strategy)
         explanations = None
 
     return MetricValue(metric_name='sentiment',
@@ -138,6 +101,32 @@ def sentiment(
                        explanations=explanations,
                        metric_values=scores,
                        language=LANG)
+
+
+def _sentiment_local(generated_outputs: List[str],
+                     overflow_strategy: str) -> List[Optional[float]]:
+    '''Calculates the sentiment scores of generated outputs using the
+    twitter-xlm-roberta-base-sentiment-finetunned model. This metric takes on
+    float values between [0, 1], where 0 is negative sentiment and 1 is positive
+    sentiment.
+    Ref:
+        https://huggingface.co/citizenlab/twitter-xlm-roberta-base-sentiment-finetunned
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        overflow_strategy: The strategy to handle inputs that are longer than
+            the maximum input length of the model.
+
+    Returns:
+        A list of scores
+    '''
+    scorer = AutoModelForSequenceClassificationScorer(
+        language='de',
+        metric='sentiment',
+        class_weights=[0, 0.5, 1],
+        overflow_strategy=overflow_strategy,
+        max_input_length=512)
+    return scorer.score(generated_outputs)
 
 
 def _sentiment_openai(
