@@ -15,7 +15,7 @@ from langcheck.metrics.en.reference_free_text_quality import \
 from langcheck.metrics.en.reference_free_text_quality import \
     fluency as en_fluency
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.metrics.scorer._detoxify_models import DetoxifyScorer
+from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import \
     AutoModelForSequenceClassificationScorer
 from langcheck.stats import compute_stats

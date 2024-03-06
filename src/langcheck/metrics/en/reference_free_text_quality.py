@@ -10,7 +10,7 @@ from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.metrics.scorer._detoxify_models import DetoxifyScorer
+from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import \
     AutoModelForSequenceClassificationScorer
 from langcheck.stats import compute_stats
