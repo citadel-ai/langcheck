@@ -20,7 +20,7 @@ def sentiment(
         model_type: str = 'local',
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'nullify'
+        local_overflow_strategy: str = 'truncate'
 ) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
@@ -213,7 +213,7 @@ def toxicity(
         model_type: str = 'local',
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'nullify'
+        local_overflow_strategy: str = 'truncate'
 ) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
@@ -408,7 +408,7 @@ def fluency(
         model_type: str = 'local',
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'nullify'
+        local_overflow_strategy: str = 'truncate'
 ) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.

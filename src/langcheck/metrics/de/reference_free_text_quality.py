@@ -32,7 +32,7 @@ def sentiment(
         model_type: str = 'local',
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'nullify'
+        local_overflow_strategy: str = 'truncate'
 ) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
@@ -73,6 +73,12 @@ def sentiment(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        local_overflow_strategy: The strategy to handle the inputs that are too
+            long for the local model. The supported strategies are 'nullify',
+            'truncate', and 'raise'. If 'nullify', the outputs that are too long
+            will be assigned a score of None. If 'truncate', the outputs that
+            are too long will be truncated. If 'raise', an error will be raised
+            when the outputs are too long. The default value is 'nullify'.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -400,7 +406,7 @@ def toxicity(
         model_type: str = 'local',
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'nullify'
+        local_overflow_strategy: str = 'truncate'
 ) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
