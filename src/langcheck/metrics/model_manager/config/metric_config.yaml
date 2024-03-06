@@ -42,6 +42,11 @@ en:
     loader_func: load_auto_model_for_text_classification
 
 ja:
+  semantic_similarity:
+    model_name: sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+    model_revision: 33a22e7fb3de6a804cf4e31cf0620760f41efc90
+    loader_func: load_sentence_transformers
+
   fluency:
     model_name: liwii/fluency-score-classification-ja
     model_revision: c3733331b98075eeb25234ea816a2243843aa72f
@@ -62,6 +67,11 @@ ja:
     loader_func: load_auto_model_for_text_classification
 
 de:
+  semantic_similarity:
+    model_name: sentence-transformers/distiluse-base-multilingual-cased-v1
+    model_revision: 2620b63ea1495718c256925a2b22cd9fb1d20cbd
+    loader_func: load_sentence_transformers
+
   sentiment:
     model_name: citizenlab/twitter-xlm-roberta-base-sentiment-finetunned
     model_revision: a9381f1d9e6f8aac74155964c2f6ea9a63a9e9a6

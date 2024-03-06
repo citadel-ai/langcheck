@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-import torch
 from openai import OpenAI
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
-from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
-from langcheck.metrics.en.reference_based_text_quality import \
-    semantic_similarity as en_semantic_similarity
 from langcheck.metrics.ja._tokenizers import JanomeTokenizer
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer.hf_models import \
+    SentenceTransformerSimilarityScorer
+from langcheck.metrics.scorer.openai_models import OpenAISimilarityScorer
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 
@@ -73,44 +72,18 @@ def semantic_similarity(
         'local', 'openai', 'azure_openai'
     ], ('Unsupported embedding model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
-
-    if model_type == 'openai' or model_type == 'azure_openai':
-        # We can use the same API as english semantic_similarity to compare the
-        # similarity
-        metric_value = en_semantic_similarity(generated_outputs,
-                                              reference_outputs, prompts,
-                                              model_type, openai_client,
-                                              openai_args)
-        metric_value.language = 'ja'
-        return metric_value
-
-    # According to the blog post,
-    # 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2' has the best
-    # performance on Japanese dataset.
-    # Ref:
-    # https://tech.yellowback.net/posts/sentence-transformers-japanese-models
-    model = SentenceTransformer(
-        'sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
-    batch_size = 8
-    scores = []
-    with torch.no_grad():
-        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                              total=(len(generated_outputs) + batch_size - 1) //
-                              batch_size):
-            batch_generated_outputs = generated_outputs[i:i + batch_size]
-            batch_reference_outputs = reference_outputs[i:i + batch_size]
-            generated_embeddings = model.encode(batch_generated_outputs)
-            reference_embeddings = model.encode(batch_reference_outputs)
-            cosine_scores = util.pairwise_cos_sim(
-                generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
-                reference_embeddings,  # type: ignore[reportGeneralTypeIssues]
-            )
-            # Numerical instability can cause
-            # the dot product of almost identical
-            # vectors to exceed 1.0 slightly,
-            # so we clip the outputs
-            cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
-            scores.extend(cosine_scores.tolist())
+    if model_type == 'local':
+        # According to the blog post,
+        # 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2' has the best
+        # performance on Japanese dataset.
+        # Ref:
+        # https://tech.yellowback.net/posts/sentence-transformers-japanese-models
+        scorer = SentenceTransformerSimilarityScorer(language='ja')
+    else:  # openai or azure_openai
+        scorer = OpenAISimilarityScorer(model_type=model_type,
+                                        openai_client=openai_client,
+                                        openai_args=openai_args)
+    scores = scorer.score(generated_outputs, reference_outputs)
 
     return MetricValue(metric_name='semantic_similarity',
                        prompts=prompts,
