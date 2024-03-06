@@ -53,7 +53,7 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
                 input_validation_results):
             raise ValueError('Some of the inputs are too long.')
 
-        assert self.overflow_strategy == 'nullify'
+        assert self.overflow_strategy == 'nullify', 'Overdfow strategy is invalid. The value should be either "raise", "truncate" or "nullify".'
 
         # Return the padded & truncated tokens.
         # The user needs to exclude the invalid tokens from the results.

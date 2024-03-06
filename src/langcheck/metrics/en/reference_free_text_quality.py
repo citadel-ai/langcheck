@@ -4,19 +4,17 @@ from typing import Dict, List, Optional, Tuple
 
 from openai import OpenAI
 
-from langcheck.metrics._detoxify import Detoxify
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer._detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import \
     AutoModelForSequenceClassificationScorer
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
-
-_toxicity_model = None
 
 
 def sentiment(
@@ -409,12 +407,13 @@ def _fluency_openai(
 
 
 def toxicity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        local_overflow_strategy: str = 'nullify'
+) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
@@ -450,6 +449,13 @@ def toxicity(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        local_overflow_strategy: The strategy to handle the inputs that are too
+            long for the local model. The supported strategies are 'nullify',
+            'truncate', and 'raise'. If 'nullify', the outputs that are too long
+            will be assigned a score of None. If 'truncate', the outputs that
+            are too long will be truncated. If 'raise', an error will be raised
+            when the outputs are too long. The default value is 'nullify'.
+
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -462,7 +468,7 @@ def toxicity(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
-        scores = _toxicity_local(generated_outputs)
+        scores = _toxicity_local(generated_outputs, local_overflow_strategy)
         explanations = None
     else:  # openai or azure_openai
         scores, explanations = _toxicity_openai(generated_outputs, model_type,
@@ -478,7 +484,8 @@ def toxicity(
                        language='en')
 
 
-def _toxicity_local(generated_outputs: List[str]) -> List[float]:
+def _toxicity_local(generated_outputs: List[str],
+                    overflow_strategy: str) -> List[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs using the Detoxify
     model. This metric takes on float values between [0, 1], where 0 is low
     toxicity and 1 is high toxicity.
@@ -492,20 +499,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     Returns:
         A list of scores
     '''
-    global _toxicity_model
-    if _toxicity_model is None:
-        _toxicity_model = Detoxify()
-
-    scores = []
-    batch_size = 8
-    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                          total=(len(generated_outputs) + batch_size - 1) //
-                          batch_size):
-        scores.extend(
-            _toxicity_model.predict(generated_outputs[i:i +
-                                                      batch_size])['toxicity'])
-
-    return scores
+    return DetoxifyScorer(
+        overflow_strategy=overflow_strategy).score(generated_outputs)
 
 
 def _toxicity_openai(
