@@ -108,6 +108,8 @@ def _sentiment_local(generated_outputs: List[str],
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        overflow_strategy: The strategy to handle inputs that are longer than
+            the maximum input length of the model.
 
     Returns:
         A list of scores
@@ -300,6 +302,8 @@ def _fluency_local(generated_outputs: List[str],
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        overflow_strategy: The strategy to handle inputs that are longer than
+            the maximum input length of the model.
 
     Returns:
         A list of scores
