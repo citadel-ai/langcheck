@@ -30,7 +30,7 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
         if max_input_length is not None:
             self.max_input_length: int = max_input_length
         else:
-            self.max_input_length = self.model.config.max_position_embeddings  # type: ignore
+            self.max_input_length = self.model.config.max_position_embeddings  # type: ignore # NOQA: E501
 
     def _tokenize(self, inputs: list[str]) -> Tuple[BatchEncoding, list[bool]]:
         '''Tokenize the inputs. It also does the validation on the token length,
@@ -53,7 +53,7 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
                 input_validation_results):
             raise ValueError('Some of the inputs are too long.')
 
-        assert self.overflow_strategy == 'nullify', 'Overflow strategy is invalid. The value should be either "raise", "truncate" or "nullify".'
+        assert self.overflow_strategy == 'nullify', 'Overflow strategy is invalid. The value should be either "raise", "truncate" or "nullify".'  # NOQA: E501
 
         # Return the padded & truncated tokens.
         # The user needs to exclude the invalid tokens from the results.

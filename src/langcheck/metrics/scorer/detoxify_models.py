@@ -105,7 +105,7 @@ class DetoxifyScorer(BaseSingleScorer):
                 input_validation_results):
             raise ValueError('Some of the inputs are too long.')
 
-        assert self.overflow_strategy == 'nullify', 'Overflow strategy is invalid. The value should be either "raise", "truncate" or "nullify".'
+        assert self.overflow_strategy == 'nullify', 'Overflow strategy is invalid. The value should be either "raise", "truncate" or "nullify".'  # NOQA: E501
 
         # Return the padded & truncated tokens.
         # The user needs to exclude the invalid tokens from the results.

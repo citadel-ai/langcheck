@@ -74,8 +74,8 @@ def semantic_similarity(
         'The supported ones are ["local", "openai", "azure_openai"]')
     if model_type == 'local':
         # According to the blog post,
-        # 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2' has the best
-        # performance on Japanese dataset.
+        # 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2' has the
+        # best performance on Japanese dataset.
         # Ref:
         # https://tech.yellowback.net/posts/sentence-transformers-japanese-models
         scorer = SentenceTransformerSimilarityScorer(language='ja')

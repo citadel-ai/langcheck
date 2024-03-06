@@ -157,8 +157,8 @@ class ModelManager:
                 #     )
 
                 # tokenizer_name = model_setting.get('tokenizer_name')
-                # if tokenizer_name is not None and tokenizer_name != model_name:
-                #     tokenizer_revision = model_setting.get('tokenizer_revision')
+                # if tokenizer_name is not None and tokenizer_name != model_name: # NOQA: E501
+                #     tokenizer_revision = model_setting.get('tokenizer_revision') # NOQA: E501
                 #     if not check_model_availability(tokenizer_name,
                 #                                     tokenizer_revision):
                 #         raise ValueError(
