@@ -17,9 +17,6 @@ keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'chikkarpy',
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
-    'fugashi',  # For tokenizer of metrics.ja.toxicity()
-    'janome >= 0.3.1',
-    'hanlp >= 2.1.0b33',
     "nlpaug",
     'nltk >= 3',
     'openai >= 1',
@@ -50,6 +47,20 @@ dev = [
     "sphinx-book-theme",
     "myst-parser",
     "ipykernel"
+]
+de = []
+en = []
+zh = [
+    'hanlp >= 2.1.0b33',
+]
+ja = [
+    'fugashi',  # For tokenizer of metrics.ja.toxicity()
+    'janome >= 0.3.1',
+]
+all = [
+    'hanlp >= 2.1.0b33',
+    'fugashi',  # For tokenizer of metrics.ja.toxicity()
+    'janome >= 0.3.1',
 ]
 optional = [
     "mecab-python3 >= 1.0.4",
