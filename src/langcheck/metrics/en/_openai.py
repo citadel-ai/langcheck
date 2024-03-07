@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from typing import Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
@@ -9,11 +9,17 @@ from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 class OpenAIBasedEvaluator:
     '''Evaluator class based on OpenAI's API.'''
 
-    def __init__(self, assessment_to_score_mapping: Dict[str, float],
-                 function_name: str, function_description: str,
-                 argument_name: str, argument_description: str,
-                 client_type: str, client: Optional[OpenAI],
-                 openai_args: Optional[Dict[str, str]]) -> None:
+    def __init__(self,
+                 assessment_to_score_mapping: Dict[str, float],
+                 function_name: str,
+                 function_description: str,
+                 argument_name: str,
+                 argument_description: str,
+                 client_type: str,
+                 client: Optional[OpenAI],
+                 openai_args: Optional[Dict[str, str]],
+                 *,
+                 use_async=False) -> None:
         '''
         Initialize the OpenAIBasedEvaluator with given parameters.
 
@@ -27,11 +33,12 @@ class OpenAIBasedEvaluator:
                 the name of the metric to evaluate (e.g. sentiment).
             argument_description: Description of the argument
             client_type: The type of OpenAI client ('openai' or 'azure_openai')
-            client: (Optional) OpenAI or AzureOpenAI client. If this is None,
-                we will attempt to create a default client depending on the
-                ``client_type``.
+            client: (Optional) OpenAI, AzureOpenAI, AsyncOpenAI or
+                AsyncAzureOpenAI client. If this is None, we will attempt to
+                create a default client depending on the ``client_type``.
             openai_args: (Optional) Dict of additional args to pass in to the
                 ``client.chat.completions.create`` function
+            use_async: (Optional) If True, the async client will be used.
         '''
         self._client_type = client_type
         if self._client_type == 'azure_openai' and not openai_args:
@@ -43,20 +50,25 @@ class OpenAIBasedEvaluator:
         if client:
             self._client = client
         elif self._client_type == 'openai':
-            self._client = OpenAI()
-            self._async_client = AsyncOpenAI()
+            if use_async:
+                self._client = AsyncOpenAI()
+            else:
+                self._client = OpenAI()
         elif self._client_type == 'azure_openai':
             # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
             kargs = {
                 "api_key": os.getenv("AZURE_OPENAI_KEY"),
                 "api_version": os.getenv("OPENAI_API_VERSION"),
-                "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT")
+                "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
             }
-            self._client = AzureOpenAI(**kargs)  # type: ignore
-            self._async_client = AsyncAzureOpenAI(**kargs)  # type: ignore
+            if use_async:
+                self._client = AsyncAzureOpenAI(**kargs)  # type: ignore
+            else:
+                self._client = AzureOpenAI(**kargs)  # type: ignore
         else:
             raise AssertionError(f'Unexpected client type "{client_type}"')
 
+        self._use_async = use_async
         self._assessment_to_score_mapping = assessment_to_score_mapping
         self._function_name = function_name
         self._function_description = function_description
@@ -66,9 +78,8 @@ class OpenAIBasedEvaluator:
 
     def get_score(
         self,
-        prompt: str,
+        prompt: str | List[str],
         function_call_prompt_template: Callable,
-        no_async: bool = True,
     ) -> Tuple[Optional[float], Optional[str]]:
         '''
         Retrieves the score and unstructured assessment for a given prompt using
@@ -97,26 +108,27 @@ class OpenAIBasedEvaluator:
         # First, call the API to get an unstructured assessment. The response
         # should include both the assessment itself and the model's reasoning
         # for that assessment.
-        messages = [{"role": "user", "content": prompt}]
-        kargs = {"model": "gpt-3.5-turbo", "seed": 123, "messages": messages}
-        kargs.update(self._openai_args or {})
+        if isinstance(prompt, str):
+            prompt = [prompt]
+        # Call the API to get an unstructured assessments.
         try:
-            if no_async:
-                response = self._client.chat.completions.create(**kargs)
-            else:
-                response = asyncio.run(_async_chat_completions(self, **kargs))
-            unstructured_assessment = response.choices[0].message.content
+            kargs = {"model": "gpt-3.5-turbo", "seed": 123}
+            kargs.update(self._openai_args or {})
+
+            responses = self._call_api(prompt, kargs=kargs)
+            unstructured_assessments = list(
+                map(lambda response: response.choices[0].message.content,
+                    responses))
         except Exception as e:
             print(f'OpenAI failed to return an unstructured assessment: {e}')
-            print(f'Prompt that triggered the failure is:\n{prompt}')
             return None, None
-
         # Next, call the API leveraging function calling to get a structured
         # assessment
-        fn_call_messages = [{
-            "role": "user",
-            "content": function_call_prompt_template(unstructured_assessment)
-        }]
+        fn_call_messages = map(
+            lambda unstructured_assessment: function_call_prompt_template(
+                unstructured_assessment),
+            unstructured_assessments,
+        )
         argument_options = list(self._assessment_to_score_mapping.keys())
         functions = [{
             "name": self._function_name,
@@ -133,46 +145,67 @@ class OpenAIBasedEvaluator:
                 "required": [self._argument_name],
             },
         }]
-        kargs = {
-            "messages": fn_call_messages,
-            "seed": 123,
-            "functions": functions,
-            "function_call": {
-                "name": self._function_name
-            },
-            "model": "gpt-3.5-turbo",
-        }
-        kargs.update(self._openai_args or {})
         try:
-            if no_async:
-                response = self._client.chat.completions.create(**kargs)
-            else:
-                response = asyncio.run(_async_chat_completions(self, **kargs))
-            assert response.choices[0].message.function_call is not None
-            function_args = json.loads(
-                response.choices[0].message.function_call.arguments)
-            assessment = function_args.get(self._argument_name)
+            kargs = {
+                "seed": 123,
+                "functions": functions,
+                "function_call": {
+                    "name": self._function_name
+                },
+                "model": "gpt-3.5-turbo"
+            }
+            kargs.update(self._openai_args or {})
+
+            responses = self._call_api(
+                fn_call_messages,
+                kargs=kargs,
+            )
+            assert any([
+                response.choices[0].message.function_call is not None
+                for response in responses
+            ])
+            function_args = map(
+                lambda response: json.loads(response.choices[0].message.
+                                            function_call.arguments),
+                responses,
+            )
+            assessments = list(
+                map(
+                    lambda function_arg: function_arg.get(self._argument_name),
+                    function_args,
+                ))
         except Exception as e:
             print(f'OpenAI failed to return a structured assessment: {e}')
-            print('Prompt that triggered the failure is:\n'
-                  f'{function_call_prompt_template(unstructured_assessment)}')
             return None, None
 
-        if assessment not in self._assessment_to_score_mapping:
+        if any([
+                assessment not in self._assessment_to_score_mapping
+                for assessment in assessments
+        ]):
             # By leveraging the function calling API, this should be pretty
             # rare, but we're dealing with LLMs here so nothing is absolute!
-            print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
+            print(
+                f'OpenAI returned an unrecognized assessment: "{assessments}"')
             print(f'Prompt that triggered the failure is:\n{prompt}')
             return None, None
 
         return self._assessment_to_score_mapping[
-            assessment], unstructured_assessment
+            assessments], unstructured_assessments
 
+    def _call_api(self, prompts: List[str], kargs: Dict[str, str]) -> Dict:
+        # Generates input dict for API call. This procedure is separated as a
+        # method because yapf fails when there are too much nests.
+        def _generate_model_input(prompt: str) -> Dict:
+            return {"messages": [{"role": "user", "content": prompt}], **kargs}
 
-async def _async_chat_completions(evaluator: OpenAIBasedEvaluator, **kargs):
-    try:
-        response = await evaluator._async_client.chat.completions.create(**kargs
-                                                                        )
-        return response
-    except Exception as e:
-        raise e
+        model_inputs = list(map(_generate_model_input, prompts))
+        if self._use_async:
+            responses = asyncio.gather(*map(
+                lambda model_input: self._client.chat.completions.create(
+                    **model_input), model_inputs))
+        else:
+            responses = [
+                self._client.chat.completions.create(**model_input)
+                for model_input in model_inputs
+            ]
+        return responses
