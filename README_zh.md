@@ -8,11 +8,11 @@
 [![下载次数](https://static.pepy.tech/badge/langcheck)](https://pepy.tech/project/langcheck)
 ![GitHub](https://img.shields.io/github/license/citadel-ai/langcheck)
 
-这是一个简单的Python库，用于评估LLM应用程序。
+一个简单易用的用于评价LLM应用程序的python库。
 
 [安装](#安装) •
 [使用示例](#使用示例) •
-[快速开始](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
+[快速入门](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [文档](https://langcheck.readthedocs.io/en/latest/index.html) •
 [English](README.md) •
 [日本語](README_ja.md) •
@@ -26,13 +26,13 @@
 pip install langcheck
 ```
 
-如果安装不成功，请查看[常见问题解答(英文)](https://langcheck.readthedocs.io/en/latest/installation.html#installation-faq)。
+如果安装遇到问题，请查看[常见问题解答(英文)](https://langcheck.readthedocs.io/en/latest/installation.html#installation-faq)。
 
 ## 使用示例
 
 ### 文本评估
 
-您可以使用各种指标来评估LLM生成的文本。
+通过使用langcheck已经支持的评价指标， 您可以快速的检查LLM应用程序生成内容的质量。
 
 ```python
 from langcheck.metrics.zh import sentiment
@@ -44,13 +44,13 @@ generated_outputs = [
     '我不太清楚，请自己查找。'
 ]
 
-# 分析文本中的情绪表达（也可以基于阈值进行测试）
+# 评估生成文本内容的倾向性（支持过滤）
 sentiment(generated_outputs) > 0.5
 ```
 
 ![MetricValueWithThreshold 的屏幕截图](docs/_static/MetricValueWithThreshold_output_zh.png)
 
-通过使用`assert`，您可以轻松地将LangCheck的各种指标转换为单元测试。
+通过使用`assert`，您可以轻松地在单元测试里使用langcheck的评价指标。
 
 ```python
 assert sentiment(generated_outputs) > 0.5
@@ -67,28 +67,28 @@ LangCheck还包含了以下用于评估LLM应用程序的指标。
 
 ### 数值可视化
 
-LangCheck还可以使用交互式图表来可视化数值。
+LangCheck还支持对结果进行简单的可交互可视化。
 
 ```python
 # 选择一些指标
 sentiment_values = langcheck.metrics.zh.sentiment(generated_outputs)
 toxicity_values = langcheck.metrics.zh.toxicity(generated_outputs)
 
-# 关于一个指标的交互式散点图
+# 绘制散点图
 sentiment_values.scatter()
 ```
 
 ![Scatter plot for one metric](docs/_static/scatter_one_metric_ja.gif)
 
 ```python
-# 关于多个指标的交互式散点图
+# 绘制多指标散点图
 langcheck.plot.scatter(sentiment_values, toxicity_values)
 ```
 
 ![Scatter plot for two metrics](docs/_static/scatter_two_metrics_ja.png)
 
 ```python
-# 交互式直方图
+# 绘制统计直方图
 toxicity_values.histogram()
 ```
 
@@ -132,23 +132,23 @@ def test_json_structure(generated_outputs):
 
 您也可以利用LangCheck来监控生产环境中LLM的输出。
 
-请保存LLM的输出，并输入到LangCheck中。
+请保存LLM应用程序的输出，并输入到LangCheck中。
 
 ```python
 from langcheck.utils import load_json
 
 production_outputs = load_json('llm_logs_2023_10_02.json')['outputs']
 
-# 检查输出是否存在高毒性。
+# 检查输出是否存在有害信息。
 langcheck.metrics.zh.toxicity(production_outputs) > 0.75
 
 # 检查输出是否为JSON格式
 langcheck.metrics.is_json_array(production_outputs)
 ```
 
-### 安全防护
+### 安全护栏
 
-您还可以将其作为提高LLM输出安全性的防护措施。
+您还可以使用langchek作为提高LLM输出安全性的防护措施。
 
 ```python
 # 从LLM获取一次输出
