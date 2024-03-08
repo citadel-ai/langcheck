@@ -8,5 +8,6 @@ We're constantly updating this list, so if you'd like to request a tutorial, ple
 :maxdepth: 1
 :caption: All Tutorials
 
+tutorial_langcheckchat.md
 tutorial_email_generator.md
 ```
