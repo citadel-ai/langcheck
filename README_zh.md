@@ -72,27 +72,27 @@ LangCheck还支持对结果进行简单的可交互可视化。
 ```python
 # 选择一些指标
 sentiment_values = langcheck.metrics.zh.sentiment(generated_outputs)
-toxicity_values = langcheck.metrics.zh.toxicity(generated_outputs)
+readability_values = langcheck.metrics.zh.xuyaochen_report_readability(generated_outputs)
 
 # 绘制散点图
 sentiment_values.scatter()
 ```
 
-![Scatter plot for one metric](docs/_static/scatter_one_metric_ja.gif)
+![Scatter plot for one metric](docs/_static/scatter_one_metric_zh.gif)
 
 ```python
 # 绘制多指标散点图
-langcheck.plot.scatter(sentiment_values, toxicity_values)
+langcheck.plot.scatter(sentiment_values, readability_values)
 ```
 
-![Scatter plot for two metrics](docs/_static/scatter_two_metrics_ja.png)
+![Scatter plot for two metrics](docs/_static/scatter_two_metrics_zh.png)
 
 ```python
 # 绘制统计直方图
-toxicity_values.histogram()
+sentiment_values.histogram()
 ```
 
-![Histogram for one metric](docs/_static/histogram_ja.png)
+![Histogram for one metric](docs/_static/histogram_zh.png)
 
 ### 数据增强（即将推出）
 
