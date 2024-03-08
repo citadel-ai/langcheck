@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Iterator, Optional, Tuple
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
@@ -78,9 +78,9 @@ class OpenAIBasedEvaluator:
 
     def get_score(
         self,
-        prompt: str | List[str],
+        prompt: str | Iterator[str],
         function_call_prompt_template: Callable,
-    ) -> Tuple[Optional[float], Optional[str]]:
+    ) -> Tuple[Iterator[Optional[float]], Iterator[Optional[str]]]:
         '''
         Retrieves the score and unstructured assessment for a given prompt using
         the OpenAI API. The first API call is a "normal" call, where the API
@@ -189,10 +189,10 @@ class OpenAIBasedEvaluator:
             print(f'Prompt that triggered the failure is:\n{prompt}')
             return None, None
 
-        return self._assessment_to_score_mapping[
-            assessments], unstructured_assessments
+        return map(lambda key: self._assessment_to_score_mapping[key],
+                   assessments), unstructured_assessments
 
-    def _call_api(self, prompts: List[str], kargs: Dict[str, str]) -> Dict:
+    def _call_api(self, prompts: Iterator[str], kargs: Dict[str, str]) -> Dict:
         # Generates input dict for API call. This procedure is separated as a
         # method because yapf fails when there are too much nests.
         def _generate_model_input(prompt: str) -> Dict:
