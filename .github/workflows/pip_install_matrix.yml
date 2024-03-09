@@ -67,8 +67,8 @@ jobs:
       - name: Install Core LangCheck
         run: |
           pip install --upgrade pip
-          pip install .[${{ language }}]
+          pip install .[${{ matrix.language }}]
 
       - name: Import LangCheck
         run: |
-          python -c "import langcheck.metrics.[${{ language }}]"
+          python -c "import langcheck.metrics.[${{ matrix.language }}]"
