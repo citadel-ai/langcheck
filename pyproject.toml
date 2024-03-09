@@ -16,7 +16,7 @@ classifiers = [
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
-    "nlpaug",
+    'nlpaug',
     'nltk >= 3',
     'openai >= 1',
     'pandas >= 1',
@@ -28,8 +28,8 @@ dependencies = [
     'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
     'torch >= 2',
     'transformers >= 4.6',
-    "tabulate >= 0.9.0", # For model manager paint table
-    "omegaconf >= 2.3.0" # For model manager paint table
+    'tabulate >= 0.9.0', # For model manager paint table
+    'omegaconf >= 2.3.0' # For model manager paint table
 ]
 requires-python = ">=3.8"
 
@@ -40,19 +40,19 @@ ja = [
     'chikkarpy',
     'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
-    "unidic-lite >= 1.0.1",  # For tokenizer of metrics.ja.toxicity()
-    "mecab-python3 >= 1.0.4",
+    'unidic-lite >= 1.0.1',  # For tokenizer of metrics.ja.toxicity()
+    'mecab-python3 >= 1.0.4',
     'sudachidict_core',
     'sudachipy'
 ]
 zh = [
-    'hanlp >= 2.1.0b33',
+    'hanlp >= 2.1.0b33'
 ]
 all = [
     'langcheck[de]',
     'langcheck[en]',
     'langcheck[ja]',
-    'langcheck[zh]',
+    'langcheck[zh]'
 ]
 dev = [
     "yapf==0.40.1",
