@@ -200,9 +200,14 @@ class OpenAIBasedEvaluator:
 
         model_inputs = list(map(_generate_model_input, prompts))
         if self._use_async:
-            responses = asyncio.gather(*map(
-                lambda model_input: self._client.chat.completions.create(
-                    **model_input), model_inputs))
+            # A helper function to call the async API.
+            async def _call_async_api() -> Dict:
+                responses = await asyncio.gather(*map(
+                    lambda model_input: self._client.chat.completions.create(
+                        **model_input), model_inputs))
+                return responses
+
+            responses = asyncio.run(_call_async_api())
         else:
             responses = [
                 self._client.chat.completions.create(**model_input)
