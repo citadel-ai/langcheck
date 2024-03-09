@@ -46,7 +46,8 @@ dev = [
     "sphinx",
     "sphinx-book-theme",
     "myst-parser",
-    "ipykernel"
+    "ipykernel",
+    "sphinxcontrib-youtube"
 ]
 de = []
 en = []
