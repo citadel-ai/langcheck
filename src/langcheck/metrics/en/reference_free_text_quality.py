@@ -93,7 +93,7 @@ def sentiment(generated_outputs: List[str] | str,
                                                  openai_client,
                                                  openai_args,
                                                  use_async=use_async)
-
+        print(f"{scores=}, {explanations=}")
     return MetricValue(metric_name='sentiment',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
@@ -438,13 +438,13 @@ def _fluency_openai(
     return list(scores), list(explanations)
 
 
-def toxicity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def toxicity(generated_outputs: List[str] | str,
+             prompts: Optional[List[str] | str] = None,
+             model_type: str = 'local',
+             openai_client: Optional[OpenAI] = None,
+             openai_args: Optional[Dict[str, str]] = None,
+             *,
+             use_async=False) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
@@ -495,8 +495,11 @@ def toxicity(
         scores = _toxicity_local(generated_outputs)
         explanations = None
     else:  # openai or azure_openai
-        scores, explanations = _toxicity_openai(generated_outputs, model_type,
-                                                openai_client, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs,
+                                                model_type,
+                                                openai_client,
+                                                openai_args,
+                                                use_async=use_async)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,

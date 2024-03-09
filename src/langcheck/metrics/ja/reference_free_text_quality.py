@@ -464,13 +464,13 @@ def tateishi_ono_yamada_reading_ease(
                        language='ja')
 
 
-def answer_relevance(
-    generated_outputs: List[str] | str,
-    prompts: List[str] | str,
-    model_type: str = 'openai',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def answer_relevance(generated_outputs: List[str] | str,
+                     prompts: List[str] | str,
+                     model_type: str = 'openai',
+                     openai_client: Optional[OpenAI] = None,
+                     openai_args: Optional[Dict[str, str]] = None,
+                     *,
+                     use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of generated outputs to the prompt. This metric
     takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
     Relevant), or 1.0 (Fully Relevant). The score may also be `None` if it could
@@ -545,23 +545,16 @@ def answer_relevance(
         argument_description='The answer relevance assessment',
         client_type=model_type,
         client=openai_client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
-    score_list = []
-    explanation_list = []
-    for gen, user_query in tqdm_wrapper(zip(generated_outputs, prompts),
-                                        desc='Calculating scores',
-                                        total=len(prompts)):
-        score, explanation = oai_evaluator.get_score(_prompt(gen, user_query),
-                                                     _function_call_prompt)
-        score_list.append(score)
-        explanation_list.append(explanation)
-
+    scores, explanations = oai_evaluator.get_score(
+        map(_prompt, generated_outputs, prompts), _function_call_prompt)
     return MetricValue(metric_name='answer_relevance',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
-                       explanations=explanation_list,
-                       metric_values=score_list,
+                       explanations=list(explanations),
+                       metric_values=list(scores),
                        language='ja')
