@@ -18,12 +18,12 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks out this repository so this job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Use Python 3.8.16
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.8.16'
+          python-version: '3.8'
 
       # Install the langcheck package with dev dependencies
       - name: Install
