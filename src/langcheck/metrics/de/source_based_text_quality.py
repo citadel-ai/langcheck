@@ -11,6 +11,7 @@ from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.en.source_based_text_quality import \
     factual_consistency as en_factual_consistency
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 _factual_consistency_translation_model_path = 'Helsinki-NLP/opus-mt-de-en'
 
