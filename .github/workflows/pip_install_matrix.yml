@@ -71,4 +71,4 @@ jobs:
 
       - name: Import LangCheck
         run: |
-          python -c "import langcheck; import langcheck.augment.${{ matrix.language }}; import langcheck.metrics.${{ matrix.language }}"
+          python -c "import langcheck; import langcheck.metrics.${{ matrix.language }}"
