@@ -64,11 +64,11 @@ jobs:
           brew update
           brew install mecab
 
-      - name: Install Core LangCheck
+      - name: Install LangCheck
         run: |
           pip install --upgrade pip
           pip install .[${{ matrix.language }}]
 
       - name: Import LangCheck
         run: |
-          python -c "import langcheck.metrics.${{ matrix.language }}"
+          python -c "import langcheck; import langcheck.augment.${{ matrix.language }}; import langcheck.metrics.${{ matrix.language }}"
