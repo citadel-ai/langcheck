@@ -20,6 +20,19 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
                  class_weights,
                  overflow_strategy: str = 'truncate',
                  max_input_length: Optional[int] = None):
+        '''
+        Initialize the scorer with the provided configs.
+
+        Args:
+            language: The language of the model (default 'en')
+            metric: The metric of the model (e.g., 'toxicity')
+            class_weights: The weights multiplied to the logits to get the
+                scores.
+            overflow_strategy: The strategy to handle the overflow of the input.
+                The value should be either "raise", "truncate" or "nullify".
+            max_input_length: The maximum length of the input. If None, the
+                maximum length of the model is used.
+        '''
 
         super().__init__()
         self.overflow_strategy = overflow_strategy
@@ -109,7 +122,6 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
 
     def _logits_to_scores(self, logits: torch.Tensor) -> list[float]:
         '''Turn the logits returned from the models to scores.
-        The users can override this method to customize the behavior.
         '''
         probs = torch.nn.functional.softmax(logits, dim=1)
         scores = torch.zeros(probs.shape[0], dtype=torch.float32)

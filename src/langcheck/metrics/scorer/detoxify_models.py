@@ -59,16 +59,6 @@ class DetoxifyScorer(BaseSingleScorer):
     '''Class for computing scores based on the loaded Detoxify model. The logic
     is partly taken from the Detoxify class in
     https://github.com/unitaryai/detoxify/blob/master/detoxify/detoxify.py.
-
-    Args:
-        device: The device on which the model is loaded (default 'cpu')
-        lang: The language of the model (default 'en')
-        overflow_strategy: The strategy to handle the overflow of the input.
-        max_input_length: The maximum length of the input. If None, the maximum
-            length of the model is used.
-
-    Returns:
-        results: dictionary of output scores for each class
     '''
 
     def __init__(self,
@@ -76,6 +66,17 @@ class DetoxifyScorer(BaseSingleScorer):
                  lang: str = 'en',
                  overflow_strategy: str = 'truncate',
                  max_input_length: Optional[int] = None):
+        '''
+        Initialize the scorer with the provided configs.
+
+        Args:
+            device: The device on which the model is loaded (default 'cpu')
+            lang: The language of the model (default 'en')
+            overflow_strategy: The strategy to handle the overflow of the input.
+                The value should be either "raise", "truncate" or "nullify".
+            max_input_length: The maximum length of the input. If None, the
+                maximum length of the model is used.
+        '''
         super().__init__()
         self.model, self.tokenizer, self.class_names = load_checkpoint(
             device, lang)
