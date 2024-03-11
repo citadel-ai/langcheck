@@ -220,7 +220,7 @@ def _factual_consistency_openai(
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, sources, generated_outputs), _function_call_prompt)
-    return list(scores), list(explanations)
+    return scores, explanations
 
 
 def context_relevance(sources: List[str] | str,
@@ -326,6 +326,6 @@ def context_relevance(sources: List[str] | str,
                        generated_outputs=None,
                        reference_outputs=None,
                        sources=list(sources),
-                       explanations=list(explanations),
+                       explanations=explanations,
                        metric_values=scores,
                        language=LANG)

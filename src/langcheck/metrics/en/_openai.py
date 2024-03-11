@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from typing import Callable, Dict, Iterator, Optional, Tuple
+from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
@@ -78,9 +78,9 @@ class OpenAIBasedEvaluator:
 
     def get_score(
         self,
-        prompt: str | Iterator[str],
+        prompt: str | Iterator[str] | Sequence[str],
         function_call_prompt_template: Callable,
-    ) -> Tuple[Iterator[Optional[float]], Iterator[Optional[str]]]:
+    ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
         '''
         Retrieves the score and unstructured assessment for a given prompt using
         the OpenAI API. The first API call is a "normal" call, where the API
@@ -189,10 +189,12 @@ class OpenAIBasedEvaluator:
             print(f'Prompt that triggered the failure is:\n{prompt}')
             return None, None
 
-        return map(lambda key: self._assessment_to_score_mapping[key],
-                   assessments), unstructured_assessments
+        return list(
+            map(lambda key: self._assessment_to_score_mapping[key],
+                assessments)), unstructured_assessments
 
-    def _call_api(self, prompts: Iterator[str], kargs: Dict[str, str]) -> Dict:
+    def _call_api(self, prompts: Iterator[str] | Sequence[str],
+                  kargs: Dict[str, str]) -> List:
         # Generates input dict for API call. This procedure is separated as a
         # method because yapf fails when there are too much nests.
         def _generate_model_input(prompt: str) -> Dict:
@@ -201,7 +203,7 @@ class OpenAIBasedEvaluator:
         model_inputs = list(map(_generate_model_input, prompts))
         if self._use_async:
             # A helper function to call the async API.
-            async def _call_async_api() -> Dict:
+            async def _call_async_api() -> List:
                 responses = await asyncio.gather(*map(
                     lambda model_input: self._client.chat.completions.create(
                         **model_input), model_inputs))

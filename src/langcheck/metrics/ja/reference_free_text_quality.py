@@ -830,6 +830,6 @@ def answer_relevance(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
-                       explanations=list(explanations),
-                       metric_values=list(scores),
+                       explanations=explanations,
+                       metric_values=scores,
                        language='ja')

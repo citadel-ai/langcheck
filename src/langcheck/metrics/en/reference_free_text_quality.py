@@ -236,7 +236,7 @@ def _sentiment_openai(
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, generated_outputs), _function_call_prompt)
-    return list(scores), list(explanations)
+    return scores, explanations
 
 
 def fluency(
@@ -443,7 +443,7 @@ def _fluency_openai(
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, generated_outputs), _function_call_prompt)
-    return list(scores), list(explanations)
+    return scores, explanations
 
 
 def toxicity(generated_outputs: List[str] | str,
@@ -631,7 +631,7 @@ def _toxicity_openai(
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, generated_outputs), _function_call_prompt)
-    return list(scores), list(explanations)
+    return scores, explanations
 
 
 def flesch_reading_ease(
@@ -866,6 +866,6 @@ def answer_relevance(generated_outputs: List[str] | str,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=None,
-                       explanations=list(explanations),
-                       metric_values=list(scores),
+                       explanations=explanations,
+                       metric_values=scores,
                        language='en')

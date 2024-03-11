@@ -234,6 +234,6 @@ def context_relevance(sources: List[str] | str,
                        generated_outputs=None,
                        reference_outputs=None,
                        sources=sources,
-                       explanations=list(explanations),
-                       metric_values=list(scores),
+                       explanations=explanations,
+                       metric_values=scores,
                        language='ja')
