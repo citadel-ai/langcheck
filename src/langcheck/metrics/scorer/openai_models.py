@@ -36,6 +36,13 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
                     api_version=os.getenv("OPENAI_API_VERSION"),
                     azure_endpoint=os.getenv(
                         "AZURE_OPENAI_ENDPOINT"))  # type: ignore
+
+        if model_type == 'azure_openai' and not openai_args:
+            raise AssertionError(
+                'The embedding model deployment must be specified in '
+                '`openai_args` for the azure_openai type, e.g. '
+                '`openai_args={"model": "YOUR_DEPLOYMENT_NAME"}`')
+
         self.openai_args = openai_args
 
     def _embed(self, inputs: List[str]) -> torch.Tensor:
