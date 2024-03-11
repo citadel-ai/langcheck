@@ -125,8 +125,8 @@ class ModelManager:
             config: The configuration dictionary to validate.
             language: The name of the language. Defaults to 'all'.
             metric: The name of the metric. Defaults to 'all'.
-            run_check_model_availability: Whether to check the model availability
-                on Huggingface Hub. Defaults to False.
+            run_check_model_availability: Whether to check the model
+                availability on Huggingface Hub. Defaults to False.
         '''
         config = deepcopy(config)
         for lang, lang_setting in config.items():
