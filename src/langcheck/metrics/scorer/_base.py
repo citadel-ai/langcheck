@@ -81,10 +81,8 @@ class BaseSimilarityScorer:
         embeddings.
         '''
         cosine_scores = util.pairwise_cos_sim(embedding1, embedding2)
-        # Numerical instability
-        # can cause the dot product of almost identical
-        # vectors to exceed 1.0 slightly,
-        # so we clip the outputs
+        # Numerical instability can cause the dot product of almost identical
+        # vectors to exceed 1.0 slightly, so we clip the outputs.
         cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
         return cosine_scores.tolist()
 
@@ -92,16 +90,12 @@ class BaseSimilarityScorer:
         '''Score the similarity between the inputs. Basically subclasses should
         not override this.
         '''
-        # Wrap the encoding process in a progress bar.
-
-        # embedding1 = self._embed(inputs1)
-        # embedding2 = self._embed(inputs2)
-
         input_length = len(inputs1)
 
         embeddings1 = []
         embeddings2 = []
 
+        # Wrap the encoding process in a progress bar.
         for i in tqdm_wrapper(range(0, input_length, self.BASE_BATCH_SIZE),
                               total=(input_length + self.BASE_BATCH_SIZE - 1) //
                               self.BASE_BATCH_SIZE,

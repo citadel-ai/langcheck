@@ -56,7 +56,7 @@ def load_checkpoint(
 
 
 class DetoxifyScorer(BaseSingleScorer):
-    '''Class for compute scores based on the loaded Detoxify model. The logic
+    '''Class for computing scores based on the loaded Detoxify model. The logic
     is partly taken from the Detoxify class in
     https://github.com/unitaryai/detoxify/blob/master/detoxify/detoxify.py.
 
