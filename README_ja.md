@@ -15,6 +15,7 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 [クイックスタート](https://langcheck.readthedocs.io/en/latest/quickstart.html) •
 [ドキュメント](https://langcheck.readthedocs.io/en/latest/index.html) •
 [English](README.md) •
+[中文](README_zh.md) •
 [Deutsch](README_de.md)
 
 
@@ -60,9 +61,9 @@ LangCheckには、他にも以下のようなLLMアプリケーションを評�
 
 |                                                                 種類                                                                 |                                                   主な指標                                                    |     言語     |
 | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------ |
-| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`                                               | 英語、日本語、ドイツ語 |
-| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)` | 英語、日本語、ドイツ語 |
-| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                             | 英語、日本語、ドイツ語 |
+| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`                                               | 英語、日本語、中国語、ドイツ語 |
+| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)` | 英語、日本語、中国語、ドイツ語 |
+| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                             | 英語、日本語、中国語、ドイツ語 |
 | [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                         | 全ての言語   |
 
 ### 数値の可視化
