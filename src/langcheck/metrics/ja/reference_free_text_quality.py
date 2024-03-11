@@ -116,6 +116,8 @@ def _sentiment_local(generated_outputs: List[str],
     scorer = AutoModelForSequenceClassificationScorer(
         language='ja',
         metric='sentiment',
+        # Each class represents a sentiment: 0 is negative, 1 is neutral, and 2
+        # is positive
         class_weights=[0, 0.5, 1],
         overflow_strategy=overflow_strategy,
         max_input_length=512)
@@ -313,6 +315,7 @@ def _toxicity_local(generated_outputs: List[str],
     scorer = AutoModelForSequenceClassificationScorer(
         language='ja',
         metric='toxicity',
+        # The class 0 is for toxic texts.
         class_weights=[1, 0],
         overflow_strategy=overflow_strategy)
     return scorer.score(generated_outputs)
@@ -508,6 +511,7 @@ def _fluency_local(generated_outputs: List[str],
     scorer = AutoModelForSequenceClassificationScorer(
         language='ja',
         metric='fluency',
+        # The class 1 is for fluent texts.
         class_weights=[0, 1],
         overflow_strategy=overflow_strategy)
     return scorer.score(generated_outputs)

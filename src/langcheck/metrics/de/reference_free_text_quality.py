@@ -127,6 +127,8 @@ def _sentiment_local(generated_outputs: List[str],
     scorer = AutoModelForSequenceClassificationScorer(
         language='de',
         metric='sentiment',
+        # Each class represents a sentiment: 0 is negative, 1 is neutral, and 2
+        # is positive
         class_weights=[0, 0.5, 1],
         overflow_strategy=overflow_strategy,
         max_input_length=512)
