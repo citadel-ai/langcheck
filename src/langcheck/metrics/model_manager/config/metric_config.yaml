@@ -27,9 +27,13 @@ zh:
 
 en:
   semantic_similarity:
-      model_name: sentence-transformers/all-mpnet-base-v2
-      model_revision: c46f31f8d119ac648208de9fba297c447a5a4474
-      loader_func: load_sentence_transformers
+    # The 'all-mpnet-base-v2' model has the highest average performance out
+    # of all the existing sentence-transformer models that have been
+    # evaluated.
+    # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
+    model_name: sentence-transformers/all-mpnet-base-v2
+    model_revision: c46f31f8d119ac648208de9fba297c447a5a4474
+    loader_func: load_sentence_transformers
 
   fluency:
     model_name: prithivida/parrot_fluency_model
@@ -43,6 +47,11 @@ en:
 
 ja:
   semantic_similarity:
+    # According to the blog post,
+    # 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2' has the
+    # best performance on Japanese dataset.
+    # Ref:
+    # https://tech.yellowback.net/posts/sentence-transformers-japanese-models
     model_name: sentence-transformers/paraphrase-multilingual-mpnet-base-v2
     model_revision: 33a22e7fb3de6a804cf4e31cf0620760f41efc90
     loader_func: load_sentence_transformers
@@ -68,6 +77,10 @@ ja:
 
 de:
   semantic_similarity:
+    # https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
+    # v1 supports only 15 languages (German included) but is stronger than
+    # v2 that supports 50+ languages
+    # NOTE: it's cased! "Das ist ein Test." != "das ist ein test."
     model_name: sentence-transformers/distiluse-base-multilingual-cased-v1
     model_revision: 2620b63ea1495718c256925a2b22cd9fb1d20cbd
     loader_func: load_sentence_transformers

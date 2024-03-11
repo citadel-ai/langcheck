@@ -80,10 +80,6 @@ def semantic_similarity(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
-        # https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
-        # v1 supports only 15 languages (German included) but is stronger than
-        # v2 that supports 50+ languages
-        # NOTE: it's cased! "Das ist ein Test." != "das ist ein test."
         scorer = SentenceTransformerSimilarityScorer(language=LANG)
     else:  # openai or azure_openai
         scorer = OpenAISimilarityScorer(model_type=model_type,
