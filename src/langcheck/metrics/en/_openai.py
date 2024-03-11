@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import os
-from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
+from collections.abc import Callable, Iterator, Sequence
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
@@ -10,14 +12,14 @@ class OpenAIBasedEvaluator:
     '''Evaluator class based on OpenAI's API.'''
 
     def __init__(self,
-                 assessment_to_score_mapping: Dict[str, float],
+                 assessment_to_score_mapping: dict[str, float],
                  function_name: str,
                  function_description: str,
                  argument_name: str,
                  argument_description: str,
                  client_type: str,
-                 client: Optional[OpenAI],
-                 openai_args: Optional[Dict[str, str]],
+                 client: OpenAI | None,
+                 openai_args: dict[str, str] | None,
                  *,
                  use_async=False) -> None:
         '''
@@ -36,7 +38,7 @@ class OpenAIBasedEvaluator:
             client: (Optional) OpenAI, AzureOpenAI, AsyncOpenAI or
                 AsyncAzureOpenAI client. If this is None, we will attempt to
                 create a default client depending on the ``client_type``.
-            openai_args: (Optional) Dict of additional args to pass in to the
+            openai_args: (Optional) dict of additional args to pass in to the
                 ``client.chat.completions.create`` function
             use_async: (Optional) If True, the async client will be used.
         '''
@@ -80,7 +82,7 @@ class OpenAIBasedEvaluator:
         self,
         prompt: str | Iterator[str] | Sequence[str],
         function_call_prompt_template: Callable,
-    ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+    ) -> tuple[list[float | None], list[str | None]]:
         '''
         Retrieves the score and unstructured assessment for a given prompt using
         the OpenAI API. The first API call is a "normal" call, where the API
@@ -194,16 +196,16 @@ class OpenAIBasedEvaluator:
                 assessments)), unstructured_assessments
 
     def _call_api(self, prompts: Iterator[str] | Sequence[str],
-                  kargs: Dict[str, str]) -> List:
+                  kargs: dict[str, str]) -> list:
         # Generates input dict for API call. This procedure is separated as a
         # method because yapf fails when there are too much nests.
-        def _generate_model_input(prompt: str) -> Dict:
+        def _generate_model_input(prompt: str) -> dict:
             return {"messages": [{"role": "user", "content": prompt}], **kargs}
 
         model_inputs = list(map(_generate_model_input, prompts))
         if self._use_async:
             # A helper function to call the async API.
-            async def _call_async_api() -> List:
+            async def _call_async_api() -> list:
                 responses = await asyncio.gather(*map(
                     lambda model_input: self._client.chat.completions.create(
                         **model_input), model_inputs))
