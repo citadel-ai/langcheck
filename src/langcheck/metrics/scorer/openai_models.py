@@ -20,6 +20,8 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         ], ('Unsupported embedding model type. '
             'The supported ones are ["openai", "azure_openai"]')
 
+        super().__init__()
+
         if openai_client:
             self.openai_client = openai_client
         else:

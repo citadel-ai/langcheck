@@ -76,6 +76,7 @@ class DetoxifyScorer(BaseSingleScorer):
                  lang: str = 'en',
                  overflow_strategy: str = 'truncate',
                  max_input_length: Optional[int] = None):
+        super().__init__()
         self.model, self.tokenizer, self.class_names = load_checkpoint(
             device, lang)
         self.device = device

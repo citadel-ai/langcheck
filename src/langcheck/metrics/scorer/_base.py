@@ -12,28 +12,30 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 # This type is used to represent the list of tokens returned by the
 # _tokenize method. We do not use `list` type because the token type
 # can be a list, dict, or any other type.
-_TokenType = TypeVar('_TokenType')
+_TokensType = TypeVar('_TokensType')
 
 
-class BaseSingleScorer(Generic[_TokenType]):
+class BaseSingleScorer(Generic[_TokensType]):
     '''Base class for single input scorers.
     '''
-    BASE_BATCH_SIZE = 8
 
-    def _tokenize(self, inputs: list[str]) -> _TokenType:
+    def __init__(self) -> None:
+        self.batch_size = 8
+
+    def _tokenize(self, inputs: list[str]) -> _TokensType:
         '''Tokenize the inputs. The returned type should be defined in the
         subclass.
         '''
         raise NotImplementedError
 
-    def _score_tokens(self, tokens: _TokenType) -> list[Optional[float]]:
+    def _score_tokens(self, tokens: _TokensType) -> list[Optional[float]]:
         '''Score the tokens. The returned list should have the same length as
         the tokens. Each element in the list should be the score of the token.
         '''
         raise NotImplementedError
 
-    def _slice_tokens(self, tokens: _TokenType, start_idx: int,
-                      end_idx: int) -> _TokenType:
+    def _slice_tokens(self, tokens: _TokensType, start_idx: int,
+                      end_idx: int) -> _TokensType:
         '''Slice the tokens. The returned type should be the same as the tokens.
         It is equivalent to tokens[start_idx:end_idx] for slicable data types
         such as list.
@@ -49,12 +51,12 @@ class BaseSingleScorer(Generic[_TokenType]):
         input_length = len(inputs)
 
         scores: list[Optional[float]] = []
-        for i in tqdm_wrapper(range(0, input_length, self.BASE_BATCH_SIZE),
-                              total=(input_length + self.BASE_BATCH_SIZE - 1) //
-                              self.BASE_BATCH_SIZE):
+        for i in tqdm_wrapper(range(0, input_length, self.batch_size),
+                              total=(input_length + self.batch_size - 1) //
+                              self.batch_size):
 
             batch_tokens = self._slice_tokens(
-                tokens, i, min(i + self.BASE_BATCH_SIZE, input_length))
+                tokens, i, min(i + self.batch_size, input_length))
 
             scores.extend(self._score_tokens(batch_tokens))
 
@@ -65,7 +67,9 @@ class BaseSimilarityScorer:
     '''Base class for similarity score calculators, which calculate the
     similarity score between two inputs.
     '''
-    BASE_BATCH_SIZE = 8
+
+    def __init__(self) -> None:
+        self.batch_size = 8
 
     def _embed(self, inputs: list[str]) -> Tensor:
         '''Embed the inputs. The returned type should be defined in the
@@ -96,14 +100,12 @@ class BaseSimilarityScorer:
         embeddings2 = []
 
         # Wrap the encoding process in a progress bar.
-        for i in tqdm_wrapper(range(0, input_length, self.BASE_BATCH_SIZE),
-                              total=(input_length + self.BASE_BATCH_SIZE - 1) //
-                              self.BASE_BATCH_SIZE,
+        for i in tqdm_wrapper(range(0, input_length, self.batch_size),
+                              total=(input_length + self.batch_size - 1) //
+                              self.batch_size,
                               desc='Getting embeddings'):
-            batch_inputs1 = inputs1[i:min(i +
-                                          self.BASE_BATCH_SIZE, input_length)]
-            batch_inputs2 = inputs2[i:min(i +
-                                          self.BASE_BATCH_SIZE, input_length)]
+            batch_inputs1 = inputs1[i:min(i + self.batch_size, input_length)]
+            batch_inputs2 = inputs2[i:min(i + self.batch_size, input_length)]
 
             embeddings1.append(self._embed(batch_inputs1))
             embeddings2.append(self._embed(batch_inputs2))
@@ -113,12 +115,12 @@ class BaseSimilarityScorer:
         embedding2 = torch.cat(embeddings2, dim=0)
 
         scores: list[float] = []
-        for i in tqdm_wrapper(range(0, input_length, self.BASE_BATCH_SIZE),
-                              total=(input_length + self.BASE_BATCH_SIZE - 1) //
-                              self.BASE_BATCH_SIZE,
+        for i in tqdm_wrapper(range(0, input_length, self.batch_size),
+                              total=(input_length + self.batch_size - 1) //
+                              self.batch_size,
                               desc='Computing semantic similarity'):
             start_idx = i
-            end_idx = min(i + self.BASE_BATCH_SIZE, input_length)
+            end_idx = min(i + self.batch_size, input_length)
             batch_embedding1 = embedding1[start_idx:end_idx]
             batch_embedding2 = embedding2[start_idx:end_idx]
 

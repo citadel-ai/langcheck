@@ -20,6 +20,8 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
                  class_weights,
                  overflow_strategy: str = 'truncate',
                  max_input_length: Optional[int] = None):
+
+        super().__init__()
         self.overflow_strategy = overflow_strategy
         from langcheck.metrics.model_manager import manager
         tokenizer, model = manager.fetch_model(language=language, metric=metric)
@@ -123,6 +125,7 @@ class SentenceTransformerSimilarityScorer(BaseSimilarityScorer):
     '''
 
     def __init__(self, language, metric='semantic_similarity'):
+        super().__init__()
 
         from langcheck.metrics.model_manager import manager
         self.model = manager.fetch_model(language=language, metric=metric)
