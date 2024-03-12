@@ -123,7 +123,7 @@ class OpenAIBasedEvaluator:
                     responses))
         except Exception as e:
             print(f'OpenAI failed to return an unstructured assessment: {e}')
-            return None, None
+            return [None], [None]
         # Next, call the API leveraging function calling to get a structured
         # assessment
         fn_call_messages = map(
@@ -178,7 +178,7 @@ class OpenAIBasedEvaluator:
                 ))
         except Exception as e:
             print(f'OpenAI failed to return a structured assessment: {e}')
-            return None, None
+            return [None], [None]
 
         if any([
                 assessment not in self._assessment_to_score_mapping
@@ -188,8 +188,7 @@ class OpenAIBasedEvaluator:
             # rare, but we're dealing with LLMs here so nothing is absolute!
             print(
                 f'OpenAI returned an unrecognized assessment: "{assessments}"')
-            print(f'Prompt that triggered the failure is:\n{prompt}')
-            return None, None
+            return [None], [None]
 
         return list(
             map(lambda key: self._assessment_to_score_mapping[key],
