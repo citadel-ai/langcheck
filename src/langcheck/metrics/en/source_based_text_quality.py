@@ -313,7 +313,7 @@ def context_relevance(sources: List[str] | str,
                       openai_client: Optional[OpenAI] = None,
                       openai_args: Optional[Dict[str, str]] = None,
                       *,
-                      use_async) -> MetricValue[Optional[float]]:
+                      use_async=False) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully
