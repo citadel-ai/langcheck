@@ -6,6 +6,7 @@ import os
 from collections.abc import Callable, Iterator, Sequence
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
+from tqdm import tqdm
 
 
 class OpenAIBasedEvaluator:
@@ -201,7 +202,7 @@ class OpenAIBasedEvaluator:
         def _generate_model_input(prompt: str) -> dict:
             return {"messages": [{"role": "user", "content": prompt}], **kargs}
 
-        model_inputs = list(map(_generate_model_input, prompts))
+        model_inputs = map(_generate_model_input, prompts)
         if self._use_async:
             # A helper function to call the async API.
             async def _call_async_api() -> list:
@@ -214,6 +215,6 @@ class OpenAIBasedEvaluator:
         else:
             responses = [
                 self._client.chat.completions.create(**model_input)
-                for model_input in model_inputs
+                for model_input in tqdm(model_inputs)
             ]
         return responses
