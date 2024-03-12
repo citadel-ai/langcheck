@@ -114,24 +114,22 @@ class OpenAIBasedEvaluator:
         # should include both the assessment itself and the model's reasoning
         # for that assessment.
         # Call the API to get an unstructured assessments.
-        try:
-            kargs = {"model": "gpt-3.5-turbo", "seed": 123}
-            kargs.update(self._openai_args or {})
-
-            responses = self._call_api(prompt, kargs=kargs)
-            unstructured_assessments = list(
-                map(lambda response: response.choices[0].message.content,
-                    responses))
-        except Exception as e:
-            print(f'OpenAI failed to return an unstructured assessment: {e}')
-            return [None], [None]
+        kargs = {"model": "gpt-3.5-turbo", "seed": 123}
+        kargs.update(self._openai_args or {})
+        responses = self._call_api(prompt, kargs=kargs)
+        unstructured_assessments = [
+            response.choices[0].message.content if response else None
+            for response in responses
+        ]
         # Next, call the API leveraging function calling to get a structured
-        # assessment
-        fn_call_messages = map(
-            lambda unstructured_assessment: function_call_prompt_template(
-                unstructured_assessment),
-            unstructured_assessments,
-        )
+        # assessment.
+        # Construct the prompt for the function calling API, filled with None
+        # for the failed unstructured assessment.
+        fn_call_messages = [
+            function_call_prompt_template(unstructured_assessment)
+            if unstructured_assessment else None
+            for unstructured_assessment in unstructured_assessments
+        ]
         argument_options = list(self._assessment_to_score_mapping.keys())
         functions = [{
             "name": self._function_name,
@@ -148,52 +146,46 @@ class OpenAIBasedEvaluator:
                 "required": [self._argument_name],
             },
         }]
-        try:
-            kargs = {
-                "seed": 123,
-                "functions": functions,
-                "function_call": {
-                    "name": self._function_name
-                },
-                "model": "gpt-3.5-turbo"
-            }
-            kargs.update(self._openai_args or {})
+        kargs = {
+            "seed": 123,
+            "functions": functions,
+            "function_call": {
+                "name": self._function_name
+            },
+            "model": "gpt-3.5-turbo"
+        }
+        kargs.update(self._openai_args or {})
+        responses = self._call_api(
+            fn_call_messages,
+            kargs=kargs,
+        )
+        assert any([
+            response.choices[0].message.function_call is not None
+            if response else True for response in responses
+        ])
+        function_args = [
+            json.loads(response.choices[0].message.function_call.arguments)
+            if response else None for response in responses
+        ]
+        assessments = [
+            function_arg.get(self._argument_name) if function_arg else None
+            for function_arg in function_args
+        ]
 
-            responses = self._call_api(
-                fn_call_messages,
-                kargs=kargs,
-            )
-            assert any([
-                response.choices[0].message.function_call is not None
-                for response in responses
-            ])
-            function_args = map(
-                lambda response: json.loads(response.choices[0].message.
-                                            function_call.arguments),
-                responses,
-            )
-            assessments = list(
-                map(
-                    lambda function_arg: function_arg.get(self._argument_name),
-                    function_args,
-                ))
-        except Exception as e:
-            print(f'OpenAI failed to return a structured assessment: {e}')
-            return [None], [None]
-
-        if any([
-                assessment not in self._assessment_to_score_mapping
-                for assessment in assessments
-        ]):
+        # Check if any of the assessments are not recognized.
+        for assessment in assessments:
+            if (assessment is None) or (assessment
+                                        in self._assessment_to_score_mapping):
+                continue
             # By leveraging the function calling API, this should be pretty
-            # rare, but we're dealing with LLMs here so nothing is absolute!
-            print(
-                f'OpenAI returned an unrecognized assessment: "{assessments}"')
-            return [None], [None]
+            # rare, but we're dealing with LLMs here so nothing is
+            # absolute!
+            print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
 
-        return list(
-            map(lambda key: self._assessment_to_score_mapping[key],
-                assessments)), unstructured_assessments
+        return [
+            self._assessment_to_score_mapping[assessment]
+            if assessment else None for assessment in assessments
+        ]
 
     def _call_api(self, prompts: Iterator[str] | Sequence[str],
                   kargs: dict[str, str]) -> list:
@@ -202,19 +194,37 @@ class OpenAIBasedEvaluator:
         def _generate_model_input(prompt: str) -> dict:
             return {"messages": [{"role": "user", "content": prompt}], **kargs}
 
+        # A helper function to call the API with exception filter for alignment
+        # of exception handling with the async version.
+        def _call_api_with_exception_filter(model_input) -> list:
+            if model_input is None:
+                return None
+            try:
+                return self._client.chat.completions.create(**model_input)
+            except Exception as e:
+                return e
+
         model_inputs = map(_generate_model_input, prompts)
         if self._use_async:
             # A helper function to call the async API.
             async def _call_async_api() -> list:
                 responses = await asyncio.gather(*map(
                     lambda model_input: self._client.chat.completions.create(
-                        **model_input), model_inputs))
+                        **model_input), model_inputs),
+                                                 return_exceptions=True)
                 return responses
 
             responses = asyncio.run(_call_async_api())
         else:
             responses = [
-                self._client.chat.completions.create(**model_input)
+                _call_api_with_exception_filter(model_input)
                 for model_input in tqdm(model_inputs)
             ]
+
+        # Filter out exceptions and print them out.
+        for i, response in enumerate(responses):
+            if not isinstance(response, Exception):
+                continue
+            print(f'OpenAI failed to return an assessment: {response}')
+            responses[i] = None
         return responses
