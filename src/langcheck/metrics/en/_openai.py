@@ -108,11 +108,11 @@ class OpenAIBasedEvaluator:
                 serves as the explanation of the score. Returns `None` if the
                 score could not be computed.
         '''
+        if isinstance(prompt, str):
+            prompt = [prompt]
         # First, call the API to get an unstructured assessment. The response
         # should include both the assessment itself and the model's reasoning
         # for that assessment.
-        if isinstance(prompt, str):
-            prompt = [prompt]
         # Call the API to get an unstructured assessments.
         try:
             kargs = {"model": "gpt-3.5-turbo", "seed": 123}
