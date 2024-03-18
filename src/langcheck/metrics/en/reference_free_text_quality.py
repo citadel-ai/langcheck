@@ -18,14 +18,14 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 def sentiment(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_client: Optional[OpenAI] = None,
-        openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'truncate',
-        *,
-        use_async: bool = False,
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str, str]] = None,
+    local_overflow_strategy: str = 'truncate',
+    *,
+    use_async: bool = False,
 ) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
@@ -413,14 +413,14 @@ def _fluency_openai(
 
 
 def toxicity(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_client: Optional[OpenAI] = None,
-        openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'truncate',
-        *,
-        use_async=False,
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str, str]] = None,
+    local_overflow_strategy: str = 'truncate',
+    *,
+    use_async=False,
 ) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
