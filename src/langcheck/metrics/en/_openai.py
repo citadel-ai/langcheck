@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 from collections.abc import Callable, Iterator, Sequence
+from typing import Any
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 from tqdm import tqdm
@@ -185,18 +186,18 @@ class OpenAIBasedEvaluator:
         return [
             self._assessment_to_score_mapping[assessment]
             if assessment else None for assessment in assessments
-        ]
+        ], unstructured_assessments
 
-    def _call_api(self, prompts: Iterator[str] | Sequence[str],
-                  kargs: dict[str, str]) -> list:
+    def _call_api(self, prompts: Iterator[str | None] | Sequence[str | None],
+                  kargs: dict[str, str]) -> list[Any]:
         # Generates input dict for API call. This procedure is separated as a
         # method because yapf fails when there are too much nests.
-        def _generate_model_input(prompt: str) -> dict:
+        def _generate_model_input(prompt: str | None) -> dict[str, Any]:
             return {"messages": [{"role": "user", "content": prompt}], **kargs}
 
         # A helper function to call the API with exception filter for alignment
         # of exception handling with the async version.
-        def _call_api_with_exception_filter(model_input) -> list:
+        def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:
             if model_input is None:
                 return None
             try:
@@ -207,7 +208,7 @@ class OpenAIBasedEvaluator:
         model_inputs = map(_generate_model_input, prompts)
         if self._use_async:
             # A helper function to call the async API.
-            async def _call_async_api() -> list:
+            async def _call_async_api() -> list[Any]:
                 responses = await asyncio.gather(*map(
                     lambda model_input: self._client.chat.completions.create(
                         **model_input), model_inputs),
