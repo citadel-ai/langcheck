@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-import torch
 from openai import OpenAI
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
-from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
-from langcheck.metrics.en.reference_based_text_quality import \
-    semantic_similarity as en_semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer.hf_models import \
+    SentenceTransformerSimilarityScorer
+from langcheck.metrics.scorer.openai_models import OpenAISimilarityScorer
 from langcheck.metrics.zh._tokenizers import HanLPTokenizer
 
 
@@ -80,31 +79,20 @@ def semantic_similarity(
         'local', 'openai', 'azure_openai'
     ], ('Unsupported embedding model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
+        generated_outputs, reference_outputs, prompts)
+    assert model_type in [
+        'local', 'openai', 'azure_openai'
+    ], ('Unsupported embedding model type. '
+        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'openai' or model_type == 'azure_openai':
-        # We can use the same API as english semantic_similarity to compare the
-        # similarity
-        metric_value = en_semantic_similarity(generated_outputs,
-                                              reference_outputs, prompts,
-                                              model_type, openai_client,
-                                              openai_args)
-        metric_value.language = 'zh'
-        return metric_value
-    # lazy import
-    from langcheck.metrics.model_manager import manager
-    model = manager.fetch_model(language='zh', metric="semantic_similarity")
-
-    # For type checking
-    assert isinstance(model, SentenceTransformer)
-    generated_embeddings = model.encode(generated_outputs)
-    reference_embeddings = model.encode(reference_outputs)
-    cosine_scores = util.pairwise_cos_sim(
-        generated_embeddings,  # type: ignore[reportGeneralTypeIssues]
-        reference_embeddings  # type: ignore[reportGeneralTypeIssues]
-    )
-    # Numerical instability can cause the dot product of almost identical
-    # vectors to exceed 1.0 slightly, so we clip the outputs
-    cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
+    if model_type == 'local':
+        scorer = SentenceTransformerSimilarityScorer(language='zh')
+    else:  # openai or azure_openai
+        scorer = OpenAISimilarityScorer(model_type=model_type,
+                                        openai_client=openai_client,
+                                        openai_args=openai_args)
+    scores = scorer.score(generated_outputs, reference_outputs)
 
     return MetricValue(metric_name='semantic_similarity',
                        prompts=prompts,
@@ -112,7 +100,7 @@ def semantic_similarity(
                        reference_outputs=reference_outputs,
                        sources=None,
                        explanations=None,
-                       metric_values=cosine_scores.tolist(),
+                       metric_values=scores,
                        language='zh')
 
 

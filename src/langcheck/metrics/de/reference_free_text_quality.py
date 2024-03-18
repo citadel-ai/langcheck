@@ -2,14 +2,8 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
 
-import torch
 from openai import OpenAI
-from transformers.models.auto.modeling_auto import \
-    AutoModelForSequenceClassification
-from transformers.models.auto.tokenization_auto import AutoTokenizer
 
-from langcheck._handle_logs import _handle_logging_level
-from langcheck.metrics._detoxify import Detoxify
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
 from langcheck.metrics.de._translation import Translate
@@ -21,28 +15,25 @@ from langcheck.metrics.en.reference_free_text_quality import \
 from langcheck.metrics.en.reference_free_text_quality import \
     fluency as en_fluency
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
+from langcheck.metrics.scorer.hf_models import \
+    AutoModelForSequenceClassificationScorer
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-# this model seems to work much better than the cardiffnlp one; typo in the name
-_sentiment_model_path = "citizenlab/twitter-xlm-roberta-base-sentiment-finetunned"  # NOQA: E501
-_sentiment_tokenizer = None
-_sentiment_model = None
-
 _translation_model_path = 'Helsinki-NLP/opus-mt-de-en'
-
-_toxicity_model = None
 
 LANG = 'de'
 
 
 def sentiment(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        local_overflow_strategy: str = 'truncate'
+) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
@@ -82,6 +73,12 @@ def sentiment(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        local_overflow_strategy: The strategy to handle the inputs that are too
+            long for the local model. The supported strategies are 'nullify',
+            'truncate', and 'raise'. If 'nullify', the outputs that are too long
+            will be assigned a score of None. If 'truncate', the outputs that
+            are too long will be truncated. If 'raise', an error will be raised
+            when the outputs are too long. The default value is 'nullify'.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -97,37 +94,7 @@ def sentiment(
         scores, explanations = _sentiment_openai(generated_outputs, model_type,
                                                  openai_client, openai_args)
     else:
-        global _sentiment_tokenizer, _sentiment_model
-
-        if _sentiment_tokenizer is None or _sentiment_model is None:
-            _sentiment_tokenizer = AutoTokenizer.from_pretrained(
-                _sentiment_model_path)
-
-            # There is a "Some weights are not used warning" but we ignore it
-            # because that is intended.
-            with _handle_logging_level():
-                _sentiment_model = (AutoModelForSequenceClassification.
-                                    from_pretrained(_sentiment_model_path))
-
-        input_tokens = _sentiment_tokenizer(generated_outputs,
-                                            return_tensors='pt',
-                                            padding=True)
-
-        batch_size = 8
-        scores = []
-        with torch.no_grad():
-            for i in tqdm_wrapper(
-                    range(0, len(generated_outputs), batch_size),
-                    total=(len(generated_outputs) + batch_size - 1) //
-                    batch_size):
-                batch_input_tokens = {
-                    k: v[i:i + batch_size] for k, v in input_tokens.items()
-                }
-                # Probabilities of [negative, neutral, positive]
-                probs = torch.nn.functional.softmax(
-                    _sentiment_model(**batch_input_tokens).logits, dim=1)
-                scores.extend((probs[:, 1] / 2 + probs[:, 2]).tolist())
-
+        scores = _sentiment_local(generated_outputs, local_overflow_strategy)
         explanations = None
 
     return MetricValue(metric_name='sentiment',
@@ -138,6 +105,34 @@ def sentiment(
                        explanations=explanations,
                        metric_values=scores,
                        language=LANG)
+
+
+def _sentiment_local(generated_outputs: List[str],
+                     overflow_strategy: str) -> List[Optional[float]]:
+    '''Calculates the sentiment scores of generated outputs using the
+    twitter-xlm-roberta-base-sentiment-finetunned model. This metric takes on
+    float values between [0, 1], where 0 is negative sentiment and 1 is positive
+    sentiment.
+    Ref:
+        https://huggingface.co/citizenlab/twitter-xlm-roberta-base-sentiment-finetunned
+
+    Args:
+        generated_outputs: A list of model generated outputs to evaluate
+        overflow_strategy: The strategy to handle inputs that are longer than
+            the maximum input length of the model.
+
+    Returns:
+        A list of scores
+    '''
+    scorer = AutoModelForSequenceClassificationScorer(
+        language='de',
+        metric='sentiment',
+        # Each class represents a sentiment: 0 is negative, 1 is neutral, and 2
+        # is positive
+        class_weights=[0, 0.5, 1],
+        overflow_strategy=overflow_strategy,
+        max_input_length=512)
+    return scorer.score(generated_outputs)
 
 
 def _sentiment_openai(
@@ -404,12 +399,13 @@ def _fluency_openai(
 
 
 def toxicity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        local_overflow_strategy: str = 'truncate'
+) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
@@ -445,6 +441,12 @@ def toxicity(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        local_overflow_strategy: The strategy to handle the inputs that are too
+            long for the local model. The supported strategies are 'nullify',
+            'truncate', and 'raise'. If 'nullify', the outputs that are too long
+            will be assigned a score of None. If 'truncate', the outputs that
+            are too long will be truncated. If 'raise', an error will be raised
+            when the outputs are too long. The default value is 'nullify'.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -457,7 +459,7 @@ def toxicity(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'local':
-        scores = _toxicity_local(generated_outputs)
+        scores = _toxicity_local(generated_outputs, local_overflow_strategy)
         explanations = None
     else:  # openai or azure_openai
         scores, explanations = _toxicity_openai(generated_outputs, model_type,
@@ -473,7 +475,8 @@ def toxicity(
                        language=LANG)
 
 
-def _toxicity_local(generated_outputs: List[str]) -> List[float]:
+def _toxicity_local(generated_outputs: List[str],
+                    overflow_strategy: str) -> List[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs using the Detoxify
     model. This metric takes on float values between [0, 1], where 0 is low
     toxicity and 1 is high toxicity.
@@ -483,24 +486,14 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
+        overflow_strategy: The strategy to handle inputs that are longer than
+            the maximum input length of the model.
 
     Returns:
         A list of scores
     '''
-    global _toxicity_model
-    if _toxicity_model is None:
-        _toxicity_model = Detoxify(lang=LANG)
-
-    scores = []
-    batch_size = 8
-    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                          total=(len(generated_outputs) + batch_size - 1) //
-                          batch_size):
-        scores.extend(
-            _toxicity_model.predict(generated_outputs[i:i +
-                                                      batch_size])['toxicity'])
-
-    return scores
+    return DetoxifyScorer(
+        lang=LANG, overflow_strategy=overflow_strategy).score(generated_outputs)
 
 
 def _toxicity_openai(

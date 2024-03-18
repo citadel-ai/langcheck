@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import os
 from typing import Any, Dict, List, Optional
 
-import torch
-from openai import AzureOpenAI, OpenAI
+from openai import OpenAI
 from rouge_score import rouge_scorer
-from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer.hf_models import \
+    SentenceTransformerSimilarityScorer
+from langcheck.metrics.scorer.openai_models import OpenAISimilarityScorer
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 
@@ -70,96 +70,14 @@ def semantic_similarity(
         'local', 'openai', 'azure_openai'
     ], ('Unsupported embedding model type. '
         'The supported ones are ["local", "openai", "azure_openai"]')
-    batch_size = 8
     if model_type == 'local':
-        # The 'all-mpnet-base-v2' model has the highest average performance out
-        # of all the existing sentence-transformer models that have been
-        # evaluated.
-        # Ref: https://www.sbert.net/docs/pretrained_models.html#model-overview
-        model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
-        generated_embeddings = []
-        reference_embeddings = []
-        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                              total=(len(generated_outputs) + batch_size - 1) //
-                              batch_size,
-                              desc='Getting embeddings'):
-            batch_generated_outputs = generated_outputs[i:i + batch_size]
-            batch_reference_outputs = reference_outputs[i:i + batch_size]
-            batch_generated_embeddings = model.encode(batch_generated_outputs)
-            batch_reference_embeddings = model.encode(batch_reference_outputs)
-            generated_embeddings.extend(batch_generated_embeddings)
-            reference_embeddings.extend(batch_reference_embeddings)
+        scorer = SentenceTransformerSimilarityScorer(language='en')
     else:  # openai or azure_openai
-        # Initialize the openai object if openai_client is None
-        # TODO: Refactor this into OpenAIBasedEvaluator?
-        if not openai_client:
-            if model_type == 'openai':
-                openai_client = OpenAI()
-            else:  # azure_openai
-                # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#embeddings
-                openai_client = AzureOpenAI(
-                    api_key=os.getenv("AZURE_OPENAI_KEY"),
-                    api_version=os.getenv("OPENAI_API_VERSION"),
-                    azure_endpoint=os.getenv(
-                        "AZURE_OPENAI_ENDPOINT"))  # type: ignore
-        if model_type == 'azure_openai' and not openai_args:
-            raise AssertionError(
-                'The embedding model deployment must be specified in '
-                '`openai_args` for the azure_openai type, e.g. '
-                '`openai_args={"model": "YOUR_DEPLOYMENT_NAME"}`')
+        scorer = OpenAISimilarityScorer(model_type=model_type,
+                                        openai_client=openai_client,
+                                        openai_args=openai_args)
 
-        # For type checking
-        assert openai_client is not None
-        generated_embeddings = []
-        reference_embeddings = []
-
-        for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                              total=(len(generated_outputs) + batch_size - 1) //
-                              batch_size,
-                              desc='Computing embeddings'):
-            batch_generated_outputs = generated_outputs[i:i + batch_size]
-            batch_reference_outputs = reference_outputs[i:i + batch_size]
-            if openai_args is None:
-                batch_gen_embed_response = openai_client.embeddings.create(
-                    input=batch_generated_outputs,
-                    model='text-embedding-3-small')
-                batch_ref_embed_response = openai_client.embeddings.create(
-                    input=batch_reference_outputs,
-                    model='text-embedding-3-small')
-            else:
-                batch_gen_embed_response = openai_client.embeddings.create(
-                    input=batch_generated_outputs, **openai_args)
-                batch_ref_embed_response = openai_client.embeddings.create(
-                    input=batch_reference_outputs, **openai_args)
-            batch_generated_embeddings = [
-                item.embedding for item in batch_gen_embed_response.data
-            ]
-            batch_reference_embeddings = [
-                item.embedding for item in batch_ref_embed_response.data
-            ]
-            generated_embeddings.extend(batch_generated_embeddings)
-            reference_embeddings.extend(batch_reference_embeddings)
-
-    scores = []
-    with torch.no_grad():
-        for i in tqdm_wrapper(
-                range(0, len(generated_embeddings), batch_size),
-                total=(len(generated_embeddings) + batch_size - 1) //
-                batch_size,
-                desc='Computing semantic similarity'):
-            batch_generated_embeddings = generated_embeddings[i:i + batch_size]
-            batch_reference_embeddings = reference_embeddings[i:i + batch_size]
-
-            cosine_scores = util.pairwise_cos_sim(
-                torch.tensor(batch_generated_embeddings),
-                torch.tensor(batch_reference_embeddings))
-            # Numerical instability
-            # can cause the dot product of almost identical
-            # vectors to exceed 1.0 slightly,
-            # so we clip the outputs
-            cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
-            scores.extend(cosine_scores.tolist())
-
+    scores = scorer.score(generated_outputs, reference_outputs)
     return MetricValue(metric_name='semantic_similarity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,
