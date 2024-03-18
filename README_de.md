@@ -34,6 +34,7 @@ Nutzen Sie die Metriken-Suite von LangCheck, um LLM-generierten Text zu bewerten
 
 ```python
 import langcheck
+import langcheck.metrics.de
 
 # Text mit jeder LLM-Bibliothek generieren
 generated_outputs = [
