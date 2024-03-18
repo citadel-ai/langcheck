@@ -84,7 +84,10 @@ def factual_consistency(
     tokenizer, model = manager.fetch_model(language='zh',
                                            metric='factual_consistency')
     _factual_consistency_translation_pipeline = pipeline(
-        'translation', model=model, tokenizer=tokenizer)  # type: ignore
+        'translation',
+        model=model,  # type: ignore
+        tokenizer=tokenizer,  # type: ignore
+        truncation=True)
 
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since
