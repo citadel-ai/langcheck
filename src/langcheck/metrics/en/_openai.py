@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterable
 from typing import Any
 
 from openai import AzureOpenAI, OpenAI
@@ -66,7 +66,7 @@ class OpenAIBasedEvaluator:
 
     def get_score(
         self,
-        prompts: str | Iterator[str] | Sequence[str],
+        prompts: str | Iterable[str],
         function_call_prompt_template: Callable,
     ) -> tuple[list[float | None], list[str | None]]:
         '''
@@ -177,7 +177,7 @@ class OpenAIBasedEvaluator:
             if assessment else None for assessment in assessments
         ], unstructured_assessments
 
-    def _call_api(self, prompts: Iterator[str | None] | Sequence[str | None],
+    def _call_api(self, prompts: Iterable[str | None],
                   config: dict[str, str]) -> list[Any]:
         # Generates input dict for API call. This procedure is separated as a
         # method because yapf fails when there are too much nests.
