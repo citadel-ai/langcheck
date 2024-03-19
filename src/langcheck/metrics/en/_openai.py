@@ -6,8 +6,7 @@ from collections.abc import Callable, Iterator, Sequence
 from typing import Any
 
 from openai import AzureOpenAI, OpenAI
-
-from langcheck.utils.progess_bar import tqdm_wrapper
+from tqdm import tqdm
 
 
 class OpenAIBasedEvaluator:
@@ -198,7 +197,7 @@ class OpenAIBasedEvaluator:
         model_inputs = map(_generate_model_input, prompts)
         responses = [
             _call_api_with_exception_filter(model_input)
-            for model_input in tqdm_wrapper(model_inputs)
+            for model_input in tqdm(model_inputs)
         ]
 
         # Filter out exceptions and print them out.
