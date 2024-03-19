@@ -56,9 +56,9 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
         reference. Here is the data:
         [BEGIN DATA]
         ************
-        [Ideal Response]: {ref_output}
-        ************
         [User Query]: {user_query}
+        ************
+        [Ideal Response]: {ref_output}
         ************
         [Response A]: {gen_output_a}
         ************
@@ -79,18 +79,8 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
         Take a deep breath and work on this problem step-by-step.
         '''
 
-    def _prompt_with_sources(gen_output_a: str,
-                             gen_output_b: str,
-                             user_query: str,
-                             source_1: str,
-                             source_2: Optional[str] = None) -> str:
-        # If two sources are provided, combine them into a single string.
-        # Otherwise, just use the single source.
-        if source_2 is not None:
-            sources = source_1 + '\n' + source_2
-        else:
-            sources = source_1
-
+    def _prompt_with_source(gen_output_a: str, gen_output_b: str,
+                            user_query: str, source: str) -> str:
         return f'''
         You are comparing the quality of two responses to a user's query. Source
         text that is supposedly relevant to the user's query is also provided
@@ -100,7 +90,7 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
         ************
         [User Query]: {user_query}
         ************
-        [Source]: {sources}
+        [Source]: {source}
         ************
         [Response A]: {gen_output_a}
         ************
@@ -114,6 +104,42 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
         allow the order in which the responses were presented to influence your
         assessment. Do not allow the length of the responses to influence your
         assessment. The available assessments are:
+        `Response A` - Response A is a better response.
+        `Response B` - Response B is a better response.
+        `Tie` - The two responses are roughly equal in quality.
+
+        Take a deep breath and work on this problem step-by-step.
+        '''
+
+    def _prompt_with_source_and_reference(gen_output_a: str, gen_output_b: str,
+                                          user_query: str, ref_output: str,
+                                          source: str) -> str:
+        return f'''
+        You are comparing the quality of two responses to a user's query. Source
+        text that is supposedly relevant to the user's query is also provided
+        to you as a reference (the source text may contain some duplication).
+        The ideal response to the user's query is also provided to you as a
+        reference. Here is the data:
+        [BEGIN DATA]
+        ************
+        [User Query]: {user_query}
+        ************
+        [Source]: {source}
+        ************
+        [Ideal Response]: {ref_output}
+        ************
+        [Response A]: {gen_output_a}
+        ************
+        [Response B]: {gen_output_b}
+        ************
+        [END DATA]
+
+        Determine which of the responses is a better response to the user's
+        query. Consider factors such as helpfulness, correctness, and relevance
+        in your assessment, using the provided Source and the Ideal Response as
+        references. Do not allow the order in which the responses were presented
+        to influence your assessment. Do not allow the length of the responses
+        to influence your assessment. The available assessments are:
         `Response A` - Response A is a better response.
         `Response B` - Response B is a better response.
         `Tie` - The two responses are roughly equal in quality.
@@ -150,21 +176,25 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
         client=openai_client,
         openai_args=openai_args)
 
+    # Combine sources_a and sources_b into a single list if both are provided.
+    if sources_a is not None and sources_b is not None:
+        sources = [
+            source_a + '\n' + source_b
+            for source_a, source_b in zip(sources_a, sources_b)
+        ]
+    else:
+        sources = sources_a if sources_a is not None else sources_b
+
     score_list = []
     explanation_list = []
-    if sources_a is not None or sources_b is not None:
-        prompt_fn = _prompt_with_sources
-        if sources_a is None:
-            assert sources_b is not None
-            data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
-                            sources_b)
-        elif sources_b is None:
-            assert sources_a is not None
-            data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
-                            sources_a)
-        else:
-            data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
-                            sources_a, sources_b)
+    if sources is not None and reference_outputs is not None:
+        prompt_fn = _prompt_with_source_and_reference
+        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+                        reference_outputs, sources)
+    elif sources is not None:
+        prompt_fn = _prompt_with_source
+        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+                        sources)
     elif reference_outputs is not None:
         prompt_fn = _prompt_with_reference
         data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
