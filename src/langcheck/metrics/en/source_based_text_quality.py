@@ -296,17 +296,10 @@ def _factual_consistency_openai(
         client=client,
         openai_args=openai_args)
 
-    score_list = []
+    scores, explanations = oai_evaluator.get_score(
+        map(_prompt, sources, generated_outputs), _function_call_prompt)
 
-    explanation_list = []
-    for src, gen in tqdm_wrapper(zip(sources, generated_outputs),
-                                 desc='Calculating scores',
-                                 total=len(generated_outputs)):
-        score, explanation = oai_evaluator.get_score(
-            _prompt(src=src, gen_output=gen), _function_call_prompt)
-        score_list.append(score)
-        explanation_list.append(explanation)
-    return score_list, explanation_list
+    return scores, explanations
 
 
 def context_relevance(
@@ -401,21 +394,14 @@ def context_relevance(
         client=openai_client,
         openai_args=openai_args)
 
-    score_list = []
-    explanation_list = []
-    for src, user_query in tqdm_wrapper(zip(sources, prompts),
-                                        desc='Calculating scores',
-                                        total=len(prompts)):
-        score, explanation = oai_evaluator.get_score(
-            _prompt(src=src, user_query=user_query), _function_call_prompt)
-        score_list.append(score)
-        explanation_list.append(explanation)
+    scores, explanations = oai_evaluator.get_score(
+        map(_prompt, sources, prompts), _function_call_prompt)
 
     return MetricValue(metric_name='context_relevance',
                        prompts=prompts,
                        generated_outputs=None,
                        reference_outputs=None,
                        sources=sources,
-                       explanations=explanation_list,
-                       metric_values=score_list,
+                       explanations=explanations,
+                       metric_values=scores,
                        language='en')
