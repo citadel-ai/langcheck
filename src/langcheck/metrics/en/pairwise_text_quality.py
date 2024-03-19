@@ -11,6 +11,8 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 def pairwise_comparison(generated_outputs_a: List[str] | str,
                         generated_outputs_b: List[str] | str,
                         prompts: List[str] | str,
+                        sources_a: Optional[List[str]] = None,
+                        sources_b: Optional[List[str]] = None,
                         reference_outputs: Optional[List[str]] = None,
                         model_type: str = 'openai',
                         openai_client: Optional[OpenAI] = None,
@@ -77,6 +79,48 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
         Take a deep breath and work on this problem step-by-step.
         '''
 
+    def _prompt_with_sources(gen_output_a: str,
+                             gen_output_b: str,
+                             user_query: str,
+                             source_1: str,
+                             source_2: Optional[str] = None) -> str:
+        # If two sources are provided, combine them into a single string.
+        # Otherwise, just use the single source.
+        if source_2 is not None:
+            sources = source_1 + '\n' + source_2
+        else:
+            sources = source_1
+
+        return f'''
+        You are comparing the quality of two responses to a user's query. Source
+        text that is supposedly relevant to the user's query is also provided
+        to you as a reference (the source text may contain some duplication).
+        Here is the data:
+        [BEGIN DATA]
+        ************
+        [User Query]: {user_query}
+        ************
+        [Source]: {sources}
+        ************
+        [Response A]: {gen_output_a}
+        ************
+        [Response B]: {gen_output_b}
+        ************
+        [END DATA]
+
+        Determine which of the responses is a better response to the user's
+        query. Consider factors such as helpfulness, correctness, and relevance
+        in your assessment, using the provided Source as a reference. Do not
+        allow the order in which the responses were presented to influence your
+        assessment. Do not allow the length of the responses to influence your
+        assessment. The available assessments are:
+        `Response A` - Response A is a better response.
+        `Response B` - Response B is a better response.
+        `Tie` - The two responses are roughly equal in quality.
+
+        Take a deep breath and work on this problem step-by-step.
+        '''
+
     def _function_call_prompt(long_assessment: str) -> str:
         return f'''
         The following is an assessment on whether Response A or Response B is
@@ -108,26 +152,34 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
 
     score_list = []
     explanation_list = []
-    if reference_outputs is not None:
-        for gen_a, gen_b, user_query, ref in tqdm_wrapper(
-                zip(generated_outputs_a, generated_outputs_b, prompts,
-                    reference_outputs),
-                desc='Calculating scores',
-                total=len(prompts)):
-            score, explanation = oai_evaluator.get_score(
-                _prompt_with_reference(gen_a, gen_b, user_query, ref),
-                _function_call_prompt)
-            score_list.append(score)
-            explanation_list.append(explanation)
+    if sources_a is not None or sources_b is not None:
+        prompt_fn = _prompt_with_sources
+        if sources_a is None:
+            assert sources_b is not None
+            data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+                            sources_b)
+        elif sources_b is None:
+            assert sources_a is not None
+            data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+                            sources_a)
+        else:
+            data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+                            sources_a, sources_b)
+    elif reference_outputs is not None:
+        prompt_fn = _prompt_with_reference
+        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+                        reference_outputs)
     else:
-        for gen_a, gen_b, user_query in tqdm_wrapper(zip(
-                generated_outputs_a, generated_outputs_b, prompts),
-                                                     desc='Calculating scores',
-                                                     total=len(prompts)):
-            score, explanation = oai_evaluator.get_score(
-                _prompt(gen_a, gen_b, user_query), _function_call_prompt)
-            score_list.append(score)
-            explanation_list.append(explanation)
+        prompt_fn = _prompt
+        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts)
+
+    for data_instance in tqdm_wrapper(data_iter,
+                                      desc='Calculating scores',
+                                      total=len(prompts)):
+        score, explanation = oai_evaluator.get_score(prompt_fn(*data_instance),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
 
     print(score_list)
     print(explanation_list)
