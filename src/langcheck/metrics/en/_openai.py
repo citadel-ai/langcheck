@@ -65,7 +65,7 @@ class OpenAIBasedEvaluator:
 
     def get_score(
         self,
-        prompts: Iterator[str] | Sequence[str],
+        prompts: str | Iterator[str] | Sequence[str],
         function_call_prompt_template: Callable,
     ) -> Tuple[List[float | None], List[str | None]]:
         '''
@@ -93,6 +93,9 @@ class OpenAIBasedEvaluator:
                 cannot be computed for a prompt, it will be represented as
                 `None`.
         '''
+        if isinstance(prompts, str):
+            prompts = [prompts]
+
         # First, call the API to get an unstructured assessment. The response
         # should include both the assessment itself and the model's reasoning
         # for that assessment.
