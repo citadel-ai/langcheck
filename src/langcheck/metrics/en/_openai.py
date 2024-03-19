@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
-from typing import (Any, Callable, Dict, Iterator, List, Optional, Sequence,
-                    Tuple)
+from collections.abc import Callable, Iterator, Sequence
+from typing import Any
 
 from openai import AzureOpenAI, OpenAI
 
@@ -11,11 +13,11 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 class OpenAIBasedEvaluator:
     '''Evaluator class based on OpenAI's API.'''
 
-    def __init__(self, assessment_to_score_mapping: Dict[str, float],
+    def __init__(self, assessment_to_score_mapping: dict[str, float],
                  function_name: str, function_description: str,
                  argument_name: str, argument_description: str,
-                 client_type: str, client: Optional[OpenAI],
-                 openai_args: Optional[Dict[str, str]]) -> None:
+                 client_type: str, client: OpenAI | None,
+                 openai_args: dict[str, str] | None) -> None:
         '''
         Initialize the OpenAIBasedEvaluator with given parameters.
 
@@ -67,7 +69,7 @@ class OpenAIBasedEvaluator:
         self,
         prompts: str | Iterator[str] | Sequence[str],
         function_call_prompt_template: Callable,
-    ) -> Tuple[List[float | None], List[str | None]]:
+    ) -> tuple[list[float | None], list[str | None]]:
         '''
         Retrieves the score and unstructured assessment for a given prompt using
         the OpenAI API. The first API call is a "normal" call, where the API
@@ -177,15 +179,15 @@ class OpenAIBasedEvaluator:
         ], unstructured_assessments
 
     def _call_api(self, prompts: Iterator[str | None] | Sequence[str | None],
-                  config: Dict[str, str]) -> List[Any]:
+                  config: dict[str, str]) -> list[Any]:
         # Generates input dict for API call. This procedure is separated as a
         # method because yapf fails when there are too much nests.
-        def _generate_model_input(prompt: str | None) -> Dict[str, Any]:
+        def _generate_model_input(prompt: str | None) -> dict[str, Any]:
             return {"messages": [{"role": "user", "content": prompt}], **config}
 
         # A helper function to call the API with exception filter for alignment
         # of exception handling with the async version.
-        def _call_api_with_exception_filter(model_input: Dict[str, Any]) -> Any:
+        def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:
             if model_input is None:
                 return None
             try:
