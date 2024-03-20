@@ -108,7 +108,7 @@ def pairwise_comparison(
 
     score_list = []
     explanation_list = []
-    prompt_fn, data_iter = _construct_pairwise_comparison_data(
+    prompt_fn, data_iter = _construct_pairwise_comparison_prompt_and_data(
         generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
         reference_outputs)
     for data_instance in tqdm_wrapper(data_iter,
@@ -123,7 +123,7 @@ def pairwise_comparison(
         # Swap the generated outputs and calculate the scores again
         swapped_score_list = []
         swapped_explanation_list = []
-        prompt_fn, swapped_data_iter = _construct_pairwise_comparison_data(
+        prompt_fn, swapped_data_iter = _construct_pairwise_comparison_prompt_and_data(  # NOQA: E501
             generated_outputs_b, generated_outputs_a, prompts, sources_b,
             sources_a, reference_outputs)
         for swapped_data_instance in tqdm_wrapper(
@@ -159,7 +159,7 @@ def pairwise_comparison(
                        language='en')
 
 
-def _construct_pairwise_comparison_data(
+def _construct_pairwise_comparison_prompt_and_data(
         generated_outputs_1: List[str], generated_outputs_2: List[str],
         prompts: List[str], sources_1: Optional[List[str]],
         sources_2: Optional[List[str]], reference_outputs: Optional[List[str]]
