@@ -4,6 +4,8 @@ from typing import Dict, List, Optional
 
 from openai import OpenAI
 
+from langcheck.metrics._validation import \
+    validate_parameters_pairwise_comparison
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.utils.progess_bar import tqdm_wrapper
 
@@ -11,12 +13,15 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 def pairwise_comparison(generated_outputs_a: List[str] | str,
                         generated_outputs_b: List[str] | str,
                         prompts: List[str] | str,
-                        sources_a: Optional[List[str]] = None,
-                        sources_b: Optional[List[str]] = None,
-                        reference_outputs: Optional[List[str]] = None,
+                        sources_a: Optional[List[str] | str] = None,
+                        sources_b: Optional[List[str] | str] = None,
+                        reference_outputs: Optional[List[str] | str] = None,
                         model_type: str = 'openai',
                         openai_client: Optional[OpenAI] = None,
                         openai_args: Optional[Dict[str, str]] = None) -> None:
+    generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b, reference_outputs = validate_parameters_pairwise_comparison(  # NOQA: E501
+        generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
+        reference_outputs)
     assert model_type in [
         'openai', 'azure_openai'
     ], ('Unsupported model type. '
