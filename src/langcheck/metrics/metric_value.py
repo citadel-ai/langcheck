@@ -19,23 +19,41 @@ class MetricValue(Generic[NumericType]):
     metric_name: str
     metric_values: List[NumericType]
     prompts: Optional[List[str]]
-    generated_outputs: Optional[List[str]]
+    # Generated outputs are a tuple for pairwise metrics
+    generated_outputs: Optional[List[str] | tuple[List[str], List[str]]]
     reference_outputs: Optional[List[str]]
-    sources: Optional[List[str]]
-    explanations: Optional[List[Optional[
-        str]]]  # An explanation can be None if the metric could not be computed
+    # Sources are a tuple for pairwise metrics (if available)
+    sources: Optional[List[str] |
+                      tuple[Optional[List[str]], Optional[List[str]]]]
+    # An explanation can be None if the metric could not be computed
+    explanations: Optional[List[Optional[str]]]
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
         '''Returns a DataFrame of metric values for each data point.'''
-        dataframe_cols = {
-            'prompt': self.prompts,
-            'source': self.sources,
-            'generated_output': self.generated_outputs,
-            'reference_output': self.reference_outputs,
-            'explanation': self.explanations,
-            'metric_value': self.metric_values,
-        }
+        if isinstance(self.generated_outputs, tuple):
+            # Pairwise metric
+            generated_outputs_a, generated_outputs_b = self.generated_outputs
+            sources_a, sources_b = self.sources if self.sources else (None, None)
+            dataframe_cols = {
+                'prompt': self.prompts,
+                'source_a': sources_a,
+                'source_b': sources_b,
+                'generated_output_a': generated_outputs_a,
+                'generated_output_b': generated_outputs_b,
+                'reference_output': self.reference_outputs,
+                'explanation': self.explanations,
+                'metric_value': self.metric_values,
+            }
+        else:
+            dataframe_cols = {
+                'prompt': self.prompts,
+                'source': self.sources,
+                'generated_output': self.generated_outputs,
+                'reference_output': self.reference_outputs,
+                'explanation': self.explanations,
+                'metric_value': self.metric_values,
+            }
 
         return pd.DataFrame(dataframe_cols)
 

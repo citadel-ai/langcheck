@@ -7,18 +7,21 @@ from openai import OpenAI
 from langcheck.metrics._validation import \
     validate_parameters_pairwise_comparison
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
+from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 
-def pairwise_comparison(generated_outputs_a: List[str] | str,
-                        generated_outputs_b: List[str] | str,
-                        prompts: List[str] | str,
-                        sources_a: Optional[List[str] | str] = None,
-                        sources_b: Optional[List[str] | str] = None,
-                        reference_outputs: Optional[List[str] | str] = None,
-                        model_type: str = 'openai',
-                        openai_client: Optional[OpenAI] = None,
-                        openai_args: Optional[Dict[str, str]] = None) -> None:
+def pairwise_comparison(
+    generated_outputs_a: List[str] | str,
+    generated_outputs_b: List[str] | str,
+    prompts: List[str] | str,
+    sources_a: Optional[List[str] | str] = None,
+    sources_b: Optional[List[str] | str] = None,
+    reference_outputs: Optional[List[str] | str] = None,
+    model_type: str = 'openai',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str,
+                               str]] = None) -> MetricValue[Optional[float]]:
     generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b, reference_outputs = validate_parameters_pairwise_comparison(  # NOQA: E501
         generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
         reference_outputs)
@@ -216,5 +219,12 @@ def pairwise_comparison(generated_outputs_a: List[str] | str,
         score_list.append(score)
         explanation_list.append(explanation)
 
-    print(score_list)
-    print(explanation_list)
+    return MetricValue(metric_name='pairwise_comparison',
+                       prompts=prompts,
+                       generated_outputs=(generated_outputs_a,
+                                          generated_outputs_b),
+                       reference_outputs=reference_outputs,
+                       sources=(sources_a, sources_b),
+                       explanations=explanation_list,
+                       metric_values=score_list,
+                       language='en')
