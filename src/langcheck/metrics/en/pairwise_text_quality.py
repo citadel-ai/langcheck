@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 from openai import OpenAI
 
@@ -18,6 +18,7 @@ def pairwise_comparison(
     sources_a: Optional[List[str] | str] = None,
     sources_b: Optional[List[str] | str] = None,
     reference_outputs: Optional[List[str] | str] = None,
+    enforce_consistency: bool = True,
     model_type: str = 'openai',
     openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
@@ -54,6 +55,10 @@ def pairwise_comparison(
         sources_b: The source text(s) for Model B's generated output(s), default
             None
         reference_outputs: The reference output(s), default None
+        enforce_consistency: When this is True, we will only return a score if
+            the score is the same when Model A and Model B are swapped. This is
+            useful for ensuring that the evaluator's position bias is not
+            impacting the scores. Default True.
         model_type: The type of model to use ('openai', or 'azure_openai'),
             default 'openai'
         openai_client: OpenAI or AzureOpenAI client, default None. If this is
@@ -71,6 +76,90 @@ def pairwise_comparison(
         'openai', 'azure_openai'
     ], ('Unsupported model type. '
         'The supported ones are ["openai", "azure_openai"]')
+
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        The following is an assessment on whether Response A or Response B is
+        the better response to the user's query:
+        ************
+        [Assessment]: {long_assessment}
+        ************
+
+        Save the resulting assessment. The available assessments are:
+        `Response A`
+        `Response B`
+        `Tie`
+        '''
+
+    pairwise_comparison_assessment_to_score = {
+        'Response B': 1.0,
+        'Tie': 0.5,
+        'Response A': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=pairwise_comparison_assessment_to_score,
+        function_name='save_pairwise_comparison_assessment',
+        function_description=("Saves a pairwise comparison assessment."),
+        argument_name='pairwise_comparison',
+        argument_description='The pairwise comparison assessment',
+        client_type=model_type,
+        client=openai_client,
+        openai_args=openai_args)
+
+    score_list = []
+    explanation_list = []
+    prompt_fn, data_iter = _construct_pairwise_comparison_data(
+        generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
+        reference_outputs)
+    for data_instance in tqdm_wrapper(data_iter,
+                                      desc='Calculating scores',
+                                      total=len(prompts)):
+        score, explanation = oai_evaluator.get_score(prompt_fn(*data_instance),
+                                                     _function_call_prompt)
+        score_list.append(score)
+        explanation_list.append(explanation)
+
+    if enforce_consistency:
+        # Swap the generated outputs and calculate the scores again
+        swapped_score_list = []
+        swapped_explanation_list = []
+        prompt_fn, swapped_data_iter = _construct_pairwise_comparison_data(
+            generated_outputs_b, generated_outputs_a, prompts, sources_b,
+            sources_a, reference_outputs)
+        for swapped_data_instance in tqdm_wrapper(
+                swapped_data_iter,
+                desc='Calculating scores with swapped inputs',
+                total=len(prompts)):
+            swapped_score, swapped_explanation = oai_evaluator.get_score(
+                prompt_fn(*swapped_data_instance), _function_call_prompt)
+            swapped_score_list.append(swapped_score)
+            swapped_explanation_list.append(swapped_explanation)
+
+        # Iterate through the scores and explanations to check for consistency.
+        # If a score is not consistent, set it to None, and merge the two
+        # explanations to show the inconsistency.
+        for i in range(len(score_list)):
+            if score_list[i] + swapped_score_list[i] != 1.0:
+                score_list[i] = None
+                explanation_list[
+                    i] = f'Original assessment: {explanation_list[i]}\nSwapped assessment: {swapped_explanation_list[i]}'  # NOQA: E501
+
+    return MetricValue(metric_name='pairwise_comparison',
+                       prompts=prompts,
+                       generated_outputs=(generated_outputs_a,
+                                          generated_outputs_b),
+                       reference_outputs=reference_outputs,
+                       sources=(sources_a, sources_b),
+                       explanations=explanation_list,
+                       metric_values=score_list,
+                       language='en')
+
+
+def _construct_pairwise_comparison_data(
+        generated_outputs_1: List[str], generated_outputs_2: List[str],
+        prompts: List[str], sources_1: Optional[List[str]],
+        sources_2: Optional[List[str]], reference_outputs: Optional[List[str]]
+) -> tuple[Callable, Iterable[Any]]:
 
     def _prompt(gen_output_a: str, gen_output_b: str, user_query: str) -> str:
         return f'''
@@ -197,76 +286,29 @@ def pairwise_comparison(
         Take a deep breath and work on this problem step-by-step.
         '''
 
-    def _function_call_prompt(long_assessment: str) -> str:
-        return f'''
-        The following is an assessment on whether Response A or Response B is
-        the better response to the user's query:
-        ************
-        [Assessment]: {long_assessment}
-        ************
-
-        Save the resulting assessment. The available assessments are:
-        `Response A`
-        `Response B`
-        `Tie`
-        '''
-
-    pairwise_comparison_assessment_to_score = {
-        'Response B': 1.0,
-        'Tie': 0.5,
-        'Response A': 0.0
-    }
-    oai_evaluator = OpenAIBasedEvaluator(
-        assessment_to_score_mapping=pairwise_comparison_assessment_to_score,
-        function_name='save_pairwise_comparison_assessment',
-        function_description=("Saves a pairwise comparison assessment."),
-        argument_name='pairwise_comparison',
-        argument_description='The pairwise comparison assessment',
-        client_type=model_type,
-        client=openai_client,
-        openai_args=openai_args)
-
-    # Combine sources_a and sources_b into a single list if both are provided.
-    if sources_a is not None and sources_b is not None:
+    # Combine sources_1 and sources_2 into a single list if both are provided.
+    if sources_1 is not None and sources_2 is not None:
         sources = [
             source_a + '\n' + source_b
-            for source_a, source_b in zip(sources_a, sources_b)
+            for source_a, source_b in zip(sources_1, sources_2)
         ]
     else:
-        sources = sources_a if sources_a is not None else sources_b
+        sources = sources_1 if sources_1 is not None else sources_2
 
-    score_list = []
-    explanation_list = []
     if sources is not None and reference_outputs is not None:
         prompt_fn = _prompt_with_source_and_reference
-        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts,
                         reference_outputs, sources)
     elif sources is not None:
         prompt_fn = _prompt_with_source
-        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts,
                         sources)
     elif reference_outputs is not None:
         prompt_fn = _prompt_with_reference
-        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts,
+        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts,
                         reference_outputs)
     else:
         prompt_fn = _prompt
-        data_iter = zip(generated_outputs_a, generated_outputs_b, prompts)
+        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts)
 
-    for data_instance in tqdm_wrapper(data_iter,
-                                      desc='Calculating scores',
-                                      total=len(prompts)):
-        score, explanation = oai_evaluator.get_score(prompt_fn(*data_instance),
-                                                     _function_call_prompt)
-        score_list.append(score)
-        explanation_list.append(explanation)
-
-    return MetricValue(metric_name='pairwise_comparison',
-                       prompts=prompts,
-                       generated_outputs=(generated_outputs_a,
-                                          generated_outputs_b),
-                       reference_outputs=reference_outputs,
-                       sources=(sources_a, sources_b),
-                       explanations=explanation_list,
-                       metric_values=score_list,
-                       language='en')
+    return prompt_fn, data_iter
