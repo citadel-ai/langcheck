@@ -31,10 +31,12 @@ class MetricValue(Generic[NumericType]):
 
     def to_df(self) -> pd.DataFrame:
         '''Returns a DataFrame of metric values for each data point.'''
-        if isinstance(self.generated_outputs, tuple):
-            # Pairwise metric
+        if self.is_pairwise:
+            # For type checking
+            assert self.generated_outputs is not None
             generated_outputs_a, generated_outputs_b = self.generated_outputs
-            sources_a, sources_b = self.sources if self.sources else (None, None)
+            sources_a, sources_b = self.sources if self.sources else (None,
+                                                                      None)
             dataframe_cols = {
                 'prompt': self.prompts,
                 'source_a': sources_a,
@@ -146,7 +148,6 @@ class MetricValue(Generic[NumericType]):
         This is a convenience function that calls
         :func:`langcheck.plot.scatter()`.
         '''
-
         from langcheck.plot import scatter as plot_scatter
 
         # Type ignore because a Self type is only valid in class contexts
@@ -167,6 +168,10 @@ class MetricValue(Generic[NumericType]):
         return plot_histogram(
             self,  # type: ignore[reportGeneralTypeIssues]
             jupyter_mode=jupyter_mode)
+
+    @property
+    def is_pairwise(self) -> bool:
+        return isinstance(self.generated_outputs, tuple)
 
 
 @dataclass
