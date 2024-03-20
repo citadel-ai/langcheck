@@ -22,6 +22,48 @@ def pairwise_comparison(
     openai_client: Optional[OpenAI] = None,
     openai_args: Optional[Dict[str,
                                str]] = None) -> MetricValue[Optional[float]]:
+    '''Calculates the pairwise comparison metric. This metric takes on float
+    values of either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B
+    is better). The score may also be `None` if it could not be computed.
+
+    We currently support two model types:
+
+    1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
+    by default. While the model you use is configurable, please make sure to use
+    one that supports function calling
+    (https://platform.openai.com/docs/guides/gpt/function-calling). See
+    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
+    #computing-metrics-with-openai-models>`__
+    for examples on setting up the OpenAI API key.
+
+    2. The 'azure_openai' type. Essentially the same as the 'openai' type,
+    except that it uses the AzureOpenAI client. Note that you must specify your
+    model deployment to use in ``openai_args``, e.g.
+    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+
+    Ref:
+        Our prompt is similar to the prompt used in
+        https://arxiv.org/abs/2306.05685
+
+    Args:
+        generated_outputs_a: Model A's generated output(s) to evaluate
+        generated_outputs_b: Model B's generated output(s) to evaluate
+        prompts: The prompts used to generate the output(s)
+        sources_a: The source text(s) for Model A's generated output(s), default
+            None
+        sources_b: The source text(s) for Model B's generated output(s), default
+            None
+        reference_outputs: The reference output(s), default None
+        model_type: The type of model to use ('openai', or 'azure_openai'),
+            default 'openai'
+        openai_client: OpenAI or AzureOpenAI client, default None. If this is
+            None, we will attempt to create a default client.
+        openai_args: Dict of additional args to pass in to the
+            ``client.chat.completions.create`` function, default None
+
+    Returns:
+        An MetricValue object
+    '''
     generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b, reference_outputs = validate_parameters_pairwise_comparison(  # NOQA: E501
         generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
         reference_outputs)
