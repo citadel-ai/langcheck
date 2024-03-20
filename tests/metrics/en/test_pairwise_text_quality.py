@@ -39,7 +39,7 @@ def test_pairwise_comparison_openai(generated_outputs_a, generated_outputs_b,
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(function_call=Mock(
-            arguments="{\n  \"pairwise_comparison\": \"Response A\"\n}")))
+            arguments="{\n  \"pairwise_comparison\": \"Tie\"\n}")))
     ]
 
     # Calling the openai.resources.chat.Completions.create method requires an
@@ -55,8 +55,8 @@ def test_pairwise_comparison_openai(generated_outputs_a, generated_outputs_b,
                                            sources_b=sources_b,
                                            reference_outputs=reference_outputs,
                                            model_type='openai')
-        # "Response A" gets a value of 0
-        assert metric_value == 0
+        # "Tie" gets a value of 0.5
+        assert metric_value == 0.5
 
         # Set the necessary env vars for the 'azure_openai' model type
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
@@ -70,5 +70,5 @@ def test_pairwise_comparison_openai(generated_outputs_a, generated_outputs_b,
                                            reference_outputs=reference_outputs,
                                            model_type='azure_openai',
                                            openai_args={'model': 'foo bar'})
-        # "Response A" gets a value of 0
-        assert metric_value == 0
+        # "Tie" gets a value of 0.5
+        assert metric_value == 0.5
