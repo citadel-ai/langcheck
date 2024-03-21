@@ -40,7 +40,9 @@ ja = [
     'chikkarpy',
     'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
-    'unidic-lite >= 1.0.1',  # For tokenizer of metrics.ja.toxicity()
+    'unidic-lite >= 1.0.1'  # For tokenizer of metrics.ja.toxicity()
+]
+ja_optional = [  # Optional dependencies for extended Japanese support
     'mecab-python3 >= 1.0.4',
     'sudachidict_core',
     'sudachipy'
@@ -52,6 +54,7 @@ all = [
     'langcheck[de]',
     'langcheck[en]',
     'langcheck[ja]',
+    'langcheck[ja_optional]',
     'langcheck[zh]'
 ]
 dev = [
