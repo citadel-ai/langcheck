@@ -2,7 +2,7 @@
 
 To install LangCheck, just run:
 
-```
+```bash
 # Install English metrics only
 pip install langcheck
 
