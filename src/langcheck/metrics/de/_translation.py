@@ -16,7 +16,8 @@ class Translate:
         '''
         self._translation_pipeline = pipeline("translation",
                                               model=model_name,
-                                              tokenizer=model_name)
+                                              tokenizer=model_name,
+                                              truncation=True)
         self._max_length = self._translation_pipeline.model.config.max_length
 
     def _translate(self, texts: str) -> str:

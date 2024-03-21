@@ -26,9 +26,10 @@ LOADER_MAP = {
 }
 VALID_LOADER_FUNCTION = LOADER_MAP.keys()
 VALID_METRICS = [
-    'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency'
+    'semantic_similarity', 'sentiment', 'toxicity', 'factual_consistency',
+    'fluency'
 ]
-VALID_LANGUAGE = ['zh']
+VALID_LANGUAGE = ['zh', 'en', 'ja', 'de']
 
 
 def check_model_availability(model_name: str, revision: Optional[str]) -> bool:
@@ -113,7 +114,10 @@ class ModelManager:
             raise KeyError(f'Language {language} not supported yet')
 
     @staticmethod
-    def validate_config(config, language='all', metric='all') -> None:
+    def validate_config(config,
+                        language='all',
+                        metric='all',
+                        run_check_model_availability=False) -> None:
         '''
         Validate configuration.
 
@@ -121,6 +125,8 @@ class ModelManager:
             config: The configuration dictionary to validate.
             language: The name of the language. Defaults to 'all'.
             metric: The name of the metric. Defaults to 'all'.
+            run_check_model_availability: Whether to check the model
+                availability on Huggingface Hub. Defaults to False.
         '''
         config = deepcopy(config)
         for lang, lang_setting in config.items():
@@ -144,22 +150,23 @@ class ModelManager:
                     raise ValueError(
                         f'loader type should in {VALID_LOADER_FUNCTION}')
 
-                # Check model availability with revision if specified.
-                model_name = model_setting.get('model_name')
-                model_revision = model_setting.get('model_revision')
-                if not check_model_availability(model_name, model_revision):
-                    raise ValueError(
-                        f'Cannot find {model_name} with {model_revision} at Huggingface Hub'  # NOQA:E501
-                    )
-                # Check tokenizer availability with revision if specified.
-                tokenizer_name = model_setting.get('tokenizer_name')
-                if tokenizer_name is not None and tokenizer_name != model_name:
-                    tokenizer_revision = model_setting.get('tokenizer_revision')
-                    if not check_model_availability(tokenizer_name,
-                                                    tokenizer_revision):
+                if run_check_model_availability:
+                    model_name = model_setting.get('model_name')
+                    model_revision = model_setting.get('model_revision')
+                    if not check_model_availability(model_name, model_revision):
                         raise ValueError(
-                            f'Cannot find {tokenizer_name} with {tokenizer_revision} ay Huggingface Hub'  # NOQA:E501
+                            f'Cannot find {model_name} with {model_revision} at Huggingface Hub'  # NOQA:E501
                         )
+
+                    tokenizer_name = model_setting.get('tokenizer_name')
+                    if tokenizer_name is not None and tokenizer_name != model_name:  # NOQA: E501
+                        tokenizer_revision = model_setting.get(
+                            'tokenizer_revision')
+                        if not check_model_availability(tokenizer_name,
+                                                        tokenizer_revision):
+                            raise ValueError(
+                                f'Cannot find {tokenizer_name} with {tokenizer_revision} ay Huggingface Hub'  # NOQA:E501
+                            )
 
     def __set_model_for_metric(self, language: str, metric: str,
                                model_name: str, loader_func: str,

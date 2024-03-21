@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-import torch
 from openai import OpenAI
 from rouge_score import rouge_scorer
-from sentence_transformers import SentenceTransformer, util
 
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.de._tokenizers import DeTokenizer
-from langcheck.metrics.en.reference_based_text_quality import \
-    semantic_similarity as en_semantic_similarity
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.scorer.hf_models import \
+    SentenceTransformerSimilarityScorer
+from langcheck.metrics.scorer.openai_models import OpenAISimilarityScorer
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 LANG = "de"
@@ -80,63 +79,13 @@ def semantic_similarity(
     ], ("Unsupported embedding model type. "
         'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == "openai" or model_type == "azure_openai":
-        # We can use the same API as english semantic_similarity to compare the
-        # similarity
-        metric_value = en_semantic_similarity(
-            generated_outputs,
-            reference_outputs,
-            prompts,
-            model_type,
-            openai_client,
-            openai_args,
-        )
-        metric_value.language = LANG
-        return metric_value
-
-    # we're using 'local' now
-    batch_size = 8
-    # https://www.sbert.net/docs/pretrained_models.html#multi-lingual-models
-    # v1 supports only 15 languages (German included) but is stronger than v2
-    # that supports 50+ languages
-    # NOTE: it's cased! "Das ist ein Test." != "das ist ein test."
-    model = SentenceTransformer(
-        "sentence-transformers/distiluse-base-multilingual-cased-v1")
-    generated_embeddings = []
-    reference_embeddings = []
-    for i in tqdm_wrapper(
-            range(0, len(generated_outputs), batch_size),
-            total=(len(generated_outputs) + batch_size - 1) // batch_size,
-            desc="Getting embeddings",
-    ):
-        batch_generated_outputs = generated_outputs[i:i + batch_size]
-        batch_reference_outputs = reference_outputs[i:i + batch_size]
-        batch_generated_embeddings = model.encode(batch_generated_outputs)
-        batch_reference_embeddings = model.encode(batch_reference_outputs)
-        generated_embeddings.extend(batch_generated_embeddings)
-        reference_embeddings.extend(batch_reference_embeddings)
-
-    scores = []
-    with torch.no_grad():
-        for i in tqdm_wrapper(
-                range(0, len(generated_embeddings), batch_size),
-                total=(len(generated_embeddings) + batch_size - 1) //
-                batch_size,
-                desc="Computing semantic similarity",
-        ):
-            batch_generated_embeddings = generated_embeddings[i:i + batch_size]
-            batch_reference_embeddings = reference_embeddings[i:i + batch_size]
-
-            cosine_scores = util.pairwise_cos_sim(
-                torch.tensor(batch_generated_embeddings),
-                torch.tensor(batch_reference_embeddings),
-            )
-            # Numerical instability
-            # can cause the dot product of almost identical
-            # vectors to exceed 1.0 slightly,
-            # so we clip the outputs
-            cosine_scores = torch.clamp(cosine_scores, -1.0, 1.0)
-            scores.extend(cosine_scores.tolist())
+    if model_type == 'local':
+        scorer = SentenceTransformerSimilarityScorer(language=LANG)
+    else:  # openai or azure_openai
+        scorer = OpenAISimilarityScorer(model_type=model_type,
+                                        openai_client=openai_client,
+                                        openai_args=openai_args)
+    scores = scorer.score(generated_outputs, reference_outputs)
 
     return MetricValue(
         metric_name="semantic_similarity",
