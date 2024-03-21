@@ -21,8 +21,8 @@ dependencies = [
     'openai >= 1',
     'pandas >= 1',
     'plotly >= 5',
-    'rouge_score >= 0.1.2',
-    'sentence_transformers >= 2',
+    'rouge-score >= 0.1.2',
+    'sentence-transformers >= 2',
     'sentencepiece>=0.1.95',
     'tomli; python_version < "3.11"',
     'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
@@ -42,9 +42,9 @@ ja = [
     'janome >= 0.3.1',
     'unidic-lite >= 1.0.1'  # For tokenizer of metrics.ja.toxicity()
 ]
-ja_optional = [  # Optional dependencies for extended Japanese support
+ja-optional = [  # Optional dependencies for extended Japanese support
     'mecab-python3 >= 1.0.4',
-    'sudachidict_core',
+    'sudachidict-core',
     'sudachipy'
 ]
 zh = [
@@ -54,7 +54,7 @@ all = [
     'langcheck[de]',
     'langcheck[en]',
     'langcheck[ja]',
-    'langcheck[ja_optional]',
+    'langcheck[ja-optional]',
     'langcheck[zh]'
 ]
 dev = [
