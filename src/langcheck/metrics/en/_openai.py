@@ -100,7 +100,6 @@ class OpenAIBasedEvaluator:
         # First, call the API to get an unstructured assessment. The response
         # should include both the assessment itself and the model's reasoning
         # for that assessment.
-        # Call the API to get an unstructured assessments.
         config_unstructured_assessments = {
             "model": "gpt-3.5-turbo",
             "seed": 123
@@ -168,8 +167,7 @@ class OpenAIBasedEvaluator:
                                         in self._assessment_to_score_mapping):
                 continue
             # By leveraging the function calling API, this should be pretty
-            # rare, but we're dealing with LLMs here so nothing is
-            # absolute!
+            # rare, but we're dealing with LLMs here so nothing is absolute!
             print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
 
         return [
