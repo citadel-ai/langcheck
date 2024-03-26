@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 from collections.abc import Callable, Iterable
 from typing import Any
 
-from openai import AzureOpenAI, OpenAI
+from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
 from langcheck.utils.progess_bar import tqdm_wrapper
 
@@ -13,11 +14,17 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 class OpenAIBasedEvaluator:
     '''Evaluator class based on OpenAI's API.'''
 
-    def __init__(self, assessment_to_score_mapping: dict[str, float],
-                 function_name: str, function_description: str,
-                 argument_name: str, argument_description: str,
-                 client_type: str, client: OpenAI | None,
-                 openai_args: dict[str, str] | None) -> None:
+    def __init__(self,
+                 assessment_to_score_mapping: dict[str, float],
+                 function_name: str,
+                 function_description: str,
+                 argument_name: str,
+                 argument_description: str,
+                 client_type: str,
+                 client: OpenAI | None,
+                 openai_args: dict[str, str] | None,
+                 *,
+                 use_async: bool = False) -> None:
         '''
         Initialize the OpenAIBasedEvaluator with given parameters.
 
@@ -31,11 +38,12 @@ class OpenAIBasedEvaluator:
                 the name of the metric to evaluate (e.g. sentiment).
             argument_description: Description of the argument
             client_type: The type of OpenAI client ('openai' or 'azure_openai')
-            client: (Optional) OpenAI or AzureOpenAI client. If this is None,
-                we will attempt to create a default client depending on the
-                ``client_type``.
-            openai_args: (Optional) Dict of additional args to pass in to the
+            client: (Optional) OpenAI, AzureOpenAI, AsyncOpenAI or
+                AsyncAzureOpenAI client. If this is None, we will attempt to
+                create a default client depending on the ``client_type``.
+            openai_args: (Optional) dict of additional args to pass in to the
                 ``client.chat.completions.create`` function
+            use_async: (Optional) If True, the async client will be used.
         '''
         self._client_type = client_type
         if self._client_type == 'azure_openai' and not openai_args:
@@ -47,14 +55,21 @@ class OpenAIBasedEvaluator:
         if client:
             self._client = client
         elif self._client_type == 'openai':
-            self._client = OpenAI()
+            if use_async:
+                self._client = AsyncOpenAI()
+            else:
+                self._client = OpenAI()
         elif self._client_type == 'azure_openai':
             # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
-            self._client = AzureOpenAI(
-                api_key=os.getenv("AZURE_OPENAI_KEY"),
-                api_version=os.getenv("OPENAI_API_VERSION"),
-                azure_endpoint=os.getenv(
-                    "AZURE_OPENAI_ENDPOINT"))  # type: ignore
+            kargs = {
+                "api_key": os.getenv("AZURE_OPENAI_KEY"),
+                "api_version": os.getenv("OPENAI_API_VERSION"),
+                "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
+            }
+            if use_async:
+                self._client = AsyncAzureOpenAI(**kargs)  # type: ignore
+            else:
+                self._client = AzureOpenAI(**kargs)  # type: ignore
         else:
             raise AssertionError(f'Unexpected client type "{client_type}"')
 
@@ -64,6 +79,7 @@ class OpenAIBasedEvaluator:
         self._argument_name = argument_name
         self._argument_description = argument_description
         self._openai_args = openai_args
+        self._use_async = use_async
 
     def get_score(
         self,
@@ -195,10 +211,22 @@ class OpenAIBasedEvaluator:
             }],
             **config
         } for prompt in prompts]
-        responses = [
-            _call_api_with_exception_filter(model_input)
-            for model_input in tqdm_wrapper(model_inputs)
-        ]
+
+        if self._use_async:
+            # A helper function to call the async API.
+            async def _call_async_api() -> list[Any]:
+                responses = await asyncio.gather(*map(
+                    lambda model_input: self._client.chat.completions.create(
+                        **model_input), model_inputs),
+                                                 return_exceptions=True)
+                return responses
+
+            responses = asyncio.run(_call_async_api())
+        else:
+            responses = [
+                _call_api_with_exception_filter(model_input)
+                for model_input in tqdm_wrapper(model_inputs)
+            ]
 
         # Filter out exceptions and print them out.
         for i, response in enumerate(responses):
