@@ -6,7 +6,8 @@ from collections.abc import Callable, Iterable
 from typing import Any
 
 from openai import AzureOpenAI, OpenAI
-from tqdm import tqdm
+
+from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 class OpenAIBasedEvaluator:
@@ -177,11 +178,6 @@ class OpenAIBasedEvaluator:
 
     def _call_api(self, prompts: Iterable[str | None],
                   config: dict[str, str]) -> list[Any]:
-        # Generates input dict for API call. This procedure is separated as a
-        # method because yapf fails when there are too much nests.
-        def _generate_model_input(prompt: str | None) -> dict[str, Any]:
-            return {"messages": [{"role": "user", "content": prompt}], **config}
-
         # A helper function to call the API with exception filter for alignment
         # of exception handling with the async version.
         def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:
@@ -192,10 +188,16 @@ class OpenAIBasedEvaluator:
             except Exception as e:
                 return e
 
-        model_inputs = map(_generate_model_input, prompts)
+        model_inputs = [{
+            "messages": [{
+                "role": "user",
+                "content": prompt
+            }],
+            **config
+        } for prompt in prompts]
         responses = [
             _call_api_with_exception_filter(model_input)
-            for model_input in tqdm(model_inputs)
+            for model_input in tqdm_wrapper(model_inputs)
         ]
 
         # Filter out exceptions and print them out.
