@@ -123,8 +123,10 @@ class OpenAIBasedEvaluator:
         }
         config_unstructured_assessments.update(self._openai_args or {})
 
-        responses = self._call_api(prompts=prompts,
-                                   config=config_unstructured_assessments)
+        responses = self._call_api(
+            prompts=prompts,
+            config=config_unstructured_assessments,
+            tqdm_description='Intermediate assessments (1/2)')
         unstructured_assessments = [
             response.choices[0].message.content if response else None
             for response in responses
@@ -168,6 +170,7 @@ class OpenAIBasedEvaluator:
         responses = self._call_api(
             prompts=fn_call_messages,
             config=config_structured_assessments,
+            tqdm_description='Scores (2/2)',
         )
         function_args = [
             json.loads(response.choices[0].message.function_call.arguments)
@@ -192,8 +195,10 @@ class OpenAIBasedEvaluator:
             if assessment else None for assessment in assessments
         ], unstructured_assessments
 
-    def _call_api(self, prompts: Iterable[str | None],
-                  config: dict[str, str]) -> list[Any]:
+    def _call_api(self,
+                  prompts: Iterable[str | None],
+                  config: dict[str, str],
+                  tqdm_description: str | None = None) -> list[Any]:
         # A helper function to call the API with exception filter for alignment
         # of exception handling with the async version.
         def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:
@@ -225,7 +230,8 @@ class OpenAIBasedEvaluator:
         else:
             responses = [
                 _call_api_with_exception_filter(model_input)
-                for model_input in tqdm_wrapper(model_inputs)
+                for model_input in tqdm_wrapper(model_inputs,
+                                                desc=tqdm_description)
             ]
 
         # Filter out exceptions and print them out.
