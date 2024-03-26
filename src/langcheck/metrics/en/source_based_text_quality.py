@@ -23,13 +23,14 @@ _factual_consistency_model = None
 
 
 def factual_consistency(
-    generated_outputs: List[str] | str,
-    sources: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        sources: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        *,
+        use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
@@ -314,7 +315,7 @@ def context_relevance(sources: List[str] | str,
                       openai_client: Optional[OpenAI] = None,
                       openai_args: Optional[Dict[str, str]] = None,
                       *,
-                      use_async=False) -> MetricValue[Optional[float]]:
+                      use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully

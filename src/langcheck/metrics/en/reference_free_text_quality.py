@@ -219,12 +219,14 @@ def _sentiment_openai(
 
 
 def fluency(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_client: Optional[OpenAI] = None,
-        openai_args: Optional[Dict[str, str]] = None,
-        local_overflow_strategy: str = 'truncate'
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    model_type: str = 'local',
+    openai_client: Optional[OpenAI] = None,
+    openai_args: Optional[Dict[str, str]] = None,
+    local_overflow_strategy: str = 'truncate',
+    *,
+    use_async: bool = False,
 ) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
@@ -283,8 +285,11 @@ def fluency(
         scores = _fluency_local(generated_outputs, local_overflow_strategy)
         explanations = None
     else:  # openai or azure_openai
-        scores, explanations = _fluency_openai(generated_outputs, model_type,
-                                               openai_client, openai_args)
+        scores, explanations = _fluency_openai(generated_outputs,
+                                               model_type,
+                                               openai_client,
+                                               openai_args,
+                                               use_async=use_async)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
@@ -422,7 +427,7 @@ def toxicity(
     openai_args: Optional[Dict[str, str]] = None,
     local_overflow_strategy: str = 'truncate',
     *,
-    use_async=False,
+    use_async: bool = False,
 ) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
