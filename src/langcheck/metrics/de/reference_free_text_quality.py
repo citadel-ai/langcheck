@@ -136,9 +136,12 @@ def _sentiment_local(generated_outputs: List[str],
 
 
 def _sentiment_openai(
-    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
-    openai_args: Optional[Dict[str, str]]
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+        generated_outputs: List[str],
+        client_type: str,
+        client: Optional[OpenAI],
+        openai_args: Optional[Dict[str, str]],
+        *,
+        use_async=False) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the sentiment scores and their associated explanations of
     generated outputs using the OpenAI API. This metric takes on float values
     that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is neutral
@@ -214,7 +217,8 @@ def _sentiment_openai(
         argument_description='The sentiment assessment of the statement',
         client_type=client_type,
         client=client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, generated_outputs), _function_call_prompt)
@@ -303,9 +307,12 @@ def fluency(
 
 
 def _fluency_openai(
-    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
-    openai_args: Optional[Dict[str, str]]
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+        generated_outputs: List[str],
+        client_type: str,
+        client: Optional[OpenAI],
+        openai_args: Optional[Dict[str, str]],
+        *,
+        use_async=False) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the fluency scores and their associated explanations of
     generated outputs using the OpenAI API, using a prompt that is similar to
     the one used in G-Eval (see the Ref below). This metric takes on float
@@ -384,7 +391,8 @@ def _fluency_openai(
         argument_description='The fluency assessment of the statement',
         client_type=client_type,
         client=client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, generated_outputs), _function_call_prompt)
@@ -491,9 +499,12 @@ def _toxicity_local(generated_outputs: List[str],
 
 
 def _toxicity_openai(
-    generated_outputs: List[str], client_type: str, client: Optional[OpenAI],
-    openai_args: Optional[Dict[str, str]]
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
+        generated_outputs: List[str],
+        client_type: str,
+        client: Optional[OpenAI],
+        openai_args: Optional[Dict[str, str]],
+        *,
+        use_async=False) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the toxicity scores and their associated explanations of
     generated outputs using the OpenAI API. This metric takes on float values
     between [0, 1] (in steps of 0.25), where 0 is low toxicity and 1 is high
@@ -565,7 +576,8 @@ def _toxicity_openai(
         argument_description='The toxicity assessment of the statement',
         client_type=client_type,
         client=client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, generated_outputs), _function_call_prompt)
@@ -684,13 +696,13 @@ def ai_disclaimer_similarity(
                        language=LANG)
 
 
-def answer_relevance(
-    generated_outputs: List[str] | str,
-    prompts: List[str] | str,
-    model_type: str = 'openai',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def answer_relevance(generated_outputs: List[str] | str,
+                     prompts: List[str] | str,
+                     model_type: str = 'openai',
+                     openai_client: Optional[OpenAI] = None,
+                     openai_args: Optional[Dict[str, str]] = None,
+                     *,
+                     use_async=False) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of generated outputs to the prompt. This metric
     takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
     Relevant), or 1.0 (Fully Relevant). The score may also be `None` if it could
@@ -773,7 +785,8 @@ def answer_relevance(
         argument_description='The answer relevance assessment',
         client_type=model_type,
         client=openai_client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, generated_outputs, prompts), _function_call_prompt)

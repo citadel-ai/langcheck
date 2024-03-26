@@ -207,8 +207,13 @@ def _factual_consistency_local(generated_outputs: List[str],
 
 
 def _factual_consistency_openai(
-    generated_outputs: List[str], sources: List[str], client_type: str,
-    client: Optional[OpenAI], openai_args: Optional[Dict[str, str]]
+    generated_outputs: List[str],
+    sources: List[str],
+    client_type: str,
+    client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]],
+    *,
+    use_async: bool = False
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
     between each generated output and its corresponding source text. The
@@ -294,7 +299,8 @@ def _factual_consistency_openai(
         argument_description='The factual consistency assessment of the claim',
         client_type=client_type,
         client=client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, sources, generated_outputs), _function_call_prompt)
@@ -302,13 +308,13 @@ def _factual_consistency_openai(
     return scores, explanations
 
 
-def context_relevance(
-    sources: List[str] | str,
-    prompts: List[str] | str,
-    model_type: str = 'openai',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def context_relevance(sources: List[str] | str,
+                      prompts: List[str] | str,
+                      model_type: str = 'openai',
+                      openai_client: Optional[OpenAI] = None,
+                      openai_args: Optional[Dict[str, str]] = None,
+                      *,
+                      use_async=False) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully
@@ -392,7 +398,8 @@ def context_relevance(
         argument_description='The context relevance assessment',
         client_type=model_type,
         client=openai_client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, sources, prompts), _function_call_prompt)
