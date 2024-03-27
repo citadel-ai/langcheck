@@ -24,7 +24,7 @@ LLMアプリケーションの評価のためのシンプルなPythonライブ�
 ## インストール
 
 ```shell
-pip install langcheck
+pip install langcheck[ja]
 ```
 
 インストールがうまくいかない場合、[FAQ(英語)](https://langcheck.readthedocs.io/en/latest/installation.html#installation-faq)もご覧ください。

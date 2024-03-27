@@ -29,7 +29,7 @@ jobs:
       - name: Install
         run: |
           pip install -U --upgrade pip
-          pip install -U .[dev]
+          pip install -U .[all,dev]
 
       # Run the yapf format test
       - name: Yapf

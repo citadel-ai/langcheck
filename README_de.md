@@ -23,7 +23,7 @@ Einfache, pythonische Bausteine zur Bewertung von LLM-Anwendungen.
 ## Installieren
 
 ```shell
-pip install langcheck
+pip install langcheck[de]
 ```
 
 ## Beispiele

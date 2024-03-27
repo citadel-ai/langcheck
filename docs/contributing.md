@@ -6,11 +6,11 @@ This page contains instructions for contributing to LangCheck.
 
 To install and run the LangCheck package from your local git repo:
 
-```text
+```bash
 # Install the langcheck package in editable mode with dev dependencies
-> python -m pip install -e .[dev]
+> python -m pip install -e .[all,dev]
 # If you are using zsh, make sure to escape the brackets
-> python -m pip install -e .\[dev\]
+> python -m pip install -e .\[all,dev\]
 
 # Try using langcheck
 # (If you edit the package, just restart the Python REPL to reflect your changes)
@@ -28,7 +28,7 @@ prompt generated_output reference_output  metric_value
 
 To run tests:
 
-```text
+```bash
 # Run all tests
 > python -m pytest -s -vv
 
@@ -70,7 +70,7 @@ To publish a new version of LangCheck:
 
 3. Build the package
 
-```text
+```bash
 > python -m pip install build twine
 > python -m build
 > twine check dist/*
@@ -78,7 +78,7 @@ To publish a new version of LangCheck:
 
 4. Publish to PyPi
 
-```text
+```bash
 # Follow auth token instructions at https://pypi.org/manage/account/token/
 
 # TestPyPi
