@@ -1,3 +1,4 @@
+from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (
@@ -14,6 +15,7 @@ __all__ = [
     'flesch_kincaid_grade',
     'flesch_reading_ease',
     'fluency',
+    'pairwise_comparison',
     'rouge1',
     'rouge2',
     'rougeL',

@@ -30,6 +30,11 @@ def scatter(metric_value: MetricValue,
             Dash documentation for more info:
             https://dash.plotly.com/workspaces/using-dash-in-jupyter-and-workspaces#display-modes
     '''
+    if metric_value.is_pairwise or (other_metric_value is not None and
+                                    other_metric_value.is_pairwise):
+        raise NotImplementedError(
+            'Scatter plots for pairwise MetricValues are not supported yet')
+
     if other_metric_value is None:
         _scatter_one_metric_value(metric_value, jupyter_mode)
     else:
