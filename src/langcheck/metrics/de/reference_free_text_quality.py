@@ -79,6 +79,7 @@ def sentiment(generated_outputs: List[str] | str,
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -165,6 +166,7 @@ def _sentiment_openai(
             ``client_type``.
         openai_args: (Optional) Dict of additional args to pass in to the
             ``client.chat.completions.create`` function
+        use_async: Whether to use the asynchronous API of OpenAI
 
     Returns:
         score_list: a list of scores
@@ -273,6 +275,7 @@ def fluency(generated_outputs: List[str] | str,
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -339,6 +342,7 @@ def _fluency_openai(
             ``client_type``.
         openai_args: (Optional) Dict of additional args to pass in to the
             ``client.chat.completions.create`` function
+        use_async: Whether to use the asynchronous API of OpenAI
 
     Returns:
         score_list: a list of scores
@@ -454,6 +458,7 @@ def toxicity(generated_outputs: List[str] | str,
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -529,6 +534,7 @@ def _toxicity_openai(
             ``client_type``.
         openai_args: (Optional) Dict of additional args to pass in to the
             ``client.chat.completions.create`` function
+        use_async: Whether to use the asynchronous API of OpenAI
 
     Returns:
         score_list: a list of scores

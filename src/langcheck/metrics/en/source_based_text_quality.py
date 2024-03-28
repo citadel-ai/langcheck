@@ -69,6 +69,7 @@ def factual_consistency(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An MetricValue object
@@ -237,6 +238,7 @@ def _factual_consistency_openai(
             ``client_type``.
         openai_args: (Optional) Dict of additional args to pass in to the
             ``client.chat.completions.create`` function
+        use_async: Whether to use the asynchronous API of OpenAI
 
     Returns:
         score_list: a list of scores
@@ -345,6 +347,7 @@ def context_relevance(sources: List[str] | str,
             None, we will attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
     '''
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
