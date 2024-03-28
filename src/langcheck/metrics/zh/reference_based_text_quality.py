@@ -67,11 +67,9 @@ def semantic_similarity(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.embeddings.create`` function, default None
+
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-
-    .. note:: It seems same methods in different language share the same
-    pydoc, using sphinx or something to make these pydoc easier to be managed?
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)

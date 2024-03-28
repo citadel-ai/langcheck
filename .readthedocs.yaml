@@ -16,10 +16,11 @@ formats:
    - pdf
    - epub
 
-# Equivalent to `pip install .[dev]`
+# Equivalent to `pip install .[all,dev]`
 python:
   install:
     - method: pip
       path: .
       extra_requirements:
+        - all
         - dev

@@ -52,8 +52,10 @@ There are several different types of metrics:
    :hidden:
    :maxdepth: 4
 
+   langcheck.metrics.de
    langcheck.metrics.en
    langcheck.metrics.ja
+   langcheck.metrics.zh
 
 
 

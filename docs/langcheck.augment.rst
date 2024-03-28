@@ -37,3 +37,4 @@ To see more details about each augmentation, refer to the API reference below.
    :maxdepth: 4
 
    langcheck.augment.en
+   langcheck.augment.ja

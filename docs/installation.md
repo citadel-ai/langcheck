@@ -2,8 +2,16 @@
 
 To install LangCheck, just run:
 
-```
+```bash
+# Install English metrics only
 pip install langcheck
+
+# Install English and Japanese metrics
+pip install langcheck[ja]
+
+# Install metrics for all languages (requires pip 21.2+)
+pip install --upgrade pip
+pip install langcheck[all]
 ```
 
 LangCheck works with Python 3.8 or higher.

@@ -33,7 +33,7 @@ def synonym(
     .. note::
         This function requires `sudachidict_core` and `sudachipy` to be
         installed in your environment.
-        Please refer to the `official instruction <https://github.com/
+        Please refer to the `official instructions <https://github.com/
         WorksApplications/SudachiPy?tab=readme-ov-file#setup>`_ to install them.
 
     '''
