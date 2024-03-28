@@ -19,13 +19,14 @@ _factual_consistency_translation_pipeline: Pipeline | None = None
 
 
 def factual_consistency(
-    generated_outputs: List[str] | str,
-    sources: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        sources: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        *,
+        use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
@@ -69,6 +70,7 @@ def factual_consistency(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An MetricValue object
@@ -83,9 +85,13 @@ def factual_consistency(
     # The English prompt works well enough for Japanese
     # TODO: Investigate the performance improvement with Japanese prompt
     if model_type == 'openai' or model_type == 'azure_openai':
-        metric_value = en_factual_consistency(generated_outputs, sources,
-                                              prompts, model_type,
-                                              openai_client, openai_args)
+        metric_value = en_factual_consistency(generated_outputs,
+                                              sources,
+                                              prompts,
+                                              model_type,
+                                              openai_client,
+                                              openai_args,
+                                              use_async=use_async)
         metric_value.language = 'ja'
         return metric_value
 
@@ -139,13 +145,13 @@ def factual_consistency(
                        language='ja')
 
 
-def context_relevance(
-    sources: List[str] | str,
-    prompts: List[str] | str,
-    model_type: str = 'openai',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def context_relevance(sources: List[str] | str,
+                      prompts: List[str] | str,
+                      model_type: str = 'openai',
+                      openai_client: Optional[OpenAI] = None,
+                      openai_args: Optional[Dict[str, str]] = None,
+                      *,
+                      use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully
@@ -175,6 +181,7 @@ def context_relevance(
             None, we will attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API, default False
     '''
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
@@ -226,7 +233,8 @@ def context_relevance(
         argument_description='The context relevance assessment',
         client_type=model_type,
         client=openai_client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     scores, explanations = oai_evaluator.get_score(
         map(_prompt, sources, prompts), _function_call_prompt)

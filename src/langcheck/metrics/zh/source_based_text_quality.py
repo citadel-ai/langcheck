@@ -12,13 +12,14 @@ from langcheck.metrics.metric_value import MetricValue
 
 
 def factual_consistency(
-    generated_outputs: List[str] | str,
-    sources: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        sources: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        *,
+        use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
@@ -62,6 +63,7 @@ def factual_consistency(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An MetricValue object
@@ -74,9 +76,13 @@ def factual_consistency(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'openai' or model_type == 'azure_openai':
-        metric_value = en_factual_consistency(generated_outputs, sources,
-                                              prompts, model_type,
-                                              openai_client, openai_args)
+        metric_value = en_factual_consistency(generated_outputs,
+                                              sources,
+                                              prompts,
+                                              model_type,
+                                              openai_client,
+                                              openai_args,
+                                              use_async=use_async)
         metric_value.language = 'zh'
         return metric_value
 

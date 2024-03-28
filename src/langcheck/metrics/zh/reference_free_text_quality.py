@@ -13,13 +13,13 @@ from langcheck.metrics.en.reference_free_text_quality import \
 from langcheck.metrics.metric_value import MetricValue
 
 
-def sentiment(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def sentiment(generated_outputs: List[str] | str,
+              prompts: Optional[List[str] | str] = None,
+              model_type: str = 'local',
+              openai_client: Optional[OpenAI] = None,
+              openai_args: Optional[Dict[str, str]] = None,
+              *,
+              use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
@@ -59,6 +59,7 @@ def sentiment(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -71,8 +72,12 @@ def sentiment(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'openai' or model_type == 'azure_openai':
-        metric_value = en_sentiment(generated_outputs, prompts, model_type,
-                                    openai_client, openai_args)
+        metric_value = en_sentiment(generated_outputs,
+                                    prompts,
+                                    model_type,
+                                    openai_client,
+                                    openai_args,
+                                    use_async=use_async)
         metric_value.language = 'zh'
         return metric_value
 
@@ -107,13 +112,13 @@ def sentiment(
         language='zh')
 
 
-def toxicity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def toxicity(generated_outputs: List[str] | str,
+             prompts: Optional[List[str] | str] = None,
+             model_type: str = 'local',
+             openai_client: Optional[OpenAI] = None,
+             openai_args: Optional[Dict[str, str]] = None,
+             *,
+             use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using the OpenAI model, the toxicity scores are in steps of
@@ -154,6 +159,7 @@ def toxicity(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -167,8 +173,11 @@ def toxicity(
 
     if model_type == 'openai' or model_type == 'azure_openai':
         # openai
-        scores, explanations = _toxicity_openai(generated_outputs, model_type,
-                                                openai_client, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs,
+                                                model_type,
+                                                openai_client,
+                                                openai_args,
+                                                use_async=use_async)
     else:
         scores = _toxicity_local(generated_outputs)
         explanations = None
