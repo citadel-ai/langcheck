@@ -300,8 +300,11 @@ def fluency(generated_outputs: List[str] | str,
         scores = _metric_value.metric_values
         explanations = None
     else:  # openai or azure_openai
-        scores, explanations = _fluency_openai(generated_outputs, model_type,
-                                               openai_client, openai_args)
+        scores, explanations = _fluency_openai(generated_outputs,
+                                               model_type,
+                                               openai_client,
+                                               openai_args,
+                                               use_async=use_async)
 
     return MetricValue(metric_name='fluency',
                        prompts=prompts,
@@ -474,8 +477,11 @@ def toxicity(generated_outputs: List[str] | str,
         scores = _toxicity_local(generated_outputs, local_overflow_strategy)
         explanations = None
     else:  # openai or azure_openai
-        scores, explanations = _toxicity_openai(generated_outputs, model_type,
-                                                openai_client, openai_args)
+        scores, explanations = _toxicity_openai(generated_outputs,
+                                                model_type,
+                                                openai_client,
+                                                openai_args,
+                                                use_async=use_async)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,

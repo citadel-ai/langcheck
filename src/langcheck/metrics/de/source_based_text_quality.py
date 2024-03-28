@@ -83,8 +83,12 @@ def factual_consistency(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'openai' or model_type == 'azure_openai':
-        scores, explanations = _factual_consistency_openai(
-            generated_outputs, sources, model_type, openai_client, openai_args)
+        scores, explanations = _factual_consistency_openai(generated_outputs,
+                                                           sources,
+                                                           model_type,
+                                                           openai_client,
+                                                           openai_args,
+                                                           use_async=use_async)
 
         return MetricValue(metric_name='factual_consistency',
                            prompts=prompts,

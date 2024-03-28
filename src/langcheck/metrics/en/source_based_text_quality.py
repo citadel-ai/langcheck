@@ -85,8 +85,12 @@ def factual_consistency(
         scores = _factual_consistency_local(generated_outputs, sources)
         explanations = None
     else:  # openai or azure_openai
-        scores, explanations = _factual_consistency_openai(
-            generated_outputs, sources, model_type, openai_client, openai_args)
+        scores, explanations = _factual_consistency_openai(generated_outputs,
+                                                           sources,
+                                                           model_type,
+                                                           openai_client,
+                                                           openai_args,
+                                                           use_async=use_async)
 
     return MetricValue(metric_name='factual_consistency',
                        prompts=prompts,
