@@ -1,4 +1,5 @@
 from langcheck.metrics import de, en, ja, zh
+from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.en.reference_free_text_quality import (
@@ -36,6 +37,7 @@ __all__ = [
     'is_json_array',
     'is_json_object',
     'matches_regex',
+    'pairwise_comparison',
     'rouge1',
     'rouge2',
     'rougeL',
