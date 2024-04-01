@@ -47,6 +47,7 @@ LangCheck metrics are categorized by metric type, which correspond to the kind o
 | [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, DE        |
 | [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, DE        |
 | [Text Structure Metrics](#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages |
+| [Pairwise Text Quality Metrics](#pairwise-text-quality-metrics) | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)` | EN |
 
 (reference-free-text-quality-metrics)=
 ### Reference-Free Text Quality Metrics
@@ -75,6 +76,13 @@ An example metric is {func}`~langcheck.metrics.en.source_based_text_quality.fact
 Text structure metrics validate the format of the text (e.g. is the text valid JSON, an email address, an integer in a specified range). Compared to other metric types which can return floats, these metrics only return 0 or 1.
 
 An example metric is {func}`~langcheck.metrics.text_structure.is_json_object`, which checks if the LLM-generated text is a valid JSON object.
+
+(pairwise-text-quality-metrics)=
+### Pairwise Text Quality Metrics
+
+Pairwise metrics require two generated outputs (A and B) and the corresponding prompt. The reference output and source text are also optional inputs.
+
+An example metric is {func}`~langcheck.metrics.en.pairwise_text_quality.pairwise_comparison`, which compares the quality of two generated outputs (`generated_outputs_a` and `generated_outputs_a`) in response to the given prompt. If a reference output and/or source text are provided, those are also taken into consideration to judge the quality of the outputs. The scores are either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B is better).
 
 (computing-metrics-with-openai-models)=
 ### Computing Metrics with OpenAI Models
