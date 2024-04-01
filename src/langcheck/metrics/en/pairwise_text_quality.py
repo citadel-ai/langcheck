@@ -141,7 +141,9 @@ def pairwise_comparison(
         for i in range(len(score_list)):
             if score_list[i] is None or swapped_score_list[i] is None:
                 # If either score is None, we cannot determine consistency, so
-                # we just keep the original score and explanation
+                # we set the score and explanation to None
+                score_list[i] = None
+                explanation_list[i] = None
                 continue
             if score_list[i] + swapped_score_list[i] != 1.0:
                 score_list[i] = None
