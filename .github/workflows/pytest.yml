@@ -5,6 +5,12 @@ on:
   # Triggers the workflow on pull request events
   pull_request:
 
+  # Triggers the workflow when a pull request merges into the main branch (this
+  # causes a `push` event). This is used for the test status badge in README.md
+  push:
+    branches:
+      - main
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

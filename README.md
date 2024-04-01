@@ -4,7 +4,7 @@
 <img src="docs/_static/LangCheck-Logo-White-square.png#gh-dark-mode-only" alt="LangCheck Logo" width="275">
 
 [![](https://dcbadge.vercel.app/api/server/Bkndx9RXqw?compact=true&style=flat)](https://discord.gg/Bkndx9RXqw)
-[![Pytest Tests](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml/badge.svg)](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml)
+[![Pytest Tests](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml/badge.svg?event=push&branch=main)](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml)
 [![Downloads](https://static.pepy.tech/badge/langcheck)](https://pepy.tech/project/langcheck)
 ![GitHub](https://img.shields.io/github/license/citadel-ai/langcheck)
 
