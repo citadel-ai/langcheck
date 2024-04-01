@@ -106,49 +106,38 @@ def pairwise_comparison(
         client=openai_client,
         openai_args=openai_args)
 
-    score_list = []
-    explanation_list = []
     prompt_fn, data_iter = _construct_pairwise_comparison_prompt_and_data(
         generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
         reference_outputs)
-    for data_instance in tqdm_wrapper(data_iter,
-                                      desc='Calculating scores',
-                                      total=len(prompts)):
-        score, explanation = oai_evaluator.get_score(prompt_fn(*data_instance),
-                                                     _function_call_prompt)
-        score_list.append(score)
-        explanation_list.append(explanation)
+    all_prompts = [prompt_fn(*data_instance) for data_instance in data_iter]
+    scores, explanations = oai_evaluator.get_score(all_prompts,
+                                                   _function_call_prompt)
 
     if enforce_consistency:
         # Swap the generated outputs and calculate the scores again
-        swapped_score_list = []
-        swapped_explanation_list = []
         prompt_fn, swapped_data_iter = _construct_pairwise_comparison_prompt_and_data(  # NOQA: E501
             generated_outputs_b, generated_outputs_a, prompts, sources_b,
             sources_a, reference_outputs)
-        for swapped_data_instance in tqdm_wrapper(
-                swapped_data_iter,
-                desc='Calculating scores with swapped inputs',
-                total=len(prompts)):
-            swapped_score, swapped_explanation = oai_evaluator.get_score(
-                prompt_fn(*swapped_data_instance), _function_call_prompt)
-            swapped_score_list.append(swapped_score)
-            swapped_explanation_list.append(swapped_explanation)
+        all_swapped_prompts = [
+            prompt_fn(*data_instance) for data_instance in swapped_data_iter
+        ]
+        swapped_scores, swapped_explanations = oai_evaluator.get_score(
+            all_swapped_prompts, _function_call_prompt)
 
         # Iterate through the scores and explanations to check for consistency.
         # If a score is not consistent, set it to None, and merge the two
         # explanations to show the inconsistency.
-        for i in range(len(score_list)):
-            if score_list[i] is None or swapped_score_list[i] is None:
+        for i in range(len(scores)):
+            if scores[i] is None or swapped_scores[i] is None:
                 # If either score is None, we cannot determine consistency, so
                 # we set the score and explanation to None
-                score_list[i] = None
-                explanation_list[i] = None
+                scores[i] = None
+                explanations[i] = None
                 continue
-            if score_list[i] + swapped_score_list[i] != 1.0:
-                score_list[i] = None
-                explanation_list[
-                    i] = f'Original assessment: {explanation_list[i]}\nSwapped assessment: {swapped_explanation_list[i]}'  # NOQA: E501
+            if scores[i] + swapped_scores[i] != 1.0:  # type: ignore
+                scores[i] = None
+                explanations[
+                    i] = f'Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}'  # NOQA: E501
 
     return MetricValue(metric_name='pairwise_comparison',
                        prompts=prompts,
@@ -156,8 +145,8 @@ def pairwise_comparison(
                                           generated_outputs_b),
                        reference_outputs=reference_outputs,
                        sources=(sources_a, sources_b),
-                       explanations=explanation_list,
-                       metric_values=score_list,
+                       explanations=explanations,
+                       metric_values=scores,
                        language='en')
 
 
