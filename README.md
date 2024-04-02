@@ -4,7 +4,7 @@
 <img src="docs/_static/LangCheck-Logo-White-square.png#gh-dark-mode-only" alt="LangCheck Logo" width="275">
 
 [![](https://dcbadge.vercel.app/api/server/Bkndx9RXqw?compact=true&style=flat)](https://discord.gg/Bkndx9RXqw)
-[![Pytest Tests](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml/badge.svg)](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml)
+[![Pytest Tests](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml/badge.svg?event=push&branch=main)](https://github.com/citadel-ai/langcheck/actions/workflows/pytest.yml)
 [![Downloads](https://static.pepy.tech/badge/langcheck)](https://pepy.tech/project/langcheck)
 ![GitHub](https://img.shields.io/github/license/citadel-ai/langcheck)
 
@@ -72,6 +72,7 @@ LangCheck includes several types of metrics to evaluate LLM applications. Some e
 | [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, ZH, DE        |
 | [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, ZH, DE        |
 | [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages |
+| [Pairwise Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#pairwise-text-quality-metrics) | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)` | EN |
 
 ### Visualize Metrics
 
