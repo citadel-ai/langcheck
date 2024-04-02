@@ -2,8 +2,16 @@
 
 To install LangCheck, just run:
 
-```
+```bash
+# Install English metrics only
 pip install langcheck
+
+# Install English and Japanese metrics
+pip install langcheck[ja]
+
+# Install metrics for all languages (requires pip 21.2+)
+pip install --upgrade pip
+pip install langcheck[all]
 ```
 
 LangCheck works with Python 3.8 or higher.
@@ -50,3 +58,14 @@ Most systems already have `gcc` installed, with the exception of "slim" Docker i
 1. Use `python:3.11-buster` instead of `python:3.11-slim-buster`, which includes gcc.
 1. Run `apt update && apt install build-essential -y` (e.g. in your Dockerfile) to install gcc.
 
+### 3. The error `AttributeError: module 'langcheck.metrics' has no attribute 'ja'`
+
+If you see this error when calling a LangCheck function, such as `langcheck.metrics.ja.toxicity()`, you probably need to install the Japanese LangCheck package.
+
+Run `pip install langcheck[ja]` (or for your required language) and try again.
+
+### 4. The error `ModuleNotFoundError`
+
+If you see this error when importing a LangCheck package, such as `import langcheck.metrics.ja`, you probably need to install the Japanese LangCheck package.
+
+Run `pip install langcheck[ja]` (or for your required language) and try again.

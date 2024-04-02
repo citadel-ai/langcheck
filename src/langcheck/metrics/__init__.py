@@ -1,4 +1,4 @@
-from langcheck.metrics import de, en, ja, zh
+from langcheck.metrics import en
 from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
@@ -16,10 +16,6 @@ from langcheck.metrics.text_structure import (contains_all_strings,
                                               matches_regex, validation_fn)
 
 __all__ = [
-    'en',
-    'ja',
-    'de',
-    'zh',
     'ai_disclaimer_similarity',
     'answer_relevance',
     'contains_all_strings',
@@ -27,6 +23,7 @@ __all__ = [
     'contains_regex',
     'context_relevance',
     'MetricValue',
+    'en',
     'exact_match',
     'factual_consistency',
     'flesch_kincaid_grade',
@@ -46,3 +43,26 @@ __all__ = [
     'sentiment',
     'toxicity',
 ]
+
+# Try to import language-specific packages. These packages will be hidden if
+# the user didn't pip install the required language.
+try:
+    from langcheck.metrics import ja
+except ModuleNotFoundError:
+    pass
+else:
+    __all__.append('ja')
+
+try:
+    from langcheck.metrics import de
+except ModuleNotFoundError:
+    pass
+else:
+    __all__.append('de')
+
+try:
+    from langcheck.metrics import zh
+except ModuleNotFoundError:
+    pass
+else:
+    __all__.append('zh')

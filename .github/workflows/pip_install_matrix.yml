@@ -19,6 +19,9 @@ jobs:
         # We specify Python versions as strings so 3.10 doesn't become 3.1
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-14]
+        # "en", "de", and "" are equivalent
+        # "all" is tested by pytest.yml
+        language: ["en", "ja", "zh"]
 
         exclude:
           # GitHub Actions doesn't support Python 3.8 and 3.9 on M1 macOS yet:
@@ -61,15 +64,11 @@ jobs:
           brew update
           brew install mecab
 
-      - name: Install Core LangCheck
+      - name: Install LangCheck
         run: |
           pip install --upgrade pip
-          pip install .
-
-      - name: Install Core LangCheck with Optional Dependencies
-        run: |
-          pip install .[optional]
+          pip install .[${{ matrix.language }}]
 
       - name: Import LangCheck
         run: |
-          python -c "import langcheck"
+          python -c "import langcheck; import langcheck.metrics.${{ matrix.language }}"

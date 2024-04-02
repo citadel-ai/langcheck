@@ -35,7 +35,7 @@ jobs:
       - name: Install
         run: |
           pip install --upgrade pip
-          pip install .[dev]
+          pip install .[all,dev]
 
       # Remove unneeded system libraries to maximize disk space
       # https://github.com/easimon/maximize-build-space/blob/master/action.yml
@@ -52,12 +52,11 @@ jobs:
           echo "Available disk space (after):"
           df -h
 
-      # Run integration tests
+      # Run tests
       - name: Test
         run: |
           python -m pytest -s -vv --durations=0 -m "not optional"
 
       - name: Test (Optional)
         run: |
-          pip install .[optional]
           python -m pytest -s -vv --durations=0 -m "optional"

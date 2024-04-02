@@ -23,7 +23,7 @@
 ## 安装
 
 ```shell
-pip install langcheck
+pip install langcheck[zh]
 ```
 
 如果安装遇到问题，请查看[常见问题解答(英文)](https://langcheck.readthedocs.io/en/latest/installation.html#installation-faq)。

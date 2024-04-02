@@ -15,30 +15,48 @@ classifiers = [
 ]
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
-    'chikkarpy',
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
-    'fugashi',  # For tokenizer of metrics.ja.toxicity()
-    'janome >= 0.3.1',
-    'hanlp >= 2.1.0b33',
-    "nlpaug",
+    'nlpaug',
     'nltk >= 3',
     'openai >= 1',
     'pandas >= 1',
     'plotly >= 5',
-    'rouge_score >= 0.1.2',
-    'sentence_transformers >= 2',
+    'rouge-score >= 0.1.2',
+    'sentence-transformers >= 2',
     'sentencepiece>=0.1.95',
     'tomli; python_version < "3.11"',
     'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
     'torch >= 2',
     'transformers >= 4.6',
-    "unidic-lite >= 1.0.1",  # For tokenizer of metrics.ja.toxicity()
-    "tabulate >= 0.9.0", # For model manager paint table
-    "omegaconf >= 2.3.0" # For model manager paint table
+    'tabulate >= 0.9.0', # For model manager print table
+    'omegaconf >= 2.3.0' # For model manager print table
 ]
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
+de = []  # No extra dependencies needed for German
+en = []  # English support is installed by default
+ja = [
+    'chikkarpy',
+    'fugashi',  # For tokenizer of metrics.ja.toxicity()
+    'janome >= 0.3.1',
+    'unidic-lite >= 1.0.1'  # For tokenizer of metrics.ja.toxicity()
+]
+ja-optional = [  # Optional dependencies for extended Japanese support
+    'mecab-python3 >= 1.0.4',
+    'sudachidict-core',
+    'sudachipy'
+]
+zh = [
+    'hanlp >= 2.1.0b33'
+]
+all = [
+    'langcheck[de]',
+    'langcheck[en]',
+    'langcheck[ja]',
+    'langcheck[ja-optional]',
+    'langcheck[zh]'
+]
 dev = [
     "yapf==0.40.1",
     "flake8",
@@ -51,11 +69,6 @@ dev = [
     "myst-parser",
     "ipykernel",
     "sphinxcontrib-youtube"
-]
-optional = [
-    "mecab-python3 >= 1.0.4",
-    'sudachidict_core',
-    'sudachipy'
 ]
 
 [project.urls]

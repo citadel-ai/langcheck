@@ -8,7 +8,7 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// PyTorch 2.1.0 causes segmentation fault in aarch64, so we pin the version in the dev container until the bug is fixed.
 	// Ref: https://github.com/pytorch/pytorch/issues/110819
-	"postCreateCommand": "pip install --upgrade pip && pip install yapf==0.40.1 && python -m pip install -e .[dev] && pip install torch==2.0.1",
+	"postCreateCommand": "pip install --upgrade pip && pip install yapf==0.40.1 && python -m pip install -e .[all,dev] && pip install torch==2.0.1",
 
 	"customizations": {
     // Configure properties specific to VS Code.
