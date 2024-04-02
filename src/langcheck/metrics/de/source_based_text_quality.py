@@ -19,13 +19,14 @@ LANG = 'de'
 
 
 def factual_consistency(
-    generated_outputs: List[str] | str,
-    sources: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
-    model_type: str = 'local',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs: List[str] | str,
+        sources: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        *,
+        use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
@@ -69,6 +70,7 @@ def factual_consistency(
             attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API for OpenAI, default False
 
     Returns:
         An MetricValue object
@@ -81,8 +83,12 @@ def factual_consistency(
         'The supported ones are ["local", "openai", "azure_openai"]')
 
     if model_type == 'openai' or model_type == 'azure_openai':
-        scores, explanations = _factual_consistency_openai(
-            generated_outputs, sources, model_type, openai_client, openai_args)
+        scores, explanations = _factual_consistency_openai(generated_outputs,
+                                                           sources,
+                                                           model_type,
+                                                           openai_client,
+                                                           openai_args,
+                                                           use_async=use_async)
 
         return MetricValue(metric_name='factual_consistency',
                            prompts=prompts,
@@ -121,8 +127,13 @@ def factual_consistency(
 
 
 def _factual_consistency_openai(
-    generated_outputs: List[str], sources: List[str], client_type: str,
-    client: Optional[OpenAI], openai_args: Optional[Dict[str, str]]
+    generated_outputs: List[str],
+    sources: List[str],
+    client_type: str,
+    client: Optional[OpenAI],
+    openai_args: Optional[Dict[str, str]],
+    *,
+    use_async: bool = False
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
     between each generated output and its corresponding source text. The
@@ -145,6 +156,7 @@ def _factual_consistency_openai(
             ``client_type``.
         openai_args: (Optional) Dict of additional args to pass in to the
             ``client.chat.completions.create`` function
+        use_async: Whether to use the asynchronous API for OpenAI
 
     Returns:
         score_list: a list of scores
@@ -211,28 +223,22 @@ def _factual_consistency_openai(
         argument_description='The factual consistency assessment of the claim',
         client_type=client_type,
         client=client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
-    score_list = []
+    scores, explanations = oai_evaluator.get_score(
+        map(_prompt, sources, generated_outputs), _function_call_prompt)
 
-    explanation_list = []
-    for src, gen in tqdm_wrapper(zip(sources, generated_outputs),
-                                 desc='Calculating scores',
-                                 total=len(generated_outputs)):
-        score, explanation = oai_evaluator.get_score(
-            _prompt(src=src, gen_output=gen), _function_call_prompt)
-        score_list.append(score)
-        explanation_list.append(explanation)
-    return score_list, explanation_list
+    return scores, explanations
 
 
-def context_relevance(
-    sources: List[str] | str,
-    prompts: List[str] | str,
-    model_type: str = 'openai',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+def context_relevance(sources: List[str] | str,
+                      prompts: List[str] | str,
+                      model_type: str = 'openai',
+                      openai_client: Optional[OpenAI] = None,
+                      openai_args: Optional[Dict[str, str]] = None,
+                      *,
+                      use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully
@@ -262,6 +268,7 @@ def context_relevance(
             None, we will attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API for OpenAI, default False
     '''
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
@@ -319,23 +326,17 @@ def context_relevance(
         argument_description='The context relevance assessment',
         client_type=model_type,
         client=openai_client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
-    score_list = []
-    explanation_list = []
-    for src, user_query in tqdm_wrapper(zip(sources, prompts),
-                                        desc='Calculating scores',
-                                        total=len(prompts)):
-        score, explanation = oai_evaluator.get_score(
-            _prompt(src=src, user_query=user_query), _function_call_prompt)
-        score_list.append(score)
-        explanation_list.append(explanation)
+    scores, explanations = oai_evaluator.get_score(
+        map(_prompt, sources, prompts), _function_call_prompt)
 
     return MetricValue(metric_name='context_relevance',
                        prompts=prompts,
                        generated_outputs=None,
                        reference_outputs=None,
-                       sources=sources,
-                       explanations=explanation_list,
-                       metric_values=score_list,
+                       sources=list(sources),
+                       explanations=explanations,
+                       metric_values=scores,
                        language=LANG)
