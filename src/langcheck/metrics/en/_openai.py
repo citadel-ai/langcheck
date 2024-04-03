@@ -85,6 +85,9 @@ class OpenAIBasedEvaluator:
         self,
         prompts: str | Iterable[str],
         function_call_prompt_template: Callable,
+        *,
+        intermediate_tqdm_description: str | None = None,
+        score_tqdm_description: str | None = None
     ) -> tuple[list[float | None], list[str | None]]:
         '''
         Retrieves the score and unstructured assessment for a given prompt using
@@ -101,6 +104,10 @@ class OpenAIBasedEvaluator:
             function_call_prompt_template: Prompt template used to construct the
                 prompt that asks the OpenAI API for the structured assessment
                 response
+            intermediate_tqdm_description: (Optional) Description for the
+                progress bar for the intermediate assessments
+            score_tqdm_description: (Optional) Description for the progress bar
+                for the scores
 
         Returns:
             scores: List of scores associated with the corresponding prompts
@@ -123,10 +130,11 @@ class OpenAIBasedEvaluator:
         }
         config_unstructured_assessments.update(self._openai_args or {})
 
+        intermediate_tqdm_description = intermediate_tqdm_description or 'Intermediate assessments (1/2)'  # NOQA: E501
         responses = self._call_api(
             prompts=prompts,
             config=config_unstructured_assessments,
-            tqdm_description='Intermediate assessments (1/2)')
+            tqdm_description=intermediate_tqdm_description)
         unstructured_assessments = [
             response.choices[0].message.content if response else None
             for response in responses
@@ -167,11 +175,10 @@ class OpenAIBasedEvaluator:
         }
         config_structured_assessments.update(self._openai_args or {})
 
-        responses = self._call_api(
-            prompts=fn_call_messages,
-            config=config_structured_assessments,
-            tqdm_description='Scores (2/2)',
-        )
+        score_tqdm_description = score_tqdm_description or 'Scores (2/2)'
+        responses = self._call_api(prompts=fn_call_messages,
+                                   config=config_structured_assessments,
+                                   tqdm_description=score_tqdm_description)
         function_args = [
             json.loads(response.choices[0].message.function_call.arguments)
             if response else None for response in responses

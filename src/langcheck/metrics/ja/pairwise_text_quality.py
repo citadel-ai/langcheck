@@ -236,8 +236,13 @@ def pairwise_comparison(
         all_swapped_prompts = prompt_generator.generate_prompts(
             generated_outputs_b, generated_outputs_a, prompts, sources_b,
             sources_a, reference_outputs)
+        intermediate_tqdm = '[Swapped model outputs order] Intermediate assessments (1/2)'  # NOQA: E501
+        score_tqdm = '[Swapped model outputs order] Calculating scores (2/2)'
         swapped_scores, swapped_explanations = oai_evaluator.get_score(
-            all_swapped_prompts, _function_call_prompt)
+            all_swapped_prompts,
+            _function_call_prompt,
+            intermediate_tqdm_description=intermediate_tqdm,
+            score_tqdm_description=score_tqdm)
         scores, explanations = enforce_pairwise_comparison_consistency(
             scores, explanations, swapped_scores, swapped_explanations)
 
