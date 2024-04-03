@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
 
 from openai import OpenAI
 
+from langcheck.metrics._pairwise_text_quality_utils import \
+    PairwiseComparisonPromptGenerator
 from langcheck.metrics._validation import \
     validate_parameters_pairwise_comparison
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 def pairwise_comparison(
@@ -76,85 +77,6 @@ def pairwise_comparison(
         'openai', 'azure_openai'
     ], ('Unsupported model type. '
         'The supported ones are ["openai", "azure_openai"]')
-
-    def _function_call_prompt(long_assessment: str) -> str:
-        return f'''
-        The following is an assessment on whether Response A or Response B is
-        the better response to the user's query:
-        ************
-        [Assessment]: {long_assessment}
-        ************
-
-        Save the resulting assessment. The available assessments are:
-        `Response A`
-        `Response B`
-        `Tie`
-        '''
-
-    pairwise_comparison_assessment_to_score = {
-        'Response B': 1.0,
-        'Tie': 0.5,
-        'Response A': 0.0
-    }
-    oai_evaluator = OpenAIBasedEvaluator(
-        assessment_to_score_mapping=pairwise_comparison_assessment_to_score,
-        function_name='save_pairwise_comparison_assessment',
-        function_description=("Saves a pairwise comparison assessment."),
-        argument_name='pairwise_comparison',
-        argument_description='The pairwise comparison assessment',
-        client_type=model_type,
-        client=openai_client,
-        openai_args=openai_args)
-
-    prompt_fn, data_iter = _construct_pairwise_comparison_prompt_and_data(
-        generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
-        reference_outputs)
-    all_prompts = [prompt_fn(*data_instance) for data_instance in data_iter]
-    scores, explanations = oai_evaluator.get_score(all_prompts,
-                                                   _function_call_prompt)
-
-    if enforce_consistency:
-        # Swap the generated outputs and calculate the scores again
-        prompt_fn, swapped_data_iter = _construct_pairwise_comparison_prompt_and_data(  # NOQA: E501
-            generated_outputs_b, generated_outputs_a, prompts, sources_b,
-            sources_a, reference_outputs)
-        all_swapped_prompts = [
-            prompt_fn(*data_instance) for data_instance in swapped_data_iter
-        ]
-        swapped_scores, swapped_explanations = oai_evaluator.get_score(
-            all_swapped_prompts, _function_call_prompt)
-
-        # Iterate through the scores and explanations to check for consistency.
-        # If a score is not consistent, set it to None, and merge the two
-        # explanations to show the inconsistency.
-        for i in range(len(scores)):
-            if scores[i] is None or swapped_scores[i] is None:
-                # If either score is None, we cannot determine consistency, so
-                # we set the score and explanation to None
-                scores[i] = None
-                explanations[i] = None
-                continue
-            if scores[i] + swapped_scores[i] != 1.0:  # type: ignore
-                scores[i] = None
-                explanations[
-                    i] = f'Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}'  # NOQA: E501
-
-    return MetricValue(metric_name='pairwise_comparison',
-                       prompts=prompts,
-                       generated_outputs=(generated_outputs_a,
-                                          generated_outputs_b),
-                       reference_outputs=reference_outputs,
-                       sources=(sources_a, sources_b),
-                       explanations=explanations,
-                       metric_values=scores,
-                       language='en')
-
-
-def _construct_pairwise_comparison_prompt_and_data(
-        generated_outputs_1: List[str], generated_outputs_2: List[str],
-        prompts: List[str], sources_1: Optional[List[str]],
-        sources_2: Optional[List[str]], reference_outputs: Optional[List[str]]
-) -> tuple[Callable, Iterable[Any]]:
 
     def _prompt(gen_output_a: str, gen_output_b: str, user_query: str) -> str:
         return f'''
@@ -281,29 +203,75 @@ def _construct_pairwise_comparison_prompt_and_data(
         Take a deep breath and work on this problem step-by-step.
         '''
 
-    # Combine sources_1 and sources_2 into a single list if both are provided.
-    if sources_1 is not None and sources_2 is not None:
-        sources = [
-            source_a + '\n' + source_b
-            for source_a, source_b in zip(sources_1, sources_2)
-        ]
-    else:
-        sources = sources_1 if sources_1 is not None else sources_2
+    def _function_call_prompt(long_assessment: str) -> str:
+        return f'''
+        The following is an assessment on whether Response A or Response B is
+        the better response to the user's query:
+        ************
+        [Assessment]: {long_assessment}
+        ************
 
-    if sources is not None and reference_outputs is not None:
-        prompt_fn = _prompt_with_source_and_reference
-        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts,
-                        reference_outputs, sources)
-    elif sources is not None:
-        prompt_fn = _prompt_with_source
-        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts,
-                        sources)
-    elif reference_outputs is not None:
-        prompt_fn = _prompt_with_reference
-        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts,
-                        reference_outputs)
-    else:
-        prompt_fn = _prompt
-        data_iter = zip(generated_outputs_1, generated_outputs_2, prompts)
+        Save the resulting assessment. The available assessments are:
+        `Response A`
+        `Response B`
+        `Tie`
+        '''
 
-    return prompt_fn, data_iter
+    pairwise_comparison_assessment_to_score = {
+        'Response B': 1.0,
+        'Tie': 0.5,
+        'Response A': 0.0
+    }
+    oai_evaluator = OpenAIBasedEvaluator(
+        assessment_to_score_mapping=pairwise_comparison_assessment_to_score,
+        function_name='save_pairwise_comparison_assessment',
+        function_description=("Saves a pairwise comparison assessment."),
+        argument_name='pairwise_comparison',
+        argument_description='The pairwise comparison assessment',
+        client_type=model_type,
+        client=openai_client,
+        openai_args=openai_args)
+
+    prompt_generator = PairwiseComparisonPromptGenerator(
+        _prompt, _prompt_with_reference, _prompt_with_source,
+        _prompt_with_source_and_reference)
+    all_prompts = prompt_generator.generate_prompts(generated_outputs_a,
+                                                    generated_outputs_b,
+                                                    prompts, sources_a,
+                                                    sources_b,
+                                                    reference_outputs)
+    scores, explanations = oai_evaluator.get_score(all_prompts,
+                                                   _function_call_prompt)
+
+    if enforce_consistency:
+        # Swap the generated outputs and calculate the scores again
+        all_swapped_prompts = prompt_generator.generate_prompts(
+            generated_outputs_b, generated_outputs_a, prompts, sources_b,
+            sources_a, reference_outputs)
+        swapped_scores, swapped_explanations = oai_evaluator.get_score(
+            all_swapped_prompts, _function_call_prompt)
+
+        # Iterate through the scores and explanations to check for consistency.
+        # If a score is not consistent, set it to None, and merge the two
+        # explanations to show the inconsistency.
+        for i in range(len(scores)):
+            if scores[i] is None or swapped_scores[i] is None:
+                # If either score is None, we cannot determine consistency, so
+                # we set the score and explanation to None
+                scores[i] = None
+                explanations[i] = None
+                continue
+            if scores[i] + swapped_scores[i] != 1.0:  # type: ignore
+                scores[i] = None
+                explanations[
+                    i] = f'Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}'  # NOQA: E501
+
+    return MetricValue(metric_name='pairwise_comparison',
+                       prompts=prompts,
+                       generated_outputs=(generated_outputs_a,
+                                          generated_outputs_b),
+                       reference_outputs=reference_outputs,
+                       sources=(sources_a, sources_b),
+                       explanations=explanations,
+                       metric_values=scores,
+                       language='en')
