@@ -45,7 +45,7 @@ To run tests:
 To make documentation:
 
 1. **Optional:** Re-generate all `docs/langcheck*.rst` files.
-   - `sphinx-apidoc -f --no-toc --separate --module-first -t docs/_templates/ -o docs src/langcheck/ src/langcheck/stats.py`
+   - `sphinx-apidoc -f --no-toc --separate --module-first -t docs/_templates/ -o docs src/langcheck/ src/langcheck/stats.py src/langcheck/metrics/model_manager`
    - **Warning:** This will overwrite all of our custom text in the `.rst` files, so you must check the code diffs for `UPDATE_AFTER_SPHINX_APIDOC` comments and manually re-apply them.
    - This is only necessary when you add or remove entire packages/modules. If you only edit existing packages/modules, you can skip this step.
    - This only modifies the auto-generated `docs/langcheck*.rst` files (the "API Reference" section in the docs). It doesn't touch the `index.md` and other `.md` or `.rst` files.
