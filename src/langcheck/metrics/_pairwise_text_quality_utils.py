@@ -5,10 +5,35 @@ from typing import Callable
 
 class PairwiseComparisonPromptGenerator:
 
-    def __init__(self, base_prompt_template: Callable,
-                 prompt_template_with_reference: Callable,
-                 prompt_template_with_source: Callable,
-                 prompt_template_with_source_and_reference: Callable) -> None:
+    def __init__(
+        self, base_prompt_template: Callable[[str, str, str]],
+        prompt_template_with_reference: Callable[[str, str, str, str]],
+        prompt_template_with_source: Callable[[str, str, str, str]],
+        prompt_template_with_source_and_reference: Callable[[
+            str, str, str, str, str
+        ]]
+    ) -> None:
+        '''Initialize the PairwiseComparisonPromptGenerator.
+
+        Args:
+            base_prompt_template: The base prompt template to use when no
+                sources or reference outputs are provided. The function's inputs
+                should be the generated output from Model A, the generated
+                output from Model B, and the input prompt.
+            prompt_template_with_reference: The prompt template to use when
+                reference outputs are provided. The function's inputs should be
+                the generated output from Model A, the generated output from
+                Model B, the input prompt, and the reference output.
+            prompt_template_with_source: The prompt template to use when
+                sources are provided. The function's inputs should be the
+                generated output from Model A, the generated output from Model
+                B, the input prompt, and the source.
+            prompt_template_with_source_and_reference: The prompt template to
+                use when sources and reference outputs are provided. The
+                function's inputs should be the generated output from Model A,
+                the generated output from Model B, the input prompt, the
+                reference output, and the source.
+        '''
         self.base_prompt_template = base_prompt_template
         self.prompt_template_with_reference = prompt_template_with_reference
         self.prompt_template_with_source = prompt_template_with_source
