@@ -65,6 +65,7 @@ LangCheckには、他にも以下のようなLLMアプリケーションを評�
 | [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)` | 英語、日本語、中国語、ドイツ語 |
 | [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                             | 英語、日本語、中国語、ドイツ語 |
 | [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                         | 全ての言語   |
+| [Pairwise Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#pairwise-text-quality-metrics) | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)` | 英語、日本語 |
 
 ### 数値の可視化
 
