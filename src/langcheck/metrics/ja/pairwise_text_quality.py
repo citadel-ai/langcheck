@@ -80,11 +80,10 @@ def pairwise_comparison(
 
     def _prompt(gen_output_a: str, gen_output_b: str, user_query: str) -> str:
         return f'''
-        You are comparing the quality of two responses to a user's query. Here
-        is the data:
+        ユーザーの質問に対する2つの回答の品質を比較してください。データは以下の通りです:
         [BEGIN DATA]
         ************
-        [User Query]: {user_query}
+        [ユーザーの質問]: {user_query}
         ************
         [Response A]: {gen_output_a}
         ************
@@ -92,29 +91,27 @@ def pairwise_comparison(
         ************
         [END DATA]
 
-        Determine which of the responses is a better response to the user's
-        query. Consider factors such as helpfulness, correctness, and relevance
-        in your assessment. Do not allow the order in which the responses were
-        presented to influence your assessment. Do not allow the length of the
-        responses to influence your assessment. The available assessments are:
-        `Response A` - Response A is a better response.
-        `Response B` - Response B is a better response.
-        `Tie` - The two responses are roughly equal in quality.
+        ユーザーの質問に対してどちらの回答がより良いかを決定してください。有用性、正確さ、
+        関連性などの要素を考慮して評価してください。回答が提示された順序に評価が影響されない
+        ようにしてください。回答の長さが評価に影響を与えないようにしてください。利用可能な評価
+        は以下の通りです:
+        `Response A` - Response Aがより良い回答です。
+        `Response B` - Response Bがより良い回答です。
+        `Tie` - 2つの回答は品質がほぼ同等です。
 
-        Take a deep breath and work on this problem step-by-step.
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
         '''
 
     def _prompt_with_reference(gen_output_a: str, gen_output_b: str,
                                user_query: str, ref_output: str) -> str:
         return f'''
-        You are comparing the quality of two responses to a user's query. The
-        ideal response to the user's query is also provided to you as a
-        reference. Here is the data:
+        ユーザーの質問に対する2つの回答の品質を比較してください。ユーザーの質問に対する理想的な
+        回答も参考として提供されます。データは以下の通りです:
         [BEGIN DATA]
         ************
-        [User Query]: {user_query}
+        [ユーザーの質問]: {user_query}
         ************
-        [Ideal Response]: {ref_output}
+        [理想的な回答]: {ref_output}
         ************
         [Response A]: {gen_output_a}
         ************
@@ -122,31 +119,28 @@ def pairwise_comparison(
         ************
         [END DATA]
 
-        Determine which of the responses is a better response to the user's
-        query. Consider factors such as helpfulness, correctness, and relevance
-        in your assessment, using the provided Ideal Response as a reference. Do
-        not allow the order in which the responses were presented to influence
-        your assessment. Do not allow the length of the responses to influence
-        your assessment. The available assessments are:
-        `Response A` - Response A is a better response.
-        `Response B` - Response B is a better response.
-        `Tie` - The two responses are roughly equal in quality.
+        ユーザーの質問に対してどちらの回答がより良いかを決定してください。提供された理想的な
+        回答を参考にして、有用性、正確さ、関連性などの要素を考慮して評価してください。回答が
+        提示された順序に評価が影響されないようにしてください。回答の長さが評価に影響を与えない
+        ようにしてください。利用可能な評価は以下の通りです:
+        `Response A` - Response Aがより良い回答です。
+        `Response B` - Response Bがより良い回答です。
+        `Tie` - 2つの回答は品質がほぼ同等です。
 
-        Take a deep breath and work on this problem step-by-step.
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
         '''
 
     def _prompt_with_source(gen_output_a: str, gen_output_b: str,
                             user_query: str, source: str) -> str:
         return f'''
-        You are comparing the quality of two responses to a user's query. Source
-        text that is supposedly relevant to the user's query is also provided
-        to you as a reference (the source text may contain some duplication).
-        Here is the data:
+        ユーザーの質問に対する2つの回答の品質を比較してください。ユーザーの質問に関連があると
+        思われるソーステキストも参考として提供されます（ソーステキストには重複が含まれている
+        可能性があります）。データは以下の通りです:
         [BEGIN DATA]
         ************
-        [User Query]: {user_query}
+        [ユーザーの質問]: {user_query}
         ************
-        [Source]: {source}
+        [ソース]: {source}
         ************
         [Response A]: {gen_output_a}
         ************
@@ -154,35 +148,32 @@ def pairwise_comparison(
         ************
         [END DATA]
 
-        Determine which of the responses is a better response to the user's
-        query. Consider factors such as helpfulness, correctness, and relevance
-        in your assessment, using the provided Source as a reference. Do not
-        allow the order in which the responses were presented to influence your
-        assessment. Do not allow the length of the responses to influence your
-        assessment. The available assessments are:
-        `Response A` - Response A is a better response.
-        `Response B` - Response B is a better response.
-        `Tie` - The two responses are roughly equal in quality.
+        ユーザーの質問に対してどちらの回答がより良いかを決定してください。提供されたソースを
+        参考にして、有用性、正確さ、関連性などの要素を考慮して評価してください。回答が提示された
+        順序に評価が影響されないようにしてください。回答の長さが評価に影響を与えないように
+        してください。利用可能な評価は以下の通りです:
+        `Response A` - Response Aがより良い回答です。
+        `Response B` - Response Bがより良い回答です。
+        `Tie` - 2つの回答は品質がほぼ同等です。
 
-        Take a deep breath and work on this problem step-by-step.
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
         '''
 
     def _prompt_with_source_and_reference(gen_output_a: str, gen_output_b: str,
                                           user_query: str, ref_output: str,
                                           source: str) -> str:
         return f'''
-        You are comparing the quality of two responses to a user's query. Source
-        text that is supposedly relevant to the user's query is also provided
-        to you as a reference (the source text may contain some duplication).
-        The ideal response to the user's query is also provided to you as a
-        reference. Here is the data:
+        ユーザーの質問に対する2つの回答の品質を比較してください。ユーザーの質問に関連があると
+        思われるソーステキストも参考として提供されます（ソーステキストには重複が含まれている
+        可能性があります）。さらに、ユーザーの質問に対する理想的な回答も参考として提供されます。
+        データは以下の通りです:
         [BEGIN DATA]
         ************
-        [User Query]: {user_query}
+        [ユーザーの質問]: {user_query}
         ************
-        [Source]: {source}
+        [ソース]: {source}
         ************
-        [Ideal Response]: {ref_output}
+        [理想的な回答]: {ref_output}
         ************
         [Response A]: {gen_output_a}
         ************
@@ -190,17 +181,15 @@ def pairwise_comparison(
         ************
         [END DATA]
 
-        Determine which of the responses is a better response to the user's
-        query. Consider factors such as helpfulness, correctness, and relevance
-        in your assessment, using the provided Source and the Ideal Response as
-        references. Do not allow the order in which the responses were presented
-        to influence your assessment. Do not allow the length of the responses
-        to influence your assessment. The available assessments are:
-        `Response A` - Response A is a better response.
-        `Response B` - Response B is a better response.
-        `Tie` - The two responses are roughly equal in quality.
+        ユーザーの質問に対してどちらの回答がより良いかを決定してください。提供されたソースと
+        理想的な回答を参考に、有用性、正確さ、関連性などの要素を考慮して評価してください。
+        回答が提示された順序に評価が影響されないようにしてください。回答の長さが評価に影響を
+        与えないようにしてください。利用可能な評価は以下の通りです:
+        `Response A` - Response Aがより良い回答です。
+        `Response B` - Response Bがより良い回答です。
+        `Tie` - 2つの回答は品質がほぼ同等です。
 
-        Take a deep breath and work on this problem step-by-step.
+        深呼吸をして、この問題をステップバイステップで取り組んでください。
         '''
 
     def _function_call_prompt(long_assessment: str) -> str:
