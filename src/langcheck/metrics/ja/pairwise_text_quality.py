@@ -44,10 +44,6 @@ def pairwise_comparison(
     model deployment to use in ``openai_args``, e.g.
     ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
-    Ref:
-        Our prompt is similar to the prompt used in
-        https://arxiv.org/abs/2306.05685
-
     Args:
         generated_outputs_a: Model A's generated output(s) to evaluate
         generated_outputs_b: Model B's generated output(s) to evaluate
