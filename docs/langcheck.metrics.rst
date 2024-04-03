@@ -17,25 +17,27 @@ Since LangCheck has multi-lingual support, language-specific metrics are organiz
 
 There are several different types of metrics:
 
-+---------------------------------------------+---------------------------------------------------------------+---------------+
-|               Type of Metric                |                           Examples                            |   Languages   |
-+=============================================+===============================================================+===============+
-| :ref:`reference-based-text-quality-metrics` | ``toxicity(generated_outputs)``                               | EN, JA        |
-|                                             |                                                               |               |
-|                                             | ``sentiment(generated_outputs)``                              |               |
-|                                             |                                                               |               |
-|                                             | ``ai_disclaimer_similarity(generated_outputs)``               |               |
-+---------------------------------------------+---------------------------------------------------------------+---------------+
-| :ref:`reference-free-text-quality-metrics`  | ``semantic_similarity(generated_outputs, reference_outputs)`` | EN, JA        |
-|                                             |                                                               |               |
-|                                             | ``rouge2(generated_outputs, reference_outputs)``              |               |
-+---------------------------------------------+---------------------------------------------------------------+---------------+
-| :ref:`source-based-text-quality-metrics`    | ``factual_consistency(generated_outputs, sources)``           | EN, JA        |
-+---------------------------------------------+---------------------------------------------------------------+---------------+
-| :ref:`text-structure-metrics`               | ``is_float(generated_outputs, min=0, max=None)``              | All Languages |
-|                                             |                                                               |               |
-|                                             | ``is_json_object(generated_outputs)``                         |               |
-+---------------------------------------------+---------------------------------------------------------------+---------------+
++---------------------------------------------+----------------------------------------------------------------------------+----------------+
+|               Type of Metric                |                                  Examples                                  |   Languages    |
++=============================================+============================================================================+================+
+| :ref:`reference-based-text-quality-metrics` | ``toxicity(generated_outputs)``                                            | EN, JA, DE, ZH |
+|                                             |                                                                            |                |
+|                                             | ``sentiment(generated_outputs)``                                           |                |
+|                                             |                                                                            |                |
+|                                             | ``ai_disclaimer_similarity(generated_outputs)``                            |                |
++---------------------------------------------+----------------------------------------------------------------------------+----------------+
+| :ref:`reference-free-text-quality-metrics`  | ``semantic_similarity(generated_outputs, reference_outputs)``              | EN, JA, DE, ZH |
+|                                             |                                                                            |                |
+|                                             | ``rouge2(generated_outputs, reference_outputs)``                           |                |
++---------------------------------------------+----------------------------------------------------------------------------+----------------+
+| :ref:`source-based-text-quality-metrics`    | ``factual_consistency(generated_outputs, sources)``                        | EN, JA, DE, ZH |
++---------------------------------------------+----------------------------------------------------------------------------+----------------+
+| :ref:`text-structure-metrics`               | ``is_float(generated_outputs, min=0, max=None)``                           | All Languages  |
+|                                             |                                                                            |                |
+|                                             | ``is_json_object(generated_outputs)``                                      |                |
++---------------------------------------------+----------------------------------------------------------------------------+----------------+
+| :ref:`pairwise-text-quality-metrics`        | ``pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)`` | EN             |
++---------------------------------------------+----------------------------------------------------------------------------+----------------+
 
 
 ----
@@ -52,8 +54,10 @@ There are several different types of metrics:
    :hidden:
    :maxdepth: 4
 
+   langcheck.metrics.de
    langcheck.metrics.en
    langcheck.metrics.ja
+   langcheck.metrics.zh
 
 
 

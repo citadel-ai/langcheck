@@ -28,3 +28,4 @@ langcheck.utils
    :maxdepth: 4
 
    langcheck.utils.io
+   langcheck.utils.progess_bar
