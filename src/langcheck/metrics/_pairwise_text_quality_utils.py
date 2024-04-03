@@ -6,12 +6,11 @@ from typing import Callable
 class PairwiseComparisonPromptGenerator:
 
     def __init__(
-        self, base_prompt_template: Callable[[str, str, str]],
-        prompt_template_with_reference: Callable[[str, str, str, str]],
-        prompt_template_with_source: Callable[[str, str, str, str]],
-        prompt_template_with_source_and_reference: Callable[[
-            str, str, str, str, str
-        ]]
+        self, base_prompt_template: Callable[[str, str, str], str],
+        prompt_template_with_reference: Callable[[str, str, str, str], str],
+        prompt_template_with_source: Callable[[str, str, str, str], str],
+        prompt_template_with_source_and_reference: Callable[
+            [str, str, str, str, str], str]
     ) -> None:
         '''Initialize the PairwiseComparisonPromptGenerator.
 
