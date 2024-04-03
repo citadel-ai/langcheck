@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 from openai import OpenAI
 
-from langcheck.metrics._pairwise_text_quality_utils import \
-    PairwiseComparisonPromptGenerator
+from langcheck.metrics._pairwise_text_quality_utils import (
+    PairwiseComparisonPromptGenerator, enforce_pairwise_comparison_consistency)
 from langcheck.metrics._validation import \
     validate_parameters_pairwise_comparison
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
@@ -244,27 +244,14 @@ def pairwise_comparison(
                                                    _function_call_prompt)
 
     if enforce_consistency:
-        # Swap the generated outputs and calculate the scores again
+        # Swap the generated outputs and enforce consistency
         all_swapped_prompts = prompt_generator.generate_prompts(
             generated_outputs_b, generated_outputs_a, prompts, sources_b,
             sources_a, reference_outputs)
         swapped_scores, swapped_explanations = oai_evaluator.get_score(
             all_swapped_prompts, _function_call_prompt)
-
-        # Iterate through the scores and explanations to check for consistency.
-        # If a score is not consistent, set it to None, and merge the two
-        # explanations to show the inconsistency.
-        for i in range(len(scores)):
-            if scores[i] is None or swapped_scores[i] is None:
-                # If either score is None, we cannot determine consistency, so
-                # we set the score and explanation to None
-                scores[i] = None
-                explanations[i] = None
-                continue
-            if scores[i] + swapped_scores[i] != 1.0:  # type: ignore
-                scores[i] = None
-                explanations[
-                    i] = f'Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}'  # NOQA: E501
+        scores, explanations = enforce_pairwise_comparison_consistency(
+            scores, explanations, swapped_scores, swapped_explanations)
 
     return MetricValue(metric_name='pairwise_comparison',
                        prompts=prompts,
