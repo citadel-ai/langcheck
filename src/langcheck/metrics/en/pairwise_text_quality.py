@@ -13,17 +13,18 @@ from langcheck.metrics.metric_value import MetricValue
 
 
 def pairwise_comparison(
-    generated_outputs_a: List[str] | str,
-    generated_outputs_b: List[str] | str,
-    prompts: List[str] | str,
-    sources_a: Optional[List[str] | str] = None,
-    sources_b: Optional[List[str] | str] = None,
-    reference_outputs: Optional[List[str] | str] = None,
-    enforce_consistency: bool = True,
-    model_type: str = 'openai',
-    openai_client: Optional[OpenAI] = None,
-    openai_args: Optional[Dict[str,
-                               str]] = None) -> MetricValue[Optional[float]]:
+        generated_outputs_a: List[str] | str,
+        generated_outputs_b: List[str] | str,
+        prompts: List[str] | str,
+        sources_a: Optional[List[str] | str] = None,
+        sources_b: Optional[List[str] | str] = None,
+        reference_outputs: Optional[List[str] | str] = None,
+        enforce_consistency: bool = True,
+        model_type: str = 'openai',
+        openai_client: Optional[OpenAI] = None,
+        openai_args: Optional[Dict[str, str]] = None,
+        *,
+        use_async: bool = False) -> MetricValue[Optional[float]]:
     '''Calculates the pairwise comparison metric. This metric takes on float
     values of either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B
     is better). The score may also be `None` if it could not be computed.
@@ -66,6 +67,7 @@ def pairwise_comparison(
             None, we will attempt to create a default client.
         openai_args: Dict of additional args to pass in to the
             ``client.chat.completions.create`` function, default None
+        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An MetricValue object
@@ -230,7 +232,8 @@ def pairwise_comparison(
         argument_description='The pairwise comparison assessment',
         client_type=model_type,
         client=openai_client,
-        openai_args=openai_args)
+        openai_args=openai_args,
+        use_async=use_async)
 
     prompt_generator = PairwiseComparisonPromptGenerator(
         _prompt, _prompt_with_reference, _prompt_with_source,
