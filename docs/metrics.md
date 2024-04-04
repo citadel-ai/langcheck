@@ -47,7 +47,7 @@ LangCheck metrics are categorized by metric type, which correspond to the kind o
 | [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, DE, ZH |
 | [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, DE, ZH |
 | [Text Structure Metrics](#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages  |
-| [Pairwise Text Quality Metrics](#pairwise-text-quality-metrics)               | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)`                                         | EN             |
+| [Pairwise Text Quality Metrics](#pairwise-text-quality-metrics)               | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)`                                         | EN, JA         |
 
 (reference-free-text-quality-metrics)=
 ### Reference-Free Text Quality Metrics
