@@ -120,10 +120,10 @@ def _sentiment_llm_client(
     generated_outputs: List[str], llm_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the sentiment scores and their associated explanations of
-    generated outputs using the provided LLM client. This metric takes on float values
-    that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is neutral
-    sentiment, and 1 is positive sentiment. If a score could not be computed,
-    `None` is inserted to the score and explanation lists.
+    generated outputs using the provided LLM client. This metric takes on float
+    values that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is
+    neutral sentiment, and 1 is positive sentiment. If a score could not be
+    computed, `None` is inserted to the score and explanation lists.
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
