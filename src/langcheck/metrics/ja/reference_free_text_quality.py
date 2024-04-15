@@ -20,8 +20,7 @@ from ..prompts._utils import get_template
 def sentiment(
         generated_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        llm_client: Optional[EvalClient] = None,
+        eval_model: str | EvalClient = 'local',
         local_overflow_strategy: str = 'truncate'
 ) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
@@ -30,15 +29,15 @@ def sentiment(
     either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
     also be `None` if it could not be computed.)
 
-    We currently support two model types:
+    We currently support two evaluation model types:
 
     1. The 'local' type, where the Twitter-roBERTa-base-sentiment-multilingual
     model is downloaded from HuggingFace and run locally. This is the default
     model type and there is no setup needed to run this.
 
-    2. The 'llm' type, where we you can use an EvalClient implemented with an
-    LLM. The implementation details are explained in each of the concrete
-    EvalClient classes.
+    2. The EvalClient type, where we you can use an EvalClient typically
+    implemented with an LLM. The implementation details are explained in each of
+    the concrete EvalClient classes.
 
     Ref:
         https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
@@ -47,10 +46,8 @@ def sentiment(
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local', 'openai', or
-            'azure_openai'), default 'local'
-        llm_client: EvalClient, default None. If this is None but ``model_type``
-            is 'llm', we will attempt to create a default client.
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
         local_overflow_strategy: The strategy to handle the inputs that are too
             long for the local model. The supported strategies are 'nullify',
             'truncate', and 'raise'. If 'nullify', the outputs that are too long
@@ -63,19 +60,16 @@ def sentiment(
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in ['local',
-                          'llm'], ('Unsupported model type. '
-                                   'The supported ones are ["local", "llm"]')
 
-    if model_type == 'local':
+    if eval_model == 'local':
         scores = _sentiment_local(generated_outputs, local_overflow_strategy)
         explanations = None
     else:  # llm client
-        assert (
-            llm_client
-            is not None), 'llm_client must be provided for "llm" model_type.'
+        assert isinstance(
+            eval_model, EvalClient
+        ), 'An EvalClient must be provided for non-local model types.'
         scores, explanations = _sentiment_llm_client(generated_outputs,
-                                                     llm_client)
+                                                     eval_model)
 
     return MetricValue(metric_name='sentiment',
                        prompts=prompts,
