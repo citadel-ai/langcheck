@@ -1,7 +1,34 @@
 from __future__ import annotations
 
 import math
-from typing import List
+from typing import Iterable, List
+
+from langcheck.metrics.eval_clients import EvalClient
+
+
+################################################################################
+# Utility Classes
+################################################################################
+class MockEvalClient(EvalClient):
+    '''A mock evaluation client for testing purposes.'''
+
+    def _unstructured_assessment(
+            self,
+            prompts: Iterable[str],
+            *,
+            tqdm_description: str | None = None) -> list[str | None]:
+        return ['Okay'] * len(list(prompts))
+
+    def _get_float_score(
+            self,
+            metric_name: str,
+            language: str,
+            unstructured_assessment_result: list[str | None],
+            score_map: dict[str, float],
+            *,
+            tqdm_description: str | None = None) -> list[float | None]:
+        return [0.5] * len(unstructured_assessment_result)
+
 
 ################################################################################
 # Utility functions
