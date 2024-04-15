@@ -8,44 +8,37 @@ from openai import OpenAI
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
 from langcheck.metrics.en._openai import OpenAIBasedEvaluator
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import \
     AutoModelForSequenceClassificationScorer
 from langcheck.utils.progess_bar import tqdm_wrapper
 
+from ..prompts._utils import get_template
 
-def sentiment(generated_outputs: List[str] | str,
-              prompts: Optional[List[str] | str] = None,
-              model_type: str = 'local',
-              openai_client: Optional[OpenAI] = None,
-              openai_args: Optional[Dict[str, str]] = None,
-              local_overflow_strategy: str = 'truncate',
-              *,
-              use_async: bool = False) -> MetricValue[Optional[float]]:
+
+def sentiment(
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        model_type: str = 'local',
+        llm_client: Optional[EvalClient] = None,
+        local_overflow_strategy: str = 'truncate'
+) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
-    positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
-    are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
+    positive sentiment.n LL (NOTE: when using an LLM, the sentiment scores are
+    either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
     also be `None` if it could not be computed.)
 
-    We currently support three model types:
+    We currently support two model types:
 
     1. The 'local' type, where the Twitter-roBERTa-base-sentiment-multilingual
     model is downloaded from HuggingFace and run locally. This is the default
     model type and there is no setup needed to run this.
 
-    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
-    by default. While the model you use is configurable, please make sure to use
-    one that supports function calling
-    (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
-    #computing-metrics-with-openai-models>`__
-    for examples on setting up the OpenAI API key.
-
-    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify your
-    model deployment to use in ``openai_args``, e.g.
-    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    2. The 'llm' type, where we you can use an EvalClient implemented with an
+    LLM. The implementation details are explained in each of the concrete
+    EvalClient classes.
 
     Ref:
         https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual
@@ -56,38 +49,33 @@ def sentiment(generated_outputs: List[str] | str,
             optional metadata and not used to calculate the metric.
         model_type: The type of model to use ('local', 'openai', or
             'azure_openai'), default 'local'
-        openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None but ``model_type`` is 'openai' or 'azure_openai', we will
-            attempt to create a default client.
-        openai_args: Dict of additional args to pass in to the
-            ``client.chat.completions.create`` function, default None
+        llm_client: EvalClient, default None. If this is None but ``model_type``
+            is 'llm', we will attempt to create a default client.
         local_overflow_strategy: The strategy to handle the inputs that are too
             long for the local model. The supported strategies are 'nullify',
             'truncate', and 'raise'. If 'nullify', the outputs that are too long
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
-        use_async: Whether to use the asynchronous API of OpenAI. Default is
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in [
-        'local', 'openai', 'azure_openai'
-    ], ('Unsupported model type. '
-        'The supported ones are ["local", "openai", "azure_openai"]')
+    assert model_type in ['local',
+                          'llm'], ('Unsupported model type. '
+                                   'The supported ones are ["local", "llm"]')
 
     if model_type == 'local':
         scores = _sentiment_local(generated_outputs, local_overflow_strategy)
         explanations = None
-    else:  # openai or azure_openai
-        scores, explanations = _sentiment_openai(generated_outputs,
-                                                 model_type,
-                                                 openai_client,
-                                                 openai_args,
-                                                 use_async=use_async)
+    else:  # llm client
+        assert (
+            llm_client
+            is not None), 'llm_client must be provided for "llm" model_type.'
+        scores, explanations = _sentiment_llm_client(generated_outputs,
+                                                     llm_client)
 
     return MetricValue(metric_name='sentiment',
                        prompts=prompts,
@@ -128,88 +116,40 @@ def _sentiment_local(generated_outputs: List[str],
     return scorer.score(generated_outputs)
 
 
-def _sentiment_openai(
-    generated_outputs: List[str],
-    client_type: str,
-    client: Optional[OpenAI],
-    openai_args: Optional[Dict[str, str]],
-    *,
-    use_async: bool = False
+def _sentiment_llm_client(
+    generated_outputs: List[str], llm_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the sentiment scores and their associated explanations of
-    generated outputs using the OpenAI API. This metric takes on float values
+    generated outputs using the provided LLM client. This metric takes on float values
     that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is neutral
-    sentiment, and 1 is positive sentiment.  We leverage the function calling
-    API to make sure that the output is structured such that we can compute a
-    score. If a score could not be computed, `None` is inserted to the score
-    and explanation lists.
-
-    Ref:
-        https://platform.openai.com/docs/guides/gpt/function-calling
+    sentiment, and 1 is positive sentiment. If a score could not be computed,
+    `None` is inserted to the score and explanation lists.
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        client_type: The type of OpenAI client ('openai' or 'azure_openai')
-        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
-            will attempt to create a default client depending on the
-            ``client_type``.
-        openai_args: (Optional) Dict of additional args to pass in to the
-            ``client.chat.completions.create`` function
-        use_async: Whether to use the asynchronous API of OpenAI
+        llm_client: EvalClient instance used to evaluate the generated outputs
 
     Returns:
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-
-    def _prompt(gen_output: str) -> str:
-        return f'''
-        提出されたテキストの感情を評価してください。データは以下の通りです:
-        [BEGIN DATA]
-        ************
-        [テキスト]: {gen_output}
-        ************
-        [END DATA]
-
-        提出されたテキストの主要な感情を判断してください。利用可能な評価は以下の通りです:
-        `Positive` - 提出されたテキストには主にポジティブな感情があります
-        `Negative` - 提出されたテキストには主にネガティブな感情があります
-        `Neutral` - 提出されたテキストにはポジティブでもネガティブでもない感情があります
-
-        深呼吸をして、この問題をステップバイステップで取り組んでください。
-        '''
-
-    def _function_call_prompt(long_assessment: str) -> str:
-        return f'''
-        以下はテキストの感情に関する評価です:
-        ************
-        [評価]: {long_assessment}
-        ************
-
-        結果として出た評価を保存してください。利用可能な評価は以下の通りです:
-        `Positive`
-        `Neutral`
-        `Negative`
-        '''
+    sentiment_template = get_template('ja/metrics/sentiment.j2')
 
     sentiment_assessment_to_score = {
         'Positive': 1.0,
         'Neutral': 0.5,
         'Negative': 0.0
     }
-    oai_evaluator = OpenAIBasedEvaluator(
-        assessment_to_score_mapping=sentiment_assessment_to_score,
-        function_name='save_sentiment_assessment',
-        function_description="Saves a statement's sentiment assessment.",
-        argument_name='sentiment',
-        argument_description='The sentiment assessment of the statement',
-        client_type=client_type,
-        client=client,
-        openai_args=openai_args,
-        use_async=use_async)
+    populated_prompts = [
+        sentiment_template.render({'gen_output': gen_output})
+        for gen_output in generated_outputs
+    ]
 
-    scores, explanations = oai_evaluator.get_score(
-        map(_prompt, generated_outputs), _function_call_prompt)
+    scores, explanations = llm_client.get_score(
+        metric_name='sentiment',
+        language='ja',
+        prompts=populated_prompts,
+        score_map=sentiment_assessment_to_score)
 
     return scores, explanations
 

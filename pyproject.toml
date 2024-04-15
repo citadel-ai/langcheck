@@ -16,6 +16,7 @@ classifiers = [
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
+    'Jinja2',
     'nlpaug',
     'nltk >= 3',
     'openai >= 1',
@@ -107,4 +108,4 @@ disable_test_id_escaping_and_forfeit_all_rights_to_community_support = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-langcheck = ["metrics/model_manager/config/*.yaml"]
+langcheck = ["metrics/model_manager/config/*.yaml", "metrics/prompts/**/*.j2"]
