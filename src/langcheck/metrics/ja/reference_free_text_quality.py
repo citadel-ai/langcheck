@@ -26,7 +26,7 @@ def sentiment(
 ) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
-    positive sentiment.n LL (NOTE: when using an LLM, the sentiment scores are
+    positive sentiment. (NOTE: when using an LLM, the sentiment scores are
     either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
     also be `None` if it could not be computed.)
 
