@@ -1,0 +1,16 @@
+You are evaluating the relevance of the answer to a user's query. Here is the data:
+[BEGIN DATA]
+************
+[User Query]: {{ user_query }}
+************
+[Answer]: {{ gen_output }}
+************
+[END DATA]
+
+Determine whether the answer is a relevant response to the user's query.
+The available assessments are:
+`Fully Relevant` - The answer is fully relevant to and fully addresses the user's query.
+`Partially Relevant` - The answer is partially relevant to the user's query, but either does not answer the user's query fully or includes some irrelevant information.
+`Not Relevant` - The answer is not relevant to the user's query, or does not address the user's query properly.
+
+Take a deep breath and work on this problem step-by-step.

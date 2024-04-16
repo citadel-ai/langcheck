@@ -154,7 +154,7 @@ def toxicity(
 ) -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
-    (NOTE: when using en EvalClient, the toxicity scores are in steps of
+    (NOTE: when using an EvalClient, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
 
     We currently support two evaluation model types:
@@ -186,7 +186,6 @@ def toxicity(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
-        use_async: Whether to use the asynchronous API of OpenAI. Default is
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -291,7 +290,7 @@ def fluency(
 ) -> MetricValue[Optional[float]]:
     '''Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
-    (NOTE: when using en EvalClient, the fluency scores are either 0.0
+    (NOTE: when using an EvalClient, the fluency scores are either 0.0
     (poor), 0.5 (fair), or 1.0 (good). The score may also be `None` if it could
     not be computed.)
 
@@ -323,7 +322,6 @@ def fluency(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
-        use_async: Whether to use the asynchronous API of OpenAI. Default is
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
