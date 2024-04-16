@@ -12,6 +12,12 @@ from langcheck.metrics.eval_clients import EvalClient
 class MockEvalClient(EvalClient):
     '''A mock evaluation client for testing purposes.'''
 
+    def __init__(self, return_value=0.5) -> None:
+        '''You can set a constant return value for the mock client. in the
+        initializer.
+        '''
+        self.return_value = return_value
+
     def _unstructured_assessment(
             self,
             prompts: Iterable[str],
@@ -27,7 +33,7 @@ class MockEvalClient(EvalClient):
             score_map: dict[str, float],
             *,
             tqdm_description: str | None = None) -> list[float | None]:
-        return [0.5] * len(unstructured_assessment_result)
+        return [self.return_value] * len(unstructured_assessment_result)
 
 
 ################################################################################
