@@ -68,8 +68,8 @@ def sentiment(
         assert isinstance(
             eval_model, EvalClient
         ), 'An EvalClient must be provided for non-local model types.'
-        scores, explanations = _sentiment_llm_client(generated_outputs,
-                                                     eval_model)
+        scores, explanations = _sentiment_eval_client(generated_outputs,
+                                                      eval_model)
 
     return MetricValue(metric_name='sentiment',
                        prompts=prompts,
@@ -110,8 +110,8 @@ def _sentiment_local(generated_outputs: List[str],
     return scorer.score(generated_outputs)
 
 
-def _sentiment_llm_client(
-    generated_outputs: List[str], llm_client: EvalClient
+def _sentiment_eval_client(
+    generated_outputs: List[str], eval_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the sentiment scores and their associated explanations of
     generated outputs using the provided LLM client. This metric takes on float
@@ -121,7 +121,7 @@ def _sentiment_llm_client(
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
-        llm_client: EvalClient instance used to evaluate the generated outputs
+        eval_client: EvalClient instance used to evaluate the generated outputs
 
     Returns:
         score_list: a list of scores
@@ -139,7 +139,7 @@ def _sentiment_llm_client(
         for gen_output in generated_outputs
     ]
 
-    scores, explanations = llm_client.get_score(
+    scores, explanations = eval_client.get_score(
         metric_name='sentiment',
         language='ja',
         prompts=populated_prompts,
