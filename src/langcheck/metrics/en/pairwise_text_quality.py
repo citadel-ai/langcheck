@@ -75,7 +75,6 @@ def pairwise_comparison(
         pairwise_comparison_template.render(prompt_param)
         for prompt_param in prompt_params
     ]
-    print(populated_prompts)
 
     scores, explanations = eval_model.get_score(
         metric_name='comparison of two responses',
@@ -93,7 +92,6 @@ def pairwise_comparison(
             pairwise_comparison_template.render(prompt_param)
             for prompt_param in swapped_prompt_params
         ]
-        print(populated_swapped_prompts)
 
         intermediate_tqdm = '[Swapped model outputs order] Intermediate assessments (1/2)'  # NOQA: E501
         score_tqdm = '[Swapped model outputs order] Calculating scores (2/2)'
