@@ -31,7 +31,7 @@ def sentiment(
     model is downloaded from HuggingFace and run locally. This is the default
     model type and there is no setup needed to run this.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 
@@ -110,7 +110,7 @@ def toxicity(
     The model (alibaba-pai/pai-bert-base-zh-llm-risk-detection) is a
     risky detection model for LLM generated content released by Alibaba group.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 

@@ -33,7 +33,7 @@ def sentiment(
     model is downloaded from HuggingFace and run locally. This is the default
     model type and there is no setup needed to run this.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 
@@ -166,7 +166,7 @@ def toxicity(
     fine-tuned model based on line-corporation/line-distilbert-base-japanese
     model.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 
@@ -302,7 +302,7 @@ def fluency(
     The model (liwii/fluency-score-classification-ja) is a fine-tuned model
     based on line-corporation/line-distilbert-base-japanese model.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 

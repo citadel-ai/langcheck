@@ -42,7 +42,7 @@ def factual_consistency(
     scores. This is because the UniEval-fact model is trained on English
     text.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 

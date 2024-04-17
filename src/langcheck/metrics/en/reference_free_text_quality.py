@@ -37,7 +37,7 @@ def sentiment(
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 
@@ -165,7 +165,7 @@ def fluency(
     HuggingFace and run locally. This is the default model type and there is no
     setup needed to run this.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 
@@ -294,7 +294,7 @@ def toxicity(
     and run locally. This is the default model type and there is no setup needed
     to run this.
 
-    2. The EvalClient type, where we you can use an EvalClient typically
+    2. The EvalClient type, where you can use an EvalClient typically
     implemented with an LLM. The implementation details are explained in each of
     the concrete EvalClient classes.
 
