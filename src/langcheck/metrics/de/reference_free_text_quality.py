@@ -146,9 +146,9 @@ def _sentiment_eval_client(
     sentiment_template = get_template('de/metrics/sentiment.j2')
 
     sentiment_assessment_to_score = {
-        'Positiv': 1.0,
+        'Positive': 1.0,
         'Neutral': 0.5,
-        'Negativ': 0.0
+        'Negative': 0.0
     }
     populated_prompts = [
         sentiment_template.render({'gen_output': gen_output})
@@ -252,9 +252,9 @@ def _fluency_eval_client(
     fluency_template = get_template('de/metrics/fluency.j2')
 
     fluency_assessment_to_score = {
-        'Schlecht': 0,
-        'Ausreichend': 0.5,
-        'Gut': 1.0,
+        'Poor': 0,
+        'Fair': 0.5,
+        'Good': 1.0,
     }
 
     populated_prompts = [
@@ -530,9 +530,9 @@ def answer_relevance(generated_outputs: List[str] | str,
     ]
 
     answer_relevance_assessment_to_score = {
-        'Vollständig Relevant': 1.0,
-        'Teilweise Relevant': 0.5,
-        'Nicht Relevant': 0.0
+        'Fully Relevant': 1.0,
+        'Partially Relevant': 0.5,
+        'Not Relevant': 0.0
     }
 
     scores, explanations = eval_model.get_score(
