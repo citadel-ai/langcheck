@@ -1,0 +1,36 @@
+
+You are comparing the quality of two responses to a user's query.
+{% if src is not none %}
+Source text that is supposedly relevant to the user's query is also provided to you as a reference (the source text may contain some duplication).
+{% endif %}
+{% if ref_output is not none %}
+The ideal response to the user's query is{% if src is not none %} also{% endif %} provided to you as a reference. Here is the data:
+{% endif %}
+[BEGIN DATA]
+************
+[User Query]: {{ user_query }}
+************
+{% if src is not none %}
+[Source]: {{ src }}
+************
+{% endif %}
+{% if ref_output is not none %}
+[Ideal Response]: {{ ref_output }}
+************
+{% endif %}
+[Response A]: {{ gen_output_a }}
+************
+[Response B]: {{ gen_output_b }}
+************
+[END DATA]
+
+Determine which of the responses is a better response to the user's query.
+Consider factors such as helpfulness, correctness, and relevance in your assessment{% if src is not none or ref_output is not none %},
+using {% if src is not none %}the provided Source {% endif %}{% if src is not none and ref_output is not none %}and {% endif %}{% if ref_output is not none %}the Ideal Response {% endif %}as references{% endif %}.
+Do not allow the order in which the responses were presented to influence your assessment.
+Do not allow the length of the responses to influence your assessment. The available assessments are:
+`Response A` - Response A is a better response.
+`Response B` - Response B is a better response.
+`Tie` - The two responses are roughly equal in quality.
+
+Take a deep breath and work on this problem step-by-step.

@@ -24,7 +24,7 @@
 ************
 [END DATA]
 
-ユーザーの質問に対してどちらの回答がより良いかを決定してください。提供されたソースと理想的な回答を参考に、有用性、正確さ、関連性などの要素を考慮して評価してください。
+ユーザーの質問に対してどちらの回答がより良いかを決定してください。{% if src is not none or ref_output is not none %}提供された{% if src is not none %}ソース{% endif %}{% if src is not none and ref_output is not none %}と{% endif %}{% if ref_output is not none %}理想的な回答{% endif %}を参考に、{% endif %}有用性、正確さ、関連性などの要素を考慮して評価してください。
 回答が提示された順序に評価が影響されないようにしてください。回答の長さが評価に影響を与えないようにしてください。利用可能な評価は以下の通りです:
 `Response A` - Response Aがより良い回答です。
 `Response B` - Response Bがより良い回答です。
