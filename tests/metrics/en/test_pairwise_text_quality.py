@@ -1,8 +1,4 @@
-import os
-from unittest.mock import Mock, patch
-
 import pytest
-from openai.types.chat import ChatCompletion
 
 from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from tests.utils import MockEvalClient
