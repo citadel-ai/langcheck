@@ -30,7 +30,7 @@ def test_pairwise_comparison_eval_client(generated_outputs_a,
     Test 4: Both Source A and Source B are provided.
     Test 5: Source A, Source B, and the reference output are provided.
     '''
-    eval_client = MockEvalClient(return_value=0.5)
+    eval_client = MockEvalClient('Tie')
     metric_value = pairwise_comparison(generated_outputs_a,
                                        generated_outputs_b,
                                        prompts,
@@ -39,7 +39,7 @@ def test_pairwise_comparison_eval_client(generated_outputs_a,
                                        reference_outputs=reference_outputs,
                                        eval_model=eval_client)
 
-    # MockEvalClient always returns 0.5
+    # MockEvalClient returns 0.5 for Tie
     assert metric_value == 0.5
 
 
@@ -60,7 +60,7 @@ def test_pairwise_comparison_inconsistency_eval_client(generated_outputs_a,
 
     # We simulate the situation by setting the return value of the
     # MockEvalClient to 1. (Response B is better)
-    eval_client = MockEvalClient(return_value=1.)
+    eval_client = MockEvalClient('Response B')
     metric_value = pairwise_comparison(generated_outputs_a,
                                        generated_outputs_b,
                                        prompts,

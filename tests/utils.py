@@ -12,18 +12,19 @@ from langcheck.metrics.eval_clients import EvalClient
 class MockEvalClient(EvalClient):
     '''A mock evaluation client for testing purposes.'''
 
-    def __init__(self, return_value=0.5) -> None:
-        '''You can set a constant return value for the mock client. in the
-        initializer.
+    def __init__(self, evaluation_result: str | None = None) -> None:
+        '''You can set the constant evaluation result for the mock client.
+        the score is returned based on that value and the score_map passed from
+        each metric function.
         '''
-        self.return_value = return_value
+        self.evaluation_result = evaluation_result
 
     def _unstructured_assessment(
             self,
             prompts: Iterable[str],
             *,
             tqdm_description: str | None = None) -> list[str | None]:
-        return ['Okay'] * len(list(prompts))
+        return [self.evaluation_result] * len(list(prompts))
 
     def _get_float_score(
             self,
@@ -33,7 +34,16 @@ class MockEvalClient(EvalClient):
             score_map: dict[str, float],
             *,
             tqdm_description: str | None = None) -> list[float | None]:
-        return [self.return_value] * len(unstructured_assessment_result)
+        eval_results = []
+        # Assume that the evaluation result is actually structured and it can be
+        # put into the score_map directly
+        for assessment in unstructured_assessment_result:
+            if assessment is None or assessment not in score_map:
+                eval_results.append(None)
+            else:
+                eval_results.append(score_map[assessment])
+
+        return eval_results
 
 
 ################################################################################

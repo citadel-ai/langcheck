@@ -23,8 +23,17 @@ def test_sentiment(generated_outputs):
 def test_sentiment_eval_client(generated_outputs):
     eval_client = MockEvalClient()
     metric_value = sentiment(generated_outputs, eval_model=eval_client)
-    # MockEvalClient always returns 0.5
-    assert metric_value == 0.5
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+    sentiment_assessment_to_score = {
+        'Positive': 1.0,
+        'Neutral': 0.5,
+        'Negative': 0.0
+    }
+    for option in sentiment_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = sentiment(generated_outputs, eval_model=eval_client)
+        assert metric_value == sentiment_assessment_to_score[option]
 
 
 @pytest.mark.parametrize('generated_outputs',
@@ -36,10 +45,22 @@ def test_toxicity(generated_outputs):
 
 @pytest.mark.parametrize('generated_outputs', ['アホ', ['アホ']])
 def test_toxicity_eval_client(generated_outputs):
-    eval_client = MockEvalClient(return_value=1.)
+    eval_client = MockEvalClient()
     metric_value = toxicity(generated_outputs, eval_model=eval_client)
-    # MockEvalClient always returns 1.0
-    assert metric_value == 1.0
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    toxicity_assessment_to_score = {
+        '1': 0,
+        '2': 0.25,
+        '3': 0.5,
+        '4': 0.75,
+        '5': 1.0
+    }
+    for option in toxicity_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = toxicity(generated_outputs, eval_model=eval_client)
+        assert metric_value == toxicity_assessment_to_score[option]
 
 
 @pytest.mark.parametrize(
@@ -53,10 +74,21 @@ def test_fluency(generated_outputs):
 @pytest.mark.parametrize('generated_outputs',
                          ['ご機嫌いかがですか？私はとても元気です。', ['ご機嫌いかがですか？私はとても元気です。']])
 def test_fluency_eval_client(generated_outputs):
-    eval_client = MockEvalClient(return_value=1.)
+    eval_client = MockEvalClient()
     metric_value = fluency(generated_outputs, eval_model=eval_client)
-    # MockEvalClient always returns 1.0
-    assert metric_value == 1.0
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    fluency_assessment_to_score = {
+        'Poor': 0,
+        'Fair': 0.5,
+        'Good': 1.0,
+    }
+
+    for option in fluency_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = fluency(generated_outputs, eval_model=eval_client)
+        assert metric_value == fluency_assessment_to_score[option]
 
 
 @pytest.mark.parametrize('generated_outputs,metric_values', [
@@ -75,9 +107,22 @@ def test_tateishi_ono_yamada_reading_ease(generated_outputs, metric_values):
                          [('東京は日本の首都です。', '日本の首都は何ですか？'),
                           (['東京は日本の首都です。'], ['日本の首都は何ですか？'])])
 def test_answer_relevance_eval_client(generated_outputs, prompts):
-    eval_client = MockEvalClient(return_value=1.)
+    eval_client = MockEvalClient()
     metric_value = answer_relevance(generated_outputs,
                                     prompts,
                                     eval_model=eval_client)
-    # MockEvalClient always returns 1.0
-    assert metric_value == 1.0
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    answer_relevance_assessment_to_score = {
+        'Not Relevant': 0.0,
+        'Partially Relevant': 0.5,
+        'Fully Relevant': 1.0
+    }
+
+    for option in answer_relevance_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = answer_relevance(generated_outputs,
+                                        prompts,
+                                        eval_model=eval_client)
+        assert metric_value == answer_relevance_assessment_to_score[option]

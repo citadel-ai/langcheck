@@ -27,8 +27,17 @@ def test_sentiment(generated_outputs):
 def test_sentiment_eval_client(generated_outputs):
     eval_client = MockEvalClient()
     metric_value = sentiment(generated_outputs, eval_model=eval_client)
-    # MockEvalClient always returns 0.5
-    assert metric_value == 0.5
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+    sentiment_assessment_to_score = {
+        'Positive': 1.0,
+        'Neutral': 0.5,
+        'Negative': 0.0
+    }
+    for option in sentiment_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = sentiment(generated_outputs, eval_model=eval_client)
+        assert metric_value == sentiment_assessment_to_score[option]
 
 
 @pytest.mark.parametrize('generated_outputs',
@@ -45,10 +54,22 @@ def test_toxicity(generated_outputs):
 
 @pytest.mark.parametrize('generated_outputs', ['我今天生病了。', ['我今天生病了。']])
 def test_toxicity_eval_client(generated_outputs):
-    eval_client = MockEvalClient(return_value=1.)
+    eval_client = MockEvalClient()
     metric_value = toxicity(generated_outputs, eval_model=eval_client)
-    # MockEvalClient always returns 1.0
-    assert metric_value == 1.0
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    toxicity_assessment_to_score = {
+        '1': 0,
+        '2': 0.25,
+        '3': 0.5,
+        '4': 0.75,
+        '5': 1.0
+    }
+    for option in toxicity_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = toxicity(generated_outputs, eval_model=eval_client)
+        assert metric_value == toxicity_assessment_to_score[option]
 
 
 @pytest.mark.parametrize('generated_outputs,metric_values', [
