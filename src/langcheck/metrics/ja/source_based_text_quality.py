@@ -53,7 +53,6 @@ def factual_consistency(
             optional metadata and not used to calculate the metric.
         eval_model: The type of model to use ('local' or the EvalClient instance
             used for the evaluation). default 'local'
-        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An MetricValue object
@@ -150,7 +149,7 @@ def _factual_consistency_local(generated_outputs: List[str],
 
 def _factual_consistency_eval_client(
         generated_outputs: List[str], sources: List[str],
-        eval_model: EvalClient) -> tuple[List[float | None], List[str | None]]:
+        eval_client: EvalClient) -> tuple[List[float | None], List[str | None]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources using an EvalClient. This metric takes on float values that are
     either 0, 0.5, or 1, where 0 means that the output is not at all consistent
@@ -161,7 +160,7 @@ def _factual_consistency_eval_client(
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output
-        eval_model: The EvalClient instance used for the evaluation
+        eval_client: The EvalClient instance used for the evaluation
 
     Returns:
         score_list: a list of scores
@@ -170,7 +169,7 @@ def _factual_consistency_eval_client(
     factual_consistency_template = get_template(
         'ja/metrics/factual_consistency.j2')
 
-    fatcual_consistency_assessment_to_score = {
+    factual_consistency_assessment_to_score = {
         'Fully Consistent': 1.0,
         'Partially Consistent': 0.5,
         'Not Consistent': 0.0
@@ -182,11 +181,11 @@ def _factual_consistency_eval_client(
         }) for source, gen_output in zip(sources, generated_outputs)
     ]
 
-    scores, explanations = eval_model.get_score(
+    scores, explanations = eval_client.get_score(
         metric_name='factual consistency',
         language='ja',
         prompts=populated_prompts,
-        score_map=fatcual_consistency_assessment_to_score,
+        score_map=factual_consistency_assessment_to_score,
     )
 
     return scores, explanations
