@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
-
-from openai import OpenAI
+from typing import List, Optional, Tuple
 
 from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
@@ -459,9 +457,7 @@ def ai_disclaimer_similarity(
         ai_disclaimer_phrase: str = (
             "Ich habe keine persönlichen Meinungen, Emotionen oder Bewusstsein."
         ),
-        openai_client: Optional[OpenAI] = None,
-        model_type: str = 'local',
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+        eval_model: EvalClient | None = None) -> MetricValue[float]:
     '''Calculates the degree to which the LLM's output contains a disclaimer
     that it is an AI. This is calculated by computing the semantic similarity
     between the generated outputs and a reference AI disclaimer phrase; by
@@ -478,13 +474,10 @@ def ai_disclaimer_similarity(
             Prompts are not evaluated and only used as metadata.
         ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
-        model_type: The type of embedding model to use ('local', 'openai', or
-            'azure_openai'), default 'local'
-        openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None but ``model_type`` is 'openai' or 'azure_openai', we will
-            attempt to create a default client.
-        openai_args: Dict of additional args to pass in to the
-            ``client.embeddings.create`` function, default None
+        eval_model: The EvalClient instance used for the evaluation. This is
+            marked as Optional because of the backwards compatibility with the
+            previous order of the arguments, but you need to pass this argument
+            to make the function work.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -492,11 +485,12 @@ def ai_disclaimer_similarity(
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
 
+    assert eval_model is not None, 'You must pass an EvalClient instance to the ai_disclaimer_similarity function.'  # NOQA: E501
+
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
     semantic_similarity_values = semantic_similarity(generated_outputs,
                                                      ai_disclaimer_phrase_list,
-                                                     prompts, model_type,
-                                                     openai_client, openai_args)
+                                                     prompts, eval_model)
     return MetricValue(metric_name='ai_disclaimer_similarity',
                        prompts=prompts,
                        generated_outputs=generated_outputs,

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Iterable
 
+from ..scorer._base import BaseSimilarityScorer
+
 
 class EvalClient:
 
@@ -51,3 +53,10 @@ class EvalClient:
                                        score_map,
                                        tqdm_description=score_tqdm_description)
         return scores, unstructured_assessment_result
+
+    def similarity_scorer(self) -> BaseSimilarityScorer:
+        '''Get the BaseSimilarityScorer object that corresponds to the
+        EvalClient so that the similarity-related metrics can be computed.
+        TODO: Intergrate scorer/ with eval_clients
+        '''
+        raise NotImplementedError

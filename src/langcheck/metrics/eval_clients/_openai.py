@@ -5,11 +5,13 @@ import json
 import os
 from typing import Any, Iterable
 
+import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
+from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient
 
 
@@ -190,11 +192,22 @@ class OpenAIEvalClient(EvalClient):
             for assessment in assessments
         ]
 
+    def similarity_scorer(self) -> OpenAISimilarityScorer:
+        '''
+        https://openai.com/blog/new-embedding-models-and-api-updates
+        '''
+        assert isinstance(
+            self._client,
+            OpenAI), "Only sync clients are supported for similarity scoring."
+        return OpenAISimilarityScorer(openai_client=self._client,
+                                      openai_args=self._openai_args)
+
 
 class AzureOpenAIEvalClient(OpenAIEvalClient):
 
     def __init__(self,
-                 model_name: str,
+                 text_model_name: str | None = None,
+                 embedding_model_name: str | None = None,
                  openai_args: dict[str, str] | None = None,
                  *,
                  use_async: bool = False):
@@ -219,6 +232,70 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             self._client = AzureOpenAI(**kargs)  # type: ignore
 
         self._openai_args = openai_args or {}
-        self._openai_args['model'] = model_name
+
+        self._text_model_name = text_model_name
+        self._embedding_model_name = embedding_model_name
 
         self._use_async = use_async
+
+    def get_score(
+        self,
+        metric_name: str,
+        language: str,
+        prompts: str | Iterable[str],
+        score_map: dict[str, float],
+        *,
+        intermediate_tqdm_description: str | None = None,
+        score_tqdm_description: str | None = None
+    ) -> tuple[list[float | None], list[str | None]]:
+        assert self._text_model_name is not None, (
+            'You need to specify the text_model_name to get the score for this '
+            'metric.')
+        self._openai_args['model'] = self._text_model_name
+        return super().get_score(
+            metric_name,
+            language,
+            prompts,
+            score_map,
+            intermediate_tqdm_description=intermediate_tqdm_description,
+            score_tqdm_description=score_tqdm_description)
+
+    def similarity_scorer(self) -> OpenAISimilarityScorer:
+        assert isinstance(
+            self._client, AzureOpenAI
+        ), "Only sync clients are supported for similarity scoring."
+        assert self._embedding_model_name is not None, (
+            'You need to specify the embedding_model_name to get the score for '
+            'this metric.')
+        openai_args = {**self._openai_args, 'model': self._embedding_model_name}
+        return OpenAISimilarityScorer(openai_client=self._client,
+                                      openai_args=openai_args)
+
+
+class OpenAISimilarityScorer(BaseSimilarityScorer):
+    '''Similarity scorer that uses the OpenAI API to embed the inputs.
+    In the current version of langcheck, the class is only instantiated within
+    EvalClients.
+    '''
+
+    def __init__(self,
+                 openai_client: OpenAI | AzureOpenAI,
+                 openai_args: dict[str, Any] | None = None):
+
+        super().__init__()
+
+        self.openai_client = openai_client
+        self.openai_args = openai_args
+
+    def _embed(self, inputs: list[str]) -> torch.Tensor:
+        '''Embed the inputs using the OpenAI API.
+        '''
+        # Embed the inputs
+        if self.openai_args:
+            embed_response = self.openai_client.embeddings.create(
+                input=inputs, **self.openai_args)
+        else:
+            embed_response = self.openai_client.embeddings.create(
+                input=inputs, model='text-embedding-3-small')
+
+        return torch.Tensor([item.embedding for item in embed_response.data])
