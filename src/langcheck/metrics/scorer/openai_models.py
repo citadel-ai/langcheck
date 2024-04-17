@@ -26,7 +26,7 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
             self.openai_client = openai_client
         else:
             # Initialize the openai object if openai_client is None
-            # TODO: Refactor this into OpenAIBasedEvaluator?
+            # TODO: Refactor this into OpenAIEvalClient?
             if model_type == 'openai':
                 self.openai_client = OpenAI()
             else:  # azure_openai
