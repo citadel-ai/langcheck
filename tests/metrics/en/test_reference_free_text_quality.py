@@ -7,6 +7,8 @@ from openai.types import CreateEmbeddingResponse
 from langcheck.metrics.en import (ai_disclaimer_similarity, answer_relevance,
                                   flesch_kincaid_grade, flesch_reading_ease,
                                   fluency, sentiment, toxicity)
+from langcheck.metrics.eval_clients import (AzureOpenAIEvalClient,
+                                            OpenAIEvalClient)
 from tests.utils import MockEvalClient, is_close
 
 ################################################################################
@@ -176,8 +178,9 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
                Mock(return_value=mock_embedding_response)):
         # Set the necessary env vars for the 'openai' embedding model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
+        openai_client = OpenAIEvalClient()
         metric_value = ai_disclaimer_similarity(generated_outputs,
-                                                model_type='openai')
+                                                eval_model=openai_client)
         # Since the mock embeddings are the same for the generated output and
         # the AI disclaimer phrase, the AI disclaimer language similarity should
         # be 1.
@@ -187,10 +190,10 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
-        metric_value = ai_disclaimer_similarity(
-            generated_outputs,
-            model_type='azure_openai',
-            openai_args={'model': 'foo bar'})
+        azure_openai_client = AzureOpenAIEvalClient(
+            embedding_model_name='foo bar')
+        metric_value = ai_disclaimer_similarity(generated_outputs,
+                                                eval_model=azure_openai_client)
         # Since the mock embeddings are the same for the generated output and
         # the AI disclaimer phrase, the AI disclaimer language similarity should
         # be 1.
