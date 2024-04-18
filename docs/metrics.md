@@ -84,34 +84,41 @@ Pairwise metrics require two generated outputs (A and B) and the corresponding p
 
 An example metric is {func}`~langcheck.metrics.en.pairwise_text_quality.pairwise_comparison`, which compares the quality of two generated outputs (`generated_outputs_a` and `generated_outputs_a`) in response to the given prompt. If a reference output and/or source text are provided, those are also taken into consideration to judge the quality of the outputs. The scores are either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B is better).
 
-(computing-metrics-with-openai-models)=
-### Computing Metrics with OpenAI Models
+(computing-metrics-with-remote-llms)=
+### Computing Metrics with Remote LLMs
 
 Several text quality metrics are computed using a model (e.g. `toxicity`, `sentiment`, `semantic_similarity`, `factual_consistency`). By default, LangCheck will download and use a model that can run locally on your machine (often from HuggingFace) so that the metric function works with no additional setup.
 
-However, if you have an OpenAI API key, you can also configure these metrics to use an OpenAI model, which may provide more accurate results for more complex use cases. Here are some examples of how to do this:
+However, if you have a remote LLM subscription such as OpenAI API, you can also configure these metrics to use that model, which may provide more accurate
+results for more complex use cases. You need to pass an `~langcheck.metrics.eval_clients.EvalClient` instance corresponding to the service you use to the
+metric functions.
+
+Here are some examples of how to do this:
 
 ```python
 import os
 from langcheck.metrics.en import semantic_similarity
+from langcheck.metrics.eval_clients import OpenAIEvalClient
 
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
 
 # Option 1: Set OPENAI_API_KEY as an environment variable
 os.environ["OPENAI_API_KEY"] = 'YOUR_OPENAI_API_KEY'
+eval_client = OpenAIEvalClient()
 similarity_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       model_type='openai')
+                                       eval_model=eval_client)
 
 # Option 2: Pass in an OpenAI client directly
 from openai import OpenAI
 
-client = OpenAI(api_key='YOUR_OPENAI_API_KEY')
+openai_client = OpenAI(api_key='YOUR_OPENAI_API_KEY')
+eval_client = OpenAIEvalClient(openai_client=openai_client)
+
 similarity_value = semantic_similarity(generated_outputs,
                                        reference_outputs,
-                                       model_type='openai',
-                                       openai_client=client)
+                                       eval_model=eval_client)
 ```
 
 Or, if you're using Azure OpenAI, here are some examples of how to use it:
@@ -119,6 +126,7 @@ Or, if you're using Azure OpenAI, here are some examples of how to use it:
 ```python
 import os
 from langcheck.metrics.en import semantic_similarity
+from langcheck.metrics.eval_clients import AzureOpenAIEvalClient
 
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
@@ -129,24 +137,31 @@ os.environ["AZURE_OPENAI_KEY"] = 'YOUR_AZURE_OPENAI_KEY'
 os.environ["OPENAI_API_VERSION"] = 'YOUR_OPENAI_API_VERSION'
 os.environ["AZURE_OPENAI_ENDPOINT"] = 'YOUR_AZURE_OPENAI_ENDPOINT'
 
-# When using the Azure API type, you need to pass in your model's
-# deployment name
+# You need to specify embedding_model_name to enable embedding-based evaluations
+# for Azure OpenAI
+eval_client = AzureOpenAIEvalClient(
+    embedding_model_name='YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME')
+
 similarity_value = semantic_similarity(
     generated_outputs,
     reference_outputs,
-    model_type='azure_openai',
-    openai_args={'model': 'YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME'})
+    eval_model=eval_client)
 
 # Option 2: Pass in an AzureOpenAI client directly
 from openai import AzureOpenAI
+from langcheck.metrics.en import fluency
 
-client = AzureOpenAI(api_key='YOUR_AZURE_OPENAI_KEY',
+azure_openai_client = AzureOpenAI(api_key='YOUR_AZURE_OPENAI_KEY',
                      api_version='YOUR_OPENAI_API_VERSION',
                      azure_endpoint='YOUR_AZURE_OPENAI_ENDPOINT')
-similarity_value = semantic_similarity(
+# You need to specify text_model_name to enable text-based evaluations
+# for Azure OpenAI
+eval_client = AzureOpenAIEvalClient(
+    text_model_name='YOUR_TEXT_MODEL_DEPLOYMENT_NAME',
+    azure_openai_client=azure_openai_cilent
+)
+
+fluency_value = fluency(
     generated_outputs,
-    reference_outputs,
-    model_type='azure_openai',
-    openai_client=client,
-    openai_args={'model': 'YOUR_EMBEDDING_MODEL_DEPLOYMENT_NAME'})
+    eval_model=eval_client)
 ```

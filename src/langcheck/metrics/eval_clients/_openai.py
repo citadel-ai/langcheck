@@ -235,6 +235,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
     def __init__(self,
                  text_model_name: str | None = None,
                  embedding_model_name: str | None = None,
+                 azure_openai_client: AzureOpenAI | None = None,
                  openai_args: dict[str, str] | None = None,
                  *,
                  use_async: bool = False):
@@ -250,6 +251,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
                 use with the Azure OpenAI API. The name is used as
                 `{ "model": embedding_model_name }` parameter when calling the
                 Azure OpenAI API for embedding models.
+            azure_openai_client (Optional): The Azure OpenAI client to use.
             openai_args: (Optional) dict of additional args to pass in to the
             ``client.chat.completions.create`` function
             use_async: (Optional) If True, the async client will be used.
@@ -264,7 +266,9 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             "api_version": os.getenv("OPENAI_API_VERSION"),
             "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
         }
-        if use_async:
+        if azure_openai_client is not None:
+            self._client = azure_openai_client
+        elif use_async:
             self._client = AsyncAzureOpenAI(**kargs)  # type: ignore
         else:
             self._client = AzureOpenAI(**kargs)  # type: ignore
