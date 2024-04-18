@@ -254,6 +254,10 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             ``client.chat.completions.create`` function
             use_async: (Optional) If True, the async client will be used.
         '''
+        assert (text_model_name is not None or
+                embedding_model_name is not None), (
+                    'You need to specify either the text_model_name or the '
+                    'embedding_model_name to use the Azure OpenAI API.')
         # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
         kargs = {
             "api_key": os.getenv("AZURE_OPENAI_KEY"),
