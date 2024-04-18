@@ -19,14 +19,14 @@ class MockEvalClient(EvalClient):
         '''
         self.evaluation_result = evaluation_result
 
-    def _unstructured_assessment(
+    def get_text_responses(
             self,
             prompts: Iterable[str],
             *,
             tqdm_description: str | None = None) -> list[str | None]:
         return [self.evaluation_result] * len(list(prompts))
 
-    def _get_float_score(
+    def get_float_score(
             self,
             metric_name: str,
             language: str,

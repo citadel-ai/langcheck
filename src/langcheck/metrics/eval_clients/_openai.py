@@ -16,6 +16,8 @@ from ._base import EvalClient
 
 
 class OpenAIEvalClient(EvalClient):
+    '''EvalClient defined for OpenAI API.
+    '''
 
     def __init__(self,
                  openai_client: OpenAI | None = None,
@@ -90,31 +92,36 @@ class OpenAIEvalClient(EvalClient):
             responses[i] = None
         return responses
 
-    def _unstructured_assessment(
+    def get_text_responses(
             self,
             prompts: Iterable[str],
             *,
             tqdm_description: str | None = None) -> list[str | None]:
+        '''The function that gets resonses to the given prompt texts.
+        We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
+        it by passing the 'model' parameter in the openai_args.
+
+        Args:
+            prompts: The prompts you want to get the responses for.
+
+        Returns:
+            A list of responses to the prompts. The responses can be None if the
+            evaluation fails.
         '''
-        TODO
-        '''
-        config_unstructured_assessments = {
-            "model": "gpt-3.5-turbo",
-            "seed": 123
-        }
-        config_unstructured_assessments.update(self._openai_args or {})
+        config = {"model": "gpt-3.5-turbo", "seed": 123}
+        config.update(self._openai_args or {})
         tqdm_description = tqdm_description or 'Intermediate assessments (1/2)'  # NOQA: E501
         responses = self._call_api(prompts=prompts,
-                                   config=config_unstructured_assessments,
+                                   config=config,
                                    tqdm_description=tqdm_description)
-        unstructured_assessments = [
+        response_texts = [
             response.choices[0].message.content if response else None
             for response in responses
         ]
 
-        return unstructured_assessments
+        return response_texts
 
-    def _get_float_score(
+    def get_float_score(
             self,
             metric_name: str,
             language: str,
@@ -122,8 +129,28 @@ class OpenAIEvalClient(EvalClient):
             score_map: dict[str, float],
             *,
             tqdm_description: str | None = None) -> list[float | None]:
-        '''
-        TODO
+        '''The function that transforms the unstructured assessments (i.e. long
+        texts that describe the evaluation results) into scores. We leverage the
+        function calling API to extract the short assessment results from the
+        unstructured assessments, so please make sure that the model you use
+        supports function calling
+        (https://platform.openai.com/docs/guides/gpt/function-calling).
+
+        Ref:
+        https://platform.openai.com/docs/guides/gpt/function-calling
+
+        Args:
+            metric_name : The name of the metric to be used. (e.g. "toxicity")
+            language: The language of the prompts. (e.g. "en")
+            unstructured_assessment_result: The unstructured assessment results
+                for the given assessment prompts.
+            score_map: The mapping from the short assessment results
+                (e.g. "Good") to the scores.
+            tqdm_description: The description to be shown in the tqdm bar.
+
+        Returns:
+            A list of scores for the given prompts. The scores can be None if
+            the evaluation fails.
         '''
         if language not in ['en', 'ja', 'de', 'zh']:
             raise ValueError(f'Unsupported language: {language}')
@@ -215,7 +242,14 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         Intialize the Azure OpenAI evaluation client.
 
         Args:
-            model_name: The name of the Azure OpenAI model to use.
+            text_model_name (Optional): The text model name you want to use with
+                the Azure OpenAI API. The name is used as
+                `{ "model": text_model_name }` parameter when calling the Azure
+                OpenAI API for text models.
+            embedding_model_name (Optional): The text model name you want to
+                use with the Azure OpenAI API. The name is used as
+                `{ "model": embedding_model_name }` parameter when calling the
+                Azure OpenAI API for embedding models.
             openai_args: (Optional) dict of additional args to pass in to the
             ``client.chat.completions.create`` function
             use_async: (Optional) If True, the async client will be used.
@@ -248,6 +282,10 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         intermediate_tqdm_description: str | None = None,
         score_tqdm_description: str | None = None
     ) -> tuple[list[float | None], list[str | None]]:
+        '''This method does the sanity check for the text_model_name and then
+        calls the parent class's get_score method with the additional "model"
+        parameter. See the parent class for the detailed documentation.
+        '''
         assert self._text_model_name is not None, (
             'You need to specify the text_model_name to get the score for this '
             'metric.')
@@ -261,6 +299,11 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             score_tqdm_description=score_tqdm_description)
 
     def similarity_scorer(self) -> OpenAISimilarityScorer:
+        '''This method does the sanity check for the embedding_model_name and
+        then calls the parent class's similarity_scorer method with the
+        additional "model" parameter. See the parent class for the detailed
+        documentation.
+        '''
         assert isinstance(
             self._client, AzureOpenAI
         ), "Only sync clients are supported for similarity scoring."
