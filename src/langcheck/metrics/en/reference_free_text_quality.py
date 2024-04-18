@@ -485,7 +485,7 @@ def ai_disclaimer_similarity(
         prompts: Optional[List[str] | str] = None,
         ai_disclaimer_phrase: str = (
             "I don't have personal opinions, emotions, or consciousness."),
-        eval_model: EvalClient | None = None) -> MetricValue[float]:
+        eval_model: str | EvalClient = 'local') -> MetricValue[float]:
     '''Calculates the degree to which the LLM's output contains a disclaimer
     that it is an AI. This is calculated by computing the semantic similarity
     between the generated outputs and a reference AI disclaimer phrase; by
@@ -511,8 +511,6 @@ def ai_disclaimer_similarity(
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-
-    assert eval_model is not None, 'You must pass an EvalClient instance to the ai_disclaimer_similarity function.'  # NOQA: E501
 
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
     semantic_similarity_values = semantic_similarity(generated_outputs,
