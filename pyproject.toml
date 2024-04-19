@@ -58,6 +58,12 @@ all = [
     'langcheck[ja-optional]',
     'langcheck[zh]'
 ]
+
+# Different LLM clients
+anthropic = [
+    'anthropic'
+]
+
 dev = [
     "yapf==0.40.1",
     "flake8",
