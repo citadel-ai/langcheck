@@ -25,8 +25,8 @@ def generate_pairwise_comparison_prompt_params(
                 'src': SOURCE,
                 'ref_output': REFERENCE_OUTPUT,
                 'user_query': PROMPT,
-                'gen_output_a': GENERATED_OUTPUT_A,
-                'gen_output_b': GENERATED_OUTPUT_B
+                'gen_output_1': GENERATED_OUTPUT_1,
+                'gen_output_2': GENERATED_OUTPUT_2
             },
             ...
         ]
@@ -55,9 +55,9 @@ def generate_pairwise_comparison_prompt_params(
         'src': src,
         'ref_output': ref_output,
         'user_query': prompt,
-        'gen_output_a': gen_output_a,
-        'gen_output_b': gen_output_b
-    } for src, ref_output, prompt, gen_output_a, gen_output_b in zip(
+        'gen_output_1': gen_output_1,
+        'gen_output_2': gen_output_2
+    } for src, ref_output, prompt, gen_output_1, gen_output_2 in zip(
         sources_list, reference_outputs_list, prompts, generated_outputs_1,
         generated_outputs_2)]
 
