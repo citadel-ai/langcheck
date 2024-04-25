@@ -112,9 +112,6 @@ def _factual_consistency_eval_client(
     that the output is fully consistent with the source text. If a score could
     not be computed, `None` is inserted to the score and explanation lists.
 
-    Ref:
-        https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
-
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output

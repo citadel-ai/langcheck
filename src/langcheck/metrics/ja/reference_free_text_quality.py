@@ -386,9 +386,6 @@ def _fluency_eval_client(
     "fair" fluency, and 1 is "good" fluency.  If a score could not be computed,
     `None` is inserted to the score and explanation lists.
 
-    Ref:
-        https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
-
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         eval_client: EvalClient instance used to evaluate the generated outputs

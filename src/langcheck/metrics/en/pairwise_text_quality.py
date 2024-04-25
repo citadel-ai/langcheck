@@ -28,10 +28,6 @@ def pairwise_comparison(
 
     We currently only support the evaluation based on an EvalClient.
 
-    Ref:
-        Our prompt is similar to the prompt used in
-        https://arxiv.org/abs/2306.05685
-
     Args:
         generated_outputs_a: Model A's generated output(s) to evaluate
         generated_outputs_b: Model B's generated output(s) to evaluate
