@@ -6,7 +6,7 @@ def generate_pairwise_comparison_prompt_params(
         prompts: list[str], sources_1: list[str] | None,
         sources_2: list[str] | None,
         reference_outputs: list[str] | None) -> list[dict[str, str | None]]:
-    '''Generate a list of parameters that can be used for the jinjia templates
+    '''Generate a list of parameters that can be used for the jinja templates
     of the pairwise comparison metrics.
 
     Args:
@@ -18,7 +18,7 @@ def generate_pairwise_comparison_prompt_params(
         reference_outputs: (Optional) the reference output(s)
 
     Returns:
-        A list of dictionaries containing the parameters for the jinjia
+        A list of dictionaries containing the parameters for the jinja
         templates the formats are as follows:
         [
             {

@@ -63,7 +63,6 @@ def sentiment(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
-        use_async: Whether to use the asynchronous API of OpenAI, default False
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -129,9 +128,6 @@ def _sentiment_eval_client(
     values that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is
     neutral sentiment, and 1 is positive sentiment. If a score could not be
     computed, `None` is inserted to the score and explanation lists.
-
-    Ref:
-        https://platform.openai.com/docs/guides/gpt/function-calling
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -360,9 +356,6 @@ def _toxicity_eval_client(
     high toxicity. If a score could not be computed, `None` is inserted to the
     score and explanation lists.
 
-    Ref:
-        https://platform.openai.com/docs/guides/gpt/function-calling
-
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         eval_client: EvalClient instance used to evaluate the generated outputs
@@ -474,10 +467,8 @@ def ai_disclaimer_similarity(
             Prompts are not evaluated and only used as metadata.
         ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
-        eval_model: The EvalClient instance used for the evaluation. This is
-            marked as Optional because of the backwards compatibility with the
-            previous order of the arguments, but you need to pass this argument
-            to make the function work.
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object

@@ -501,10 +501,8 @@ def ai_disclaimer_similarity(
             Prompts are not evaluated and only used as metadata.
         ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
-        eval_model: The EvalClient instance used for the evaluation. This is
-            marked as Optional because of the backwards compatibility with the
-            previous order of the arguments, but you need to pass this argument
-            to make the function work.
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object

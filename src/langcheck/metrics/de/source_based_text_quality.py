@@ -106,10 +106,11 @@ def _factual_consistency_eval_client(
     generated_outputs: List[str], sources: List[str], eval_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
-    between each generated output and its corresponding source text. The
-    consistency is computed by calling the OpenAI API, with a prompt similar to
-    the one used in OpenAI Evals. If a score could not be computed, `None` is\
-    inserted to the score and explanation lists.
+    between the generated outputs and the sources using an EvalClient. This
+    metric takes on float values that are either 0, 0.5, or 1, where 0 means
+    that the output is not at all consistent with the source text, and 1 means
+    that the output is fully consistent with the source text. If a score could
+    not be computed, `None` is inserted to the score and explanation lists.
 
     Ref:
         https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml

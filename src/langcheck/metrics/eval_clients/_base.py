@@ -48,7 +48,7 @@ class EvalClient:
         this function to enable text scoring.
 
         Args:
-            metric_name : The name of the metric to be used. (e.g. "toxicity")
+            metric_name: The name of the metric to be used. (e.g. "toxicity")
             language: The language of the prompts. (e.g. "en")
             unstructured_assessment_result: The unstructured assessment results
                 for the given assessment prompts.
@@ -73,16 +73,16 @@ class EvalClient:
         score_tqdm_description: str | None = None
     ) -> tuple[list[float | None], list[str | None]]:
         '''Give scores to texts embedded in the given prompts. The function
-        itself calls unstructured_assessment and get_float_score to get the
-        scores. The function returns the scores and the unstructured explanation
+        itself calls get_text_responses and get_float_score to get the scores.
+        The function returns the scores and the unstructured explanation
         strings.
 
         Args:
-            metric_name : The name of the metric to be used. (e.g. "toxicity")
+            metric_name: The name of the metric to be used. (e.g. "toxicity")
             language: The language of the prompts. (e.g. "en")
             prompts: The prompts that contain the original text to be scored,
                 the evaluation criteria... etc. Typically it is based on the
-                Jinjia prompt templates and instantiated withing each metric
+                Jinja prompt templates and instantiated withing each metric
                 function.
             score_map: The mapping from the short assessment results
                 (e.g. "Good") to the scores.

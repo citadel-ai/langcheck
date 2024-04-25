@@ -150,12 +150,12 @@ def _factual_consistency_local(generated_outputs: List[str],
 def _factual_consistency_eval_client(
         generated_outputs: List[str], sources: List[str],
         eval_client: EvalClient) -> tuple[List[float | None], List[str | None]]:
-    '''Calculates the factual consistency between the generated outputs and
-    the sources using an EvalClient. This metric takes on float values that are
-    either 0, 0.5, or 1, where 0 means that the output is not at all consistent
-    with the source text, and 1 means that the output is fully consistent with
-    the source text. If a score could not be computed, `None` is inserted to the
-    score and explanation lists.
+    '''Calculates the factual consistency and their associated explanations
+    between the generated outputs and the sources using an EvalClient. This
+    metric takes on float values that are either 0, 0.5, or 1, where 0 means
+    that the output is not at all consistent with the source text, and 1 means
+    that the output is fully consistent with the source text. If a score could
+    not be computed, `None` is inserted to the score and explanation lists.
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
