@@ -27,7 +27,7 @@ def semantic_similarity(
     OpenAI embeddings, the cosine similarities tend to be skewed quite heavily
     towards higher numbers.)
 
-    We currently support two evaluation model types:
+    We currently support two embedding model types:
 
 
     1. The 'local' type, where the 'BAAI/bge-base-zh-v1.5' model
