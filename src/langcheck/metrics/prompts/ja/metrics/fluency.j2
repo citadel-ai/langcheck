@@ -1,0 +1,18 @@
+{#
+This prompt is similar to the one used in G-Eval (see the Ref below).
+Ref:
+    https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
+#}
+提出されたテキストの流暢さを評価してください。データは以下の通りです:
+[BEGIN DATA]
+************
+[テキスト]: {{ gen_output }}
+************
+[END DATA]
+
+提出されたテキストの流暢さを判断してください。利用可能な評価は以下の通りです:
+`Poor` - テキストには多くのエラーがあり、理解が難しく、または不自然に聞こえます。
+`Fair` - テキストにはいくつかのエラーがあり、テキストの明瞭さや滑らかさに影響しますが、主要なポイントはまだ理解できます。
+`Good` - テキストにはほとんどエラーがなく、読みやすく、理解しやすいです。
+
+深呼吸をして、この問題にステップバイステップで取り組んでください。

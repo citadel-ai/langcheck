@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import List, Optional
 
-from openai import OpenAI
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 
 from langcheck.metrics._validation import validate_parameters_reference_based
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.ja._tokenizers import JanomeTokenizer
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import \
     SentenceTransformerSimilarityScorer
-from langcheck.metrics.scorer.openai_models import OpenAISimilarityScorer
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 
@@ -19,65 +18,50 @@ def semantic_similarity(
         generated_outputs: List[str] | str,
         reference_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_client: Optional[OpenAI] = None,
-        openai_args: Optional[Dict[str, str]] = None) -> MetricValue[float]:
+        eval_model: str | EvalClient = 'local') -> MetricValue[float]:
     '''Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
     takes on float values between [-1, 1], but typically ranges between 0 and 1
     where 0 is minimum similarity and 1 is maximum similarity.
 
-    We currently support three embedding model types:
+    We currently support two embedding model types:
 
     1. The 'local' type, where the 'paraphrase-multilingual-mpnet-base-v2' model
     is downloaded from HuggingFace and run locally. This is the default model
     type and there is no setup needed to run this.
 
-    2. The 'openai' type, where we use OpenAI's 'text-embedding-3-small' model
-    by default (this is configurable). See
-    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
-    #computing-metrics-with-openai-models>`__
-    for examples on setting up the OpenAI API key.
+    2. The EvalClient type, where you can use a similarlity scorer returned by
+    the given EvalClient. The scorer is typically implemented using the
+    embedding APIs of cloud services. The implementation details are explained
+    in each of the concrete EvalClient classes.
 
-    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify your
-    model deployment to use in ``openai_args``, e.g.
-    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
 
     Ref:
         https://huggingface.co/tasks/sentence-similarity
         https://www.sbert.net/docs/usage/semantic_textual_similarity.html
-        https://openai.com/blog/new-embedding-models-and-api-updates
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of embedding model to use ('local', 'openai', or
-            'azure_openai'), default 'local'
-        openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None but ``model_type`` is 'openai' or 'azure_openai', we will
-            attempt to create a default client.
-        openai_args: Dict of additional args to pass in to the
-            ``client.embeddings.create`` function, default None
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
         generated_outputs, reference_outputs, prompts)
-    assert model_type in [
-        'local', 'openai', 'azure_openai'
-    ], ('Unsupported embedding model type. '
-        'The supported ones are ["local", "openai", "azure_openai"]')
-    if model_type == 'local':
+    if eval_model == 'local':
         scorer = SentenceTransformerSimilarityScorer(language='ja')
-    else:  # openai or azure_openai
-        scorer = OpenAISimilarityScorer(model_type=model_type,
-                                        openai_client=openai_client,
-                                        openai_args=openai_args)
+    else:  # EvalClient
+        assert isinstance(
+            eval_model, EvalClient
+        ), 'An EvalClient must be provided for non-local model types.'
+        scorer = eval_model.similarity_scorer()
+
     scores = scorer.score(generated_outputs, reference_outputs)
 
     return MetricValue(metric_name='semantic_similarity',

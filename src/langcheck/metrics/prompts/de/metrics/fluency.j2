@@ -1,0 +1,18 @@
+{#
+This prompt is similar to the one used in G-Eval (see the Ref below).
+Ref:
+    https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
+#}
+Sie bewerten die Flüssigkeit einer eingereichten Aussage. Hier sind die Daten:
+[BEGINN DATEN]
+************
+[Benutzeranfrage]: {{ gen_output }}
+************
+[ENDE DATEN]
+
+Bestimmen Sie die Flüssigkeit der eingereichten Aussage. Die verfügbaren Bewertungen sind:
+`Poor` - Die Aussage hat viele Fehler, die sie schwer verständlich oder unnatürlich wirken lassen.
+`Fair` - Die Aussage hat einige Fehler, die die Klarheit oder Flüssigkeit des Textes beeinträchtigen, aber die Hauptpunkte sind dennoch verständlich.
+`Good` - Die Aussage hat wenige oder keine Fehler und ist leicht zu lesen undmzu verstehen.
+
+Atmen Sie tief durch und bearbeiten Sie dieses Problem Schritt für Schritt.

@@ -1,0 +1,9 @@
+The following is an assessment on the {{ metric_name }}:
+************
+[Assessment]: {{ unstructured_assessment }}
+************
+
+Save the resulting assessment. The available assessments are:
+{% for option in options %}
+`{{ option }}`
+{% endfor %}

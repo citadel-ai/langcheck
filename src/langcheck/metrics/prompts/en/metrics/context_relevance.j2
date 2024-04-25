@@ -1,0 +1,15 @@
+You are evaluating the relevance of the source to a user's query. Here is the data:
+[BEGIN DATA]
+************
+[Source]: {{ src }}
+************
+[User Query]: {{ user_query }}
+************
+[END DATA]
+
+Determine whether the source contains the relevant and necessary information needed to respond to the user's query. The available assessments are:
+`Fully Relevant` - The source text contains the information necessary to respond to the user's query.
+`Partially Relevant` - The source text is partially relevant to the user's query, but does not contain all the information necessary to respond to the user's query.
+`Not Relevant` - The source text is not relevant to the user's query.
+
+Take a deep breath and work on this problem step-by-step.

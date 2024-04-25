@@ -1,0 +1,18 @@
+{#
+This prompt is similar to the one used in G-Eval (see the Ref below).
+Ref:
+    https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
+#}
+You are evaluating the fluency of a submitted statement. Here is the data:
+[BEGIN DATA]
+************
+[Submission]: {{ gen_output }}
+************
+[END DATA]
+
+Determine the fluency of the submitted statement. The available assessments are:
+`Poor` - The statement has many errors that make it hard to understand or sound unnatural.
+`Fair` - The statement has some errors that affect the clarity or smoothness of the text, but the main points are still comprehensible.
+`Good` - The statement has few or no errors and is easy to read and follow.
+
+Take a deep breath and work on this problem step-by-step.

@@ -1,0 +1,51 @@
+{#
+Ref:
+    Our prompt is similar to the prompt used in
+    https://arxiv.org/abs/2306.05685
+#}
+You are comparing the quality of two responses to a user's query.
+{% if src is not none and ref_output is not none %}
+Source text that is supposedly relevant to the user's query is also provided to you as a reference (the source text may contain some duplication).
+The ideal response to the user's query is also provided to you as a reference.
+{% elif src is not none %}
+Source text that is supposedly relevant to the user's query is also provided to you as a reference (the source text may contain some duplication).
+{% elif ref_output is not none %}
+The ideal response to the user's query is provided to you as a reference.
+{% endif %}
+Here is the data:
+[BEGIN DATA]
+************
+[User Query]: {{ user_query }}
+************
+{% if src is not none %}
+[Source]: {{ src }}
+************
+{% endif %}
+{% if ref_output is not none %}
+[Ideal Response]: {{ ref_output }}
+************
+{% endif %}
+[Response A]: {{ gen_output_1 }}
+************
+[Response B]: {{ gen_output_2 }}
+************
+[END DATA]
+
+Determine which of the responses is a better response to the user's query.
+{% if src is not none and ref_output is not none %}
+Consider factors such as helpfulness, correctness, and relevance in your assessment,
+using the provided Source and the Ideal Response as references.
+{% elif src is not none %}
+Consider factors such as helpfulness, correctness, and relevance in your assessment, using the provided Source as a reference.
+{% elif ref_output is not none %}
+Consider factors such as helpfulness, correctness, and relevance in your assessment, using the Ideal Response as a reference.
+{% else %}
+Consider factors such as helpfulness, correctness, and relevance in your assessment.
+{% endif %}
+Do not allow the order in which the responses were presented to influence your assessment.
+Do not allow the length of the responses to influence your assessment. The available assessments are:
+`Response A` - Response A is a better response.
+`Response B` - Response B is a better response.
+`Tie` - The two responses are roughly equal in quality.
+
+Take a deep breath and work on this problem step-by-step.

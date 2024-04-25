@@ -1,0 +1,21 @@
+{#
+This prompt is similar to the one used in OpenAI Evals (see the Ref below).
+Ref:
+    https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
+#}
+You are evaluating the factual consistency of a submitted claim. Here is the data:
+[BEGIN DATA]
+************
+[Source]: {{ src }}
+************
+[Submission]: {{ gen_output }}
+************
+[END DATA]
+
+Determine whether the submitted claim is factually consistent with the source. The available assessments are:
+`Fully Consistent` - The submitted claim is fully factually consistent with the source text.
+`Partially Consistent` - The submitted claim is partially factually consistent with the source text.
+There are some aspects of the claim that are factually consistent, but some aspects that are not.
+`Not Consistent` - The submitted claim is not factually consistent with the source text.
+
+Take a deep breath and work on this problem step-by-step.

@@ -1,0 +1,21 @@
+{#
+This prompt is similar to the one used in OpenAI Evals (see the Ref below).
+Ref:
+    https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
+#}
+Sie bewerten die faktische Konsistenz einer eingereichten Behauptung.  Hier sind die Daten:
+[BEGINN DER DATEN]
+************
+[Quelle]: {{ src }}
+************
+[Benutzeranfrage]: {{ gen_output }}
+************
+[ENDE DER DATEN]
+
+Bestimmen Sie, ob die eingereichte Behauptung faktisch konsistent mit der Quelle ist. Die verfügbaren Bewertungen sind:
+`Fully Consistent` - Die eingereichte Behauptung ist vollständig faktisch konsistent mit dem Quelltext.
+`Partially Consistent` - Die eingereichte Behauptung ist teilweise faktisch konsistent mit dem Quelltext.
+Es gibt einige Aspekte der Behauptung, die faktisch konsistent sind, aber auch einige, die es nicht sind.
+`Not Consistent` - Die eingereichte Behauptung ist nicht faktisch konsistent mit dem Quelltext.
+
+Atmen Sie tief durch und bearbeiten Sie dieses Problem Schritt für Schritt.

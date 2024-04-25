@@ -1,4 +1,4 @@
-from langcheck.metrics import en
+from langcheck.metrics import en, eval_clients
 from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1, rouge2, rougeL, semantic_similarity)
@@ -24,6 +24,7 @@ __all__ = [
     'context_relevance',
     'MetricValue',
     'en',
+    'eval_clients',
     'exact_match',
     'factual_consistency',
     'flesch_kincaid_grade',

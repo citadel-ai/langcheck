@@ -5,6 +5,8 @@ from unittest.mock import Mock, patch
 import pytest
 from openai.types import CreateEmbeddingResponse
 
+from langcheck.metrics.eval_clients import (AzureOpenAIEvalClient,
+                                            OpenAIEvalClient)
 from langcheck.metrics.ja import (JanomeTokenizer, MeCabTokenizer, rouge1,
                                   rouge2, rougeL, semantic_similarity)
 from langcheck.metrics.ja._tokenizers import _JapaneseTokenizer
@@ -127,9 +129,10 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
                Mock(return_value=mock_embedding_response)):
         # Set the necessary env vars for the 'openai' embedding model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
+        openai_client = OpenAIEvalClient()
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
-                                           model_type='openai')
+                                           eval_model=openai_client)
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1
@@ -138,10 +141,11 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        azure_openai_client = AzureOpenAIEvalClient(
+            embedding_model_name='foo bar')
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
-                                           model_type='azure_openai',
-                                           openai_args={'model': 'foo bar'})
+                                           eval_model=azure_openai_client)
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1

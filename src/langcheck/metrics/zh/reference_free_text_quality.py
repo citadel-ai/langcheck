@@ -1,49 +1,39 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import hanlp
-from openai import OpenAI
 from transformers.pipelines import pipeline
 
 from langcheck.metrics._validation import validate_parameters_reference_free
-from langcheck.metrics.en.reference_free_text_quality import _toxicity_openai
+from langcheck.metrics.en.reference_free_text_quality import \
+    _toxicity_eval_client
 from langcheck.metrics.en.reference_free_text_quality import \
     sentiment as en_sentiment
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
 
-def sentiment(generated_outputs: List[str] | str,
-              prompts: Optional[List[str] | str] = None,
-              model_type: str = 'local',
-              openai_client: Optional[OpenAI] = None,
-              openai_args: Optional[Dict[str, str]] = None,
-              *,
-              use_async: bool = False) -> MetricValue[Optional[float]]:
+def sentiment(
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    eval_model: str | EvalClient = 'local',
+) -> MetricValue[Optional[float]]:
     '''Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
-    positive sentiment. (NOTE: when using the OpenAI model, the sentiment scores
+    positive sentiment. (NOTE: when using an EvalClient, the sentiment scores
     are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
     also be `None` if it could not be computed.)
 
-    We currently support three model types:
+    We currently support two evaluation model types:
 
     1. The 'local' type, where the IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment
     model is downloaded from HuggingFace and run locally. This is the default
     model type and there is no setup needed to run this.
 
-    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
-    by default. While the model you use is configurable, please make sure to use
-    one that supports function calling
-    (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
-    #computing-metrics-with-openai-models>`__
-    for examples on setting up the OpenAI API key.
-
-    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify your
-    model deployment to use in ``openai_args``, e.g.
-    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    2. The EvalClient type, where you can use an EvalClient typically
+    implemented with an LLM. The implementation details are explained in each of
+    the concrete EvalClient classes.
 
     Ref:
         https://huggingface.co/IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment
@@ -52,32 +42,23 @@ def sentiment(generated_outputs: List[str] | str,
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local', 'openai', or
-            'azure_openai'), default 'local'
-        openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None but ``model_type`` is 'openai' or 'azure_openai', we will
-            attempt to create a default client.
-        openai_args: Dict of additional args to pass in to the
-            ``client.chat.completions.create`` function, default None
-        use_async: Whether to use the asynchronous API of OpenAI, default False
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in [
-        'local', 'openai', 'azure_openai'
-    ], ('Unsupported model type. '
-        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'openai' or model_type == 'azure_openai':
-        metric_value = en_sentiment(generated_outputs,
-                                    prompts,
-                                    model_type,
-                                    openai_client,
-                                    openai_args,
-                                    use_async=use_async)
+    if eval_model != 'local':  # EvalClient
+        assert isinstance(
+            eval_model, EvalClient
+        ), 'An EvalClient must be provided for non-local model types.'
+
+        # This reuses the English prompt.
+        # TODO: Update this to use a Chinese prompt.
+        metric_value = en_sentiment(generated_outputs, prompts, eval_model)
         metric_value.language = 'zh'
         return metric_value
 
@@ -112,19 +93,16 @@ def sentiment(generated_outputs: List[str] | str,
         language='zh')
 
 
-def toxicity(generated_outputs: List[str] | str,
-             prompts: Optional[List[str] | str] = None,
-             model_type: str = 'local',
-             openai_client: Optional[OpenAI] = None,
-             openai_args: Optional[Dict[str, str]] = None,
-             *,
-             use_async: bool = False) -> MetricValue[Optional[float]]:
+def toxicity(
+        generated_outputs: List[str] | str,
+        prompts: Optional[List[str] | str] = None,
+        eval_model: str | EvalClient = 'local') -> MetricValue[Optional[float]]:
     '''Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
-    (NOTE: when using the OpenAI model, the toxicity scores are in steps of
+    (NOTE: when using an EvalClient, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
 
-    We currently support three model types:
+    We currently support two evaluation model types:
 
     1. The 'local' type, where a model file is downloaded from HuggingFace and
     run locally. This is the default model type and there is no setup needed to
@@ -132,18 +110,9 @@ def toxicity(generated_outputs: List[str] | str,
     The model (alibaba-pai/pai-bert-base-zh-llm-risk-detection) is a
     risky detection model for LLM generated content released by Alibaba group.
 
-    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
-    by default, in the same way as english counterpart. While the model you use
-    is configurable, please make sure to use one that supports function calling
-    (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this example <https://langcheck.readthedocs.io/en/latest/metrics.html
-    #computing-metrics-with-openai-models>`__
-    for examples on setting up the OpenAI API key.
-
-    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify your
-    model deployment to use in ``openai_args``, e.g.
-    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    2. The EvalClient type, where you can use an EvalClient typically
+    implemented with an LLM. The implementation details are explained in each of
+    the concrete EvalClient classes.
 
     Ref:
         https://huggingface.co/alibaba-pai/pai-bert-base-zh-llm-risk-detection
@@ -152,35 +121,27 @@ def toxicity(generated_outputs: List[str] | str,
         generated_outputs: The model generated output(s) to evaluate
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local', 'openai', or
-            'azure_openai'), default 'local'
-        openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None but ``model_type`` is 'openai' or 'azure_openai', we will
-            attempt to create a default client.
-        openai_args: Dict of additional args to pass in to the
-            ``client.chat.completions.create`` function, default None
-        use_async: Whether to use the asynchronous API of OpenAI, default False
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     '''
     generated_outputs, prompts = validate_parameters_reference_free(
         generated_outputs, prompts)
-    assert model_type in [
-        'local', 'openai', 'azure_openai'
-    ], ('Unsupported model type. '
-        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'openai' or model_type == 'azure_openai':
-        # openai
-        scores, explanations = _toxicity_openai(generated_outputs,
-                                                model_type,
-                                                openai_client,
-                                                openai_args,
-                                                use_async=use_async)
-    else:
+    if eval_model == 'local':
         scores = _toxicity_local(generated_outputs)
         explanations = None
+    else:
+        assert isinstance(
+            eval_model, EvalClient
+        ), 'An EvalClient must be provided for non-local model types.'
+
+        # This reuses the English prompt.
+        # TODO: Update this to use a Chinese prompt.
+        scores, explanations = _toxicity_eval_client(generated_outputs,
+                                                     eval_model)
 
     return MetricValue(metric_name='toxicity',
                        prompts=prompts,

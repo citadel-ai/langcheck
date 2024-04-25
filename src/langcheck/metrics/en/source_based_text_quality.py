@@ -5,16 +5,17 @@ from typing import Dict, List, Optional, Tuple
 import nltk
 import torch
 import torch.nn as nn
-from openai import OpenAI
 from transformers.models.auto.configuration_auto import AutoConfig
 from transformers.models.auto.modeling_auto import AutoModelForSeq2SeqLM
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck.metrics._validation import (
     validate_parameters_context_relevance, validate_parameters_source_based)
-from langcheck.metrics.en._openai import OpenAIBasedEvaluator
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
+
+from ..prompts._utils import get_template
 
 _factual_consistency_model_path = 'MingZhong/unieval-fact'
 _factual_consistency_config = None
@@ -26,71 +27,47 @@ def factual_consistency(
         generated_outputs: List[str] | str,
         sources: List[str] | str,
         prompts: Optional[List[str] | str] = None,
-        model_type: str = 'local',
-        openai_client: Optional[OpenAI] = None,
-        openai_args: Optional[Dict[str, str]] = None,
-        *,
-        use_async: bool = False) -> MetricValue[Optional[float]]:
+        eval_model: str | EvalClient = 'local') -> MetricValue[Optional[float]]:
     '''Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
     means that the output is fully consistent with the source text. (NOTE: when
-    using the OpenAI model, the factuality scores are either 0.0, 0.5, or 1.0.
+    using an EvalClient, the factuality scores are either 0.0, 0.5, or 1.0.
     The score may also be `None` if it could not be computed.)
 
-    We currently support three model types:
+    We currently support two evaluation model types:
 
     1. The 'local' type, where the 'unieval-fact' model is downloaded
     from HuggingFace and run locally. This is the default model type and
     there is no setup needed to run this.
 
-    2. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
-    by default. While the model you use is configurable, please make sure to use
-    one that supports function calling
-    (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
-    #computing-metrics-with-openai-models>`__
-    for examples on setting up the OpenAI API key.
-
-    3. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify your
-    model deployment to use in ``openai_args``, e.g.
-    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    2. The EvalClient type, where you can use an EvalClient typically
+    implemented with an LLM. The implementation details are explained in each of
+    the concrete EvalClient classes.
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        model_type: The type of model to use ('local', 'openai', or
-            'azure_openai'), default 'local'
-        openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None but ``model_type`` is 'openai' or 'azure_openai', we will
-            attempt to create a default client.
-        openai_args: Dict of additional args to pass in to the
-            ``client.chat.completions.create`` function, default None
-        use_async: Whether to use the asynchronous API of OpenAI, default False
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
 
     Returns:
         An MetricValue object
     '''
     generated_outputs, sources, prompts = validate_parameters_source_based(
         generated_outputs, sources, prompts)
-    assert model_type in [
-        'local', 'openai', 'azure_openai'
-    ], ('Unsupported model type. '
-        'The supported ones are ["local", "openai", "azure_openai"]')
 
-    if model_type == 'local':
+    if eval_model == 'local':
         scores = _factual_consistency_local(generated_outputs, sources)
         explanations = None
-    else:  # openai or azure_openai
-        scores, explanations = _factual_consistency_openai(generated_outputs,
-                                                           sources,
-                                                           model_type,
-                                                           openai_client,
-                                                           openai_args,
-                                                           use_async=use_async)
+    else:  # EvalClient
+        assert isinstance(
+            eval_model, EvalClient
+        ), 'An EvalClient must be provided for non-local model types.'
+        scores, explanations = _factual_consistency_eval_client(
+            generated_outputs, sources, eval_model)
 
     return MetricValue(metric_name='factual_consistency',
                        prompts=prompts,
@@ -212,205 +189,88 @@ def _factual_consistency_local(generated_outputs: List[str],
     return score_per_output
 
 
-def _factual_consistency_openai(
-    generated_outputs: List[str],
-    sources: List[str],
-    client_type: str,
-    client: Optional[OpenAI],
-    openai_args: Optional[Dict[str, str]],
-    *,
-    use_async: bool = False
+def _factual_consistency_eval_client(
+    generated_outputs: List[str], sources: List[str], eval_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the factual consistency and their associated explanations
-    between each generated output and its corresponding source text. The
-    consistency is computed by calling the OpenAI API, with a prompt similar to
-    the one used in OpenAI Evals. We leverage the function calling API to make
-    sure that the output is structured such that we can compute a score. If a
-    score could not be computed, `None` is inserted to the score and explanation
-    lists.
-
-    Ref:
-        https://github.com/openai/evals/blob/e49868e550babb7b1c5b4223c9b7a14511bf114d/evals/registry/modelgraded/fact.yaml
-        https://platform.openai.com/docs/guides/gpt/function-calling
+    between the generated outputs and the sources using an EvalClient. This
+    metric takes on float values that are either 0, 0.5, or 1, where 0 means
+    that the output is not at all consistent with the source text, and 1 means
+    that the output is fully consistent with the source text. If a score could
+    not be computed, `None` is inserted to the score and explanation lists.
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
         sources: The source text(s), one string per generated output
-        client_type: The type of OpenAI client ('openai' or 'azure_openai')
-        client: (Optional) OpenAI or AzureOpenAI client. If this is None, we
-            will attempt to create a default client depending on the
-            ``client_type``.
-        openai_args: (Optional) Dict of additional args to pass in to the
-            ``client.chat.completions.create`` function
-        use_async: Whether to use the asynchronous API of OpenAI
+        eval_client: The EvalClient instance used for the evaluation
 
     Returns:
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
 
-    # TODO: The prompt formation, and the scoring system, can do with some
-    # improvement. There are some cases where consistent outputs get incorrectly
-    # assessed as "Partially Consistent", and there's no differentiation
-    # between an output that is unrelated to the source and an output that is
-    # straight up contradictory.
-    def _prompt(src: str, gen_output: str) -> str:
-        return f'''
-        You are evaluating the factual consistency of a submitted claim. Here is
-        the data:
-        [BEGIN DATA]
-        ************
-        [Source]: {src}
-        ************
-        [Submission]: {gen_output}
-        ************
-        [END DATA]
+    factual_consistency_template = get_template(
+        'en/metrics/factual_consistency.j2')
 
-        Determine whether the submitted claim is factually consistent with the
-        source. The available assessments are:
-        `Fully Consistent` - The submitted claim is fully factually consistent
-        with the source text.
-        `Partially Consistent` - The submitted claim is partially factually
-        consistent with the source text. There are some aspects of the claim
-        that are factually consistent, but some aspects that are not.
-        `Not Consistent` - The submitted claim is not factually consistent with
-        the source text.
-
-        Take a deep breath and work on this problem step-by-step.
-        '''
-
-    def _function_call_prompt(long_assessment: str) -> str:
-        return f'''
-        The following is an assessment on the factual consistency of a claim:
-        ************
-        [Assessment]: {long_assessment}
-        ************
-
-        Save the resulting assessment. The available assessments are:
-        `Fully Consistent`
-        `Partially Consistent`
-        `Not Consistent`
-        '''
-
-    factuality_assessment_to_score = {
+    factual_consistency_assessment_to_score = {
         'Fully Consistent': 1.0,
         'Partially Consistent': 0.5,
         'Not Consistent': 0.0
     }
-    oai_evaluator = OpenAIBasedEvaluator(
-        assessment_to_score_mapping=factuality_assessment_to_score,
-        function_name='save_factual_consistency_assessment',
-        function_description=(
-            "Saves a submitted claim's factual consistency assessment."),
-        argument_name='factuality',
-        argument_description='The factual consistency assessment of the claim',
-        client_type=client_type,
-        client=client,
-        openai_args=openai_args,
-        use_async=use_async)
+    populated_prompts = [
+        factual_consistency_template.render({
+            'src': source,
+            'gen_output': gen_output
+        }) for source, gen_output in zip(sources, generated_outputs)
+    ]
 
-    scores, explanations = oai_evaluator.get_score(
-        map(_prompt, sources, generated_outputs), _function_call_prompt)
+    scores, explanations = eval_client.get_score(
+        metric_name='factual consistency',
+        language='en',
+        prompts=populated_prompts,
+        score_map=factual_consistency_assessment_to_score,
+    )
 
     return scores, explanations
 
 
-def context_relevance(sources: List[str] | str,
-                      prompts: List[str] | str,
-                      model_type: str = 'openai',
-                      openai_client: Optional[OpenAI] = None,
-                      openai_args: Optional[Dict[str, str]] = None,
-                      *,
-                      use_async: bool = False) -> MetricValue[Optional[float]]:
+def context_relevance(sources: List[str] | str, prompts: List[str] | str,
+                      eval_model: EvalClient) -> MetricValue[Optional[float]]:
     '''Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully
     relevant to the prompt.
 
-    We currently support two model types:
-
-    1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
-    by default. While the model you use is configurable, please make sure to use
-    one that supports function calling
-    (https://platform.openai.com/docs/guides/gpt/function-calling). See
-    `this page <https://langcheck.readthedocs.io/en/latest/metrics.html
-    #computing-metrics-with-openai-models>`__
-    for examples on setting up the OpenAI API key.
-
-    2. The 'azure_openai' type. Essentially the same as the 'openai' type,
-    except that it uses the AzureOpenAI client. Note that you must specify your
-    model deployment to use in ``openai_args``, e.g.
-    ``openai_args={'model': 'YOUR_DEPLOYMENT_NAME'}``
+    We currently only support the evaluation based on an EvalClient.
 
     Args:
         sources: The source text(s), one string per prompt
         prompts: The prompt(s)
-        model_type: The type of model to use ('openai' or 'azure_openai'),
-            default 'openai'
-        openai_client: OpenAI or AzureOpenAI client, default None. If this is
-            None, we will attempt to create a default client.
-        openai_args: Dict of additional args to pass in to the
-            ``client.chat.completions.create`` function, default None
-        use_async: Whether to use the asynchronous API of OpenAI, default False
+        eval_model: The EvalClient instance used for the evaluation
     '''
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
-    def _prompt(src: str, user_query: str) -> str:
-        return f'''
-        You are evaluating the relevance of the source to a user's query. Here
-        is the data:
-        [BEGIN DATA]
-        ************
-        [Source]: {src}
-        ************
-        [User Query]: {user_query}
-        ************
-        [END DATA]
-
-        Determine whether the source contains the relevant and necessary
-        information needed to respond to the user's query. The available
-        assessments are:
-        `Fully Relevant` - The source text contains the information necessary to
-        respond to the user's query.
-        `Partially Relevant` - The source text is partially relevant to the
-        user's query, but does not contain all the information necessary to
-        respond to the user's query.
-        `Not Relevant` - The source text is not relevant to the user's query.
-
-        Take a deep breath and work on this problem step-by-step.
-        '''
-
-    def _function_call_prompt(long_assessment: str) -> str:
-        return f'''
-        The following is an assessment on the relevance of a source:
-        ************
-        [Assessment]: {long_assessment}
-        ************
-
-        Save the resulting assessment. The available assessments are:
-        `Fully Relevant`
-        `Partially Relevant`
-        `Not Relevant`
-        '''
+    context_relevance_template = get_template('en/metrics/context_relevance.j2')
 
     context_relevance_assessment_to_score = {
         'Fully Relevant': 1.0,
         'Partially Relevant': 0.5,
         'Not Relevant': 0.0
     }
-    oai_evaluator = OpenAIBasedEvaluator(
-        assessment_to_score_mapping=context_relevance_assessment_to_score,
-        function_name='save_context_relevance_assessment',
-        function_description=("Saves a context relevance assessment."),
-        argument_name='context_relevance',
-        argument_description='The context relevance assessment',
-        client_type=model_type,
-        client=openai_client,
-        openai_args=openai_args,
-        use_async=use_async)
 
-    scores, explanations = oai_evaluator.get_score(
-        map(_prompt, sources, prompts), _function_call_prompt)
+    populated_prompts = [
+        context_relevance_template.render({
+            'src': source,
+            'user_query': prompt,
+        }) for source, prompt in zip(sources, prompts)
+    ]
+
+    scores, explanations = eval_model.get_score(
+        metric_name='context relevance',
+        language='en',
+        prompts=populated_prompts,
+        score_map=context_relevance_assessment_to_score,
+    )
 
     return MetricValue(metric_name='context_relevance',
                        prompts=prompts,

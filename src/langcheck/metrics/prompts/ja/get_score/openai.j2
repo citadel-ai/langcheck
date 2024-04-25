@@ -1,0 +1,9 @@
+以下は{{ metric_name }}に関する評価です:
+************
+[評価]: {{ unstructured_assessment }}
+************
+
+結果として出た評価を保存してください。利用可能な評価は以下の通りです:
+{% for option in options %}
+`{{ option }}`
+{% endfor %}

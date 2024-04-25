@@ -22,9 +22,7 @@ def rephrase(
     We currently support two model types:
 
     1. The 'openai' type, where we use OpenAI's 'gpt-turbo-3.5' model
-    by default. See `this page
-    <https://langcheck.readthedocs.io/en/latest/metrics.html#computing-metrics-with-openai-models>`__
-    for examples on setting up the OpenAI API key.
+    by default.
 
     2. The 'azure_openai' type. Essentially the same as the 'openai' type,
     except that it uses the AzureOpenAI client. Note that you must specify the
@@ -46,7 +44,7 @@ def rephrase(
         A list of rephrased instances.
     '''
     # Initialize the openai object if openai_client is None
-    # TODO: Refactor this into OpenAIBasedEvaluator?
+    # TODO: Refactor this into OpenAIEvalClient?
     if openai_client is None:
         if model_type == 'openai':
             openai_client = OpenAI()
