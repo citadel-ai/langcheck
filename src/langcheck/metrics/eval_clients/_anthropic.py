@@ -21,7 +21,7 @@ class AnthropicEvalClient(EvalClient):
                  *,
                  use_async: bool = False):
         '''
-        Intialize the Anthropic evaluation client. The asuthentication
+        Initialize the Anthropic evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure ANTHROPIC_API_KEY is set.
 
@@ -85,7 +85,7 @@ class AnthropicEvalClient(EvalClient):
         for i, response in enumerate(responses):
             if not isinstance(response, Exception):
                 continue
-            print('OpenAI failed to return an assessment corresponding to '
+            print('Anthropic failed to return an assessment corresponding to '
                   f'{i}th prompt: {response}')
             responses[i] = None
         return responses
@@ -97,7 +97,7 @@ class AnthropicEvalClient(EvalClient):
             tqdm_description: str | None = None) -> list[str | None]:
         '''The function that gets resonses to the given prompt texts.
         We use Anthropic's 'claude-3-haiku-20240307' model by default, but you
-        can configure it by passing the 'model' parameter in the openai_args.
+        can configure it by passing the 'model' parameter in the anthropic_args.
 
         Args:
             prompts: The prompts you want to get the responses for.
