@@ -51,17 +51,19 @@ ja-optional = [  # Optional dependencies for extended Japanese support
 zh = [
     'hanlp >= 2.1.0b33'
 ]
+
+# Different LLM clients
+anthropic = [
+    'anthropic'
+]
+
 all = [
     'langcheck[de]',
     'langcheck[en]',
     'langcheck[ja]',
     'langcheck[ja-optional]',
-    'langcheck[zh]'
-]
-
-# Different LLM clients
-anthropic = [
-    'anthropic'
+    'langcheck[zh]',
+    'langcheck[anthropic]'
 ]
 
 dev = [
