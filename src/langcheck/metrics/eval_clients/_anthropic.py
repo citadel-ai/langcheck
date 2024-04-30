@@ -106,7 +106,11 @@ class AnthropicEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         '''
-        config = {"model": "claude-3-haiku-20240307", "max_tokens": 1024}
+        config = {
+            "model": "claude-3-haiku-20240307",
+            "max_tokens": 1024,
+            "temperature": 0.0
+        }
         config.update(self._anthropic_args or {})
         tqdm_description = tqdm_description or 'Intermediate assessments (1/2)'  # NOQA: E501
         responses = self._call_api(prompts=prompts,
