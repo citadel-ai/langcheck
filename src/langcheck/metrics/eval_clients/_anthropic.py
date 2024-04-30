@@ -147,7 +147,7 @@ class AnthropicEvalClient(EvalClient):
             A list of scores for the given prompts. The scores can be None if
             the evaluation fails.
         '''
-        if language not in ['en']:
+        if language not in ['en', 'ja', 'de']:
             raise ValueError(f'Unsupported language: {language}')
 
         options = list(score_map.keys())
