@@ -6,7 +6,7 @@ def generate_pairwise_comparison_prompt_params(
         prompts: list[str], sources_1: list[str] | None,
         sources_2: list[str] | None,
         reference_outputs: list[str] | None) -> list[dict[str, str | None]]:
-    '''Generate a list of parameters that can be used for the jinjia templates
+    '''Generate a list of parameters that can be used for the jinja templates
     of the pairwise comparison metrics.
 
     Args:
@@ -18,15 +18,15 @@ def generate_pairwise_comparison_prompt_params(
         reference_outputs: (Optional) the reference output(s)
 
     Returns:
-        A list of dictionaries containing the parameters for the jinjia
+        A list of dictionaries containing the parameters for the jinja
         templates the formats are as follows:
         [
             {
                 'src': SOURCE,
                 'ref_output': REFERENCE_OUTPUT,
                 'user_query': PROMPT,
-                'gen_output_a': GENERATED_OUTPUT_A,
-                'gen_output_b': GENERATED_OUTPUT_B
+                'gen_output_1': GENERATED_OUTPUT_1,
+                'gen_output_2': GENERATED_OUTPUT_2
             },
             ...
         ]
@@ -55,9 +55,9 @@ def generate_pairwise_comparison_prompt_params(
         'src': src,
         'ref_output': ref_output,
         'user_query': prompt,
-        'gen_output_a': gen_output_a,
-        'gen_output_b': gen_output_b
-    } for src, ref_output, prompt, gen_output_a, gen_output_b in zip(
+        'gen_output_1': gen_output_1,
+        'gen_output_2': gen_output_2
+    } for src, ref_output, prompt, gen_output_1, gen_output_2 in zip(
         sources_list, reference_outputs_list, prompts, generated_outputs_1,
         generated_outputs_2)]
 

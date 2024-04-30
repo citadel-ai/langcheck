@@ -89,7 +89,7 @@ An example metric is {func}`~langcheck.metrics.en.pairwise_text_quality.pairwise
 
 Several text quality metrics are computed using a model (e.g. `toxicity`, `sentiment`, `semantic_similarity`, `factual_consistency`). By default, LangCheck will download and use a model that can run locally on your machine (often from HuggingFace) so that the metric function works with no additional setup.
 
-However, if you have a remote LLM subscription such as OpenAI API, you can also configure these metrics to use that model, which may provide more accurate
+However, if you would like to use a remote LLM such as the OpenAI API, you can also configure these metrics to use that model, which may provide more accurate
 results for more complex use cases. You need to pass an `~langcheck.metrics.eval_clients.EvalClient` instance corresponding to the service you use to the
 metric functions.
 
@@ -158,7 +158,7 @@ azure_openai_client = AzureOpenAI(api_key='YOUR_AZURE_OPENAI_KEY',
 # for Azure OpenAI
 eval_client = AzureOpenAIEvalClient(
     text_model_name='YOUR_TEXT_MODEL_DEPLOYMENT_NAME',
-    azure_openai_client=azure_openai_cilent
+    azure_openai_client=azure_openai_client
 )
 
 fluency_value = fluency(

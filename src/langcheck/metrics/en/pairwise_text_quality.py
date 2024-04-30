@@ -28,10 +28,6 @@ def pairwise_comparison(
 
     We currently only support the evaluation based on an EvalClient.
 
-    Ref:
-        Our prompt is similar to the prompt used in
-        https://arxiv.org/abs/2306.05685
-
     Args:
         generated_outputs_a: Model A's generated output(s) to evaluate
         generated_outputs_b: Model B's generated output(s) to evaluate
@@ -46,9 +42,9 @@ def pairwise_comparison(
             useful for ensuring that the evaluator's position bias is not
             impacting the scores. Default True.
         eval_model: The EvalClient instance used for the evaluation. This is
-            marked as Optional because of the backwards compatibility with the
-            previous order of the arguments, but you need to pass this argument
-            to make the function work.
+            marked as Optional so that it can follow the above arguments that
+            have default values (for consistency with the other metrics), but
+            this is in fact a required argument.
 
     Returns:
         An MetricValue object

@@ -294,7 +294,7 @@ def fluency(
     (poor), 0.5 (fair), or 1.0 (good). The score may also be `None` if it could
     not be computed.)
 
-    We currently support three model types:
+    We currently support two evaluation model types:
 
     1. The 'local' type, where a model file is downloaded from HuggingFace and
     run locally. This is the default model type and there is no setup needed to
@@ -381,14 +381,10 @@ def _fluency_eval_client(
     generated_outputs: List[str], eval_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the fluency scores and their associated explanations of
-    generated outputs using the provided EvalClient, using a prompt that is
-    similar to the one used in G-Eval (see the Ref below). This metric takes on
-    float values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
+    generated outputs using the provided EvalClient. This metric takes on float
+    values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
     "fair" fluency, and 1 is "good" fluency.  If a score could not be computed,
     `None` is inserted to the score and explanation lists.
-
-    Ref:
-        https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate

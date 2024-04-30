@@ -5,7 +5,7 @@ from jinja2 import Template
 
 def get_template(relative_path: str) -> Template:
     '''
-    Gets a Jinjia template from the specified prompt template file.
+    Gets a Jinja template from the specified prompt template file.
 
     Args:
         relative_path (str): The relative path of the template file.

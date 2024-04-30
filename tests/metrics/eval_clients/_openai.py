@@ -11,8 +11,8 @@ from langcheck.metrics.eval_clients import (AzureOpenAIEvalClient,
 
 
 def test_get_text_response_openai():
-    prompts = ['What is the capital of France?'] * 2
-    answer = 'Paris is the capital of France.'
+    prompts = ['Assess the factual consistency of the generated output...'] * 2
+    answer = 'The output is fully factually consistent.'
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [Mock(message=Mock(content=answer))]
     # Calling the openai.resources.chat.Completions.create method requires an
@@ -31,9 +31,9 @@ def test_get_text_response_openai():
 
 def test_get_float_score_openai():
     unstructured_assessment_result: list[str | None] = [
-        'Paris is the capital of France.'
+        'The output is fully factually consistent.'
     ] * 2
-    short_assessment_result = 'Paris'
+    short_assessment_result = 'Fully Consistent'
     score_map = {short_assessment_result: 1.0}
 
     mock_chat_completion = Mock(spec=ChatCompletion)
@@ -59,8 +59,8 @@ def test_get_float_score_openai():
 
 
 def test_get_text_response_azure_openai():
-    prompts = ['What is the capital of France?'] * 2
-    answer = 'Paris is the capital of France.'
+    prompts = ['Assess the factual consistency of the generated output...'] * 2
+    answer = 'The output is fully factually consistent.'
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [Mock(message=Mock(content=answer))]
     # Calling the openai.resources.chat.Completions.create method requires an
@@ -82,9 +82,9 @@ def test_get_text_response_azure_openai():
 
 def test_get_float_score_azure_openai():
     unstructured_assessment_result: list[str | None] = [
-        'Paris is the capital of France.'
+        'The output is fully factually consistent.'
     ] * 2
-    short_assessment_result = 'Paris'
+    short_assessment_result = 'Fully Consistent'
     score_map = {short_assessment_result: 1.0}
 
     mock_chat_completion = Mock(spec=ChatCompletion)

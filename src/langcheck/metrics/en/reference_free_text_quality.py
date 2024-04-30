@@ -236,14 +236,10 @@ def _fluency_eval_client(
     generated_outputs: List[str], eval_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     '''Calculates the fluency scores and their associated explanations of
-    generated outputs using the provided EvalClient, using a prompt that is
-    similar to the one used in G-Eval (see the Ref below). This metric takes on
-    float values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
+    generated outputs using the provided EvalClient. This metric takes on float
+    values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
     "fair" fluency, and 1 is "good" fluency.  If a score could not be computed,
     `None` is inserted to the score and explanation lists.
-
-    Ref:
-        https://github.com/nlpyang/geval/blob/main/prompts/summeval/flu_detailed.txt
 
     Args:
         generated_outputs: A list of model generated outputs to evaluate
@@ -501,10 +497,8 @@ def ai_disclaimer_similarity(
             Prompts are not evaluated and only used as metadata.
         ai_disclaimer_phrase: Reference AI disclaimer phrase, default "I don't
             have personal opinions, emotions, or consciousness."
-        eval_model: The EvalClient instance used for the evaluation. This is
-            marked as Optional because of the backwards compatibility with the
-            previous order of the arguments, but you need to pass this argument
-            to make the function work.
+        eval_model: The type of model to use ('local' or the EvalClient instance
+            used for the evaluation). default 'local'
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object

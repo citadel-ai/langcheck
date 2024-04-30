@@ -137,10 +137,10 @@ class OpenAIEvalClient(EvalClient):
         (https://platform.openai.com/docs/guides/gpt/function-calling).
 
         Ref:
-        https://platform.openai.com/docs/guides/gpt/function-calling
+            https://platform.openai.com/docs/guides/gpt/function-calling
 
         Args:
-            metric_name : The name of the metric to be used. (e.g. "toxicity")
+            metric_name: The name of the metric to be used. (e.g. "toxicity")
             language: The language of the prompts. (e.g. "en")
             unstructured_assessment_result: The unstructured assessment results
                 for the given assessment prompts.
