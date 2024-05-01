@@ -7,3 +7,10 @@ __all__ = [
     'EvalClient',
     'OpenAIEvalClient',
 ]
+
+try:
+    from langcheck.metrics.eval_clients._anthropic import AnthropicEvalClient
+except ModuleNotFoundError:
+    pass
+else:
+    __all__.append('AnthropicEvalClient')

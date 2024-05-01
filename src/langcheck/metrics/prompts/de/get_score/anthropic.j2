@@ -1,0 +1,11 @@
+Folgendes ist eine Bewertung zur {{ metric_name }}:
+************
+[Bewertung]: {{ unstructured_assessment }}
+************
+
+Zurückgeben Sie die resultierende Bewertung. Die verfügbaren Bewertungen sind:
+{% for option in options %}
+`{{ option }}`
+{% endfor %}
+
+Bitte stellen Sie sicher, dass Sie nur eine der angegebenen Optionen als Antwort zurückgeben und nichts anderes einschließen.

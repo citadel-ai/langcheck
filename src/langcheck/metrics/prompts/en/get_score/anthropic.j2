@@ -1,0 +1,11 @@
+The following is an assessment on the {{ metric_name }}:
+************
+[Assessment]: {{ unstructured_assessment }}
+************
+
+Return the resulting assessment. The available assessments are:
+{% for option in options %}
+`{{ option }}`
+{% endfor %}
+
+Please make sure that you only return one of the proivided options as the response and do not include anything else.
