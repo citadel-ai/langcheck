@@ -8,7 +8,7 @@ from anthropic.types.message import Message
 from langcheck.metrics.eval_clients import AnthropicEvalClient
 
 
-def test_get_text_response_openai():
+def test_get_text_response_anthropic():
     prompts = ['Assess the factual consistency of the generated output...'] * 2
     answer = 'The output is fully factually consistent.'
     mock_chat_completion = Mock(spec=Message)
@@ -27,7 +27,7 @@ def test_get_text_response_openai():
             assert response == answer
 
 
-def test_get_float_score_openai():
+def test_get_float_score_anthropic():
     unstructured_assessment_result: list[str | None] = [
         'The output is fully factually consistent.'
     ] * 2
