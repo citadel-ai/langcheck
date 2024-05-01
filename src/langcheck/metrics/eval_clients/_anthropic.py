@@ -108,7 +108,7 @@ class AnthropicEvalClient(EvalClient):
         '''
         config = {
             "model": "claude-3-haiku-20240307",
-            "max_tokens": 1024,
+            "max_tokens": 4096,
             "temperature": 0.0
         }
         config.update(self._anthropic_args or {})
