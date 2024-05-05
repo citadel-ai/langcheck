@@ -6,10 +6,12 @@ from typing import Any, Iterable
 
 import google.ai.generativelanguage as glm
 import google.generativeai as genai
+import torch
 
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
+from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient
 
 
@@ -20,7 +22,8 @@ class GeminiEvalClient(EvalClient):
     def __init__(self,
                  model: genai.GenerativeModel | None = None,
                  model_args: dict[str, Any] | None = None,
-                 generate_content_args: dict[str, Any] | None = None):
+                 generate_content_args: dict[str, Any] | None = None,
+                 embed_model_name: str | None = None):
         '''
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
@@ -35,6 +38,8 @@ class GeminiEvalClient(EvalClient):
             model_args: (Optional) Dict of args to create the Gemini model.
             generate_content_args: (Optional) Dict of args to pass in to the
                 ``generate_content`` function.
+            embed_model_name: (Optional) The name of the embedding model to use.
+                If not provided, the models/embedding-001 model will be used.
         '''
         if model:
             self._model = model
@@ -44,6 +49,7 @@ class GeminiEvalClient(EvalClient):
             self._model = genai.GenerativeModel(**model_args)
 
         self._generate_content_args = generate_content_args or {}
+        self._embed_model_name = embed_model_name
 
         # TODO: Allow the user to specify the use of async. There currently
         # seems to be an issue with `generate_content_async()` that is blocking
@@ -209,3 +215,28 @@ class GeminiEvalClient(EvalClient):
             score_map[assessment] if assessment else None
             for assessment in assessments
         ]
+
+    def similarity_scorer(self) -> GeminiSimilarityScorer:
+        return GeminiSimilarityScorer(embed_model_name=self._embed_model_name)
+
+
+class GeminiSimilarityScorer(BaseSimilarityScorer):
+    '''Similarity scorer that uses the Gemini API to embed the inputs.
+    In the current version of langcheck, the class is only instantiated within
+    EvalClients.
+    '''
+
+    def __init__(self, embed_model_name: str | None):
+
+        super().__init__()
+
+        self.embed_model_name = embed_model_name or 'models/embedding-001'
+
+    def _embed(self, inputs: list[str]) -> torch.Tensor:
+        '''Embed the inputs using the OpenAI API.
+        '''
+        # Embed the inputs
+        embed_response = genai.embed_content(model=self.embed_model_name,
+                                             content=inputs)
+
+        return torch.Tensor([item for item in embed_response['embedding']])
