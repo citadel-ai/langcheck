@@ -79,13 +79,18 @@ class GeminiEvalClient(EvalClient):
                 for prompt in tqdm_wrapper(prompts, desc=tqdm_description)
             ]
 
-        # Filter out exceptions and print them out.
+        # Filter out exceptions and print them out. Also filter out responses
+        # that are blocked by safety settings and print out the safety ratings.
         for i, response in enumerate(responses):
-            if not isinstance(response, Exception):
-                continue
-            print('Gemini failed to return an assessment corresponding to '
-                  f'{i}th prompt: {response}')
-            responses[i] = None
+            if isinstance(response, Exception):
+                print('Gemini failed to return an assessment corresponding to '
+                      f'{i}th prompt: {response}')
+                responses[i] = None
+            elif response.candidates[0].finish_reason == 3:
+                print(
+                    f"Gemini's safety settings blocked the {i}th prompt:\n {response.candidates[0].safety_ratings}"  # NOQA: E501
+                )
+                responses[i] = None
         return responses
 
     def get_text_responses(
