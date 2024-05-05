@@ -4,9 +4,8 @@ import asyncio
 import os
 from typing import Any, Iterable
 
-import google.generativeai as genai
-from google.generativeai.types import generation_types, safety_types
 import google.ai.generativelanguage as glm
+import google.generativeai as genai
 
 from langcheck.utils.progess_bar import tqdm_wrapper
 
@@ -19,12 +18,9 @@ class GeminiEvalClient(EvalClient):
     '''
 
     def __init__(self,
-                 model_name: str = 'models/gemini-pro',
-                 safety_settings: safety_types.SafetySettingOptions |
-                 None = None,
-                 generation_config: generation_types.GenerationConfigType |
-                 None = None,
-                 gemini_args: dict[str, Any] | None = None,
+                 model: genai.GenerativeModel | None = None,
+                 model_args: dict[str, Any] | None = None,
+                 generate_content_args: dict[str, Any] | None = None,
                  *,
                  use_async: bool = False):
         '''
@@ -36,17 +32,22 @@ class GeminiEvalClient(EvalClient):
             https://ai.google.dev/api/python/google/generativeai/GenerativeModel
 
         Args:
-            model_name: (Optional) The name of the model to use.
-            safety_settings: (Optional) The safety settings to use.
-            generation_config: (Optional) The generation configuration to use.
-            use_async: (Optional) If True, the async client will be used.
+            model: (Optional) The Gemini model to use. If not provided, the
+                model will be created using the model_args.
+            model_args: (Optional) Dict of args to create the Gemini model.
+            generate_content_args: (Optional) Dict of args to pass in to the
+                ``generate_content`` function.
+            use_async: (Optional) If True, ``generate_content_async`` will be
+                called instead of ``generate_content``.
         '''
-        genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
-        self._model = genai.GenerativeModel(model_name,
-                                            safety_settings=safety_settings,
-                                            generation_config=generation_config)
+        if model:
+            self._model = model
+        else:
+            genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+            model_args = model_args or {}
+            self._model = genai.GenerativeModel(**model_args)
 
-        self._gemini_args = gemini_args or {}
+        self._generate_content_args = generate_content_args or {}
         self._use_async = use_async
 
     def _call_api(self,
@@ -101,7 +102,7 @@ class GeminiEvalClient(EvalClient):
             evaluation fails.
         '''
         config = {"generation_config": {"temperature": 0.0}}
-        config.update(self._gemini_args or {})
+        config.update(self._generate_content_args or {})
         tqdm_description = tqdm_description or 'Intermediate assessments (1/2)'  # NOQA: E501
         responses = self._call_api(prompts=prompts,
                                    config=config,
@@ -176,7 +177,7 @@ class GeminiEvalClient(EvalClient):
                 "temperature": 0.0
             }
         }
-        config_structured_assessments.update(self._gemini_args or {})
+        config_structured_assessments.update(self._generate_content_args or {})
 
         tqdm_description = tqdm_description or 'Scores (2/2)'
         responses = self._call_api(prompts=fn_call_messages,
