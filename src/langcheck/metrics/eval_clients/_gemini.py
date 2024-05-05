@@ -125,10 +125,10 @@ class GeminiEvalClient(EvalClient):
         function calling API to extract the short assessment results from the
         unstructured assessments, so please make sure that the model you use
         supports function calling
-        (https://platform.openai.com/docs/guides/gpt/function-calling).
+        (https://ai.google.dev/gemini-api/docs/function-calling#supported-models).
 
         Ref:
-            https://platform.openai.com/docs/guides/gpt/function-calling
+            https://ai.google.dev/gemini-api/docs/function-calling
 
         Args:
             metric_name: The name of the metric to be used. (e.g. "toxicity")
@@ -146,6 +146,8 @@ class GeminiEvalClient(EvalClient):
         if language not in ['en', 'ja', 'de', 'zh']:
             raise ValueError(f'Unsupported language: {language}')
 
+        # Gemini's function calling API is similar to OpenAI's, so we can reuse
+        # the prompt template.
         fn_call_template = get_template(f'{language}/get_score/openai.j2')
 
         options = list(score_map.keys())
@@ -170,7 +172,9 @@ class GeminiEvalClient(EvalClient):
             "tool_config": {
                 'function_calling_config': 'ANY'
             },
-            "generation_config": {"temperature": 0.0}
+            "generation_config": {
+                "temperature": 0.0
+            }
         }
         config_structured_assessments.update(self._gemini_args or {})
 
