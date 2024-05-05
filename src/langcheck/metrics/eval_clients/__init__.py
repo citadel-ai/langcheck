@@ -14,3 +14,10 @@ except ModuleNotFoundError:
     pass
 else:
     __all__.append('AnthropicEvalClient')
+
+try:
+    from langcheck.metrics.eval_clients._gemini import GeminiEvalClient
+except ModuleNotFoundError:
+    pass
+else:
+    __all__.append('GeminiEvalClient')
