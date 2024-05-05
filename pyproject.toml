@@ -56,6 +56,9 @@ zh = [
 anthropic = [
     'anthropic'
 ]
+gemini = [
+    'google-generativeai'
+]
 
 all = [
     'langcheck[de]',
@@ -63,7 +66,8 @@ all = [
     'langcheck[ja]',
     'langcheck[ja-optional]',
     'langcheck[zh]',
-    'langcheck[anthropic]'
+    'langcheck[anthropic]',
+    'langcheck[gemini]'
 ]
 
 dev = [
