@@ -3,7 +3,7 @@
 {
 	"name": "Python 3",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:1-3.8-bullseye",
+	"image": "mcr.microsoft.com/devcontainers/python:1-3.9-bullseye",
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// PyTorch 2.1.0 causes segmentation fault in aarch64, so we pin the version in the dev container until the bug is fixed.
