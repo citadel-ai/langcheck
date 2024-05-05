@@ -20,9 +20,7 @@ class GeminiEvalClient(EvalClient):
     def __init__(self,
                  model: genai.GenerativeModel | None = None,
                  model_args: dict[str, Any] | None = None,
-                 generate_content_args: dict[str, Any] | None = None,
-                 *,
-                 use_async: bool = False):
+                 generate_content_args: dict[str, Any] | None = None):
         '''
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
@@ -37,8 +35,6 @@ class GeminiEvalClient(EvalClient):
             model_args: (Optional) Dict of args to create the Gemini model.
             generate_content_args: (Optional) Dict of args to pass in to the
                 ``generate_content`` function.
-            use_async: (Optional) If True, ``generate_content_async`` will be
-                called instead of ``generate_content``.
         '''
         if model:
             self._model = model
@@ -48,7 +44,11 @@ class GeminiEvalClient(EvalClient):
             self._model = genai.GenerativeModel(**model_args)
 
         self._generate_content_args = generate_content_args or {}
-        self._use_async = use_async
+
+        # TODO: Allow the user to specify the use of async. There currently
+        # seems to be an issue with `generate_content_async()` that is blocking
+        # this: https://github.com/google-gemini/generative-ai-python/issues/207
+        self._use_async = False
 
     def _call_api(self,
                   prompts: Iterable[str | None],
