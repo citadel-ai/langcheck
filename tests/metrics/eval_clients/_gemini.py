@@ -64,3 +64,21 @@ def test_get_float_score_gemini():
         assert len(scores) == len(unstructured_assessment_result)
         for score in scores:
             assert score == 1.0
+
+
+def test_similarity_scorer_gemini():
+    mock_embedding_response = {'embedding': [[0.1, 0.2, 0.3]]}
+
+    # Calling the google.generativeai.embed_content method requires a Google
+    # API key, so we mock the return value instead
+    with patch('google.generativeai.embed_content',
+               Mock(return_value=mock_embedding_response)):
+        # Set the necessary env vars for the GeminiEvalClient
+        os.environ["GOOGLE_API_KEY"] = "dummy_key"
+        gemini_client = GeminiEvalClient()
+        scorer = gemini_client.similarity_scorer()
+        # Since the mock embeddings are the same for the generated and reference
+        # outputs, the similarity score should be 1.
+        score = scorer.score(['The cat sat on the mat.'],
+                             ['The cat sat on the mat.'])
+        assert 0.99 <= score[0] <= 1
