@@ -233,7 +233,7 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
         self.embed_model_name = embed_model_name or 'models/embedding-001'
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
-        '''Embed the inputs using the OpenAI API.
+        '''Embed the inputs using the Gemini API.
         '''
         # Embed the inputs
         embed_response = genai.embed_content(model=self.embed_model_name,
