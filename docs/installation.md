@@ -58,13 +58,27 @@ Most systems already have `gcc` installed, with the exception of "slim" Docker i
 1. Use `python:3.11-buster` instead of `python:3.11-slim-buster`, which includes gcc.
 1. Run `apt update && apt install build-essential -y` (e.g. in your Dockerfile) to install gcc.
 
-### 3. The error `AttributeError: module 'langcheck.metrics' has no attribute 'ja'`
+### 3. The error message `Failed to build sudachipy`
+
+The `sudachipy` package, which is installed with `langcheck[all]` or `langcheck[ja-optional]`, does not have a pre-built wheel for ARM64 Linux devices.
+In this case, you need have a Rust compiler in your environment so that the package can be built in the local environment.
+
+Follow the [official documentation](https://www.rust-lang.org/tools/install) and install Rust before installing `langcheck`.
+
+If you do not need the `[ja-optional]` dependencies, you can also install each language individually by
+
+```sh
+pip install langcheck[en,ja,de,zh]
+```
+
+
+### 4. The error `AttributeError: module 'langcheck.metrics' has no attribute 'ja'`
 
 If you see this error when calling a LangCheck function, such as `langcheck.metrics.ja.toxicity()`, you probably need to install the Japanese LangCheck package.
 
 Run `pip install langcheck[ja]` (or for your required language) and try again.
 
-### 4. The error `ModuleNotFoundError`
+### 5. The error `ModuleNotFoundError`
 
 If you see this error when importing a LangCheck package, such as `import langcheck.metrics.ja`, you probably need to install the Japanese LangCheck package.
 
