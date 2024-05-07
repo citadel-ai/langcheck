@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import os
 from typing import Any, Iterable
 
@@ -29,6 +28,10 @@ class GeminiEvalClient(EvalClient):
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
 
+        TODO: Allow the user to specify the use of async. There currently
+        seems to be an issue with `generate_content_async()` that is blocking
+        this: https://github.com/google-gemini/generative-ai-python/issues/207
+
         Ref:
             https://ai.google.dev/api/python/google/generativeai/GenerativeModel
 
@@ -51,11 +54,6 @@ class GeminiEvalClient(EvalClient):
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
 
-        # TODO: Allow the user to specify the use of async. There currently
-        # seems to be an issue with `generate_content_async()` that is blocking
-        # this: https://github.com/google-gemini/generative-ai-python/issues/207
-        self._use_async = False
-
     def _call_api(self,
                   prompts: Iterable[str | None],
                   config: dict[str, Any],
@@ -69,21 +67,10 @@ class GeminiEvalClient(EvalClient):
             except Exception as e:
                 return e
 
-        if self._use_async:
-            # A helper function to call the async API.
-            async def _call_async_api() -> list[Any]:
-                responses = await asyncio.gather(*map(
-                    lambda prompt: self._model.generate_content_async(
-                        prompt, **config), prompts),
-                                                 return_exceptions=True)
-                return responses
-
-            responses = asyncio.run(_call_async_api())
-        else:
-            responses = [
-                _call_api_with_exception_filter(prompt)
-                for prompt in tqdm_wrapper(prompts, desc=tqdm_description)
-            ]
+        responses = [
+            _call_api_with_exception_filter(prompt)
+            for prompt in tqdm_wrapper(prompts, desc=tqdm_description)
+        ]
 
         # Filter out exceptions and print them out. Also filter out responses
         # that are blocked by safety settings and print out the safety ratings.
