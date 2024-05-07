@@ -65,13 +65,20 @@ In this case, you need have a Rust compiler in your environment so that the pack
 
 Follow the [official documentation](https://www.rust-lang.org/tools/install) and install Rust before installing `langcheck`.
 
-### 3. The error `AttributeError: module 'langcheck.metrics' has no attribute 'ja'`
+If you do not need the `[ja-optional]` dependencies, you can also install each language individually by
+
+```sh
+pip install langcheck[en,ja,de,zh]
+```
+
+
+### 4. The error `AttributeError: module 'langcheck.metrics' has no attribute 'ja'`
 
 If you see this error when calling a LangCheck function, such as `langcheck.metrics.ja.toxicity()`, you probably need to install the Japanese LangCheck package.
 
 Run `pip install langcheck[ja]` (or for your required language) and try again.
 
-### 4. The error `ModuleNotFoundError`
+### 5. The error `ModuleNotFoundError`
 
 If you see this error when importing a LangCheck package, such as `import langcheck.metrics.ja`, you probably need to install the Japanese LangCheck package.
 
