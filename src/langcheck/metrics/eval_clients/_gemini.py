@@ -158,9 +158,8 @@ class GeminiEvalClient(EvalClient):
         if language not in ['en', 'ja', 'de']:
             raise ValueError(f'Unsupported language: {language}')
 
-        # Gemini's function calling API is similar to OpenAI's, so we can reuse
-        # the prompt template.
-        fn_call_template = get_template(f'{language}/get_score/openai.j2')
+        fn_call_template = get_template(
+            f'{language}/get_score/function_calling.j2')
 
         options = list(score_map.keys())
         fn_call_messages = [

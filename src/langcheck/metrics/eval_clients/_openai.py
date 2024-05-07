@@ -155,7 +155,8 @@ class OpenAIEvalClient(EvalClient):
         if language not in ['en', 'ja', 'de', 'zh']:
             raise ValueError(f'Unsupported language: {language}')
 
-        fn_call_template = get_template(f'{language}/get_score/openai.j2')
+        fn_call_template = get_template(
+            f'{language}/get_score/function_calling.j2')
 
         options = list(score_map.keys())
         fn_call_messages = [
