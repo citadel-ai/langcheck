@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from unittest.mock import Mock, patch
 
+import pytest
 from anthropic.types.message import Message
 
 from langcheck.metrics.eval_clients import AnthropicEvalClient
@@ -27,7 +28,8 @@ def test_get_text_response_anthropic():
             assert response == answer
 
 
-def test_get_float_score_anthropic():
+@pytest.mark.parametrize('language', ['en', 'de', 'ja'])
+def test_get_float_score_anthropic(language):
     unstructured_assessment_result: list[str | None] = [
         'The output is fully factually consistent.'
     ] * 2
@@ -46,7 +48,7 @@ def test_get_float_score_anthropic():
         os.environ["ANTHROPIC_API_KEY"] = "dummy_key"
         client = AnthropicEvalClient()
 
-        scores = client.get_float_score('dummy_metric', 'en',
+        scores = client.get_float_score('dummy_metric', language,
                                         unstructured_assessment_result,
                                         score_map)
         assert len(scores) == len(unstructured_assessment_result)
