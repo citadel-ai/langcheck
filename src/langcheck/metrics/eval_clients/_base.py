@@ -7,8 +7,8 @@ from ..scorer._base import BaseSimilarityScorer
 
 class EvalClient:
     '''An abstract class that defines the interface for the evaluation clients.
-    Most of metrics that uses external APIs such as OpenAI API calls the
-    functions defined in this class to do the evaluation.
+    Most metrics that use external APIs such as OpenAI API call the methods
+    defined in this class to compute the metric values.
     '''
 
     def get_text_responses(
@@ -38,12 +38,15 @@ class EvalClient:
             *,
             tqdm_description: str | None = None) -> list[float | None]:
         '''The function that transforms the unstructured assessments (i.e. long
-        texts that describe the evaluation results) into scores. Typical
-        workflow can be
+        texts that describe the evaluation results) into scores. A typical
+        workflow can be:
+
         1. Extract a short assessment result strings from the unstructured
-            assessment results.
+        assessment results.
+
         2. Map the short assessment result strings to the scores using the
-            score_map.
+        score_map.
+
         Each concrete subclass needs to define the concrete implementation of
         this function to enable text scoring.
 
