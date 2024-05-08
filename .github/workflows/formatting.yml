@@ -20,10 +20,10 @@ jobs:
       # Checks out this repository so this job can access it
       - uses: actions/checkout@v2
 
-      # Use Python 3.8.16
+      # Use Python 3.9.19
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.8.16'
+          python-version: '3.9.19'
 
       # Install the langcheck package with dev dependencies
       - name: Install

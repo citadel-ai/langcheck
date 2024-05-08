@@ -151,7 +151,7 @@ class AnthropicEvalClient(EvalClient):
             raise ValueError(f'Unsupported language: {language}')
 
         options = list(score_map.keys())
-        get_score_template = get_template(f'{language}/get_score/anthropic.j2')
+        get_score_template = get_template(f'{language}/get_score/plain_text.j2')
         get_score_prompts = [
             get_score_template.render({
                 'metric': metric_name,
