@@ -87,13 +87,11 @@ An example metric is {func}`~langcheck.metrics.en.pairwise_text_quality.pairwise
 (computing-metrics-with-remote-llms)=
 ### Computing Metrics with Remote LLMs
 
-Several text quality metrics are computed using a model (e.g. `toxicity`, `sentiment`, `semantic_similarity`, `factual_consistency`). By default, LangCheck will download and use a model that can run locally on your machine (often from HuggingFace) so that the metric function works with no additional setup.
+Several text quality metrics are computed using a machine learning model (e.g. `toxicity`, `semantic_similarity`, `factual_consistency`). By default, LangCheck will download and use a model that can run locally on your machine so that the metric works with no additional setup.
 
-However, if you would like to use a remote LLM such as the OpenAI API, you can also configure these metrics to use that model, which may provide more accurate
-results for more complex use cases. You need to pass an `~langcheck.metrics.eval_clients.EvalClient` instance corresponding to the service you use to the
-metric functions.
+However, you can also configure LangCheck's metrics to use a remotely-hosted LLM, such as OpenAI/Gemini/Claude, which may provide better evaluations for complex text. To do this, you need to provide the appropriate {class}`~langcheck.metrics.eval_clients.EvalClient` instance, such as {class}`~langcheck.metrics.eval_clients.OpenAIEvalClient`, to the metric function.
 
-Here are some examples of how to do this:
+Here's an example for the OpenAI API:
 
 ```python
 import os
@@ -121,7 +119,7 @@ similarity_value = semantic_similarity(generated_outputs,
                                        eval_model=eval_client)
 ```
 
-Or, if you're using Azure OpenAI, here are some examples of how to use it:
+Or, another example for the Azure OpenAI API:
 
 ```python
 import os

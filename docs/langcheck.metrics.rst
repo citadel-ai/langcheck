@@ -56,6 +56,7 @@ There are several different types of metrics:
 
    langcheck.metrics.de
    langcheck.metrics.en
+   langcheck.metrics.eval_clients
    langcheck.metrics.ja
    langcheck.metrics.zh
 
