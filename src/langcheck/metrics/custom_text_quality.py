@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from jinja2 import Environment, Template, meta
+
 from langcheck.metrics._validation import _validate_parameters
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.metrics.prompts._utils import get_custom_template
 
 
 def custom_evaluator(generated_outputs: list[str] | str,
@@ -16,7 +19,27 @@ def custom_evaluator(generated_outputs: list[str] | str,
     generated_outputs, prompts, reference_outputs, sources = _validate_parameters(  # NOQA: E501
         generated_outputs, prompts, reference_outputs, sources)
 
-    prompt_template = get_custom_template(template_path)
+    assert Path(template_path).exists(
+    ), f'Prompt template file {template_path} does not exist.'  # NOQA: E501
+    prompt_template_source = Path(template_path).read_text()
+    prompt_template = Template(prompt_template_source)
+
+    # Validate the expected parameters in the prompt template
+    env = Environment()
+    expected_params = meta.find_undeclared_variables(
+        env.parse(prompt_template_source))
+    allowed_params = ['gen_output', 'user_query', 'src', 'ref_output']
+    assert all(param in allowed_params for param in expected_params), \
+        f'The prompt template contains invalid parameters. The allowed parameters are {allowed_params} but the prompt template expects the parameters {expected_params}'  # NOQA: E501
+    expected_param_to_arg = {
+        'gen_output': generated_outputs,
+        'user_query': prompts,
+        'src': sources,
+        'ref_output': reference_outputs,
+    }
+    for param in expected_params:
+        assert expected_param_to_arg[param] is not None, \
+            f'The prompt template expects the parameter "{param}" but it is not provided.'  # NOQA: E501
 
     def _args_to_prompt_param(generated_outputs, prompts, sources,
                               reference_outputs, index):

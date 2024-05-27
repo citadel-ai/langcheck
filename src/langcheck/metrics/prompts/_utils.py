@@ -15,11 +15,3 @@ def get_template(relative_path: str) -> Template:
     '''
     cwd = Path(__file__).parent
     return Template((cwd / relative_path).read_text())
-
-
-def get_custom_template(relative_path: str) -> Template:
-    '''
-    Gets a Jinja template from the specified prompt template file.
-    The path is given by the user.
-    '''
-    return Template(Path(relative_path).read_text())
