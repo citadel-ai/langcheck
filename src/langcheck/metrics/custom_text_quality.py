@@ -26,7 +26,7 @@ def custom_evaluator(generated_outputs: list[str] | str | None,
          if lst is not None), 0)
 
     assert Path(template_path).exists(
-    ), f'Prompt template file {template_path} does not exist.'  # NOQA: E501
+    ), f'Prompt template file {template_path} does not exist.'
     prompt_template_source = Path(template_path).read_text()
     prompt_template = Template(prompt_template_source)
 
