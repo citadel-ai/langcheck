@@ -4,20 +4,26 @@ from pathlib import Path
 
 from jinja2 import Environment, Template, meta
 
-from langcheck.metrics._validation import _validate_parameters
+from langcheck.metrics._validation import validate_parameters_custom_evaluator
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
 
-def custom_evaluator(generated_outputs: list[str] | str,
+def custom_evaluator(generated_outputs: list[str] | str | None,
                      prompts: list[str] | str | None,
                      sources: list[str] | str | None,
                      reference_outputs: list[str] | str | None,
                      eval_model: EvalClient, metric_name: str,
                      score_map: dict[str, float], template_path: str,
                      language: str) -> MetricValue[float | None]:
-    generated_outputs, prompts, reference_outputs, sources = _validate_parameters(  # NOQA: E501
+    generated_outputs, prompts, reference_outputs, sources = validate_parameters_custom_evaluator(  # NOQA: E501
         generated_outputs, prompts, reference_outputs, sources)
+    # Find the length of the first non-None list (they are guaranteed to all be
+    # the same length)
+    num_examples = next(
+        (len(lst)
+         for lst in [generated_outputs, prompts, reference_outputs, sources]
+         if lst is not None), 0)
 
     assert Path(template_path).exists(
     ), f'Prompt template file {template_path} does not exist.'  # NOQA: E501
@@ -43,9 +49,9 @@ def custom_evaluator(generated_outputs: list[str] | str,
 
     def _args_to_prompt_param(generated_outputs, prompts, sources,
                               reference_outputs, index):
-        prompt_param = {
-            'gen_output': generated_outputs[index],
-        }
+        prompt_param = {}
+        if generated_outputs is not None:
+            prompt_param['gen_output'] = generated_outputs[index]
         if prompts is not None:
             prompt_param['user_query'] = prompts[index]
         if sources is not None:
@@ -55,7 +61,7 @@ def custom_evaluator(generated_outputs: list[str] | str,
         return prompt_param
 
     populated_prompts = []
-    for i in range(len(generated_outputs)):
+    for i in range(num_examples):
         prompt_param = _args_to_prompt_param(generated_outputs, prompts,
                                              sources, reference_outputs, i)
         populated_prompts.append(prompt_template.render(prompt_param))

@@ -203,6 +203,51 @@ def validate_parameters_pairwise_comparison(
             _sources_b, _reference_outputs)
 
 
+def validate_parameters_custom_evaluator(
+    generated_outputs: Optional[List[str] | str],
+    prompts: Optional[List[str] | str],
+    reference_outputs: Optional[List[str] | str],
+    sources: Optional[List[str] | str]
+) -> tuple[Optional[List[str]], Optional[List[str]], Optional[List[str]],
+           Optional[List[str]]]:
+    '''Validates and parses function parameters for the custom evaluator metric.
+
+    Args:
+        generated_outputs: The model generated output(s)
+        prompts: The prompts used to generate the output(s)
+        reference_outputs: The reference output(s)
+        sources: The source(s) of the generated output(s)
+
+    Returns:
+        A tuple (generated_outputs, prompts, reference_outputs, sources) of the
+        parsed parameters. All non-None parameters are converted to lists of
+        strings.
+    '''
+    # Convert single-string parameters to lists
+    if isinstance(generated_outputs, str):
+        generated_outputs = [generated_outputs]
+    if isinstance(prompts, str):
+        prompts = [prompts]
+    if isinstance(reference_outputs, str):
+        reference_outputs = [reference_outputs]
+    if isinstance(sources, str):
+        sources = [sources]
+
+    # Check that all of the non-None parameters are the same length
+    non_none_lengths = {
+        name: len(arg)
+        for name, arg in
+        zip(['generated outputs', 'prompts', 'reference outputs', 'sources'],
+            [generated_outputs, prompts, reference_outputs, sources])
+        if arg is not None
+    }
+    if len(set(non_none_lengths.values())) > 1:
+        raise ValueError(
+            f'The number of {", ".join(non_none_lengths.keys())} do not match')
+
+    return generated_outputs, prompts, reference_outputs, sources
+
+
 def _validate_parameters(
     generated_outputs: List[str] | str, prompts: Optional[List[str] | str],
     reference_outputs: Optional[List[str] | str],
