@@ -16,6 +16,24 @@ def custom_evaluator(generated_outputs: list[str] | str | None,
                      eval_model: EvalClient, metric_name: str,
                      score_map: dict[str, float], template_path: str,
                      language: str) -> MetricValue[float | None]:
+    '''Calculates the scores of a custom evaluator. The EvalClient will first
+    assess the provided inputs using the prompt template, and then convert those
+    assessments into scores using the score map.
+
+    Args:
+        generated_outputs: The model generated output(s)
+        prompts: The prompts used to generate the output(s)
+        sources: The source(s) of the generated output(s)
+        reference_outputs: The reference output(s)
+        eval_model: The EvalClient instance used for the evaluation
+        metric_name: The name of the metric
+        score_map: A dictionary mapping the evaluator's assessments to scores
+        template_path: The path to the prompt template file
+        language: The language that the evaluator will use ('en', 'ja', or 'de')
+
+    Returns:
+        A MetricValue object
+    '''
     generated_outputs, prompts, reference_outputs, sources = validate_parameters_custom_evaluator(  # NOQA: E501
         generated_outputs, prompts, reference_outputs, sources)
     # Find the length of the first non-None list (they are guaranteed to all be
@@ -24,6 +42,9 @@ def custom_evaluator(generated_outputs: list[str] | str | None,
         (len(lst)
          for lst in [generated_outputs, prompts, reference_outputs, sources]
          if lst is not None), 0)
+
+    if language not in ['en', 'ja', 'de']:
+        raise ValueError(f'Unsupported language: {language}')
 
     assert Path(template_path).exists(
     ), f'Prompt template file {template_path} does not exist.'
