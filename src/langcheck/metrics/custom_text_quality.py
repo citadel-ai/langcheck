@@ -36,6 +36,12 @@ def custom_evaluator(generated_outputs: list[str] | str | None,
     "Neutral", the score map should be something like:
     ``score_map = {'Good': 1.0, 'Neutral': 0.5, 'Bad': 0.0}``
 
+    NOTE: We have found that LLM models sometimes behave weirdly when the
+    assessments are non-ascii characters (see
+    https://github.com/citadel-ai/langcheck/pull/84 as an example). So, we
+    recommend making the final assessments ascii characters, even when the rest
+    of the prompt template contains non-ascii characters (e.g. Japanese).
+
     Args:
         generated_outputs: The model generated output(s)
         prompts: The prompts used to generate the output(s)
