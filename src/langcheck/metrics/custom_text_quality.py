@@ -48,6 +48,9 @@ def custom_evaluator(generated_outputs: list[str] | str | None,
 
     assert Path(template_path).exists(
     ), f'Prompt template file {template_path} does not exist.'
+    assert template_path.endswith('.j2'), \
+        'The prompt template file must be a Jinja2 template file with the extension ".j2"'  # NOQA: E501
+
     prompt_template_source = Path(template_path).read_text()
     prompt_template = Template(prompt_template_source)
 
