@@ -20,6 +20,22 @@ def custom_evaluator(generated_outputs: list[str] | str | None,
     assess the provided inputs using the prompt template, and then convert those
     assessments into scores using the score map.
 
+    The prompt template should be a Jinja2 file (file extension .j2) that
+    specifies the criteria that an LLM (as configured in the Eval Client) should
+    follow when evaluating an instance. The template is allowed to have
+    placeholders for the following variables (NOTE: not all are required):
+    - `gen_output`: The generated output
+    - `user_query`: The prompt
+    - `src`: The source text
+    - `ref_output`: The reference output
+
+    The prompt template should also specify the final available assessments for
+    the LLM evaluator, e.g. "Good", "Bad", "Neutral", etc. The score map should
+    then map each of those available assessments to a numerical score. E.g. if
+    the available assessments in the prompt template are "Good", "Bad", and
+    "Neutral", the score map should be something like:
+    ``score_map = {'Good': 1.0, 'Neutral': 0.5, 'Bad': 0.0}``
+
     Args:
         generated_outputs: The model generated output(s)
         prompts: The prompts used to generate the output(s)
@@ -28,7 +44,8 @@ def custom_evaluator(generated_outputs: list[str] | str | None,
         eval_model: The EvalClient instance used for the evaluation
         metric_name: The name of the metric
         score_map: A dictionary mapping the evaluator's assessments to scores
-        template_path: The path to the prompt template file
+        template_path: The path to the prompt template file. This should be a
+            Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
 
     Returns:
