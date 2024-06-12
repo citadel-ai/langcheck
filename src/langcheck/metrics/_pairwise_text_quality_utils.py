@@ -34,6 +34,14 @@ def generate_pairwise_comparison_prompt_params(
     # Combine sources_1 and sources_2 into a single list if both are
     # provided.
     if sources_1 is not None and sources_2 is not None:
+        sources = []
+        for source_1, source_2 in zip(sources_1, sources_2):
+            if source_1 is None:
+                sources.append(source_2)
+            elif source_2 is None:
+                sources.append(source_1)
+            else:
+                sources.append(source_1 + '\n' + source_2)
         sources = [
             source_1 + '\n' + source_2
             for source_1, source_2 in zip(sources_1, sources_2)
