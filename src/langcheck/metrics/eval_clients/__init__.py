@@ -1,11 +1,11 @@
 from langcheck.metrics.eval_clients._base import EvalClient
 from langcheck.metrics.eval_clients._openai import (AzureOpenAIEvalClient,
                                                     OpenAIEvalClient)
+from langcheck.metrics.eval_clients._prometheus import PrometheusEvalClient
 
 __all__ = [
-    'AzureOpenAIEvalClient',
-    'EvalClient',
-    'OpenAIEvalClient',
+    'AzureOpenAIEvalClient', 'EvalClient', 'OpenAIEvalClient',
+    'PrometheusEvalClient'
 ]
 
 try:
