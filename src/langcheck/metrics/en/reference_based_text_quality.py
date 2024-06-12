@@ -11,6 +11,57 @@ from langcheck.metrics.scorer.hf_models import \
     SentenceTransformerSimilarityScorer
 from langcheck.utils.progess_bar import tqdm_wrapper
 
+from ..prompts._utils import get_template
+
+
+def answer_correctness(generated_outputs: List[str] | str,
+                       reference_outputs: List[str] | str,
+                       prompts: Optional[List[str] | str],
+                       eval_model: EvalClient) -> MetricValue[Optional[float]]:
+    '''Calculates the correctness of the generated outputs. This metric
+    evaluates whether the generated outputs are correct according to the
+    reference outputs. The correctness is calculated as the percentage of
+    generated outputs that are exactly the same as the reference outputs.
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s)
+
+    Returns:
+        A :class:`~langcheck.metrics.metric_value.MetricValue` object
+    '''
+    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
+        generated_outputs, reference_outputs, prompts)
+
+    answer_correctness_template = get_template(
+        'en/metrics/answer_correctness.j2')
+
+    populated_prompts = [
+        answer_correctness_template.render({
+            'gen_output': gen_output,
+            'ref_output': ref,
+        }) for gen_output, ref in zip(generated_outputs, reference_outputs)
+    ]
+
+    scores, explanations = eval_model.get_score(
+        metric_name='answer correctness',
+        language='en',
+        prompts=populated_prompts,
+        score_map={
+            'Correct': 1.0,
+            'Incorrect': 0.0
+        })
+
+    return MetricValue(metric_name='answer_correctness',
+                       prompts=prompts,
+                       generated_outputs=generated_outputs,
+                       reference_outputs=reference_outputs,
+                       sources=None,
+                       explanations=explanations,
+                       metric_values=scores,
+                       language='en')
+
 
 def semantic_similarity(
         generated_outputs: List[str] | str,
