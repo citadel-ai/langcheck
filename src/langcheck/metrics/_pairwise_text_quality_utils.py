@@ -42,10 +42,6 @@ def generate_pairwise_comparison_prompt_params(
                 sources.append(source_1)
             else:
                 sources.append(source_1 + '\n' + source_2)
-        sources = [
-            source_1 + '\n' + source_2
-            for source_1, source_2 in zip(sources_1, sources_2)
-        ]
     else:
         sources = sources_1 if sources_1 is not None else sources_2
 
