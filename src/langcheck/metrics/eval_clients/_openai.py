@@ -216,7 +216,8 @@ class OpenAIEvalClient(EvalClient):
             print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
 
         return [
-            score_map[assessment] if assessment else None
+            score_map[assessment]
+            if assessment and assessment in options else None
             for assessment in assessments
         ]
 

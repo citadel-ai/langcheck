@@ -198,7 +198,8 @@ class GeminiEvalClient(EvalClient):
             print(f'Gemini returned an unrecognized assessment: "{assessment}"')
 
         return [
-            score_map[assessment] if assessment else None
+            score_map[assessment]
+            if assessment and assessment in options else None
             for assessment in assessments
         ]
 
