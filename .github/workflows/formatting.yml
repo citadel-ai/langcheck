@@ -31,17 +31,9 @@ jobs:
           pip install -U --upgrade pip
           pip install -U .[all,dev]
 
-      # Run the yapf format test
-      - name: Yapf
-        run: yapf --diff -r .
-
-      # Run the flake8 format test
-      - name: Flake8
-        run: flake8 .
-
-      # Run the isort format test
-      - name: Isort
-        run: isort --check-only .
+      # Run the ruff format test
+      - name: Ruff
+        run: ruff check .
 
       - name: Pyright
         run: pyright .
