@@ -5,8 +5,9 @@ from typing import List, Optional, cast
 from transformers.pipelines import pipeline
 
 from langcheck.metrics._validation import validate_parameters_source_based
-from langcheck.metrics.en.source_based_text_quality import \
-    factual_consistency as en_factual_consistency
+from langcheck.metrics.en.source_based_text_quality import (
+    factual_consistency as en_factual_consistency,
+)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 

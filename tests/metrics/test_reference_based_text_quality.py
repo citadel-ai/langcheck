@@ -1,5 +1,4 @@
 import pytest
-
 from langcheck.metrics import exact_match
 
 ################################################################################

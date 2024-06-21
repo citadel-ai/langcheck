@@ -7,17 +7,19 @@ from rouge_score import rouge_scorer
 from langcheck.metrics._validation import validate_parameters_reference_based
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.metrics.scorer.hf_models import \
-    SentenceTransformerSimilarityScorer
+from langcheck.metrics.scorer.hf_models import (
+    SentenceTransformerSimilarityScorer,
+)
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 
 def semantic_similarity(
-        generated_outputs: List[str] | str,
-        reference_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        eval_model: str | EvalClient = 'local') -> MetricValue[float]:
-    '''Calculates the semantic similarities between the generated outputs and
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    eval_model: str | EvalClient = "local",
+) -> MetricValue[float]:
+    """Calculates the semantic similarities between the generated outputs and
     the reference outputs. The similarities are computed as the cosine
     similarities between the generated and reference embeddings. This metric
     takes on float values between [-1, 1], but typically ranges between 0 and 1
@@ -48,32 +50,39 @@ def semantic_similarity(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts)
-    if eval_model == 'local':
-        scorer = SentenceTransformerSimilarityScorer(language='en')
+    """
+    generated_outputs, reference_outputs, prompts = (
+        validate_parameters_reference_based(
+            generated_outputs, reference_outputs, prompts
+        )
+    )
+    if eval_model == "local":
+        scorer = SentenceTransformerSimilarityScorer(language="en")
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
-        ), 'An EvalClient must be provided for non-local model types.'
+        ), "An EvalClient must be provided for non-local model types."
         scorer = eval_model.similarity_scorer()
 
     scores = scorer.score(generated_outputs, reference_outputs)
-    return MetricValue(metric_name='semantic_similarity',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=reference_outputs,
-                       sources=None,
-                       explanations=None,
-                       metric_values=scores,
-                       language='en')
+    return MetricValue(
+        metric_name="semantic_similarity",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        sources=None,
+        explanations=None,
+        metric_values=scores,
+        language="en",
+    )
 
 
-def rouge1(generated_outputs: List[str] | str,
-           reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
-    '''Calculates the F1 metrics of the ROUGE-1 scores between the generated
+def rouge1(
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+) -> MetricValue[float]:
+    """Calculates the F1 metrics of the ROUGE-1 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of unigrams
     (single tokens) between the generated outputs and the reference outputs.
     This metric takes on float values between [0, 1], where 0 is no overlap and
@@ -90,25 +99,32 @@ def rouge1(generated_outputs: List[str] | str,
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts)
+    """
+    generated_outputs, reference_outputs, prompts = (
+        validate_parameters_reference_based(
+            generated_outputs, reference_outputs, prompts
+        )
+    )
 
-    scores = _rouge(generated_outputs, reference_outputs, 'rouge1')
-    return MetricValue(metric_name='rouge1',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=reference_outputs,
-                       sources=None,
-                       explanations=None,
-                       metric_values=scores,
-                       language='en')
+    scores = _rouge(generated_outputs, reference_outputs, "rouge1")
+    return MetricValue(
+        metric_name="rouge1",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        sources=None,
+        explanations=None,
+        metric_values=scores,
+        language="en",
+    )
 
 
-def rouge2(generated_outputs: List[str] | str,
-           reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
-    '''Calculates the F1 metrics of the ROUGE-2 scores between the generated
+def rouge2(
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+) -> MetricValue[float]:
+    """Calculates the F1 metrics of the ROUGE-2 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of bigrams
     (two adjacent tokens) between the generated outputs and the reference
     outputs. This metric takes on float values between [0, 1], where 0 is no
@@ -125,25 +141,32 @@ def rouge2(generated_outputs: List[str] | str,
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts)
+    """
+    generated_outputs, reference_outputs, prompts = (
+        validate_parameters_reference_based(
+            generated_outputs, reference_outputs, prompts
+        )
+    )
 
-    scores = _rouge(generated_outputs, reference_outputs, 'rouge2')
-    return MetricValue(metric_name='rouge2',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=reference_outputs,
-                       sources=None,
-                       explanations=None,
-                       metric_values=scores,
-                       language='en')
+    scores = _rouge(generated_outputs, reference_outputs, "rouge2")
+    return MetricValue(
+        metric_name="rouge2",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        sources=None,
+        explanations=None,
+        metric_values=scores,
+        language="en",
+    )
 
 
-def rougeL(generated_outputs: List[str] | str,
-           reference_outputs: List[str] | str,
-           prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
-    '''Calculates the F1 metrics of the ROUGE-L scores between the generated
+def rougeL(
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+) -> MetricValue[float]:
+    """Calculates the F1 metrics of the ROUGE-L scores between the generated
     outputs and the reference outputs. It evaluates the longest common
     subsequence (LCS) between the generated outputs and the reference outputs.
     This metric takes on float values between [0, 1], where 0 means that the LCS
@@ -160,9 +183,12 @@ def rougeL(generated_outputs: List[str] | str,
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
-    generated_outputs, reference_outputs, prompts = validate_parameters_reference_based(  # NOQA: E501
-        generated_outputs, reference_outputs, prompts)
+    """
+    generated_outputs, reference_outputs, prompts = (
+        validate_parameters_reference_based(
+            generated_outputs, reference_outputs, prompts
+        )
+    )
 
     # The `rouge_score` package has two flavors of ROUGE-L [1]:
     # - 1) sentence-level, where newline characters are ignored
@@ -173,21 +199,24 @@ def rougeL(generated_outputs: List[str] | str,
     # the ROUGE-L score (https://github.com/bheinzerling/pyrouge), which is a
     # Python wrapper around original perl script implementation.
     #
-    # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l # NOQA: E501
-    scores = _rouge(generated_outputs, reference_outputs, 'rougeLsum')
-    return MetricValue(metric_name='rougeL',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=reference_outputs,
-                       sources=None,
-                       explanations=None,
-                       metric_values=scores,
-                       language='en')
+    # [1] https://github.com/google-research/google-research/tree/master/rouge#two-flavors-of-rouge-l
+    scores = _rouge(generated_outputs, reference_outputs, "rougeLsum")
+    return MetricValue(
+        metric_name="rougeL",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        sources=None,
+        explanations=None,
+        metric_values=scores,
+        language="en",
+    )
 
 
-def _rouge(generated_outputs: List[str], reference_outputs: List[str],
-           rouge_type: str) -> List[float]:
-    '''Helper function for computing the rouge1, rouge2, and rougeL metrics.
+def _rouge(
+    generated_outputs: List[str], reference_outputs: List[str], rouge_type: str
+) -> List[float]:
+    """Helper function for computing the rouge1, rouge2, and rougeL metrics.
     This uses Google Research's implementation of ROUGE:
     https://github.com/google-research/google-research/tree/master/rouge
 
@@ -198,12 +227,13 @@ def _rouge(generated_outputs: List[str], reference_outputs: List[str],
 
     Returns:
         A list of F1 values of the ROUGE scores
-    '''
+    """
     assert rouge_type in ["rouge1", "rouge2", "rougeLsum"]
     scorer = rouge_scorer.RougeScorer([rouge_type], use_stemmer=True)
     scores = []
-    for gen, ref in tqdm_wrapper(zip(generated_outputs, reference_outputs),
-                                 total=len(generated_outputs)):
+    for gen, ref in tqdm_wrapper(
+        zip(generated_outputs, reference_outputs), total=len(generated_outputs)
+    ):
         score = scorer.score(gen, ref)
         scores.append(score[rouge_type].fmeasure)
     return scores

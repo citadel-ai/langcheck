@@ -4,9 +4,8 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
-from openai.types.chat import ChatCompletion
-
 from langcheck.augment.en import rephrase
+from openai.types.chat import ChatCompletion
 
 
 @pytest.mark.parametrize(

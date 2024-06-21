@@ -1,11 +1,8 @@
 {
-  "python.formatting.provider": "none",
-  "[python]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    },
-    "editor.formatOnSaveMode": "file",
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "eeyore.yapf"
-  }
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.formatOnSaveMode": "file",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "charliermarsh.ruff"
 }

@@ -3,10 +3,13 @@ from __future__ import annotations
 from typing import List, Optional, Tuple
 
 from langcheck.metrics._validation import (
-    validate_parameters_context_relevance, validate_parameters_source_based)
+    validate_parameters_context_relevance,
+    validate_parameters_source_based,
+)
 from langcheck.metrics.de._translation import Translate
-from langcheck.metrics.en.source_based_text_quality import \
-    factual_consistency as en_factual_consistency
+from langcheck.metrics.en.source_based_text_quality import (
+    factual_consistency as en_factual_consistency,
+)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper

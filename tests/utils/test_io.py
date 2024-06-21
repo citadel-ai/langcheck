@@ -2,7 +2,6 @@ import json
 import tempfile
 
 import pytest
-
 from langcheck.utils import load_json
 
 

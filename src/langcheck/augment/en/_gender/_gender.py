@@ -8,8 +8,10 @@ import nltk
 from nltk import pos_tag, word_tokenize
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 
-from langcheck.augment.en._gender._gender_pronouns import (_PRONOUNS_DICT,
-                                                           _BaseGenderPronouns)
+from langcheck.augment.en._gender._gender_pronouns import (
+    _PRONOUNS_DICT,
+    _BaseGenderPronouns,
+)
 
 # This dictionary is used to determine the form of the pronoun.
 # Note that his and hers are not included in this dictionary because they can be

@@ -1,14 +1,17 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from langcheck.metrics.model_manager._model_loader import (
+    load_auto_model_for_seq2seq,
+    load_auto_model_for_text_classification,
+    load_sentence_transformers,
+)
 from sentence_transformers import SentenceTransformer
 from transformers.models.auto.modeling_auto import (
-    AutoModelForSeq2SeqLM, AutoModelForSequenceClassification)
+    AutoModelForSeq2SeqLM,
+    AutoModelForSequenceClassification,
+)
 from transformers.models.auto.tokenization_auto import AutoTokenizer
-
-from langcheck.metrics.model_manager._model_loader import (
-    load_auto_model_for_seq2seq, load_auto_model_for_text_classification,
-    load_sentence_transformers)
 
 # Mock objects for AutoTokenizer and AutoModelForSeq2SeqLM
 MockTokenizer = MagicMock(spec=AutoTokenizer)

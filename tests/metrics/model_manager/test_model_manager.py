@@ -2,11 +2,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from omegaconf import OmegaConf
-
 from langcheck.metrics.model_manager import _model_management
 from langcheck.metrics.model_manager._model_management import (
-    ModelManager, check_model_availability)
+    ModelManager,
+    check_model_availability,
+)
 
 
 @pytest.fixture

@@ -2,7 +2,6 @@ import random
 from typing import List, Optional
 
 import pytest
-
 from langcheck.augment.en import gender
 
 

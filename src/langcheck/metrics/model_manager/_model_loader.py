@@ -2,7 +2,9 @@ from typing import Optional, Tuple
 
 from sentence_transformers import SentenceTransformer
 from transformers.models.auto.modeling_auto import (
-    AutoModelForSeq2SeqLM, AutoModelForSequenceClassification)
+    AutoModelForSeq2SeqLM,
+    AutoModelForSequenceClassification,
+)
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck._handle_logs import _handle_logging_level

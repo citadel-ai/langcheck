@@ -3,14 +3,22 @@ from typing import Callable, Optional
 from unittest.mock import Mock, patch
 
 import pytest
-from openai.types import CreateEmbeddingResponse
-
-from langcheck.metrics.eval_clients import (AzureOpenAIEvalClient,
-                                            OpenAIEvalClient)
-from langcheck.metrics.ja import (JanomeTokenizer, MeCabTokenizer, rouge1,
-                                  rouge2, rougeL, semantic_similarity)
+from langcheck.metrics.eval_clients import (
+    AzureOpenAIEvalClient,
+    OpenAIEvalClient,
+)
+from langcheck.metrics.ja import (
+    JanomeTokenizer,
+    MeCabTokenizer,
+    rouge1,
+    rouge2,
+    rougeL,
+    semantic_similarity,
+)
 from langcheck.metrics.ja._tokenizers import _JapaneseTokenizer
 from langcheck.metrics.metric_value import MetricValue
+from openai.types import CreateEmbeddingResponse
+
 from tests.utils import is_close
 
 ################################################################################

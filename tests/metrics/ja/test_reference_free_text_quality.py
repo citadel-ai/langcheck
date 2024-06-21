@@ -1,7 +1,12 @@
 import pytest
+from langcheck.metrics.ja import (
+    answer_relevance,
+    fluency,
+    sentiment,
+    tateishi_ono_yamada_reading_ease,
+    toxicity,
+)
 
-from langcheck.metrics.ja import (answer_relevance, fluency, sentiment,
-                                  tateishi_ono_yamada_reading_ease, toxicity)
 from tests.utils import MockEvalClient, is_close
 
 ################################################################################

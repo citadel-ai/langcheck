@@ -11,17 +11,31 @@ DEFAULT_TOKENIZER_WEIGHT = hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: i
 # Chinese puncuations list
 # https://github.com/yikeke/zh-style-guide/blob/master/source/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7/%E5%B8%B8%E7%94%A8%E4%B8%AD%E6%96%87%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7.md
 _PUNCTUATIONS = [
-    '、', '，', '。', '：', '；', '?', '!', "？", "！", '～', '-', '—', '——', '……',
-    '⋯⋯', '/'
+    "、",
+    "，",
+    "。",
+    "：",
+    "；",
+    "?",
+    "!",
+    "？",
+    "！",
+    "～",
+    "-",
+    "—",
+    "——",
+    "……",
+    "⋯⋯",
+    "/",
 ]
 
 
 class _ChineseTokenizer(BaseTokenizer):
-
     @abc.abstractmethod
     def _tokenize(self, text: str) -> Iterator[str]:
         raise NotImplementedError(
-            "Tokenizer for Chinese must override `_tokenize()` method")
+            "Tokenizer for Chinese must override `_tokenize()` method"
+        )
 
     def tokenize(self, text: str) -> list[str]:
         tokens = self._tokenize(text)
@@ -31,7 +45,7 @@ class _ChineseTokenizer(BaseTokenizer):
 
 
 class HanLPTokenizer(_ChineseTokenizer):
-    '''HanLP based Tokenizer for Chinese.
+    """HanLP based Tokenizer for Chinese.
 
     The default tokenizer to calculate rouge score based on HanLP.
 
@@ -47,16 +61,17 @@ class HanLPTokenizer(_ChineseTokenizer):
         2. HanLP's pipeline mode allows processing of long texts (i.e. many
         sentences) efficiently in parallel. It splits long text into sentences
         and applies the tokenizer to the sentences in parallel.
-    '''
+    """
 
     def __init__(self) -> None:
         super().__init__()
         tokenizer = hanlp.load(DEFAULT_TOKENIZER_WEIGHT)
-        self.tokenizer_pipeline = hanlp.pipeline().\
-            append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
-        self.tokenizer_pipeline = self.tokenizer_pipeline.\
-            append(tokenizer).\
-            append(lambda sents: sum(sents, []))
+        self.tokenizer_pipeline = hanlp.pipeline().append(
+            hanlp.utils.rules.split_sentence
+        )  # type: ignore[reportGeneralTypeIssues]
+        self.tokenizer_pipeline = self.tokenizer_pipeline.append(
+            tokenizer
+        ).append(lambda sents: sum(sents, []))
 
     def _tokenize(self, text: str) -> Iterator[str]:
         tokens = self.tokenizer_pipeline(text)

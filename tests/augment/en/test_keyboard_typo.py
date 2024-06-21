@@ -4,7 +4,6 @@ import random
 from typing import List
 
 import pytest
-
 from langcheck.augment.en import keyboard_typo
 
 

@@ -2,15 +2,19 @@ from __future__ import annotations
 
 from typing import List, Optional, Tuple
 
-from langcheck.metrics._validation import (validate_parameters_answer_relevance,
-                                           validate_parameters_reference_free)
-from langcheck.metrics.en.reference_based_text_quality import \
-    semantic_similarity
+from langcheck.metrics._validation import (
+    validate_parameters_answer_relevance,
+    validate_parameters_reference_free,
+)
+from langcheck.metrics.en.reference_based_text_quality import (
+    semantic_similarity,
+)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
-from langcheck.metrics.scorer.hf_models import \
-    AutoModelForSequenceClassificationScorer
+from langcheck.metrics.scorer.hf_models import (
+    AutoModelForSequenceClassificationScorer,
+)
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
 

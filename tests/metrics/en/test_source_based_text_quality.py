@@ -1,6 +1,6 @@
 import pytest
-
 from langcheck.metrics.en import context_relevance, factual_consistency
+
 from tests.utils import MockEvalClient
 
 ################################################################################
