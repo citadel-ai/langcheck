@@ -67,8 +67,8 @@ class HanLPTokenizer(_ChineseTokenizer):
         super().__init__()
         tokenizer = hanlp.load(DEFAULT_TOKENIZER_WEIGHT)
         self.tokenizer_pipeline = hanlp.pipeline().append(
-            hanlp.utils.rules.split_sentence
-        )  # type: ignore[reportGeneralTypeIssues]
+            hanlp.utils.rules.split_sentence  # type: ignore[reportGeneralTypeIssues]
+        )
         self.tokenizer_pipeline = self.tokenizer_pipeline.append(
             tokenizer
         ).append(lambda sents: sum(sents, []))
