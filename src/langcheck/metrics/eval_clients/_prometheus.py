@@ -13,10 +13,14 @@ from ._base import EvalClient
 class PrometheusEvalClient(EvalClient):
     '''EvalClient defined for the Prometheus 2 model.
     Presented in `"Prometheus 2: An Open Source Language Model Specialized
-    in Evaluating Other Language Models" <https://arxiv.org/abs/2405.01535>`
+    in Evaluating Other Language Models" <https://arxiv.org/abs/2405.01535>`.
+    We adapted the prompts in <https://github.com/prometheus-eval/prometheus-
+    eval/blob/main/libs/prometheus-eval/prometheus_eval/prompts.py>.
     '''
 
-    def __init__(self, torch_dtype: torch.dtype, device: str):
+    def __init__(self,
+                 torch_dtype: torch.dtype = torch.bfloat16,
+                 device: str = "cuda"):
         '''
         Initilize the Prometheus evaluation client.
 
@@ -112,3 +116,8 @@ class PrometheusEvalClient(EvalClient):
             score_map[assessment] if assessment else None
             for assessment in assessments
         ]
+
+    def similarity_scorer(self):
+        raise NotImplementedError(
+            'Embedding-based metrics are not supported in PrometheusEvalClient.'
+            'Use other EvalClients to get these metrics.')
