@@ -208,9 +208,12 @@ def _factual_consistency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-
-    factual_consistency_template = get_template(
-        'en/metrics/factual_consistency.j2')
+    if type(eval_client) is PrometheusEvalClient:
+        factual_consistency_template = get_template(
+            'en/metrics_prometheus/factual_consistency.j2')
+    else:
+        factual_consistency_template = get_template(
+            'en/metrics/factual_consistency.j2')
 
     factual_consistency_assessment_to_score = {
         'Fully Consistent': 1.0,
