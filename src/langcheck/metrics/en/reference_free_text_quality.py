@@ -249,7 +249,10 @@ def _fluency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-    fluency_template = get_template('en/metrics/fluency.j2')
+    if type(eval_client) is PrometheusEvalClient:
+        fluency_template = get_template('en/metrics_prometheus/fluency.j2')
+    else:
+        fluency_template = get_template('en/metrics/fluency.j2')
 
     fluency_assessment_to_score = {
         'Poor': 0,
