@@ -123,7 +123,10 @@ def _sentiment_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-    sentiment_template = get_template('en/metrics/sentiment.j2')
+    if type(eval_client) is PrometheusEvalClient:
+        sentiment_template = get_template('en/metrics_prometheus/sentiment.j2')
+    else:
+        sentiment_template = get_template('en/metrics/sentiment.j2')
 
     sentiment_assessment_to_score = {
         'Positive': 1.0,

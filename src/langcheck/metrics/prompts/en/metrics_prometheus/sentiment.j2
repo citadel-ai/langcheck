@@ -2,7 +2,7 @@ You are a fair judge assistant tasked with providing clear, objective feedback b
 
 ###Task Description:
 A submitted statement to evaluate, and a score rubric representing a evaluation criteria are given.
-1. Write a detailed feedback that assess the fluency of the submitted statement strictly based on the given score rubric, not evaluating in general.
+1. Write a detailed feedback that assess the predominant sentiment of the submitted statement strictly based on the given score rubric, not evaluating in general.
 2. After writing a feedback, select an assessment from the available assessments. Do not generate a numeric score. You should refer to the score rubric.
 3. The output format should look as follows: "Feedback: (write a feedback for criteria) [RESULT] (an assessment)"
 4. Please do not generate any other opening, closing, and explanations.
@@ -11,9 +11,9 @@ A submitted statement to evaluate, and a score rubric representing a evaluation 
 {{ gen_output }}
 
 ###Score Rubrics:
-Determine the fluency of the submitted statement. The available assessments are:
-`Poor` - The statement has many errors that make it hard to understand or sound unnatural.
-`Fair` - The statement has some errors that affect the clarity or smoothness of the text, but the main points are still comprehensible.
-`Good` - The statement has few or no errors and is easy to read and follow.
+Determine the predominant sentiment of the submitted statement. The available assessments are:
+`Positive` - The submitted statement has a predominantly positive sentiment
+`Negative` - The submitted statement has a predominantly negative sentiment
+`Neutral` - The submitted statement has neither a positive nor negative sentiment
 
 ###Feedback:
