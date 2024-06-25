@@ -11,7 +11,7 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck.metrics._validation import (
     validate_parameters_context_relevance, validate_parameters_source_based)
-from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.eval_clients import EvalClient, PrometheusEvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
@@ -250,7 +250,12 @@ def context_relevance(sources: List[str] | str, prompts: List[str] | str,
     '''
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
-    context_relevance_template = get_template('en/metrics/context_relevance.j2')
+    if type(eval_model) is PrometheusEvalClient:
+        context_relevance_template = get_template(
+            'en/metrics_prometheus/context_relevance.j2')
+    else:
+        context_relevance_template = get_template(
+            'en/metrics/context_relevance.j2')
 
     context_relevance_assessment_to_score = {
         'Fully Relevant': 1.0,
