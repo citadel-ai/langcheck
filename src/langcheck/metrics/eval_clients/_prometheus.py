@@ -11,7 +11,8 @@ from ._base import EvalClient
 
 
 class PrometheusEvalClient(EvalClient):
-    '''EvalClient defined for the Prometheus 2 model.
+    '''EvalClient defined for the Prometheus 2 model. 
+    This eval client currently supports only English.
     Presented in `"Prometheus 2: An Open Source Language Model Specialized
     in Evaluating Other Language Models" <https://arxiv.org/abs/2405.01535>`.
     We adapted the prompts in <https://github.com/prometheus-eval/prometheus-
