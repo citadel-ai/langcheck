@@ -30,7 +30,8 @@ else:
 def load_prompt_template(language: str, eval_client: EvalClient,
                          metric_name: str) -> Template:
     '''
-    Gets a Jinja template from the specified language, eval client, and metric name.
+    Gets a Jinja template from the specified language, eval client,
+    and metric name.
 
     Args:
         language (str): The language of the template.
