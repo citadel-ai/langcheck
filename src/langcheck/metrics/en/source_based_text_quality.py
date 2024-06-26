@@ -11,11 +11,9 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck.metrics._validation import (
     validate_parameters_context_relevance, validate_parameters_source_based)
-from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
-
-from ..prompts._utils import get_template
 
 _factual_consistency_model_path = 'MingZhong/unieval-fact'
 _factual_consistency_config = None
@@ -208,10 +206,10 @@ def _factual_consistency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-
-    factual_consistency_template = get_template(
-        'en/metrics/factual_consistency.j2')
-
+    factual_consistency_template = load_prompt_template(
+        language='en',
+        eval_client=eval_client,
+        metric_name='factual_consistency')
     factual_consistency_assessment_to_score = {
         'Fully Consistent': 1.0,
         'Partially Consistent': 0.5,
@@ -250,7 +248,8 @@ def context_relevance(sources: List[str] | str, prompts: List[str] | str,
     '''
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
-    context_relevance_template = get_template('en/metrics/context_relevance.j2')
+    context_relevance_template = load_prompt_template(
+        language='en', eval_client=eval_model, metric_name='context_relevance')
 
     context_relevance_assessment_to_score = {
         'Fully Relevant': 1.0,

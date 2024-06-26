@@ -6,15 +6,13 @@ from langcheck.metrics._validation import (validate_parameters_answer_relevance,
                                            validate_parameters_reference_free)
 from langcheck.metrics.en.reference_based_text_quality import \
     semantic_similarity
-from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import \
     AutoModelForSequenceClassificationScorer
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
-
-from ..prompts._utils import get_template
 
 
 def sentiment(
@@ -123,7 +121,9 @@ def _sentiment_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-    sentiment_template = get_template('en/metrics/sentiment.j2')
+    sentiment_template = load_prompt_template(language='en',
+                                              eval_client=eval_client,
+                                              metric_name='sentiment')
 
     sentiment_assessment_to_score = {
         'Positive': 1.0,
@@ -249,7 +249,9 @@ def _fluency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-    fluency_template = get_template('en/metrics/fluency.j2')
+    fluency_template = load_prompt_template(language='en',
+                                            eval_client=eval_client,
+                                            metric_name='fluency')
 
     fluency_assessment_to_score = {
         'Poor': 0,
@@ -368,7 +370,9 @@ def _toxicity_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     '''
-    toxicity_template = get_template('en/metrics/toxicity.j2')
+    toxicity_template = load_prompt_template(language='en',
+                                             eval_client=eval_client,
+                                             metric_name='toxicity')
 
     toxicity_assessment_to_score = {
         '1': 0,
@@ -533,7 +537,8 @@ def answer_relevance(generated_outputs: List[str] | str,
     generated_outputs, prompts = validate_parameters_answer_relevance(
         generated_outputs, prompts)
 
-    answer_relevance_template = get_template('en/metrics/answer_relevance.j2')
+    answer_relevance_template = load_prompt_template(
+        language='en', eval_client=eval_model, metric_name='answer_relevance')
 
     populated_prompts = [
         answer_relevance_template.render({
