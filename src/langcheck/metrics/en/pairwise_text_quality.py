@@ -7,10 +7,8 @@ from langcheck.metrics._pairwise_text_quality_utils import (
     generate_pairwise_comparison_prompt_params)
 from langcheck.metrics._validation import \
     validate_parameters_pairwise_comparison
-from langcheck.metrics.eval_clients import EvalClient, PrometheusEvalClient
+from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
 from langcheck.metrics.metric_value import MetricValue
-
-from ..prompts._utils import get_template
 
 
 def pairwise_comparison(
@@ -61,12 +59,10 @@ def pairwise_comparison(
         'Response A': 0.0
     }
 
-    if type(eval_model) is PrometheusEvalClient:
-        pairwise_comparison_template = get_template(
-            'en/metrics_prometheus/pairwise_comparison.j2')
-    else:
-        pairwise_comparison_template = get_template(
-            'en/metrics/pairwise_comparison.j2')
+    pairwise_comparison_template = load_prompt_template(
+        language='en',
+        eval_client=eval_model,
+        metric_name='pairwise_comparison')
     prompt_params = generate_pairwise_comparison_prompt_params(
         generated_outputs_a, generated_outputs_b, prompts, sources_a, sources_b,
         reference_outputs)
