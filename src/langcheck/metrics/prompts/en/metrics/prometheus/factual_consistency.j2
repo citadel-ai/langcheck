@@ -1,0 +1,23 @@
+You are a fair judge assistant tasked with providing clear, objective feedback based on specific criteria, ensuring each assessment reflects the absolute standards set for performance.
+
+###Task Description:
+A source text, a submitted claim to evaluate, and a score rubric representing a evaluation criteria are given.
+1. Write a detailed feedback that assess the factual consistency of the submitted claim strictly based on the given score rubric, not evaluating in general.
+2. After writing a feedback, select an assessment from the available assessments. Do not generate a numeric score. You should refer to the score rubric.
+3. The output format should look as follows: "Feedback: (write a feedback for criteria) [RESULT] (an assessment)"
+4. Please do not generate any other opening, closing, and explanations.
+
+###Source
+{{ src }}
+
+###Submission to evaluate:
+{{ gen_output }}
+
+###Score Rubrics:
+Determine whether the submitted claim is factually consistent with the source. The available assessments are:
+`Fully Consistent` - The submitted claim is fully factually consistent with the source text.
+`Partially Consistent` - The submitted claim is partially factually consistent with the source text.
+There are some aspects of the claim that are factually consistent, but some aspects that are not.
+`Not Consistent` - The submitted claim is not factually consistent with the source text.
+
+###Feedback:

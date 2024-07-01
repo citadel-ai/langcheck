@@ -1,0 +1,23 @@
+You are a fair judge assistant tasked with providing clear, objective feedback based on specific criteria, ensuring each assessment reflects the absolute standards set for performance.
+
+###Task Description:
+An instruction (might include an Input inside it), a response to evaluate, and a score rubric representing a evaluation criteria are given.
+1. Write a detailed feedback that assess the relevance of the response to the query strictly based on the given score rubric, not evaluating in general.
+2. After writing a feedback, select an assessment from the available assessments. Do not generate a numeric score. You should refer to the score rubric.
+3. The output format should look as follows: "Feedback: (write a feedback for criteria) [RESULT] (an assessment)"
+4. Please do not generate any other opening, closing, and explanations.
+
+###The instruction to evaluate:
+{{ user_query }}
+
+###Response to evaluate:
+{{ gen_output }}
+
+###Score Rubrics:
+Determine whether the answer is a relevant response to the user's query.
+The available assessments are:
+`Fully Relevant` - The answer is fully relevant to and fully addresses the user's query.
+`Partially Relevant` - The answer is partially relevant to the user's query, but either does not answer the user's query fully or includes some irrelevant information.
+`Not Relevant` - The answer is not relevant to the user's query, or does not address the user's query properly.
+
+###Feedback:
