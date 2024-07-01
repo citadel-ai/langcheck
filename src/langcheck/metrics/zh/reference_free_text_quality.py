@@ -80,7 +80,7 @@ def sentiment(
     # else, use 1 - score as the sentiment score
     # yapf: disable
     scores = [
-        1 - x['score'] if x['label'] == _model_id2label[0] else x['score']  # type: ignore[reportGeneralTypeIssues]
+        1 - x["score"] if x["label"] == _model_id2label[0] else x["score"]  # type: ignore[reportGeneralTypeIssues]
         for x in _predict_result   # type: ignore[reportGeneralTypeIssues]
     ]
     # yapf: enable
@@ -197,8 +197,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     for item_predict_proba in _predict_results:  # type: ignore[reportOptionalIterable]
         for label_proba in item_predict_proba:  # type: ignore[reportGeneralTypeIssues]
             # yapf: disable
-            if label_proba['label'] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]
-                toxicity_scores.append(1 - label_proba['score'])  # type: ignore[reportGeneralTypeIssues]
+            if label_proba["label"] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]
+                toxicity_scores.append(1 - label_proba["score"])  # type: ignore[reportGeneralTypeIssues]
             # yapf: enable
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]
 
@@ -264,7 +264,7 @@ def xuyaochen_report_readability(
     def count_postags(sent_poses: List[str]) -> int:
         # AD: adverb, CC: coordinating conjunction,
         # CS: subordinating conjunction
-        count = sum([pos in ['AD', 'CC', 'CS'] for pos in sent_poses])
+        count = sum([pos in ["AD", "CC", "CS"] for pos in sent_poses])
         return count
 
     def calc_r1(content: List[List[str]]) -> float:

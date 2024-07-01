@@ -16,8 +16,8 @@ def factual_consistency(
         generated_outputs: List[str] | str,
         sources: List[str] | str,
         prompts: Optional[List[str] | str] = None,
-        eval_model: str | EvalClient = 'local') -> MetricValue[Optional[float]]:
-    '''Calculates the factual consistency between the generated outputs and
+        eval_model: str | EvalClient = "local") -> MetricValue[Optional[float]]:
+    """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
     means that the output is fully consistent with the source text. (NOTE: when
@@ -49,24 +49,24 @@ def factual_consistency(
 
     Returns:
         An MetricValue object
-    '''
+    """
     generated_outputs, sources, prompts = validate_parameters_source_based(
         generated_outputs, sources, prompts)
 
-    if eval_model != 'local':  # EvalClient
+    if eval_model != "local":  # EvalClient
         assert isinstance(
             eval_model, EvalClient
-        ), 'An EvalClient must be provided for non-local model types.'
+        ), "An EvalClient must be provided for non-local model types."
         metric_value = en_factual_consistency(generated_outputs, sources,
                                               prompts, eval_model)
-        metric_value.language = 'zh'
+        metric_value.language = "zh"
         return metric_value
 
     from langcheck.metrics.model_manager import manager
-    tokenizer, model = manager.fetch_model(language='zh',
-                                           metric='factual_consistency')
+    tokenizer, model = manager.fetch_model(language="zh",
+                                           metric="factual_consistency")
     _factual_consistency_translation_pipeline = pipeline(
-        'translation',
+        "translation",
         model=model,  # type: ignore
         tokenizer=tokenizer,  # type: ignore
         truncation=True)
@@ -76,13 +76,13 @@ def factual_consistency(
     # too diverse types can be returned.
     en_source = [
         cast(str,
-             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
+             d["translation_text"])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(
             sources)  # type: ignore[reportOptionalIterable]
     ]
     en_generated_outputs = [
         cast(str,
-             d['translation_text'])  # type: ignore[reportGeneralTypeIssues]
+             d["translation_text"])  # type: ignore[reportGeneralTypeIssues]
         for d in _factual_consistency_translation_pipeline(
             generated_outputs)  # type: ignore[reportOptionalIterable]
     ]
@@ -90,11 +90,11 @@ def factual_consistency(
     factual_consistency_scores = en_factual_consistency(
         generated_outputs=en_generated_outputs, sources=en_source).metric_values
 
-    return MetricValue(metric_name='factual_consistency',
+    return MetricValue(metric_name="factual_consistency",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
                        sources=sources,
                        explanations=None,
                        metric_values=factual_consistency_scores,
-                       language='zh')
+                       language="zh")

@@ -25,11 +25,11 @@ from tests.utils import is_close
 ################################################################################
 parametrize_rouge_function = pytest.mark.parametrize("rouge_function",
                                                      [rouge1, rouge2, rougeL])
-parametrize_tokenizer = pytest.mark.parametrize('tokenizer',
+parametrize_tokenizer = pytest.mark.parametrize("tokenizer",
                                                 [None, HanLPTokenizer])
 
 
-@pytest.mark.parametrize('generated_outputs,reference_outputs',
+@pytest.mark.parametrize("generated_outputs,reference_outputs",
                          [("宇宙的终极答案是什么？", "宇宙的终极答案是什么。"),
                           (["宇宙的终极答案是什么。"], ["宇宙的终极答案是什么？"])])
 @parametrize_rouge_function
@@ -47,10 +47,10 @@ def test_rouge_identical(generated_outputs: str, reference_outputs: str,
         tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
         if tokenizer else None)
     assert actual_metric_value.metric_values == [1.]
-    assert actual_metric_value.language == 'zh'
+    assert actual_metric_value.language == "zh"
 
 
-@pytest.mark.parametrize('generated_outputs,reference_outputs',
+@pytest.mark.parametrize("generated_outputs,reference_outputs",
                          [("这样的姑娘是受不了的。", "您到底有什么事？"),
                           (["这样的姑娘是受不了的。"], ["您到底有什么事？"])])
 @parametrize_rouge_function
@@ -67,10 +67,10 @@ def test_rouge_no_overlap(generated_outputs: str, reference_outputs: str,
         tokenizer=tokenizer()  # type: ignore[reportGeneralTypeIssues]
         if tokenizer else None)
     assert actual_metric_value.metric_values == [0.]
-    assert actual_metric_value.language == 'zh'
+    assert actual_metric_value.language == "zh"
 
 
-@pytest.mark.parametrize('generated_outputs,reference_outputs',
+@pytest.mark.parametrize("generated_outputs,reference_outputs",
                          [("床前明月光，下一句是什么？", "床前明月光的下一句是什么？"),
                           (["床前明月光，下一句是什么？"], ["床前明月光的下一句是什么？"])])
 @parametrize_rouge_function
@@ -80,9 +80,9 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
                                                      MetricValue[float]],
                             tokenizer: Optional[_ChineseTokenizer]) -> None:
     expected_value = {
-        'rouge1': [0.941176],
-        'rouge2': [0.8],
-        'rougeL': [0.941176]
+        "rouge1": [0.941176],
+        "rouge2": [0.8],
+        "rougeL": [0.941176]
     }
     # The ROUGE-2 score is lower than the ROUGE-1 and ROUGE-L scores
     actual_metric_value = rouge_function(
@@ -92,10 +92,10 @@ def test_rouge_some_overlap(generated_outputs: str, reference_outputs: str,
         if tokenizer else None)
     is_close(actual_metric_value.metric_values,
              expected_value[rouge_function.__name__])
-    assert actual_metric_value.language == 'zh'
+    assert actual_metric_value.language == "zh"
 
 
-@pytest.mark.parametrize('generated_outputs,reference_outputs',
+@pytest.mark.parametrize("generated_outputs,reference_outputs",
                          [("那里有一本三体小说。", "那里有一本三体小说。"),
                           (["那里有一本三体小说。"], ["那里有一本三体小说。"])])
 def test_semantic_similarity_identical(generated_outputs, reference_outputs):
@@ -104,7 +104,7 @@ def test_semantic_similarity_identical(generated_outputs, reference_outputs):
 
 
 @pytest.mark.parametrize(
-    'generated_outputs,reference_outputs',
+    "generated_outputs,reference_outputs",
     [("php是世界上最好的语言，学计算机要从娃娃抓起。", "在石家庄，有一支摇滚乐队，他们创作了很多音乐。"),
      (["php是世界上最好的语言，学计算机要从娃娃抓起。"], ["在石家庄，有一支摇滚乐队，他们创作了很多音乐。"])])
 def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
@@ -112,7 +112,7 @@ def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
     assert 0.0 <= metric_value <= 0.5
 
 
-@pytest.mark.parametrize('generated_outputs,reference_outputs',
+@pytest.mark.parametrize("generated_outputs,reference_outputs",
                          [("学习中文很快乐。", "学习中文很快乐。"),
                           (["学习中文很快乐。"], ["学习中文很快乐。"])])
 def test_semantic_similarity_openai(generated_outputs, reference_outputs):
@@ -120,7 +120,7 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
     mock_embedding_response.data = [Mock(embedding=[0.1, 0.2, 0.3])]
     # Calling the openai.Embedding.create method requires an OpenAI API key, so
     # we mock the return value instead
-    with patch('openai.resources.Embeddings.create',
+    with patch("openai.resources.Embeddings.create",
                Mock(return_value=mock_embedding_response)):
         # Set the necessary env vars for the 'openai' embedding model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
@@ -137,7 +137,7 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         azure_openai_client = AzureOpenAIEvalClient(
-            embedding_model_name='foo bar')
+            embedding_model_name="foo bar")
         metric_value = semantic_similarity(generated_outputs,
                                            reference_outputs,
                                            eval_model=azure_openai_client)

@@ -9,7 +9,7 @@ def synonym(
     num_perturbations: int = 1,
     **kwargs,
 ) -> list[str]:
-    '''Applies a text perturbation to each string in instances (usually a list
+    """Applies a text perturbation to each string in instances (usually a list
     of prompts) where some words are replaced with synonyms.
 
     Args:
@@ -36,7 +36,7 @@ def synonym(
 
     Returns:
         A list of perturbed instances.
-    '''
+    """
 
     kwargs["aug_p"] = kwargs.get("aug_p", 0.1)
     kwargs["aug_max"] = kwargs.get("aug_max")

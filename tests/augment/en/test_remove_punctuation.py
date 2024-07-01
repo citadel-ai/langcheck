@@ -11,9 +11,9 @@ from langcheck.augment.en import remove_punctuation
     "instances, num_perturbations, aug_char_p, expected",
     [
         ("Hello, world...!?", 1, 0.5, ["Hello, world!?"]),
-        ("Hello, world...!?", 2, 0.5, ['Hello, world!?', 'Hello, world?']),
+        ("Hello, world...!?", 2, 0.5, ["Hello, world!?", "Hello, world?"]),
         (["Hello, world...!?"], 1, 0.5, ["Hello, world!?"]),
-        (["Hello, world...!?"], 2, 0.5, ['Hello, world!?', 'Hello, world?']),
+        (["Hello, world...!?"], 2, 0.5, ["Hello, world!?", "Hello, world?"]),
         (["Hello, world...!?", "!@#$%^&*()_+,./"
          ], 1, 0.5, ["Hello, world!?", "!^()+,/"]),
         (["Hello, world...!?", "!@#$%^&*()_+,./"], 2, 0.5,

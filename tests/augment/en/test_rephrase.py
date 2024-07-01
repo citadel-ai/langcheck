@@ -24,11 +24,11 @@ def test_rephrase(instances: list[str] | str, num_perturbations: int,
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
         Mock(message=Mock(
-            content='Identify three typical methods used for evaluating LLMs.'))
+            content="Identify three typical methods used for evaluating LLMs."))
     ]
     # Calling the openai.ChatCompletion.create method requires an OpenAI API
     # key, so we mock the return value instead
-    with patch('openai.resources.chat.Completions.create',
+    with patch("openai.resources.chat.Completions.create",
                return_value=mock_chat_completion):
         # Set the necessary env vars for the 'openai' model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
@@ -41,6 +41,6 @@ def test_rephrase(instances: list[str] | str, num_perturbations: int,
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         actual = rephrase(instances,
                           num_perturbations=num_perturbations,
-                          model_type='azure_openai',
-                          openai_args={'model': 'foo bar'})
+                          model_type="azure_openai",
+                          openai_args={"model": "foo bar"})
         assert actual == expected

@@ -15,7 +15,7 @@ def load_sentence_transformers(
         model_revision: Optional[str] = None,
         tokenizer_name: Optional[str] = None,
         tokenizer_revision: Optional[str] = None) -> SentenceTransformer:
-    '''
+    """
     Loads a SentenceTransformer model.
 
     This function currently does not support specifying a tokenizer or a
@@ -32,7 +32,7 @@ def load_sentence_transformers(
 
     Returns:
         model: The loaded SentenceTransformer model.
-    '''
+    """
     if model_revision is not None or tokenizer_revision is not None:
         print("Warning: Specifying a revision is not currently supported.")
     if tokenizer_name is not None:
@@ -48,7 +48,7 @@ def load_auto_model_for_text_classification(
     tokenizer_name: Optional[str] = None,
     tokenizer_revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSequenceClassification]:
-    '''
+    """
     Loads a sequence classification model and its tokenizer.
 
     Args:
@@ -61,7 +61,7 @@ def load_auto_model_for_text_classification(
     Returns:
         tokenizer: The loaded tokenizer.
         model: The loaded sequence classification model.
-    '''
+    """
     if tokenizer_name is None:
         tokenizer_name = model_name
     # There are "Some weights are not used warning" for some models, but we
@@ -81,7 +81,7 @@ def load_auto_model_for_seq2seq(
     tokenizer_name: Optional[str] = None,
     tokenizer_revision: Optional[str] = None
 ) -> Tuple[AutoTokenizer, AutoModelForSeq2SeqLM]:
-    '''
+    """
     Loads a sequence-to-sequence model and its tokenizer.
 
     Args:
@@ -94,7 +94,7 @@ def load_auto_model_for_seq2seq(
     Returns:
         tokenizer: The loaded tokenizer.
         model: The loaded sequence-to-sequence model.
-    '''
+    """
     if tokenizer_name is None:
         tokenizer_name = model_name
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name,

@@ -6,17 +6,17 @@ from ..scorer._base import BaseSimilarityScorer
 
 
 class EvalClient:
-    '''An abstract class that defines the interface for the evaluation clients.
+    """An abstract class that defines the interface for the evaluation clients.
     Most metrics that use external APIs such as OpenAI API call the methods
     defined in this class to compute the metric values.
-    '''
+    """
 
     def get_text_responses(
             self,
             prompts: Iterable[str],
             *,
             tqdm_description: str | None = None) -> list[str | None]:
-        '''The function that gets resonses to the given prompt texts. Each
+        """The function that gets resonses to the given prompt texts. Each
         concrete subclass needs to define the concrete implementation of this
         function to enable text scoring.
 
@@ -26,7 +26,7 @@ class EvalClient:
         Returns:
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
-        '''
+        """
         raise NotImplementedError
 
     def get_float_score(
@@ -111,8 +111,8 @@ class EvalClient:
         return scores, unstructured_assessment_result
 
     def similarity_scorer(self) -> BaseSimilarityScorer:
-        '''Get the BaseSimilarityScorer object that corresponds to the
+        """Get the BaseSimilarityScorer object that corresponds to the
         EvalClient so that the similarity-related metrics can be computed.
         TODO: Intergrate scorer/ with eval_clients/
-        '''
+        """
         raise NotImplementedError

@@ -7,7 +7,7 @@ from janome.tokenizer import Tokenizer
 from rouge_score.tokenizers import Tokenizer as BaseTokenizer
 
 # Japanese punctuation characters
-_PUNCTUATIONS = ['、', '。', '，', '．', ',', '.', "?", "!", "？", "！"]
+_PUNCTUATIONS = ["、", "。", "，", "．", ",", ".", "?", "!", "？", "！"]
 
 
 class _JapaneseTokenizer(BaseTokenizer):
@@ -25,7 +25,7 @@ class _JapaneseTokenizer(BaseTokenizer):
 
 
 class MeCabTokenizer(_JapaneseTokenizer):
-    '''
+    """
     An optional tokenizer to calculate rouge score base on MeCab.
 
     .. note::
@@ -37,19 +37,19 @@ class MeCabTokenizer(_JapaneseTokenizer):
         environments and may not work. Please refer to the
         `official page <https://taku910.github.io/mecab/>`_ if the
         Python wrapper, mecab-python3, does not work in your environment.
-    '''
+    """
 
     class _MeCabNodeSurfaceIterator(Iterator):
 
         def __init__(self, node) -> None:
             self._node = node
             # Skip BOS.
-            if node.feature.startswith('BOS/EOS'):
+            if node.feature.startswith("BOS/EOS"):
                 self._node = self._node.next
 
         def __next__(self):
             # Stop iteration when the node is EOS.
-            if self._node.feature.startswith('BOS/EOS'):
+            if self._node.feature.startswith("BOS/EOS"):
                 raise StopIteration
 
             node = self._node
@@ -75,7 +75,7 @@ class MeCabTokenizer(_JapaneseTokenizer):
 
 
 class JanomeTokenizer(_JapaneseTokenizer):
-    '''Janome based Tokenizer for Japanese.
+    """Janome based Tokenizer for Japanese.
 
     The default tokenizer to calculate rouge score base on Janome.
 
@@ -88,7 +88,7 @@ class JanomeTokenizer(_JapaneseTokenizer):
         dictionary during initialization.
         If you are processing large data, consider setting up MeCab and using
         the :class:`~langcheck.metrics.ja.MeCabTokenizer`.
-    '''
+    """
 
     def __init__(self):
         self.tokenizer = Tokenizer()

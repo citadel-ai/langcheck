@@ -16,7 +16,7 @@ from langcheck.augment.en import ocr_typo
         (["Hello, world!"], 2, ["Hel1u, world!", "Hello, w0r1d!"]),
         (["Hello, world!", "I'm hungry"], 1, ["Hel1u, world!", "I ' m hungry"]),
         (["Hello, world!", "I'm hungry"], 2,
-         ['Hel1u, world!', 'Hello, w0r1d!', "1 ' m hongky", "I ' m hun9ky"]),
+         ["Hel1u, world!", "Hello, w0r1d!", "1 ' m hongky", "I ' m hun9ky"]),
     ],
 )
 def test_ocr_typo(instances: List[str] | str, num_perturbations: int,

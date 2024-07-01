@@ -7,6 +7,6 @@ from langcheck.augment.en._rephrase import rephrase
 from langcheck.augment.en._synonym import synonym
 
 __all__ = [
-    'change_case', 'gender', 'keyboard_typo', 'ocr_typo', 'synonym',
-    'remove_punctuation', 'rephrase'
+    "change_case", "gender", "keyboard_typo", "ocr_typo", "synonym",
+    "remove_punctuation", "rephrase"
 ]

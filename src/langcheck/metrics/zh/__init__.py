@@ -13,7 +13,7 @@ from langcheck.metrics.zh.reference_free_text_quality import (
 from langcheck.metrics.zh.source_based_text_quality import factual_consistency
 
 __all__ = [
-    'HanLPTokenizer', 'semantic_similarity', 'rouge1', 'rouge2', 'rougeL',
-    'factual_consistency', 'sentiment', 'toxicity',
-    'xuyaochen_report_readability'
+    "HanLPTokenizer", "semantic_similarity", "rouge1", "rouge2", "rougeL",
+    "factual_consistency", "sentiment", "toxicity",
+    "xuyaochen_report_readability"
 ]

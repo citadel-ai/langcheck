@@ -35,7 +35,7 @@ def test_invalid_input():
     ("male", ["He cooks by himself.", "This is his dog.", "I gave him a book."
              ]),
     ("neutral",
-     ['Xe cooks by xyrself.', 'This is xyr dog.', 'I gave xem a book.']),
+     ["Xe cooks by xyrself.", "This is xyr dog.", "I gave xem a book."]),
     ("plural", [
         "They cooks by themselves.", "This is their dog.", "I gave them a book."
     ]),
