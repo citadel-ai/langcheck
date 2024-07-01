@@ -6,10 +6,12 @@ import hanlp
 from transformers.pipelines import pipeline
 
 from langcheck.metrics._validation import validate_parameters_reference_free
-from langcheck.metrics.en.reference_free_text_quality import \
-    _toxicity_eval_client
-from langcheck.metrics.en.reference_free_text_quality import \
-    sentiment as en_sentiment
+from langcheck.metrics.en.reference_free_text_quality import (
+    _toxicity_eval_client,
+)
+from langcheck.metrics.en.reference_free_text_quality import (
+    sentiment as en_sentiment,
+)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
@@ -17,9 +19,9 @@ from langcheck.metrics.metric_value import MetricValue
 def sentiment(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
-    eval_model: str | EvalClient = 'local',
+    eval_model: str | EvalClient = "local",
 ) -> MetricValue[Optional[float]]:
-    '''Calculates the sentiment scores of generated outputs. This metric takes
+    """Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using an EvalClient, the sentiment scores
     are either 0.0 (negative), 0.5 (neutral), or 1.0 (positive). The score may
@@ -47,57 +49,59 @@ def sentiment(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
-    if eval_model != 'local':  # EvalClient
+    if eval_model != "local":  # EvalClient
         assert isinstance(
             eval_model, EvalClient
-        ), 'An EvalClient must be provided for non-local model types.'
+        ), "An EvalClient must be provided for non-local model types."
 
         # This reuses the English prompt.
         # TODO: Update this to use a Chinese prompt.
         metric_value = en_sentiment(generated_outputs, prompts, eval_model)
-        metric_value.language = 'zh'
+        metric_value.language = "zh"
         return metric_value
 
     # {0:"Negative", 1:'Positive'}
     from langcheck.metrics.model_manager import manager
-    tokenizer, model = manager.fetch_model(language='zh', metric='sentiment')
+
+    tokenizer, model = manager.fetch_model(language="zh", metric="sentiment")
     _sentiment_pipeline = pipeline(
-        'sentiment-analysis',
+        "sentiment-analysis",
         model=model,  # type: ignore[reportGeneralTypeIssues]
-        tokenizer=tokenizer  # type: ignore[reportGeneralTypeIssues]
+        tokenizer=tokenizer,  # type: ignore[reportGeneralTypeIssues]
     )
     _model_id2label = _sentiment_pipeline.model.config.id2label
-    _predict_result = _sentiment_pipeline(
-        generated_outputs
-    )  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    _predict_result = _sentiment_pipeline(generated_outputs)  # type: ignore[reportGeneralTypeIssues]
     # if predicted result is 'Positive', use the score directly
     # else, use 1 - score as the sentiment score
     # yapf: disable
     scores = [
-        1 - x['score'] if x['label'] == _model_id2label[0] else x['score']  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-        for x in _predict_result   # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+        1 - x["score"] if x["label"] == _model_id2label[0] else x["score"]  # type: ignore[reportGeneralTypeIssues]
+        for x in _predict_result   # type: ignore[reportGeneralTypeIssues]
     ]
     # yapf: enable
     return MetricValue(
-        metric_name='sentiment',
+        metric_name="sentiment",
         prompts=prompts,
         generated_outputs=generated_outputs,
         reference_outputs=None,
         sources=None,
         explanations=None,
         metric_values=scores,  # type: ignore[reportGeneralTypeIssues]
-        language='zh')
+        language="zh",
+    )
 
 
 def toxicity(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        eval_model: str | EvalClient = 'local') -> MetricValue[Optional[float]]:
-    '''Calculates the toxicity scores of generated outputs. This metric takes on
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    eval_model: str | EvalClient = "local",
+) -> MetricValue[Optional[float]]:
+    """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using an EvalClient, the toxicity scores are in steps of
     0.25. The score may also be `None` if it could not be computed.)
@@ -126,35 +130,39 @@ def toxicity(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
-    if eval_model == 'local':
+    if eval_model == "local":
         scores = _toxicity_local(generated_outputs)
         explanations = None
     else:
         assert isinstance(
             eval_model, EvalClient
-        ), 'An EvalClient must be provided for non-local model types.'
+        ), "An EvalClient must be provided for non-local model types."
 
         # This reuses the English prompt.
         # TODO: Update this to use a Chinese prompt.
-        scores, explanations = _toxicity_eval_client(generated_outputs,
-                                                     eval_model)
+        scores, explanations = _toxicity_eval_client(
+            generated_outputs, eval_model
+        )
 
-    return MetricValue(metric_name='toxicity',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language='zh')
+    return MetricValue(
+        metric_name="toxicity",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=explanations,
+        metric_values=scores,
+        language="zh",
+    )
 
 
 def _toxicity_local(generated_outputs: List[str]) -> List[float]:
-    '''Calculates the toxicity scores of generated outputs using a fine-tuned
+    """Calculates the toxicity scores of generated outputs using a fine-tuned
     model from `alibaba-pai/pai-bert-base-zh-llm-risk-detection`. This metric
     takes on float values between [0, 1], where 0 is low toxicity and 1 is high
     toxicity.
@@ -167,16 +175,18 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
     Returns:
         A list of scores
-    '''
+    """
     # this pipeline output predict probability for each text on each label.
     # the output format is List[List[Dict(str)]]
     from langcheck.metrics.model_manager import manager
-    tokenizer, model = manager.fetch_model(language='zh', metric="toxicity")
+
+    tokenizer, model = manager.fetch_model(language="zh", metric="toxicity")
     _toxicity_pipeline = pipeline(
-        'text-classification',
+        "text-classification",
         model=model,  # type: ignore[reportOptionalIterable]
         tokenizer=tokenizer,  # type: ignore[reportOptionalIterable]
-        top_k=5)
+        top_k=5,
+    )
     # {'Normal': 0, 'Pulp': 1, 'Sex': 2, 'Other Risk': 3, 'Adult': 4}
     _model_id2label = _toxicity_pipeline.model.config.id2label
     _predict_results = _toxicity_pipeline(
@@ -184,19 +194,20 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
     )
     # labels except Normal are all risky, toxicity_score = 1-score['Normal']
     toxicity_scores = []
-    for item_predict_proba in _predict_results:  # type: ignore[reportOptionalIterable]  # NOQA: E501
-        for label_proba in item_predict_proba:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+    for item_predict_proba in _predict_results:  # type: ignore[reportOptionalIterable]
+        for label_proba in item_predict_proba:  # type: ignore[reportGeneralTypeIssues]
             # yapf: disable
-            if label_proba['label'] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
-                toxicity_scores.append(1 - label_proba['score'])  # type: ignore[reportGeneralTypeIssues]  # NOQA: E501
+            if label_proba["label"] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]
+                toxicity_scores.append(1 - label_proba["score"])  # type: ignore[reportGeneralTypeIssues]
             # yapf: enable
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]
 
 
 def xuyaochen_report_readability(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
-    '''Calculates the readability scores of generated outputs introduced in
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+) -> MetricValue[float]:
+    """Calculates the readability scores of generated outputs introduced in
     "中文年报可读性"(Chinese annual report readability). This metric calculates
     average words per sentence as r1, average of the sum of the numbers of
     adverbs and coordinating conjunction words in a sentence in given generated
@@ -218,24 +229,25 @@ def xuyaochen_report_readability(
 
     Returns:
         A list of scores
-    '''
+    """
     # split generated_outputs into sentence
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts=prompts)
+        generated_outputs, prompts=prompts
+    )
     # yapf: disable
     tokenizer = hanlp.load(
-        hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+        hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues]
     )
     postagger = hanlp.load(
-        hanlp.pretrained.pos.CTB9_POS_RADICAL_ELECTRA_SMALL   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+        hanlp.pretrained.pos.CTB9_POS_RADICAL_ELECTRA_SMALL   # type: ignore[reportGeneralTypeIssues]
     )
 
     pos_pipeline = hanlp.pipeline().\
-        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues]
     pos_pipeline = pos_pipeline.append(tokenizer).append(postagger)
 
     tokenize_pipeline = hanlp.pipeline().\
-        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues]
     tokenize_pipeline = tokenize_pipeline.append(tokenizer)
     # OUTPUT: List[List[List[TOKEN]]]
     output_tokens = list(map(tokenize_pipeline, generated_outputs))
@@ -244,7 +256,7 @@ def xuyaochen_report_readability(
 
     def count_tokens(sent_tokens: List[str]) -> int:
         count = sum([
-            not hanlp.utils.string_util.ispunct(token) for token in   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+            not hanlp.utils.string_util.ispunct(token) for token in   # type: ignore[reportGeneralTypeIssues]
             sent_tokens
         ])
         return count
@@ -252,7 +264,7 @@ def xuyaochen_report_readability(
     def count_postags(sent_poses: List[str]) -> int:
         # AD: adverb, CC: coordinating conjunction,
         # CS: subordinating conjunction
-        count = sum([pos in ['AD', 'CC', 'CS'] for pos in sent_poses])
+        count = sum([pos in ["AD", "CC", "CS"] for pos in sent_poses])
         return count
 
     def calc_r1(content: List[List[str]]) -> float:
@@ -269,15 +281,17 @@ def xuyaochen_report_readability(
         else:
             return sum(pos_count_by_sentence) / len(pos_count_by_sentence)
 
-    r1 = list(map(calc_r1, output_tokens))   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
-    r2 = list(map(calc_r2, output_pos))   # type: ignore[reportGeneralTypeIssues] # NOQA: E501
+    r1 = list(map(calc_r1, output_tokens))   # type: ignore[reportGeneralTypeIssues]
+    r2 = list(map(calc_r2, output_pos))   # type: ignore[reportGeneralTypeIssues]
     r3 = [(r1_score + r2_score) * 0.5 for r1_score, r2_score in zip(r1, r2)]
     # yapf: enable
-    return MetricValue(metric_name='readability',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       sources=None,
-                       reference_outputs=None,
-                       explanations=None,
-                       metric_values=r3,
-                       language='zh')
+    return MetricValue(
+        metric_name="readability",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        sources=None,
+        reference_outputs=None,
+        explanations=None,
+        metric_values=r3,
+        language="zh",
+    )

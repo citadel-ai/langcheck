@@ -4,10 +4,11 @@ from typing import List, Optional
 
 
 def validate_parameters_reference_based(
-    generated_outputs: List[str] | str, reference_outputs: List[str] | str,
-    prompts: Optional[List[str] | str]
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: Optional[List[str] | str],
 ) -> tuple[List[str], List[str], Optional[List[str]]]:
-    '''Validates and parses function parameters for reference-based text quality
+    """Validates and parses function parameters for reference-based text quality
     metrics in langcheck.metrics.
 
     Args:
@@ -19,9 +20,10 @@ def validate_parameters_reference_based(
     Returns:
         A tuple (generated_outputs, reference_outputs, prompts) of the parsed
         parameters. All non-None parameters are converted to lists of strings.
-    '''
+    """
     _generated_outputs, _prompts, _reference_outputs, _ = _validate_parameters(
-        generated_outputs, prompts, reference_outputs, None)
+        generated_outputs, prompts, reference_outputs, None
+    )
 
     # For type checking
     assert isinstance(_reference_outputs, list)
@@ -32,7 +34,7 @@ def validate_parameters_reference_based(
 def validate_parameters_reference_free(
     generated_outputs: List[str] | str, prompts: Optional[List[str] | str]
 ) -> tuple[List[str], Optional[List[str]]]:
-    '''Validates and parses function parameters for reference-free text quality
+    """Validates and parses function parameters for reference-free text quality
     metrics in langcheck.metrics.
 
     Args:
@@ -43,9 +45,10 @@ def validate_parameters_reference_free(
     Returns:
         A tuple (generated_outputs, prompts) of the parsed parameters. All
         non-None parameters are converted to lists of strings.
-    '''
+    """
     _generated_outputs, _prompts, _, _ = _validate_parameters(
-        generated_outputs, prompts, None, None)
+        generated_outputs, prompts, None, None
+    )
 
     # For type checking
     assert _prompts is None or isinstance(_prompts, list)
@@ -56,7 +59,7 @@ def validate_parameters_reference_free(
 def validate_parameters_text_structure(
     generated_outputs: List[str] | str, prompts: Optional[List[str] | str]
 ) -> tuple[List[str], Optional[List[str]]]:
-    '''Validates and parses function parameters for text structure metrics in
+    """Validates and parses function parameters for text structure metrics in
     langcheck.metrics.
 
     Args:
@@ -67,9 +70,10 @@ def validate_parameters_text_structure(
     Returns:
         A tuple (generated_outputs, prompts) of the parsed parameters. All
         non-None parameters are converted to lists of strings.
-    '''
+    """
     _generated_outputs, _prompts, _, _ = _validate_parameters(
-        generated_outputs, prompts, None, None)
+        generated_outputs, prompts, None, None
+    )
 
     # For type checking
     assert _prompts is None or isinstance(_prompts, list)
@@ -78,10 +82,11 @@ def validate_parameters_text_structure(
 
 
 def validate_parameters_source_based(
-    generated_outputs: List[str] | str, sources: List[str] | str,
-    prompts: Optional[List[str] | str]
+    generated_outputs: List[str] | str,
+    sources: List[str] | str,
+    prompts: Optional[List[str] | str],
 ) -> tuple[List[str], List[str], Optional[List[str]]]:
-    '''Validates and parses function parameters for source-based text quality
+    """Validates and parses function parameters for source-based text quality
     metrics in langcheck.metrics.
 
     Args:
@@ -93,9 +98,10 @@ def validate_parameters_source_based(
     Returns:
         A tuple (generated_outputs, sources, prompts) of the parsed parameters.
         All non-None parameters are converted to lists of strings.
-    '''
+    """
     _generated_outputs, _prompts, _, _sources = _validate_parameters(
-        generated_outputs, prompts, None, sources)
+        generated_outputs, prompts, None, sources
+    )
 
     # For type checking
     assert isinstance(_sources, list)
@@ -104,9 +110,9 @@ def validate_parameters_source_based(
 
 
 def validate_parameters_context_relevance(
-        prompts: List[str] | str,
-        sources: List[str] | str) -> tuple[List[str], List[str]]:
-    '''Validates and parses function parameters for the context relevance
+    prompts: List[str] | str, sources: List[str] | str
+) -> tuple[List[str], List[str]]:
+    """Validates and parses function parameters for the context relevance
     metric.
 
     Args:
@@ -116,7 +122,7 @@ def validate_parameters_context_relevance(
     Returns:
         A tuple (prompts, sources) of the parsed parameters, converted to lists
         of strings.
-    '''
+    """
     # Convert single-string parameters to lists
     if isinstance(prompts, str):
         prompts = [prompts]
@@ -125,21 +131,21 @@ def validate_parameters_context_relevance(
 
     # Check that prompts and sources are not empty
     if not prompts:
-        raise ValueError('Please specify at least one prompt')
+        raise ValueError("Please specify at least one prompt")
     if not sources:
-        raise ValueError('Please specify at least one source')
+        raise ValueError("Please specify at least one source")
 
     # Check that the lengths of lists match
     if len(prompts) != len(sources):
-        raise ValueError('The number of prompts and sources do not match')
+        raise ValueError("The number of prompts and sources do not match")
 
     return prompts, sources
 
 
 def validate_parameters_answer_relevance(
-        generated_outputs: List[str] | str,
-        prompts: List[str] | str) -> tuple[List[str], List[str]]:
-    '''Validates and parses function parameters for the answer relevance
+    generated_outputs: List[str] | str, prompts: List[str] | str
+) -> tuple[List[str], List[str]]:
+    """Validates and parses function parameters for the answer relevance
     metric.
 
     Args:
@@ -149,7 +155,7 @@ def validate_parameters_answer_relevance(
     Returns:
         A tuple (generated_outputs, prompts) of the parsed parameters, converted
         to lists of strings.
-    '''
+    """
     # Convert single-string parameters to lists
     if isinstance(generated_outputs, str):
         generated_outputs = [generated_outputs]
@@ -158,26 +164,35 @@ def validate_parameters_answer_relevance(
 
     # Check that generated_outputs and prompts are not empty
     if not generated_outputs:
-        raise ValueError('Please specify at least one generated output')
+        raise ValueError("Please specify at least one generated output")
     if not prompts:
-        raise ValueError('Please specify at least one prompt')
+        raise ValueError("Please specify at least one prompt")
 
     # Check that the lengths of lists match
     if len(generated_outputs) != len(prompts):
         raise ValueError(
-            'The number of generated_outputs and prompts and do not match')
+            "The number of generated_outputs and prompts and do not match"
+        )
 
     return generated_outputs, prompts
 
 
 def validate_parameters_pairwise_comparison(
-    generated_outputs_a: List[str] | str, generated_outputs_b: List[str] | str,
-    prompts: List[str] | str, sources_a: Optional[List[str] | str],
+    generated_outputs_a: List[str] | str,
+    generated_outputs_b: List[str] | str,
+    prompts: List[str] | str,
+    sources_a: Optional[List[str] | str],
     sources_b: Optional[List[str] | str],
-    reference_outputs: Optional[List[str] | str]
-) -> tuple[List[str], List[str], List[str], Optional[List[str]],
-           Optional[List[str]], Optional[List[str]]]:
-    '''Validates and parses function parameters for the pairwise comparison
+    reference_outputs: Optional[List[str] | str],
+) -> tuple[
+    List[str],
+    List[str],
+    List[str],
+    Optional[List[str]],
+    Optional[List[str]],
+    Optional[List[str]],
+]:
+    """Validates and parses function parameters for the pairwise comparison
     metric.
 
     Args:
@@ -192,25 +207,39 @@ def validate_parameters_pairwise_comparison(
         A tuple (generated_outputs_a, generated_outputs_b, prompts,
         sources_a, sources_b, reference_outputs) of the parsed parameters. All
         non-None parameters are converted to lists of strings.
-    '''
-    _generated_outputs_a, _prompts, _reference_outputs, _sources_a = _validate_parameters(  # NOQA: E501
-        generated_outputs_a, prompts, reference_outputs, sources_a)
+    """
+    _generated_outputs_a, _prompts, _reference_outputs, _sources_a = (
+        _validate_parameters(
+            generated_outputs_a, prompts, reference_outputs, sources_a
+        )
+    )
     _generated_outputs_b, _, _, _sources_b = _validate_parameters(
-        generated_outputs_b, None, None, sources_b)
+        generated_outputs_b, None, None, sources_b
+    )
     # For type checking
     assert _prompts is not None
-    return (_generated_outputs_a, _generated_outputs_b, _prompts, _sources_a,
-            _sources_b, _reference_outputs)
+    return (
+        _generated_outputs_a,
+        _generated_outputs_b,
+        _prompts,
+        _sources_a,
+        _sources_b,
+        _reference_outputs,
+    )
 
 
 def validate_parameters_custom_evaluator(
     generated_outputs: Optional[List[str] | str],
     prompts: Optional[List[str] | str],
     reference_outputs: Optional[List[str] | str],
-    sources: Optional[List[str] | str]
-) -> tuple[Optional[List[str]], Optional[List[str]], Optional[List[str]],
-           Optional[List[str]]]:
-    '''Validates and parses function parameters for the custom evaluator metric.
+    sources: Optional[List[str] | str],
+) -> tuple[
+    Optional[List[str]],
+    Optional[List[str]],
+    Optional[List[str]],
+    Optional[List[str]],
+]:
+    """Validates and parses function parameters for the custom evaluator metric.
 
     Args:
         generated_outputs: The model generated output(s)
@@ -222,7 +251,7 @@ def validate_parameters_custom_evaluator(
         A tuple (generated_outputs, prompts, reference_outputs, sources) of the
         parsed parameters. All non-None parameters are converted to lists of
         strings.
-    '''
+    """
     # Convert single-string parameters to lists
     if isinstance(generated_outputs, str):
         generated_outputs = [generated_outputs]
@@ -236,25 +265,29 @@ def validate_parameters_custom_evaluator(
     # Check that all of the non-None parameters are the same length
     non_none_lengths = {
         name: len(arg)
-        for name, arg in
-        zip(['generated outputs', 'prompts', 'reference outputs', 'sources'],
-            [generated_outputs, prompts, reference_outputs, sources])
+        for name, arg in zip(
+            ["generated outputs", "prompts", "reference outputs", "sources"],
+            [generated_outputs, prompts, reference_outputs, sources],
+        )
         if arg is not None
     }
     if len(set(non_none_lengths.values())) > 1:
         raise ValueError(
-            f'The number of {", ".join(non_none_lengths.keys())} do not match')
+            f'The number of {", ".join(non_none_lengths.keys())} do not match'
+        )
 
     return generated_outputs, prompts, reference_outputs, sources
 
 
 def _validate_parameters(
-    generated_outputs: List[str] | str, prompts: Optional[List[str] | str],
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str],
     reference_outputs: Optional[List[str] | str],
-    sources: Optional[List[str] | str]
-) -> tuple[List[str], Optional[List[str]], Optional[List[str]],
-           Optional[List[str]]]:
-    '''Validates and parses function parameters for metrics in
+    sources: Optional[List[str] | str],
+) -> tuple[
+    List[str], Optional[List[str]], Optional[List[str]], Optional[List[str]]
+]:
+    """Validates and parses function parameters for metrics in
     langcheck.metrics.
 
     Args:
@@ -268,7 +301,7 @@ def _validate_parameters(
         A tuple (generated_outputs, prompts, reference_outputs, sources) of the
         parsed parameters. All non-None parameters are converted to lists of
         strings.
-    '''
+    """
     # Convert single-string parameters to lists
     if isinstance(generated_outputs, str):
         generated_outputs = [generated_outputs]
@@ -281,19 +314,22 @@ def _validate_parameters(
 
     # Check that generated_outputs is not empty
     if not generated_outputs:
-        raise ValueError('Please specify at least one generated output')
+        raise ValueError("Please specify at least one generated output")
 
     # Check that the lengths of lists match
     if prompts is not None and len(generated_outputs) != len(prompts):
         raise ValueError(
-            'The number of generated outputs and prompts do not match')
-    if reference_outputs is not None and \
-            len(generated_outputs) != len(reference_outputs):
+            "The number of generated outputs and prompts do not match"
+        )
+    if reference_outputs is not None and len(generated_outputs) != len(
+        reference_outputs
+    ):
         raise ValueError(
-            'The number of generated outputs and reference outputs do not match'
+            "The number of generated outputs and reference outputs do not match"
         )
     if sources is not None and len(generated_outputs) != len(sources):
         raise ValueError(
-            'The number of generated outputs and sources do not match')
+            "The number of generated outputs and sources do not match"
+        )
 
     return generated_outputs, prompts, reference_outputs, sources

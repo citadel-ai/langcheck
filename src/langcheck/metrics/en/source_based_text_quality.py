@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import nltk
 import torch
@@ -10,23 +10,26 @@ from transformers.models.auto.modeling_auto import AutoModelForSeq2SeqLM
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 from langcheck.metrics._validation import (
-    validate_parameters_context_relevance, validate_parameters_source_based)
+    validate_parameters_context_relevance,
+    validate_parameters_source_based,
+)
 from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-_factual_consistency_model_path = 'MingZhong/unieval-fact'
+_factual_consistency_model_path = "MingZhong/unieval-fact"
 _factual_consistency_config = None
 _factual_consistency_tokenizer = None
 _factual_consistency_model = None
 
 
 def factual_consistency(
-        generated_outputs: List[str] | str,
-        sources: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        eval_model: str | EvalClient = 'local') -> MetricValue[Optional[float]]:
-    '''Calculates the factual consistency between the generated outputs and
+    generated_outputs: List[str] | str,
+    sources: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    eval_model: str | EvalClient = "local",
+) -> MetricValue[Optional[float]]:
+    """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
     means that the output is fully consistent with the source text. (NOTE: when
@@ -53,33 +56,38 @@ def factual_consistency(
 
     Returns:
         An MetricValue object
-    '''
+    """
     generated_outputs, sources, prompts = validate_parameters_source_based(
-        generated_outputs, sources, prompts)
+        generated_outputs, sources, prompts
+    )
 
-    if eval_model == 'local':
+    if eval_model == "local":
         scores = _factual_consistency_local(generated_outputs, sources)
         explanations = None
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
-        ), 'An EvalClient must be provided for non-local model types.'
+        ), "An EvalClient must be provided for non-local model types."
         scores, explanations = _factual_consistency_eval_client(
-            generated_outputs, sources, eval_model)
+            generated_outputs, sources, eval_model
+        )
 
-    return MetricValue(metric_name='factual_consistency',
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=sources,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language='en')
+    return MetricValue(
+        metric_name="factual_consistency",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=sources,
+        explanations=explanations,
+        metric_values=scores,
+        language="en",
+    )
 
 
-def _factual_consistency_local(generated_outputs: List[str],
-                               sources: List[str]) -> List[float]:
-    '''Calculates the factual consistency between each generated sentence and
+def _factual_consistency_local(
+    generated_outputs: List[str], sources: List[str]
+) -> List[float]:
+    """Calculates the factual consistency between each generated sentence and
     its corresponding source text. The factual consistency score for one
     generated output is computed as the average of the per-sentence
     consistencies of the generated output with the source text The consistency
@@ -95,12 +103,12 @@ def _factual_consistency_local(generated_outputs: List[str],
 
     Returns:
         A list of scores
-    '''
+    """
     # Confirm necessary data for nltk.tokenize.sent_tokenize() exists
     try:
-        nltk.data.find('tokenizers/punkt')
+        nltk.data.find("tokenizers/punkt")
     except LookupError:
-        nltk.download('punkt')
+        nltk.download("punkt")
 
     # Split the generated outputs into individual sentences. This is consistent
     # with how UniEval calculates factual consistency, where the factual
@@ -109,37 +117,44 @@ def _factual_consistency_local(generated_outputs: List[str],
     srcs_list, gen_sentences_list = [], []
     num_sentences_list = []
     for src, gen in tqdm_wrapper(
-            zip(sources, generated_outputs),
-            desc='Splitting generated outputs into sentences',
-            total=len(generated_outputs)):
+        zip(sources, generated_outputs),
+        desc="Splitting generated outputs into sentences",
+        total=len(generated_outputs),
+    ):
         gen_sentences = nltk.tokenize.sent_tokenize(gen)
         num_sentences_list.append(len(gen_sentences))
         gen_sentences_list += gen_sentences
         srcs_list += [src] * len(gen_sentences)
 
-    global _factual_consistency_config, _factual_consistency_tokenizer, \
+    global \
+        _factual_consistency_config, \
+        _factual_consistency_tokenizer, \
         _factual_consistency_model
     if _factual_consistency_config is None:
         _factual_consistency_config = AutoConfig.from_pretrained(
-            _factual_consistency_model_path)
+            _factual_consistency_model_path
+        )
     if _factual_consistency_tokenizer is None:
         _factual_consistency_tokenizer = AutoTokenizer.from_pretrained(
-            _factual_consistency_model_path)
+            _factual_consistency_model_path
+        )
     if _factual_consistency_model is None:
         _factual_consistency_model = AutoModelForSeq2SeqLM.from_pretrained(
-            _factual_consistency_model_path, config=_factual_consistency_config)
+            _factual_consistency_model_path, config=_factual_consistency_config
+        )
         _factual_consistency_model.eval()
 
-    pos_id = _factual_consistency_tokenizer('Yes')['input_ids'][0]
-    neg_id = _factual_consistency_tokenizer('No')['input_ids'][0]
+    pos_id = _factual_consistency_tokenizer("Yes")["input_ids"][0]
+    neg_id = _factual_consistency_tokenizer("No")["input_ids"][0]
     softmax = nn.Softmax(dim=1)
 
     model_input_list = []
     for src, gen in zip(srcs_list, gen_sentences_list):
         model_input = (
-            f'question: Is this claim consistent with the document? </s> '
-            f'claim: {gen} </s> '
-            f'document: {src}')
+            f"question: Is this claim consistent with the document? </s> "
+            f"claim: {gen} </s> "
+            f"document: {src}"
+        )
 
         model_input_list.append(model_input)
 
@@ -149,28 +164,32 @@ def _factual_consistency_local(generated_outputs: List[str],
 
     batch_size = 8
     score_list = []
-    for i in tqdm_wrapper(range(0, len(model_input_list), batch_size),
-                          total=(len(model_input_list) + batch_size - 1) //
-                          batch_size):
-        inputs = model_input_list[i:i + batch_size]
-        targets = target_list[i:i + batch_size]
+    for i in tqdm_wrapper(
+        range(0, len(model_input_list), batch_size),
+        total=(len(model_input_list) + batch_size - 1) // batch_size,
+    ):
+        inputs = model_input_list[i : i + batch_size]
+        targets = target_list[i : i + batch_size]
 
         with torch.no_grad():
-            encoded_inputs = _factual_consistency_tokenizer(inputs,
-                                                            truncation=True,
-                                                            padding=True,
-                                                            return_tensors='pt')
+            encoded_inputs = _factual_consistency_tokenizer(
+                inputs, truncation=True, padding=True, return_tensors="pt"
+            )
             encoded_targets = _factual_consistency_tokenizer(
-                targets, truncation=True, padding=True, return_tensors='pt')
-            inputs_tokens = encoded_inputs['input_ids']
-            inputs_mask = encoded_inputs['attention_mask']
-            targets_tokens = encoded_targets['input_ids'][:, 0].unsqueeze(-1)
+                targets, truncation=True, padding=True, return_tensors="pt"
+            )
+            inputs_tokens = encoded_inputs["input_ids"]
+            inputs_mask = encoded_inputs["attention_mask"]
+            targets_tokens = encoded_targets["input_ids"][:, 0].unsqueeze(-1)
 
-            outputs = _factual_consistency_model(input_ids=inputs_tokens,
-                                                 attention_mask=inputs_mask,
-                                                 labels=targets_tokens)
+            outputs = _factual_consistency_model(
+                input_ids=inputs_tokens,
+                attention_mask=inputs_mask,
+                labels=targets_tokens,
+            )
             logits = outputs.logits.view(
-                -1, _factual_consistency_model.config.vocab_size)
+                -1, _factual_consistency_model.config.vocab_size
+            )
             pos_score = softmax(logits)[:, pos_id]
             neg_score = softmax(logits)[:, neg_id]
             score_list += [
@@ -180,8 +199,8 @@ def _factual_consistency_local(generated_outputs: List[str],
     # The score for each output is the average of the scores of its sentences
     score_per_output = []
     start_idx = 0
-    for num in tqdm_wrapper(num_sentences_list, desc='Calculating scores'):
-        scores_for_output = score_list[start_idx:start_idx + num]
+    for num in tqdm_wrapper(num_sentences_list, desc="Calculating scores"):
+        scores_for_output = score_list[start_idx : start_idx + num]
         score_per_output.append(sum(scores_for_output) / num)
         start_idx += num
     return score_per_output
@@ -190,7 +209,7 @@ def _factual_consistency_local(generated_outputs: List[str],
 def _factual_consistency_eval_client(
     generated_outputs: List[str], sources: List[str], eval_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    '''Calculates the factual consistency and their associated explanations
+    """Calculates the factual consistency and their associated explanations
     between the generated outputs and the sources using an EvalClient. This
     metric takes on float values that are either 0, 0.5, or 1, where 0 means
     that the output is not at all consistent with the source text, and 1 means
@@ -205,26 +224,27 @@ def _factual_consistency_eval_client(
     Returns:
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
-    '''
+    """
     factual_consistency_template = load_prompt_template(
-        language='en',
+        language="en",
         eval_client=eval_client,
-        metric_name='factual_consistency')
+        metric_name="factual_consistency",
+    )
     factual_consistency_assessment_to_score = {
-        'Fully Consistent': 1.0,
-        'Partially Consistent': 0.5,
-        'Not Consistent': 0.0
+        "Fully Consistent": 1.0,
+        "Partially Consistent": 0.5,
+        "Not Consistent": 0.0,
     }
     populated_prompts = [
-        factual_consistency_template.render({
-            'src': source,
-            'gen_output': gen_output
-        }) for source, gen_output in zip(sources, generated_outputs)
+        factual_consistency_template.render(
+            {"src": source, "gen_output": gen_output}
+        )
+        for source, gen_output in zip(sources, generated_outputs)
     ]
 
     scores, explanations = eval_client.get_score(
-        metric_name='factual consistency',
-        language='en',
+        metric_name="factual consistency",
+        language="en",
         prompts=populated_prompts,
         score_map=factual_consistency_assessment_to_score,
     )
@@ -232,9 +252,10 @@ def _factual_consistency_eval_client(
     return scores, explanations
 
 
-def context_relevance(sources: List[str] | str, prompts: List[str] | str,
-                      eval_model: EvalClient) -> MetricValue[Optional[float]]:
-    '''Calculates the relevance of the sources to the prompts. This metric takes
+def context_relevance(
+    sources: List[str] | str, prompts: List[str] | str, eval_model: EvalClient
+) -> MetricValue[Optional[float]]:
+    """Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully
     relevant to the prompt.
@@ -245,37 +266,43 @@ def context_relevance(sources: List[str] | str, prompts: List[str] | str,
         sources: The source text(s), one string per prompt
         prompts: The prompt(s)
         eval_model: The EvalClient instance used for the evaluation
-    '''
+    """
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
     context_relevance_template = load_prompt_template(
-        language='en', eval_client=eval_model, metric_name='context_relevance')
+        language="en", eval_client=eval_model, metric_name="context_relevance"
+    )
 
     context_relevance_assessment_to_score = {
-        'Fully Relevant': 1.0,
-        'Partially Relevant': 0.5,
-        'Not Relevant': 0.0
+        "Fully Relevant": 1.0,
+        "Partially Relevant": 0.5,
+        "Not Relevant": 0.0,
     }
 
     populated_prompts = [
-        context_relevance_template.render({
-            'src': source,
-            'user_query': prompt,
-        }) for source, prompt in zip(sources, prompts)
+        context_relevance_template.render(
+            {
+                "src": source,
+                "user_query": prompt,
+            }
+        )
+        for source, prompt in zip(sources, prompts)
     ]
 
     scores, explanations = eval_model.get_score(
-        metric_name='context relevance',
-        language='en',
+        metric_name="context relevance",
+        language="en",
         prompts=populated_prompts,
         score_map=context_relevance_assessment_to_score,
     )
 
-    return MetricValue(metric_name='context_relevance',
-                       prompts=prompts,
-                       generated_outputs=None,
-                       reference_outputs=None,
-                       sources=sources,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language='en')
+    return MetricValue(
+        metric_name="context_relevance",
+        prompts=prompts,
+        generated_outputs=None,
+        reference_outputs=None,
+        sources=sources,
+        explanations=explanations,
+        metric_values=scores,
+        language="en",
+    )

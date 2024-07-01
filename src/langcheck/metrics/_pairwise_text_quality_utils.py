@@ -2,11 +2,14 @@ from __future__ import annotations
 
 
 def generate_pairwise_comparison_prompt_params(
-        generated_outputs_1: list[str], generated_outputs_2: list[str],
-        prompts: list[str], sources_1: list[str] | None,
-        sources_2: list[str] | None,
-        reference_outputs: list[str] | None) -> list[dict[str, str | None]]:
-    '''Generate a list of parameters that can be used for the jinja templates
+    generated_outputs_1: list[str],
+    generated_outputs_2: list[str],
+    prompts: list[str],
+    sources_1: list[str] | None,
+    sources_2: list[str] | None,
+    reference_outputs: list[str] | None,
+) -> list[dict[str, str | None]]:
+    """Generate a list of parameters that can be used for the jinja templates
     of the pairwise comparison metrics.
 
     Args:
@@ -30,7 +33,7 @@ def generate_pairwise_comparison_prompt_params(
             },
             ...
         ]
-    '''
+    """
     # Combine sources_1 and sources_2 into a single list if both are
     # provided.
     if sources_1 is not None and sources_2 is not None:
@@ -41,7 +44,7 @@ def generate_pairwise_comparison_prompt_params(
             elif source_2 is None:
                 sources.append(source_1)
             else:
-                sources.append(source_1 + '\n' + source_2)
+                sources.append(source_1 + "\n" + source_2)
     else:
         sources = sources_1 if sources_1 is not None else sources_2
 
@@ -55,23 +58,31 @@ def generate_pairwise_comparison_prompt_params(
     else:
         reference_outputs_list = reference_outputs
 
-    return [{
-        'src': src,
-        'ref_output': ref_output,
-        'user_query': prompt,
-        'gen_output_1': gen_output_1,
-        'gen_output_2': gen_output_2
-    } for src, ref_output, prompt, gen_output_1, gen_output_2 in zip(
-        sources_list, reference_outputs_list, prompts, generated_outputs_1,
-        generated_outputs_2)]
+    return [
+        {
+            "src": src,
+            "ref_output": ref_output,
+            "user_query": prompt,
+            "gen_output_1": gen_output_1,
+            "gen_output_2": gen_output_2,
+        }
+        for src, ref_output, prompt, gen_output_1, gen_output_2 in zip(
+            sources_list,
+            reference_outputs_list,
+            prompts,
+            generated_outputs_1,
+            generated_outputs_2,
+        )
+    ]
 
 
 def enforce_pairwise_comparison_consistency(
     original_scores: list[float | None],
-    original_explanations: list[str | None], swapped_scores: list[float | None],
-    swapped_explanations: list[str | None]
+    original_explanations: list[str | None],
+    swapped_scores: list[float | None],
+    swapped_explanations: list[str | None],
 ) -> tuple[list[float | None], list[str | None]]:
-    '''Enforce consistency in pairwise comparison scores.
+    """Enforce consistency in pairwise comparison scores.
 
     Args:
         original_scores: The scores for the original order of the models
@@ -80,7 +91,7 @@ def enforce_pairwise_comparison_consistency(
         swapped_scores: The scores for the swapped order of the models
         swapped_explanations: The explanations for the swapped order of the
             models
-    '''
+    """
     # Iterate through the scores and explanations to check for consistency.
     # If a score is not consistent, set it to None, and merge the two
     # explanations to show the inconsistency.
@@ -95,6 +106,7 @@ def enforce_pairwise_comparison_consistency(
             continue
         if scores[i] + swapped_scores[i] != 1.0:  # type: ignore
             scores[i] = None
-            explanations[
-                i] = f'Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}'  # NOQA: E501
+            explanations[i] = (
+                f"Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}"
+            )
     return scores, explanations

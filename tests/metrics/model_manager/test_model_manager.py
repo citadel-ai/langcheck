@@ -2,16 +2,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from omegaconf import OmegaConf
-
 from langcheck.metrics.model_manager import _model_management
 from langcheck.metrics.model_manager._model_management import (
-    ModelManager, check_model_availability)
+    ModelManager,
+    check_model_availability,
+)
 
 
 @pytest.fixture
 def temp_config_path(tmp_path) -> str:
-    '''
+    """
     Fixture that creates a temporary configuration file for testing.
 
     Args:
@@ -19,8 +19,8 @@ def temp_config_path(tmp_path) -> str:
 
     Returns:
         The path to the temporary configuration file.
-    '''
-    config = '''
+    """
+    config = """
     zh:
         toxicity:
             model_name: alibaba-pai/pai-bert-base-zh-llm-risk-detection
@@ -32,7 +32,7 @@ def temp_config_path(tmp_path) -> str:
             tokenizer_name: line-corporation/line-distilbert-base-japanese
             tokenizer_revision: 93bd4811608eecb95ffaaba957646efd9a909cc8
             loader_func: load_auto_model_for_text_classification
-    '''
+    """
     config_path = tmp_path / "metric_config.yaml"
     config_path.write_text(config)
     return str(config_path)
@@ -40,7 +40,7 @@ def temp_config_path(tmp_path) -> str:
 
 @pytest.fixture
 def mock_model_manager(temp_config_path):
-    '''
+    """
     Fixture that creates a mock ModelManager for testing.
 
     The ModelManager is patched to use the temporary configuration file
@@ -52,11 +52,11 @@ def mock_model_manager(temp_config_path):
 
     Returns:
         The mock ModelManager.
-    '''
+    """
     with patch("os.path.join", return_value=temp_config_path), \
-         patch('langcheck.metrics.model_manager._model_management.check_model_availability',  # NOQA:E501
+         patch("langcheck.metrics.model_manager._model_management.check_model_availability",  # NOQA:E501
                return_value=True), \
-         patch.object(_model_management, 'VALID_LANGUAGE', ['ja', 'zh']):
+         patch.object(_model_management, "VALID_LANGUAGE", ["ja", "zh"]):
         model_manager = ModelManager()
         return model_manager
 
@@ -103,9 +103,9 @@ def test_model_manager_initiation(mock_model_manager):
 def test_model_manager_fetch_model(mock_model_manager):
     with \
         patch.dict(
-            'langcheck.metrics.model_manager._model_management.LOADER_MAP',
-            {'load_auto_model_for_text_classification': MagicMock()}):
-        model = mock_model_manager.fetch_model(language='zh', metric='toxicity')
+            "langcheck.metrics.model_manager._model_management.LOADER_MAP",
+            {"load_auto_model_for_text_classification": MagicMock()}):
+        model = mock_model_manager.fetch_model(language="zh", metric="toxicity")
         assert model is not None
-        model = mock_model_manager.fetch_model(language='ja', metric='toxicity')
+        model = mock_model_manager.fetch_model(language="ja", metric="toxicity")
         assert model is not None

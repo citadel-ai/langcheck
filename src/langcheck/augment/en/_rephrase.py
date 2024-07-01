@@ -10,7 +10,7 @@ def rephrase(
         instances: list[str] | str,
         *,
         num_perturbations: int = 1,
-        model_type: str = 'openai',
+        model_type: str = "openai",
         openai_client: Optional[OpenAI] = None,
         openai_args: Optional[dict[str, str]] = None) -> list[Optional[str]]:
     '''Rephrases each string in instances (usually a list of prompts) without
@@ -46,9 +46,9 @@ def rephrase(
     # Initialize the openai object if openai_client is None
     # TODO: Refactor this into OpenAIEvalClient?
     if openai_client is None:
-        if model_type == 'openai':
+        if model_type == "openai":
             openai_client = OpenAI()
-        elif model_type == 'azure_openai':
+        elif model_type == "azure_openai":
             if not openai_args:
                 raise AssertionError(
                     'The model deployment must be specified in `openai_args` '
@@ -66,7 +66,7 @@ def rephrase(
     rephrased_instances = []
     for instance in instances:
         for i in range(num_perturbations):
-            prompt = f'''
+            prompt = f"""
             Please rephrase the following prompt without altering its meaning,
             ensuring you adjust the word order appropriately.
             Ensure that no more than five consecutive words are repeated
@@ -76,7 +76,7 @@ def rephrase(
             [Prompt]: {instance}
             ************
             [END DATA]
-            '''
+            """
             messages = [{"role": "user", "content": prompt}]
             chat_completions = openai_client.chat.completions
             try:
@@ -94,8 +94,8 @@ def rephrase(
                 rephrased_instance = response.choices[0].message.content
                 rephrased_instances.append(rephrased_instance)
             except Exception as e:
-                print(f'OpenAI failed to return a rephrased prompt: {e}')
-                print(f'Prompt that triggered the failure is:\n{prompt}')
+                print(f"OpenAI failed to return a rephrased prompt: {e}")
+                print(f"Prompt that triggered the failure is:\n{prompt}")
                 rephrased_instances.append(None)
 
     return rephrased_instances

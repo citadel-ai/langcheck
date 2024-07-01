@@ -14,24 +14,24 @@ class TextStats:
 
 
 def compute_stats(input_text: str) -> TextStats:
-    '''Compute statics about the given input text.
+    """Compute statics about the given input text.
 
     Args:
         input_text: Text you want to compute the stats for
 
     Returns:
         A :class:`~langcheck.stats.TextStats` object
-    '''
+    """
 
     try:
-        nltk.data.find('tokenizers/punkt')
+        nltk.data.find("tokenizers/punkt")
     except LookupError:
-        nltk.download('punkt')
+        nltk.download("punkt")
 
     try:
-        nltk.data.find('corpora/cmudict')
+        nltk.data.find("corpora/cmudict")
     except LookupError:
-        nltk.download('cmudict')
+        nltk.download("cmudict")
 
     sentences = nltk.tokenize.sent_tokenize(input_text)
 
@@ -54,7 +54,7 @@ def compute_stats(input_text: str) -> TextStats:
         if word in syllable_dict:
             return len([
                 phoneme for phoneme in syllable_dict[word][0]
-                if phoneme[-1] in ['0', '1', '2']
+                if phoneme[-1] in ["0", "1", "2"]
             ])
         else:
             syllables = tokenizer.tokenize(word)

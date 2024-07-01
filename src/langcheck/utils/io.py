@@ -5,6 +5,6 @@ from pathlib import Path
 
 
 def load_json(filepath: str | Path) -> dict | list:
-    '''Loads a provided JSON filepath as a Python dictionary or list.'''
-    with open(filepath, 'r') as f:
+    """Loads a provided JSON filepath as a Python dictionary or list."""
+    with open(filepath, "r") as f:
         return json.load(f)

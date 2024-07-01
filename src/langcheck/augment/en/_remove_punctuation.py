@@ -8,7 +8,7 @@ def remove_punctuation(instances: list[str] | str,
                        *,
                        aug_char_p: float = 1.0,
                        num_perturbations: int = 1) -> list[str]:
-    '''Applies a text perturbation to each string in instances (usually a list
+    """Applies a text perturbation to each string in instances (usually a list
     of prompts) where some punctuation is removed.
 
     Args:
@@ -19,13 +19,13 @@ def remove_punctuation(instances: list[str] | str,
 
     Returns:
         A list of perturbed instances.
-    '''
+    """
 
     instances = [instances] if isinstance(instances, str) else instances
     perturbed_instances = []
     for instance in instances:
         for _ in range(num_perturbations):
-            perturbed_instance = ''
+            perturbed_instance = ""
             for char in instance:
                 if char not in string.punctuation:
                     perturbed_instance += char  # No augmentation

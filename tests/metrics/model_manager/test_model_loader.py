@@ -1,14 +1,17 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from langcheck.metrics.model_manager._model_loader import (
+    load_auto_model_for_seq2seq,
+    load_auto_model_for_text_classification,
+    load_sentence_transformers,
+)
 from sentence_transformers import SentenceTransformer
 from transformers.models.auto.modeling_auto import (
-    AutoModelForSeq2SeqLM, AutoModelForSequenceClassification)
+    AutoModelForSeq2SeqLM,
+    AutoModelForSequenceClassification,
+)
 from transformers.models.auto.tokenization_auto import AutoTokenizer
-
-from langcheck.metrics.model_manager._model_loader import (
-    load_auto_model_for_seq2seq, load_auto_model_for_text_classification,
-    load_sentence_transformers)
 
 # Mock objects for AutoTokenizer and AutoModelForSeq2SeqLM
 MockTokenizer = MagicMock(spec=AutoTokenizer)
@@ -21,9 +24,9 @@ MockSeqClassifcationModel = MagicMock(spec=AutoModelForSequenceClassification)
                          [("t5-small", None, "main"),
                           ("t5-small", "t5-base", "main")])
 def test_load_auto_model_for_seq2seq(model_name, tokenizer_name, revision):
-    with patch('transformers.AutoTokenizer.from_pretrained',
+    with patch("transformers.AutoTokenizer.from_pretrained",
                return_value=MockTokenizer) as mock_tokenizer, \
-         patch('transformers.AutoModelForSeq2SeqLM.from_pretrained',
+         patch("transformers.AutoModelForSeq2SeqLM.from_pretrained",
                return_value=MockSeq2SeqModel) as mock_model:
         tokenizer, model = load_auto_model_for_seq2seq(
             model_name=model_name,
@@ -47,9 +50,9 @@ def test_load_auto_model_for_seq2seq(model_name, tokenizer_name, revision):
                           ("bert-base-uncased", "bert-large-uncased", "main")])
 def test_load_auto_model_for_text_classification(model_name, tokenizer_name,
                                                  revision):
-    with patch('transformers.AutoTokenizer.from_pretrained',
+    with patch("transformers.AutoTokenizer.from_pretrained",
                return_value=MockTokenizer) as mock_tokenizer, \
-         patch('transformers.AutoModelForSequenceClassification.from_pretrained',  # NOQA:E501
+         patch("transformers.AutoModelForSequenceClassification.from_pretrained",  # NOQA:E501
                return_value=MockSeqClassifcationModel) as mock_model:
         tokenizer, model = load_auto_model_for_text_classification(
             model_name=model_name,
@@ -72,7 +75,7 @@ def test_load_auto_model_for_text_classification(model_name, tokenizer_name,
                          [("all-MiniLM-L6-v2", None, "main"),
                           ("all-MiniLM-L6-v2", "all-mpnet-base-v2", "main")])
 def test_load_sentence_transformers(model_name, tokenizer_name, revision):
-    with patch.object(SentenceTransformer, '__init__',
+    with patch.object(SentenceTransformer, "__init__",
                       return_value=None) as mock_init:
         model = load_sentence_transformers(model_name=model_name,
                                            tokenizer_name=tokenizer_name,

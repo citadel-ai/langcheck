@@ -4,7 +4,6 @@ import random
 from typing import List
 
 import pytest
-
 from langcheck.augment.en import keyboard_typo
 
 
@@ -17,7 +16,7 @@ from langcheck.augment.en import keyboard_typo
         (["Hello, world!"], 2, ["HePlo, wLrld!", "Helll, Aorld!"]),
         (["Hello, world!", "I'm hungry"], 1, ["HePlo, wLrld!", "I ' m hungrt"]),
         (["Hello, world!", "I'm hungry"], 2,
-         ['HePlo, wLrld!', 'Helll, Aorld!', "I ' m hKngry", "I ' m hungGy"]),
+         ["HePlo, wLrld!", "Helll, Aorld!", "I ' m hKngry", "I ' m hungGy"]),
     ],
 )
 def test_keyboard_typo(instances: List[str] | str, num_perturbations: int,

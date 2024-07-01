@@ -22,13 +22,13 @@ class PrometheusEvalClient(EvalClient):
     def __init__(self,
                  torch_dtype: torch.dtype = torch.bfloat16,
                  device: str = "cuda"):
-        '''
+        """
         Initilize the Prometheus evaluation client.
 
         Args:
             torch_dtype: The torch dtype to use. torch.bfloat16 is recommended.
             device: The device to load the model on.
-        '''
+        """
         self._tokenizer = LlamaTokenizer.from_pretrained(
             "prometheus-eval/prometheus-7b-v2.0")
         self._model: MistralForCausalLM = MistralForCausalLM.from_pretrained(
@@ -42,7 +42,7 @@ class PrometheusEvalClient(EvalClient):
             prompts: Iterable[str],
             *,
             tqdm_description: str | None = None) -> list[str | None]:
-        '''The function that generates resonses to the given prompt texts.
+        """The function that generates resonses to the given prompt texts.
 
         Args:
             prompts: The prompts you want to get the responses for.
@@ -50,9 +50,9 @@ class PrometheusEvalClient(EvalClient):
         Returns:
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
-        '''
+        """
         response_texts = []
-        tqdm_description = tqdm_description or 'Intermediate assessments (1/2)'  # NOQA: E501
+        tqdm_description = tqdm_description or "Intermediate assessments (1/2)"  # NOQA: E501
         for prompt in tqdm_wrapper(prompts, desc=tqdm_description):
             message = [{"role": "user", "content": prompt}]
             input_ids = self._tokenizer.apply_chat_template(message,
@@ -92,10 +92,10 @@ class PrometheusEvalClient(EvalClient):
             A list of scores for the given prompts. The scores can be None if
             the evaluation fails.
         '''
-        if language != 'en':
-            raise ValueError(f'Unsupported language: {language}')
+        if language != "en":
+            raise ValueError(f"Unsupported language: {language}")
 
-        tqdm_description = tqdm_description or 'Scores (2/2)'
+        tqdm_description = tqdm_description or "Scores (2/2)"
 
         options = list(score_map.keys())
         assessments = []
@@ -120,5 +120,5 @@ class PrometheusEvalClient(EvalClient):
 
     def similarity_scorer(self):
         raise NotImplementedError(
-            'Embedding-based metrics are not supported in PrometheusEvalClient.'
-            'Use other EvalClients to get these metrics.')
+            "Embedding-based metrics are not supported in PrometheusEvalClient."
+            "Use other EvalClients to get these metrics.")

@@ -10,13 +10,13 @@ from langcheck.metrics.eval_clients import EvalClient
 # Utility Classes
 ################################################################################
 class MockEvalClient(EvalClient):
-    '''A mock evaluation client for testing purposes.'''
+    """A mock evaluation client for testing purposes."""
 
     def __init__(self, evaluation_result: str | None = None) -> None:
-        '''You can set the constant evaluation result for the mock client.
+        """You can set the constant evaluation result for the mock client.
         the score is returned based on that value and the score_map passed from
         each metric function.
-        '''
+        """
         self.evaluation_result = evaluation_result
 
     def get_text_responses(
@@ -52,15 +52,15 @@ class MockEvalClient(EvalClient):
 
 
 def is_close(a: List, b: List) -> bool:
-    '''Returns True if two lists of numbers are element-wise close.'''
+    """Returns True if two lists of numbers are element-wise close."""
     assert len(a) == len(b)
     return all(math.isclose(x, y) for x, y in zip(a, b))
 
 
 def lists_are_equal(a: List[str] | str, b: List[str] | str) -> bool:
-    '''Returns True if two lists of strings are equal. If either argument is a
+    """Returns True if two lists of strings are equal. If either argument is a
     single string, it's automatically converted to a list.
-    '''
+    """
     if isinstance(a, str):
         a = [a]
     if isinstance(b, str):

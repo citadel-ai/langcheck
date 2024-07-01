@@ -14,8 +14,8 @@ from langcheck.plot._utils import Axis, _plot_threshold
 
 def scatter(metric_value: MetricValue,
             other_metric_value: Optional[MetricValue] = None,
-            jupyter_mode: str = 'inline') -> None:
-    '''Shows an interactive scatter plot of all data points in an
+            jupyter_mode: str = "inline") -> None:
+    """Shows an interactive scatter plot of all data points in an
     :class:`~langcheck.metrics.metric_value.MetricValue`. When run in a
     notebook, this usually displays the chart inline in the cell output.
 
@@ -29,11 +29,11 @@ def scatter(metric_value: MetricValue,
             cell output. For Colab, set this to 'external' instead. See the
             Dash documentation for more info:
             https://dash.plotly.com/workspaces/using-dash-in-jupyter-and-workspaces#display-modes
-    '''
+    """
     if metric_value.is_pairwise or (other_metric_value is not None and
                                     other_metric_value.is_pairwise):
         raise NotImplementedError(
-            'Scatter plots for pairwise MetricValues are not supported yet')
+            "Scatter plots for pairwise MetricValues are not supported yet")
 
     if other_metric_value is None:
         _scatter_one_metric_value(metric_value, jupyter_mode)
@@ -43,106 +43,106 @@ def scatter(metric_value: MetricValue,
 
 
 def _format_text_for_hover(text: str):
-    '''Helper function to format a string so that it displays nicely on hover in
+    """Helper function to format a string so that it displays nicely on hover in
     the scatter plot.
-    '''
+    """
     # First, split the text by newline characters. This is recommended in
     # https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.replace_whitespace
-    paragraphs = text.split('\n')
+    paragraphs = text.split("\n")
     # Then, split the paragraphs into separate lines with a max width of 70
     # chars (default)
     lines = [line for p in paragraphs for line in textwrap.wrap(p)]
     # Only show a max of 5 lines. If there are more than 5, add '...' to
     # indicate that the text has been cut off
     if len(lines) > 5:
-        lines = lines[:5] + ['...']
-    return '<br>'.join(lines)
+        lines = lines[:5] + ["..."]
+    return "<br>".join(lines)
 
 
 def _scatter_one_metric_value(metric_value: MetricValue,
                               jupyter_mode: str) -> None:
-    '''Shows an interactive scatter plot of all data points in one
+    """Shows an interactive scatter plot of all data points in one
     :class:`~langcheck.metrics.metric_value.MetricValue`.
-    '''
+    """
     # Rename some MetricValue fields for display
     df = metric_value.to_df()
-    df.rename(columns={'metric_value': metric_value.metric_name}, inplace=True)
-    df['prompt'] = df['prompt'].fillna('None').apply(_format_text_for_hover)
-    df['reference_output'] = df['reference_output'].fillna('None').apply(
+    df.rename(columns={"metric_value": metric_value.metric_name}, inplace=True)
+    df["prompt"] = df["prompt"].fillna("None").apply(_format_text_for_hover)
+    df["reference_output"] = df["reference_output"].fillna("None").apply(
         _format_text_for_hover)
-    df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
-    df['explanation'] = df['explanation'].fillna('None').apply(
+    df["source"] = df["source"].fillna("None").apply(_format_text_for_hover)
+    df["explanation"] = df["explanation"].fillna("None").apply(
         _format_text_for_hover)
-    df['generated_output'] = df['generated_output'].fillna('None').apply(
+    df["generated_output"] = df["generated_output"].fillna("None").apply(
         _format_text_for_hover)
 
     # Define layout of the Dash app (chart + search boxes)
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Filter generated_outputs: '),
-            dcc.Input(id='filter_generated_outputs',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter generated_outputs: "),
+            dcc.Input(id="filter_generated_outputs",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter reference_outputs: '),
-            dcc.Input(id='filter_reference_outputs',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter reference_outputs: "),
+            dcc.Input(id="filter_reference_outputs",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter prompts: '),
-            dcc.Input(id='filter_prompts',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter prompts: "),
+            dcc.Input(id="filter_prompts",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter sources: '),
-            dcc.Input(id='filter_sources',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter sources: "),
+            dcc.Input(id="filter_sources",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
-        html.Div([html.Span(id='num_results_message', style=NUM_RESULTS_CSS)]),
+        html.Div([html.Span(id="num_results_message", style=NUM_RESULTS_CSS)]),
         dcc.Graph(
-            id='scatter_plot',
+            id="scatter_plot",
             config={
-                'displaylogo': False,
-                'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
+                "displaylogo": False,
+                "modeBarButtonsToRemove": ["select", "lasso2d", "resetScale"]
             })
     ],
                           style=GLOBAL_CSS)
 
     # This function gets called whenever the user types in the search boxes
-    @app.callback(Output('scatter_plot', 'figure'),
-                  Output('num_results_message', 'children'),
-                  Input('filter_generated_outputs', 'value'),
-                  Input('filter_reference_outputs', 'value'),
-                  Input('filter_prompts', 'value'),
-                  Input('filter_sources', 'value'))
+    @app.callback(Output("scatter_plot", "figure"),
+                  Output("num_results_message", "children"),
+                  Input("filter_generated_outputs", "value"),
+                  Input("filter_reference_outputs", "value"),
+                  Input("filter_prompts", "value"),
+                  Input("filter_sources", "value"))
     def update_figure(filter_generated_outputs, filter_reference_outputs,
                       filter_prompts, filter_sources):
         # Filter data points based on search boxes, case-insensitive
         filtered_df = df.copy()
         if filter_generated_outputs:
             filtered_df = filtered_df[
-                filtered_df['generated_output'].str.lower().str.contains(
+                filtered_df["generated_output"].str.lower().str.contains(
                     filter_generated_outputs.lower())]
         if filter_reference_outputs:
             filtered_df = filtered_df[
-                filtered_df['reference_output'].str.lower().str.contains(
+                filtered_df["reference_output"].str.lower().str.contains(
                     filter_reference_outputs.lower())]
         if filter_prompts:
             filtered_df = filtered_df[
-                filtered_df['prompt'].str.lower().str.contains(
+                filtered_df["prompt"].str.lower().str.contains(
                     filter_prompts.lower())]
         if filter_sources:
             filtered_df = filtered_df[
-                filtered_df['source'].str.lower().str.contains(
+                filtered_df["source"].str.lower().str.contains(
                     filter_sources.lower())]
 
         # Configure the actual scatter plot
@@ -163,7 +163,7 @@ def _scatter_one_metric_value(metric_value: MetricValue,
 
         # However, if the user manually zoomed in, keep that zoom level even
         # when update_figure() re-runs
-        fig.update_layout(uirevision='constant')
+        fig.update_layout(uirevision="constant")
 
         # Disable drag-to-zoom by default (the user can still enable it
         # in the modebar)
@@ -171,7 +171,7 @@ def _scatter_one_metric_value(metric_value: MetricValue,
 
         # Display a message about how many data points are hidden
         num_results_message = (
-            f'Showing {len(filtered_df)} of {len(df)} data points.')
+            f"Showing {len(filtered_df)} of {len(df)} data points.")
 
         return fig, num_results_message
 
@@ -184,20 +184,20 @@ def _scatter_one_metric_value(metric_value: MetricValue,
 def _scatter_two_metric_values(metric_value: MetricValue,
                                other_metric_value: MetricValue,
                                jupyter_mode: str) -> None:
-    '''Shows an interactive scatter plot of all data points in two
+    """Shows an interactive scatter plot of all data points in two
     :class:`~langcheck.metrics.metric_value.MetricValue`.
-    '''
+    """
     # Validate that the two MetricValues have the same data points
     if metric_value.generated_outputs != other_metric_value.generated_outputs:
         raise ValueError(
-            'Both MetricValues must have the same generated_outputs')
+            "Both MetricValues must have the same generated_outputs")
     if metric_value.prompts != other_metric_value.prompts:
-        raise ValueError('Both MetricValues must have the same prompts')
+        raise ValueError("Both MetricValues must have the same prompts")
     if metric_value.reference_outputs != other_metric_value.reference_outputs:
         raise ValueError(
-            'Both MetricValues must have the same reference_outputs')
+            "Both MetricValues must have the same reference_outputs")
     if metric_value.language != other_metric_value.language:
-        raise ValueError('Both MetricValues must have the same language')
+        raise ValueError("Both MetricValues must have the same language")
 
     # Append "(other)" to the metric name of the second MetricValue if
     # necessary. (It's possible to plot two MetricValues from the same metric,
@@ -205,89 +205,89 @@ def _scatter_two_metric_values(metric_value: MetricValue,
     # model)
     if metric_value.metric_name == other_metric_value.metric_name:
         other_metric_value = deepcopy(other_metric_value)
-        other_metric_value.metric_name += ' (other)'
+        other_metric_value.metric_name += " (other)"
 
     # Rename some MetricValue fields for display
     df = metric_value.to_df()
-    df.rename(columns={'metric_value': metric_value.metric_name}, inplace=True)
+    df.rename(columns={"metric_value": metric_value.metric_name}, inplace=True)
     df[other_metric_value.metric_name] = other_metric_value.to_df(
-    )['metric_value']
-    df['prompt'] = df['prompt'].fillna('None').apply(_format_text_for_hover)
-    df['reference_output'] = df['reference_output'].fillna('None').apply(
+    )["metric_value"]
+    df["prompt"] = df["prompt"].fillna("None").apply(_format_text_for_hover)
+    df["reference_output"] = df["reference_output"].fillna("None").apply(
         _format_text_for_hover)
-    df['source'] = df['source'].fillna('None').apply(_format_text_for_hover)
-    df['explanation'] = df['explanation'].fillna('None').apply(
+    df["source"] = df["source"].fillna("None").apply(_format_text_for_hover)
+    df["explanation"] = df["explanation"].fillna("None").apply(
         _format_text_for_hover)
-    df['generated_output'] = df['generated_output'].fillna('None').apply(
+    df["generated_output"] = df["generated_output"].fillna("None").apply(
         _format_text_for_hover)
 
     # Define layout of the Dash app (chart + search boxes)
     app = Dash(__name__)
     app.layout = html.Div([
         html.Div([
-            html.Label('Filter generated_outputs: '),
-            dcc.Input(id='filter_generated_outputs',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter generated_outputs: "),
+            dcc.Input(id="filter_generated_outputs",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter reference_outputs: '),
-            dcc.Input(id='filter_reference_outputs',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter reference_outputs: "),
+            dcc.Input(id="filter_reference_outputs",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter prompts: '),
-            dcc.Input(id='filter_prompts',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter prompts: "),
+            dcc.Input(id="filter_prompts",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
         html.Div([
-            html.Label('Filter sources: '),
-            dcc.Input(id='filter_sources',
-                      type='text',
-                      placeholder='Type to search...',
+            html.Label("Filter sources: "),
+            dcc.Input(id="filter_sources",
+                      type="text",
+                      placeholder="Type to search...",
                       style=INPUT_CSS),
         ]),
-        html.Div([html.Span(id='num_results_message', style=NUM_RESULTS_CSS)]),
+        html.Div([html.Span(id="num_results_message", style=NUM_RESULTS_CSS)]),
         dcc.Graph(
-            id='scatter_plot',
+            id="scatter_plot",
             config={
-                'displaylogo': False,
-                'modeBarButtonsToRemove': ['select', 'lasso2d', 'resetScale']
+                "displaylogo": False,
+                "modeBarButtonsToRemove": ["select", "lasso2d", "resetScale"]
             })
     ],
                           style=GLOBAL_CSS)
 
     # This function gets called whenever the user types in the search boxes
-    @app.callback(Output('scatter_plot', 'figure'),
-                  Output('num_results_message', 'children'),
-                  Input('filter_generated_outputs', 'value'),
-                  Input('filter_reference_outputs', 'value'),
-                  Input('filter_prompts', 'value'),
-                  Input('filter_sources', 'value'))
+    @app.callback(Output("scatter_plot", "figure"),
+                  Output("num_results_message", "children"),
+                  Input("filter_generated_outputs", "value"),
+                  Input("filter_reference_outputs", "value"),
+                  Input("filter_prompts", "value"),
+                  Input("filter_sources", "value"))
     def update_figure(filter_generated_outputs, filter_reference_outputs,
                       filter_prompts, filter_sources):
         # Filter data points based on search boxes, case-insensitive
         filtered_df = df.copy()
         if filter_generated_outputs:
             filtered_df = filtered_df[
-                filtered_df['generated_output'].str.lower().str.contains(
+                filtered_df["generated_output"].str.lower().str.contains(
                     filter_generated_outputs.lower())]
         if filter_reference_outputs:
             filtered_df = filtered_df[
-                filtered_df['reference_output'].str.lower().str.contains(
+                filtered_df["reference_output"].str.lower().str.contains(
                     filter_reference_outputs.lower())]
         if filter_prompts:
             filtered_df = filtered_df[
-                filtered_df['prompt'].str.lower().str.contains(
+                filtered_df["prompt"].str.lower().str.contains(
                     filter_prompts.lower())]
         if filter_sources:
             filtered_df = filtered_df[
-                filtered_df['source'].str.lower().str.contains(
+                filtered_df["source"].str.lower().str.contains(
                     filter_sources.lower())]
 
         # Configure the actual scatter plot
@@ -298,7 +298,7 @@ def _scatter_two_metric_values(metric_value: MetricValue,
         hover_data: dict[str, Union[bool, Index]] = {
             col: True for col in filtered_df.columns
         }
-        hover_data['index'] = filtered_df.index
+        hover_data["index"] = filtered_df.index
         fig = px.scatter(filtered_df,
                          x=metric_value.metric_name,
                          y=other_metric_value.metric_name,
@@ -324,7 +324,7 @@ def _scatter_two_metric_values(metric_value: MetricValue,
 
         # However, if the user manually zoomed in, keep that zoom level even
         # when update_figure() re-runs
-        fig.update_layout(uirevision='constant')
+        fig.update_layout(uirevision="constant")
 
         # Disable drag-to-zoom by default (the user can still enable it in the
         # modebar)
@@ -332,7 +332,7 @@ def _scatter_two_metric_values(metric_value: MetricValue,
 
         # Display a message about how many data points are hidden
         num_results_message = (
-            f'Showing {len(filtered_df)} of {len(df)} data points.')
+            f"Showing {len(filtered_df)} of {len(df)} data points.")
 
         return fig, num_results_message
 
