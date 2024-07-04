@@ -6,6 +6,7 @@ from langcheck.metrics.eval_clients._openai import (
     OpenAIEvalClient,
 )
 from langcheck.metrics.eval_clients._prometheus import PrometheusEvalClient
+from langcheck.metrics.eval_clients._swallow import SwallowEvalClient
 
 from ..prompts._utils import get_template
 
@@ -14,6 +15,7 @@ __all__ = [
     "EvalClient",
     "OpenAIEvalClient",
     "PrometheusEvalClient",
+    "SwallowEvalClient",
 ]
 
 try:
