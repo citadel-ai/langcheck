@@ -5,8 +5,6 @@ from langcheck.metrics.eval_clients._openai import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
 )
-from langcheck.metrics.eval_clients._prometheus import PrometheusEvalClient
-from langcheck.metrics.eval_clients._swallow import SwallowEvalClient
 
 from ..prompts._utils import get_template
 
@@ -14,8 +12,6 @@ __all__ = [
     "AzureOpenAIEvalClient",
     "EvalClient",
     "OpenAIEvalClient",
-    "PrometheusEvalClient",
-    "SwallowEvalClient",
 ]
 
 try:
@@ -35,6 +31,17 @@ except ModuleNotFoundError:
     pass
 else:
     __all__.append("GeminiEvalClient")
+
+try:
+    from langcheck.metrics.eval_clients._prometheus import PrometheusEvalClient
+    from langcheck.metrics.eval_clients._swallow import (
+        SwallowEvalClient,  # NOQA: F401
+    )
+except ModuleNotFoundError:
+    pass
+else:
+    __all__.append("PrometheusEvalClient")
+    __all__.append("SwallowEvalClient")
 
 
 def load_prompt_template(

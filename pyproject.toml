@@ -30,8 +30,7 @@ dependencies = [
     'torch >= 2',
     'transformers >= 4.6',
     'tabulate >= 0.9.0', # For model manager print table
-    'omegaconf >= 2.3.0', # For model manager print table
-    'vllm >= 0.5.0'
+    'omegaconf >= 2.3.0' # For model manager print table
 ]
 requires-python = ">=3.8"
 
@@ -60,6 +59,9 @@ anthropic = [
 gemini = [
     'google-generativeai'
 ]
+local-llm = [
+    'vllm >= 0.5.0'
+]
 
 all = [
     'langcheck[de]',
@@ -68,7 +70,8 @@ all = [
     'langcheck[ja-optional]',
     'langcheck[zh]',
     'langcheck[anthropic]',
-    'langcheck[gemini]'
+    'langcheck[gemini]',
+    'langcheck[local-llm]'
 ]
 
 dev = [
