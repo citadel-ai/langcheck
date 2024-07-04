@@ -9,7 +9,7 @@ def keyboard_typo(
     num_perturbations: int = 1,
     **kwargs,
 ) -> list[str]:
-    '''Applies a keyboard typo text perturbation to each string in instances
+    """Applies a keyboard typo text perturbation to each string in instances
     (usually a list of prompts).
 
     Args:
@@ -49,7 +49,7 @@ def keyboard_typo(
 
     Returns:
         A list of perturbed instances.
-    '''
+    """
 
     kwargs["aug_char_p"] = kwargs.get("aug_char_p", 0.1)
     kwargs["aug_char_max"] = kwargs.get("aug_char_max")

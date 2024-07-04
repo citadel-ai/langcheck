@@ -8,8 +8,10 @@ import nltk
 from nltk import pos_tag, word_tokenize
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 
-from langcheck.augment.en._gender._gender_pronouns import (_PRONOUNS_DICT,
-                                                           _BaseGenderPronouns)
+from langcheck.augment.en._gender._gender_pronouns import (
+    _PRONOUNS_DICT,
+    _BaseGenderPronouns,
+)
 
 # This dictionary is used to determine the form of the pronoun.
 # Note that his and hers are not included in this dictionary because they can be
@@ -72,13 +74,13 @@ def _replace_gender_pronouns(
         str: Augmented text.
     """
     try:
-        nltk.data.find('taggers/averaged_perceptron_tagger')
+        nltk.data.find("taggers/averaged_perceptron_tagger")
     except LookupError:
-        nltk.download('averaged_perceptron_tagger')
+        nltk.download("averaged_perceptron_tagger")
     try:
-        nltk.data.find('tokenizers/punkt')
+        nltk.data.find("tokenizers/punkt")
     except LookupError:
-        nltk.download('punkt')
+        nltk.download("punkt")
     tagged_words = pos_tag(word_tokenize(text))
     augmented_words = [
         _replace_pronoun(word, tag, target_pronouns)
@@ -90,7 +92,7 @@ def _replace_gender_pronouns(
 def gender(
     texts: Iterable[str] | str,
     *,
-    to_gender: str = 'plural',
+    to_gender: str = "plural",
 ) -> list[str]:
     """Replace pronouns with that of specified gender.
 

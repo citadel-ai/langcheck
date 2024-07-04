@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langcheck"
-version = "0.8.0.dev1"
+version = "0.8.0.dev3"
 description = "Simple, Pythonic building blocks to evaluate LLM-based applications"
 readme = "README.md"
 authors = [{ name = "Citadel AI", email = "info@citadel.co.jp" }]
@@ -71,9 +71,7 @@ all = [
 ]
 
 dev = [
-    "yapf==0.40.1",
-    "flake8",
-    "isort",
+    "ruff",
     "pyright",
     "pandas-stubs",
     "pytest",
@@ -87,19 +85,12 @@ dev = [
 [project.urls]
 repository    = "https://github.com/citadel-ai/langcheck"
 
-[tool.yapf]
-based_on_style = "google"
-column_limit = 80
-
-[tool.yapfignore]
-ignore_patterns = [
-    "venv/*",
+[tool.ruff]
+lint.select = ["E4", "E7", "E9", "F", "I", "Q"]
+line-length=80
+exclude = [
+    "build", "venv"
 ]
-
-[tool.isort]
-multi_line_output = 0
-line_length = 80
-include_trailing_comma = false
 
 [tool.pyright]
 autoSearchPaths=false

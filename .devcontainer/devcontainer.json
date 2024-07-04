@@ -15,9 +15,7 @@
 			"extensions": [
 				"ms-python.python",
 				"ms-python.vscode-pylance",
-				"ms-python.flake8",
-				"ms-python.isort",
-				"eeyore.yapf",
+				"charliermarsh.ruff",
 				"GitHub.vscode-pull-request-github",
 				"ms-azuretools.vscode-docker",
 				"shardulm94.trailing-spaces",

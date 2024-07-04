@@ -12,7 +12,7 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 def is_int(generated_outputs: List[str] | str,
            domain: Iterable[int] | Container[int] | None = None,
            prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs can be parsed as integers, optionally within
+    """Checks if generated outputs can be parsed as integers, optionally within
     a domain of integers like `range(1, 11)` or `{1, 3, 5}`. This metric takes
     on binary 0 or 1 values.
 
@@ -24,7 +24,7 @@ def is_int(generated_outputs: List[str] | str,
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -40,7 +40,7 @@ def is_int(generated_outputs: List[str] | str,
         except ValueError:
             metric_values.append(0)
 
-    return MetricValue(metric_name='is_int',
+    return MetricValue(metric_name="is_int",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -54,7 +54,7 @@ def is_float(generated_outputs: List[str] | str,
              min: Optional[float] = None,
              max: Optional[float] = None,
              prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs can be parsed as floating point numbers,
+    """Checks if generated outputs can be parsed as floating point numbers,
     optionally within a min/max range. This metric takes on binary 0 or 1
     values.
 
@@ -68,7 +68,7 @@ def is_float(generated_outputs: List[str] | str,
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -88,7 +88,7 @@ def is_float(generated_outputs: List[str] | str,
         except ValueError:
             metric_values.append(0)
 
-    return MetricValue(metric_name='is_float',
+    return MetricValue(metric_name="is_float",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -101,7 +101,7 @@ def is_float(generated_outputs: List[str] | str,
 def is_json_object(
         generated_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs can be parsed as JSON objects. This metric
+    """Checks if generated outputs can be parsed as JSON objects. This metric
     takes on binary 0 or 1 values.
 
     Args:
@@ -111,7 +111,7 @@ def is_json_object(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -127,7 +127,7 @@ def is_json_object(
         except json.JSONDecodeError:
             metric_values.append(0)
 
-    return MetricValue(metric_name='is_json_object',
+    return MetricValue(metric_name="is_json_object",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -140,7 +140,7 @@ def is_json_object(
 def is_json_array(
         generated_outputs: List[str] | str,
         prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs can be parsed as JSON arrays. This metric
+    """Checks if generated outputs can be parsed as JSON arrays. This metric
     takes on binary 0 or 1 values.
 
     Args:
@@ -150,7 +150,7 @@ def is_json_array(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -166,7 +166,7 @@ def is_json_array(
         except json.JSONDecodeError:
             metric_values.append(0)
 
-    return MetricValue(metric_name='is_json_array',
+    return MetricValue(metric_name="is_json_array",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -180,7 +180,7 @@ def matches_regex(
         generated_outputs: List[str] | str,
         regex: str,
         prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs fully match a given regular expression. This
+    """Checks if generated outputs fully match a given regular expression. This
     metric takes on binary 0 or 1 values.
 
     Args:
@@ -191,7 +191,7 @@ def matches_regex(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -203,7 +203,7 @@ def matches_regex(
         else:
             metric_values.append(0)
 
-    return MetricValue(metric_name='matches_regex',
+    return MetricValue(metric_name="matches_regex",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -217,7 +217,7 @@ def contains_regex(
         generated_outputs: List[str] | str,
         regex: str,
         prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs partially contain a given regular expression.
+    """Checks if generated outputs partially contain a given regular expression.
     This metric takes on binary 0 or 1 values.
 
     Args:
@@ -228,7 +228,7 @@ def contains_regex(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -240,7 +240,7 @@ def contains_regex(
         else:
             metric_values.append(0)
 
-    return MetricValue(metric_name='contains_regex',
+    return MetricValue(metric_name="contains_regex",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -255,7 +255,7 @@ def contains_all_strings(
         strings: List[str],
         case_sensitive: bool = False,
         prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs contain all strings in of a given list. This
+    """Checks if generated outputs contain all strings in of a given list. This
     metric takes on binary 0 or 1 values.
 
     Args:
@@ -267,7 +267,7 @@ def contains_all_strings(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -287,7 +287,7 @@ def contains_all_strings(
         else:
             metric_values.append(0)
 
-    return MetricValue(metric_name='contains_all_strings',
+    return MetricValue(metric_name="contains_all_strings",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -302,7 +302,7 @@ def contains_any_strings(
         strings: List[str],
         case_sensitive: bool = False,
         prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs contain any strings in a given list. This
+    """Checks if generated outputs contain any strings in a given list. This
     metric takes on binary 0 or 1 values.
 
     Args:
@@ -315,7 +315,7 @@ def contains_any_strings(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -335,7 +335,7 @@ def contains_any_strings(
         else:
             metric_values.append(0)
 
-    return MetricValue(metric_name='contains_any_strings',
+    return MetricValue(metric_name="contains_any_strings",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,
@@ -349,7 +349,7 @@ def validation_fn(
         generated_outputs: List[str] | str,
         valid_fn: Callable[[str], bool],
         prompts: Optional[List[str] | str] = None) -> MetricValue[int]:
-    '''Checks if generated outputs are valid according to an arbitrary function.
+    """Checks if generated outputs are valid according to an arbitrary function.
     This metric takes on binary 0 or 1 values.
 
     Args:
@@ -362,7 +362,7 @@ def validation_fn(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_text_structure(
         generated_outputs, prompts)
 
@@ -377,7 +377,7 @@ def validation_fn(
         except Exception:
             metric_values.append(0)
 
-    return MetricValue(metric_name='validation_fn',
+    return MetricValue(metric_name="validation_fn",
                        prompts=prompts,
                        generated_outputs=generated_outputs,
                        reference_outputs=None,

@@ -16,7 +16,7 @@ def synonym(
     num_perturbations: int = 1,
     **kwargs,
 ) -> list[str]:
-    '''Applies a text perturbation to each string in instances (usually a list
+    """Applies a text perturbation to each string in instances (usually a list
     of prompts) where some words are replaced with synonyms.
 
     Args:
@@ -36,7 +36,7 @@ def synonym(
         Please refer to the `official instructions <https://github.com/
         WorksApplications/SudachiPy?tab=readme-ov-file#setup>`_ to install them.
 
-    '''
+    """
     _SudachiDict = Dictionary()  # type: ignore[reportUnboundVariable]
 
     chikkar = Chikkar()
