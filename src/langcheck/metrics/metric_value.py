@@ -21,7 +21,9 @@ class MetricValue(Generic[NumericType]):
     metric_values: List[NumericType]
     prompts: Optional[List[str]]
     # Generated outputs are a tuple for pairwise metrics
-    generated_outputs: Optional[List[str] | tuple[List[str], List[str]]]
+    generated_outputs: Optional[
+        List[str] | tuple[Optional[List[str]], Optional[List[str]]]
+    ]
     reference_outputs: Optional[List[str]]
     # Sources are a tuple for pairwise metrics (if available)
     sources: Optional[
