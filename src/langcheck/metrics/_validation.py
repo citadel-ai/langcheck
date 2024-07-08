@@ -177,6 +177,52 @@ def validate_parameters_answer_relevance(
     return generated_outputs, prompts
 
 
+def validate_parameters_answer_correctness(
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: List[str] | str,
+) -> tuple[List[str], List[str], List[str]]:
+    """Validates and parses function parameters for the answer correctness
+    metric.
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
+        prompts: The prompt(s)
+
+    Returns:
+        A tuple (generated_outputs, reference_outputs, prompts) of the parsed
+        parameters, converted to lists of strings.
+    """
+    # Convert single-string parameters to lists
+    if isinstance(generated_outputs, str):
+        generated_outputs = [generated_outputs]
+    if isinstance(reference_outputs, str):
+        reference_outputs = [reference_outputs]
+    if isinstance(prompts, str):
+        prompts = [prompts]
+
+    # Check that generated_outputs, reference_outputs, and prompts are not empty
+    if not generated_outputs:
+        raise ValueError("Please specify at least one generated output")
+    if not reference_outputs:
+        raise ValueError("Please specify at least one reference output")
+    if not prompts:
+        raise ValueError("Please specify at least one prompt")
+
+    # Check that the lengths of lists match
+    if len(generated_outputs) != len(reference_outputs):
+        raise ValueError(
+            "The number of generated_outputs and reference_outputs do not match"
+        )
+    if len(generated_outputs) != len(prompts):
+        raise ValueError(
+            "The number of generated_outputs and prompts do not match"
+        )
+
+    return generated_outputs, reference_outputs, prompts
+
+
 def validate_parameters_pairwise_comparison(
     generated_outputs_a: List[str] | str,
     generated_outputs_b: List[str] | str,
