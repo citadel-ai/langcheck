@@ -167,25 +167,30 @@ def custom_pairwise_evaluator(
     language: str,
     enforce_consistency: bool = True,
 ) -> MetricValue[float | None]:
-    """Calculates the scores of a custom evaluator. The EvalClient will first
-    assess the provided inputs using the prompt template, and then convert those
-    assessments into scores using the score map.
+    """Calculates the scores of a custom pairwise evaluator, where "pairwise"
+    means that the Responses and/or Sources of two systems will be compared
+    against each other. The EvalClient will first assess the provided inputs
+    using the prompt template, and then convert those assessments into scores
+    using the score map.
 
     The prompt template should be a Jinja2 file (file extension .j2) that
     specifies the criteria that an LLM (as configured in the Eval Client) should
     follow when evaluating an instance. The template is allowed to have
     placeholders for the following variables (NOTE: not all are required):
-    - `gen_output`: The generated output
+    - `gen_output_a`: Model A's generated output
+    - `gen_output_b`: Model B's generated output
     - `user_query`: The prompt
-    - `src`: The source text
+    - `src_a`: The source text for Model A
+    - `src_b`: The source text for Model B
     - `ref_output`: The reference output
 
     The prompt template should also specify the final available assessments for
-    the LLM evaluator, e.g. "Good", "Bad", "Neutral", etc. The score map should
-    then map each of those available assessments to a numerical score. E.g. if
-    the available assessments in the prompt template are "Good", "Bad", and
-    "Neutral", the score map should be something like:
-    ``score_map = {'Good': 1.0, 'Neutral': 0.5, 'Bad': 0.0}``
+    the LLM evaluator, e.g. "Response A", "Response B", "Tie", etc. The score
+    map should then map each of those available assessments to a numerical
+    score. E.g. if the available assessments in the prompt template are
+    "Response A", "Response B", and "Tie", the score map should be something
+    like:
+    ``score_map = {'Response A': 0.0, 'Response B': 1.0, 'Tie': 0.5}``
 
     NOTE: We have found that LLM models sometimes behave weirdly when the
     assessments are non-ascii characters (see
@@ -194,9 +199,11 @@ def custom_pairwise_evaluator(
     of the prompt template contains non-ascii characters (e.g. Japanese).
 
     Args:
-        generated_outputs: The model generated output(s)
+        generated_outputs_a: Model A's generated output(s)
+        generated_outputs_b: Model B's generated output(s)
         prompts: The prompts used to generate the output(s)
-        sources: The source(s) of the generated output(s)
+        sources_a: The source(s) for Model A's generated output(s)
+        sources_b: The source(s) for Model B's generated output(s)
         reference_outputs: The reference output(s)
         eval_model: The EvalClient instance used for the evaluation
         metric_name: The name of the metric
