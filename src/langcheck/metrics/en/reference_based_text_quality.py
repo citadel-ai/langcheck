@@ -59,7 +59,7 @@ def answer_correctness(
         metric_name="answer correctness",
         language="en",
         prompts=populated_prompts,
-        score_map={"Correct": 1.0, "Incorrect": 0.0},
+        score_map={"Correct": 1.0, "Partially Correct": 0.5, "Incorrect": 0.0},
     )
 
     return MetricValue(
