@@ -4,6 +4,9 @@ from pathlib import Path
 
 from jinja2 import Environment, Template, meta
 
+from langcheck.metrics._pairwise_text_quality_utils import (
+    enforce_pairwise_comparison_consistency,
+)
 from langcheck.metrics._validation import (
     validate_parameters_custom_evaluator,
     validate_parameters_custom_pairwise_evaluator,
@@ -291,25 +294,25 @@ def custom_pairwise_evaluator(
         ), f'The prompt template expects the parameter "{param}" but it is not provided.'
 
     def _args_to_prompt_param(
-        generated_outputs_a,
-        generated_outputs_b,
+        generated_outputs_1,
+        generated_outputs_2,
         prompts,
-        sources_a,
-        sources_b,
+        sources_1,
+        sources_2,
         reference_outputs,
         index,
     ):
         prompt_param = {}
-        if generated_outputs_a is not None:
-            prompt_param["gen_output_a"] = generated_outputs_a[index]
-        if generated_outputs_b is not None:
-            prompt_param["gen_output_b"] = generated_outputs_b[index]
+        if generated_outputs_1 is not None:
+            prompt_param["gen_output_a"] = generated_outputs_1[index]
+        if generated_outputs_2 is not None:
+            prompt_param["gen_output_b"] = generated_outputs_2[index]
         if prompts is not None:
             prompt_param["user_query"] = prompts[index]
-        if sources_a is not None:
-            prompt_param["src_a"] = sources_a[index]
-        if sources_b is not None:
-            prompt_param["src_b"] = sources_b[index]
+        if sources_1 is not None:
+            prompt_param["src_a"] = sources_1[index]
+        if sources_2 is not None:
+            prompt_param["src_b"] = sources_2[index]
         if reference_outputs is not None:
             prompt_param["ref_output"] = reference_outputs[index]
         return prompt_param
@@ -333,6 +336,42 @@ def custom_pairwise_evaluator(
         prompts=populated_prompts,
         score_map=score_map,
     )
+
+    if enforce_consistency:
+        # Swap the generated outputs and sources and enforce consistency
+        swapped_prompts = []
+        for i in range(num_examples):
+            prompt_param = _args_to_prompt_param(
+                generated_outputs_b,
+                generated_outputs_a,
+                prompts,
+                sources_b,
+                sources_a,
+                reference_outputs,
+                i,
+            )
+            swapped_prompts.append(prompt_template.render(prompt_param))
+
+        intermediate_tqdm = (
+            "[Swapped model outputs order] Intermediate assessments (1/2)"
+        )
+        score_tqdm = "[Swapped model outputs order] Calculating scores (2/2)"
+        swapped_scores, swapped_explanations = eval_model.get_score(
+            metric_name=metric_name,
+            language=language,
+            prompts=swapped_prompts,
+            score_map=score_map,
+            intermediate_tqdm_description=intermediate_tqdm,
+            score_tqdm_description=score_tqdm,
+        )
+
+        scores, explanations = enforce_pairwise_comparison_consistency(
+            scores,
+            explanations,
+            swapped_scores,
+            swapped_explanations,
+            score_map,
+        )
 
     return MetricValue(
         metric_name=metric_name,
