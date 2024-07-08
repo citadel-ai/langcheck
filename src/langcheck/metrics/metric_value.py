@@ -16,6 +16,7 @@ NumericType = TypeVar("NumericType", float, int, Optional[float], Optional[int])
 @dataclass
 class MetricValue(Generic[NumericType]):
     """A rich object that is the output of any langcheck.metrics function."""
+
     metric_name: str
     metric_values: List[NumericType]
     prompts: Optional[List[str]]
@@ -23,8 +24,9 @@ class MetricValue(Generic[NumericType]):
     generated_outputs: Optional[List[str] | tuple[List[str], List[str]]]
     reference_outputs: Optional[List[str]]
     # Sources are a tuple for pairwise metrics (if available)
-    sources: Optional[List[str] |
-                      tuple[Optional[List[str]], Optional[List[str]]]]
+    sources: Optional[
+        List[str] | tuple[Optional[List[str]], Optional[List[str]]]
+    ]
     # An explanation can be None if the metric could not be computed
     explanations: Optional[List[Optional[str]]]
     language: Optional[str]
@@ -35,8 +37,9 @@ class MetricValue(Generic[NumericType]):
             # For type checking
             assert self.generated_outputs is not None
             generated_outputs_a, generated_outputs_b = self.generated_outputs
-            sources_a, sources_b = self.sources if self.sources else (None,
-                                                                      None)
+            sources_a, sources_b = (
+                self.sources if self.sources else (None, None)
+            )
             dataframe_cols = {
                 "prompt": self.prompts,
                 "source_a": sources_a,
@@ -63,8 +66,7 @@ class MetricValue(Generic[NumericType]):
         """Returns a string representation of an
         :class:`~langcheck.metrics.metric_value.MetricValue` object.
         """
-        return (f"Metric: {self.metric_name}\n"
-                f"{self.to_df()}")
+        return f"Metric: {self.metric_name}\n" f"{self.to_df()}"
 
     def __repr__(self) -> str:
         """Returns a string representation of an
@@ -77,51 +79,51 @@ class MetricValue(Generic[NumericType]):
         :class:`~langcheck.metrics.metric_value.MetricValue`, which is
         automatically called by Jupyter notebooks.
         """
-        return (f"Metric: {self.metric_name}<br>"
-                f"{self.to_df()._repr_html_()}"  # type: ignore
-               )
+        return (
+            f"Metric: {self.metric_name}<br>" f"{self.to_df()._repr_html_()}"  # type: ignore
+        )
 
     def __lt__(self, threshold: float | int) -> MetricValueWithThreshold:
         """Allows the user to write a `metric_value < 0.5` expression."""
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return MetricValueWithThreshold(**all_fields,
-                                        threshold=threshold,
-                                        threshold_op="<")
+        return MetricValueWithThreshold(
+            **all_fields, threshold=threshold, threshold_op="<"
+        )
 
     def __le__(self, threshold: float | int) -> MetricValueWithThreshold:
         """Allows the user to write a `metric_value <= 0.5` expression."""
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return MetricValueWithThreshold(**all_fields,
-                                        threshold=threshold,
-                                        threshold_op="<=")
+        return MetricValueWithThreshold(
+            **all_fields, threshold=threshold, threshold_op="<="
+        )
 
     def __gt__(self, threshold: float | int) -> MetricValueWithThreshold:
         """Allows the user to write a `metric_value > 0.5` expression."""
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return MetricValueWithThreshold(**all_fields,
-                                        threshold=threshold,
-                                        threshold_op=">")
+        return MetricValueWithThreshold(
+            **all_fields, threshold=threshold, threshold_op=">"
+        )
 
     def __ge__(self, threshold: float | int) -> MetricValueWithThreshold:
         """Allows the user to write a `metric_value >= 0.5` expression."""
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return MetricValueWithThreshold(**all_fields,
-                                        threshold=threshold,
-                                        threshold_op=">=")
+        return MetricValueWithThreshold(
+            **all_fields, threshold=threshold, threshold_op=">="
+        )
 
     def __eq__(self, threshold: float | int) -> MetricValueWithThreshold:
         """Allows the user to write a `metric_value == 0.5` expression."""
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return MetricValueWithThreshold(**all_fields,
-                                        threshold=threshold,
-                                        threshold_op="==")
+        return MetricValueWithThreshold(
+            **all_fields, threshold=threshold, threshold_op="=="
+        )
 
     def __ne__(self, threshold: float | int) -> MetricValueWithThreshold:
         """Allows the user to write a `metric_value != 0.5` expression."""
         all_fields = {f.name: getattr(self, f.name) for f in fields(self)}
-        return MetricValueWithThreshold(**all_fields,
-                                        threshold=threshold,
-                                        threshold_op="!=")
+        return MetricValueWithThreshold(
+            **all_fields, threshold=threshold, threshold_op="!="
+        )
 
     def all(self) -> bool:
         """Equivalent to all(metric_value.metric_values). This is mostly useful
@@ -139,7 +141,8 @@ class MetricValue(Generic[NumericType]):
         raise ValueError(
             "A MetricValue cannot be used as a boolean. "
             "Try an expression like `metric_value > 0.5`, "
-            "`metric_value.all()`, or `metric_value.any()` instead.")
+            "`metric_value.all()`, or `metric_value.any()` instead."
+        )
 
     def scatter(self, jupyter_mode: str = "inline") -> None:
         """Shows an interactive scatter plot of all data points in MetricValue.
@@ -153,7 +156,8 @@ class MetricValue(Generic[NumericType]):
         # Type ignore because a Self type is only valid in class contexts
         return plot_scatter(
             self,  # type: ignore[reportGeneralTypeIssues]
-            jupyter_mode=jupyter_mode)
+            jupyter_mode=jupyter_mode,
+        )
 
     def histogram(self, jupyter_mode: str = "inline") -> None:
         """Shows an interactive histogram of all data points in MetricValue.
@@ -167,7 +171,8 @@ class MetricValue(Generic[NumericType]):
         # Type ignore because a Self type is only valid in class contexts
         return plot_histogram(
             self,  # type: ignore[reportGeneralTypeIssues]
-            jupyter_mode=jupyter_mode)
+            jupyter_mode=jupyter_mode,
+        )
 
     @property
     def is_pairwise(self) -> bool:
@@ -180,6 +185,7 @@ class MetricValueWithThreshold(MetricValue):
     :class:`~langcheck.metrics.metric_value.MetricValue` object,
     e.g. `metric_value >= 0.5`.
     """
+
     threshold: float | int
     threshold_op: str  # One of '<', '<=', '>', '>=', '==', '!='
 
@@ -193,7 +199,7 @@ class MetricValueWithThreshold(MetricValue):
             ">": operator.gt,
             ">=": operator.ge,
             "==": operator.eq,
-            "!=": operator.ne
+            "!=": operator.ne,
         }
 
         if self.threshold_op not in operators:
@@ -205,12 +211,15 @@ class MetricValueWithThreshold(MetricValue):
         if None in self.metric_values:
             warnings.warn(
                 "The threshold result for `None` values in `metric_values` will"
-                " always be `False`.")
+                " always be `False`."
+            )
 
         # Set the result to `False` if the metric value is `None`
         self._threshold_results = [
             operators[self.threshold_op](x, self.threshold)
-            if x is not None else False for x in self.metric_values
+            if x is not None
+            else False
+            for x in self.metric_values
         ]
 
         self._pass_rate = mean(self._threshold_results)
@@ -242,9 +251,11 @@ class MetricValueWithThreshold(MetricValue):
         """Returns a string representation of an
         :class:`~langcheck.metrics.metric_value.MetricValue`.
         """
-        return (f"Metric: {self.metric_name}\n"
-                f"Pass Rate: {round(self.pass_rate*100, 2)}%\n"
-                f"{self.to_df()}")
+        return (
+            f"Metric: {self.metric_name}\n"
+            f"Pass Rate: {round(self.pass_rate*100, 2)}%\n"
+            f"{self.to_df()}"
+        )
 
     def __repr__(self) -> str:
         """Returns a string representation of an
@@ -257,10 +268,11 @@ class MetricValueWithThreshold(MetricValue):
         :class:`~langcheck.metrics.metric_value.MetricValue`, which is
         automatically called by Jupyter notebooks.
         """
-        return (f"Metric: {self.metric_name}<br>"
-                f"Pass Rate: {round(self.pass_rate*100, 2)}%<br>"
-                f"{self.to_df()._repr_html_()}"  # type: ignore
-               )
+        return (
+            f"Metric: {self.metric_name}<br>"
+            f"Pass Rate: {round(self.pass_rate*100, 2)}%<br>"
+            f"{self.to_df()._repr_html_()}"  # type: ignore
+        )
 
     def all(self) -> bool:
         """Returns True if all data points pass the threshold."""
