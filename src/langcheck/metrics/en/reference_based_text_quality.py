@@ -25,8 +25,8 @@ def answer_correctness(
     eval_model: EvalClient,
 ) -> MetricValue[Optional[float]]:
     """Calculates the correctness of the generated outputs. This metric takes on
-    float values of either 0.0 (incorrect), 0.5 (partially correct), or 1.0
-    (Fully Relevant). The score may also be `None` if it could not be computed.
+    float values of either 0.0 (Incorrect), 0.5 (Partially Correct), or 1.0
+    (Correct). The score may also be `None` if it could not be computed.
 
     Args:
         generated_outputs: The model generated output(s) to evaluate
