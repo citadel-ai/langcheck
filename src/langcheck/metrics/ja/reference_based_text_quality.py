@@ -30,10 +30,13 @@ def answer_correctness(
     float values of either 0.0 (Incorrect), 0.5 (Partially Correct), or 1.0
     (Correct). The score may also be `None` if it could not be computed.
 
+    We currently only support the evaluation based on an EvalClient.
+
     Args:
         generated_outputs: The model generated output(s) to evaluate
         reference_outputs: The reference output(s)
         prompts: The prompts used to generate the output(s)
+        eval_model: The EvalClient instance used for the evaluation
 
     Returns:
         A :class:`~langcheck.metrics.metric_value.MetricValue` object
