@@ -18,56 +18,71 @@ from tests.utils import is_close
 
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
-    [("The cat sat on the mat.", "The cat sat on the mat."),
-     (["The cat sat on the mat."], ["The cat sat on the mat."])])
+    [
+        ("The cat sat on the mat.", "The cat sat on the mat."),
+        (["The cat sat on the mat."], ["The cat sat on the mat."]),
+    ],
+)
 def test_semantic_similarity_identical(generated_outputs, reference_outputs):
-    metric_value = semantic_similarity(generated_outputs,
-                                       reference_outputs,
-                                       eval_model="local")
+    metric_value = semantic_similarity(
+        generated_outputs, reference_outputs, eval_model="local"
+    )
     assert 0.99 <= metric_value <= 1
 
 
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
-    [("The CAT sat on the MAT.", "The cat sat on the mat."),
-     (["The CAT sat on the MAT."], ["The cat sat on the mat."])])
-def test_semantic_similarity_case_sensitivity(generated_outputs,
-                                              reference_outputs):
-    metric_value = semantic_similarity(generated_outputs,
-                                       reference_outputs,
-                                       eval_model="local")
+    [
+        ("The CAT sat on the MAT.", "The cat sat on the mat."),
+        (["The CAT sat on the MAT."], ["The cat sat on the mat."]),
+    ],
+)
+def test_semantic_similarity_case_sensitivity(
+    generated_outputs, reference_outputs
+):
+    metric_value = semantic_similarity(
+        generated_outputs, reference_outputs, eval_model="local"
+    )
     assert 0.9 <= metric_value <= 1
 
 
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
-    [("The cat sat on the mat.", "I like to eat ice cream."),
-     (["The cat sat on the mat."], ["I like to eat ice cream."])])
+    [
+        ("The cat sat on the mat.", "I like to eat ice cream."),
+        (["The cat sat on the mat."], ["I like to eat ice cream."]),
+    ],
+)
 def test_semantic_similarity_not_similar(generated_outputs, reference_outputs):
-    metric_value = semantic_similarity(generated_outputs,
-                                       reference_outputs,
-                                       eval_model="local")
+    metric_value = semantic_similarity(
+        generated_outputs, reference_outputs, eval_model="local"
+    )
     assert 0.0 <= metric_value <= 0.1
 
 
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
-    [("The cat sat on the mat.", "The cat sat on the mat."),
-     (["The cat sat on the mat."], ["The cat sat on the mat."])])
+    [
+        ("The cat sat on the mat.", "The cat sat on the mat."),
+        (["The cat sat on the mat."], ["The cat sat on the mat."]),
+    ],
+)
 def test_semantic_similarity_openai(generated_outputs, reference_outputs):
     mock_embedding_response = Mock(spec=CreateEmbeddingResponse)
     mock_embedding_response.data = [Mock(embedding=[0.1, 0.2, 0.3])]
 
     # Calling the openai.resources.Embeddings.create method requires an OpenAI
     # API key, so we mock the return value instead
-    with patch("openai.resources.Embeddings.create",
-               Mock(return_value=mock_embedding_response)):
+    with patch(
+        "openai.resources.Embeddings.create",
+        Mock(return_value=mock_embedding_response),
+    ):
         # Set the necessary env vars for the 'openai' embedding model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         openai_client = OpenAIEvalClient()
-        metric_value = semantic_similarity(generated_outputs,
-                                           reference_outputs,
-                                           eval_model=openai_client)
+        metric_value = semantic_similarity(
+            generated_outputs, reference_outputs, eval_model=openai_client
+        )
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1
@@ -77,10 +92,11 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         azure_openai_client = AzureOpenAIEvalClient(
-            embedding_model_name="foo bar")
-        metric_value = semantic_similarity(generated_outputs,
-                                           reference_outputs,
-                                           eval_model=azure_openai_client)
+            embedding_model_name="foo bar"
+        )
+        metric_value = semantic_similarity(
+            generated_outputs, reference_outputs, eval_model=azure_openai_client
+        )
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the semantic similarity should be 1.
         assert 0.99 <= metric_value <= 1
@@ -88,8 +104,11 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
-    [("The cat sat on the mat.", "The cat sat on the mat."),
-     (["The cat sat on the mat."], ["The cat sat on the mat."])])
+    [
+        ("The cat sat on the mat.", "The cat sat on the mat."),
+        (["The cat sat on the mat."], ["The cat sat on the mat."]),
+    ],
+)
 def test_rouge_identical(generated_outputs, reference_outputs):
     rouge1_metric_value = rouge1(generated_outputs, reference_outputs)
     rouge2_metric_value = rouge2(generated_outputs, reference_outputs)
@@ -104,8 +123,11 @@ def test_rouge_identical(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
-    [("The cat sat on the mat.", "I like to eat ice cream."),
-     (["The cat sat on the mat."], ["I like to eat ice cream."])])
+    [
+        ("The cat sat on the mat.", "I like to eat ice cream."),
+        (["The cat sat on the mat."], ["I like to eat ice cream."]),
+    ],
+)
 def test_rouge_no_overlap(generated_outputs, reference_outputs):
     rouge1_metric_value = rouge1(generated_outputs, reference_outputs)
     rouge2_metric_value = rouge2(generated_outputs, reference_outputs)
@@ -120,8 +142,11 @@ def test_rouge_no_overlap(generated_outputs, reference_outputs):
 
 @pytest.mark.parametrize(
     "generated_outputs,reference_outputs",
-    [("The cat is sitting on the mat.", "The cat sat on the mat."),
-     (["The cat is sitting on the mat."], ["The cat sat on the mat."])])
+    [
+        ("The cat is sitting on the mat.", "The cat sat on the mat."),
+        (["The cat is sitting on the mat."], ["The cat sat on the mat."]),
+    ],
+)
 def test_rouge_some_overlap(generated_outputs, reference_outputs):
     rouge1_metric_value = rouge1(generated_outputs, reference_outputs)
     rouge2_metric_value = rouge2(generated_outputs, reference_outputs)
