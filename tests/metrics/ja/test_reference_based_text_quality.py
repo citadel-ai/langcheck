@@ -10,6 +10,7 @@ from langcheck.metrics.eval_clients import (
 from langcheck.metrics.ja import (
     JanomeTokenizer,
     MeCabTokenizer,
+    answer_correctness,
     rouge1,
     rouge2,
     rougeL,
@@ -19,11 +20,54 @@ from langcheck.metrics.ja._tokenizers import _JapaneseTokenizer
 from langcheck.metrics.metric_value import MetricValue
 from openai.types import CreateEmbeddingResponse
 
-from tests.utils import is_close
+from tests.utils import MockEvalClient, is_close
 
 ################################################################################
 # Tests
 ################################################################################
+
+
+@pytest.mark.parametrize(
+    "generated_outputs,reference_outputs,prompts",
+    [
+        (
+            "東京は日本の首都です。",
+            "東京は日本の首都です。",
+            "日本の首都は何ですか？",
+        ),
+        (
+            ["東京は日本の首都です。"],
+            ["東京は日本の首都です。"],
+            ["日本の首都は何ですか？"],
+        ),
+    ],
+)
+def test_answer_correctness_eval_client(
+    generated_outputs, reference_outputs, prompts
+):
+    eval_client = MockEvalClient()
+    metric_value = answer_correctness(
+        generated_outputs, reference_outputs, prompts, eval_model=eval_client
+    )
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    answer_correctness_assessment_to_score = {
+        "Correct": 1.0,
+        "Partially Correct": 0.5,
+        "Incorrect": 0.0,
+    }
+
+    for option in answer_correctness_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = answer_correctness(
+            generated_outputs,
+            reference_outputs,
+            prompts,
+            eval_model=eval_client,
+        )
+        assert metric_value == answer_correctness_assessment_to_score[option]
+
 
 parametrize_rouge_function = pytest.mark.parametrize(
     "rouge_function", [rouge1, rouge2, rougeL]

@@ -2,18 +2,66 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
-from langcheck.metrics.en import rouge1, rouge2, rougeL, semantic_similarity
+from langcheck.metrics.en import (
+    answer_correctness,
+    rouge1,
+    rouge2,
+    rougeL,
+    semantic_similarity,
+)
 from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
 )
 from openai.types import CreateEmbeddingResponse
 
-from tests.utils import is_close
+from tests.utils import MockEvalClient, is_close
 
 ################################################################################
 # Tests
 ################################################################################
+
+
+@pytest.mark.parametrize(
+    "generated_outputs,reference_outputs,prompts",
+    [
+        (
+            "Tokyo is Japan's capital city.",
+            "Tokyo is Japan's capital city.",
+            "What is the capital of Japan?",
+        ),
+        (
+            ["Tokyo is Japan's capital city."],
+            ["Tokyo is Japan's capital city."],
+            ["What is the capital of Japan?"],
+        ),
+    ],
+)
+def test_answer_correctness_eval_client(
+    generated_outputs, reference_outputs, prompts
+):
+    eval_client = MockEvalClient()
+    metric_value = answer_correctness(
+        generated_outputs, reference_outputs, prompts, eval_model=eval_client
+    )
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    answer_correctness_assessment_to_score = {
+        "Correct": 1.0,
+        "Partially Correct": 0.5,
+        "Incorrect": 0.0,
+    }
+
+    for option in answer_correctness_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = answer_correctness(
+            generated_outputs,
+            reference_outputs,
+            prompts,
+            eval_model=eval_client,
+        )
+        assert metric_value == answer_correctness_assessment_to_score[option]
 
 
 @pytest.mark.parametrize(
