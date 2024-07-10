@@ -5,8 +5,6 @@ from typing import Iterable
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 
-from langcheck.utils.progess_bar import tqdm_wrapper
-
 from ._base import EvalClient
 
 
@@ -44,19 +42,17 @@ class PrometheusEvalClient(EvalClient):
             skip_special_tokens=True,
         )
 
-    def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
-    ) -> list[str | None]:
+    def get_text_responses(self, prompts: Iterable[str]) -> list[str | None]:
         """The function that generates resonses to the given prompt texts.
 
         Args:
             prompts: The prompts you want to get the responses for.
-            tqdm_description: The description to be shown in the tqdm bar.
         Returns:
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        messages = [[{"role": "user", "content": prompt}] for prompt in prompts]
+        messages = [[{"role": "user", "content": prompt}]
+                    for prompt in prompts]
         processed_prompts = self._tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -80,8 +76,6 @@ class PrometheusEvalClient(EvalClient):
         language: str,
         unstructured_assessment_result: list[str | None],
         score_map: dict[str, float],
-        *,
-        tqdm_description: str | None = None,
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We simple find
@@ -93,7 +87,6 @@ class PrometheusEvalClient(EvalClient):
                 for the given assessment prompts.
             score_map: The mapping from the short assessment results
                 (e.g. "Good") to the scores.
-            tqdm_description: The description to be shown in the tqdm bar.
 
         Returns:
             A list of scores for the given prompts. The scores can be None if
@@ -102,13 +95,9 @@ class PrometheusEvalClient(EvalClient):
         if language != "en":
             raise ValueError(f"Unsupported language: {language}")
 
-        tqdm_description = tqdm_description or "Scores"
-
         options = list(score_map.keys())
         assessments = []
-        for unstructured_assessment in tqdm_wrapper(
-            unstructured_assessment_result, desc=tqdm_description
-        ):
+        for unstructured_assessment in unstructured_assessment_result:
             if unstructured_assessment is None:
                 assessments.append(None)
                 continue
@@ -125,6 +114,46 @@ class PrometheusEvalClient(EvalClient):
             score_map[assessment] if assessment else None
             for assessment in assessments
         ]
+
+    def get_score(
+        self,
+        metric_name: str,
+        language: str,
+        prompts: str | Iterable[str],
+        score_map: dict[str, float],
+    ) -> tuple[list[float | None], list[str | None]]:
+        """Give scores to texts embedded in the given prompts. The function
+        itself calls get_text_responses and get_float_score to get the scores.
+        The function returns the scores and the unstructured explanation
+        strings.
+
+        Args:
+            metric_name: The name of the metric to be used. (e.g. "toxicity")
+            language: The language of the prompts. (e.g. "en")
+            prompts: The prompts that contain the original text to be scored,
+                the evaluation criteria... etc. Typically it is based on the
+                Jinja prompt templates and instantiated withing each metric
+                function.
+            score_map: The mapping from the short assessment results
+                (e.g. "Good") to the scores.
+
+        Returns:
+            A tuple of two lists. The first list contains the scores for each
+            prompt and the second list contains the unstructured assessment
+            results for each prompt. Both can be None if the evaluation fails.
+        """
+        if isinstance(prompts, str):
+            prompts = [prompts]
+        unstructured_assessment_result = self.get_text_responses(
+            prompts
+        )
+        scores = self.get_float_score(
+            metric_name,
+            language,
+            unstructured_assessment_result,
+            score_map,
+        )
+        return scores, unstructured_assessment_result
 
     def similarity_scorer(self):
         raise NotImplementedError(

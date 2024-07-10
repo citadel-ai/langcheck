@@ -124,7 +124,8 @@ class SwallowEvalClient(EvalClient):
             raise ValueError(f"Unsupported language: {language}")
 
         options = list(score_map.keys())
-        get_score_template = get_template(f"{language}/get_score/plain_text.j2")
+        get_score_template = get_template(
+            f"{language}/get_score/plain_text.j2")
         get_score_prompts = [
             get_score_template.render(
                 {
@@ -182,9 +183,6 @@ class SwallowEvalClient(EvalClient):
         language: str,
         prompts: str | Iterable[str],
         score_map: dict[str, float],
-        *,
-        intermediate_tqdm_description: str | None = None,
-        score_tqdm_description: str | None = None,
     ) -> tuple[list[float | None], list[str | None]]:
         """Give scores to texts embedded in the given prompts. The function
         itself calls get_text_responses and get_float_score to get the scores.
@@ -200,10 +198,6 @@ class SwallowEvalClient(EvalClient):
                 function.
             score_map: The mapping from the short assessment results
                 (e.g. "Good") to the scores.
-            intermediate_tqdm_description: The description to be
-                shown in the tqdm bar for the unstructured assessment.
-            score_tqdm_description: The description to be shown in
-                the tqdm bar for the score calculation.
 
         Returns:
             A tuple of two lists. The first list contains the scores for each
