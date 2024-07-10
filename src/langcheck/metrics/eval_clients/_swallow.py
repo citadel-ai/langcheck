@@ -22,6 +22,7 @@ class SwallowEvalClient(EvalClient):
         self,
         model_name: str = "tokyotech-llm/Llama-3-Swallow-8B-Instruct-v0.1",
         torch_dtype: str = "bfloat16",
+        tensor_parallel_size: int = 1,
         device: str = "cuda",
     ):
         """
@@ -30,13 +31,15 @@ class SwallowEvalClient(EvalClient):
         Args:
             model_name: The name of the model to use.
             torch_dtype: The torch dtype to use. torch.bfloat16 is recommended.
+            tensor_parallel_size: The number of GPUs to use for distributed
+            execution with tensor parallelism.
             device: The device to load the model on.
         """
         self._model = LLM(
             model=model_name,
             max_model_len=8192,
             dtype=torch_dtype,
-            tensor_parallel_size=1,
+            tensor_parallel_size=tensor_parallel_size,
             device=device,
         )
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)

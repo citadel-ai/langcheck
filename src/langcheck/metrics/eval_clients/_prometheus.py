@@ -17,24 +17,30 @@ class PrometheusEvalClient(EvalClient):
     eval/blob/main/libs/prometheus-eval/prometheus_eval/prompts.py>.
     """
 
-    def __init__(self, torch_dtype: str = "bfloat16", device: str = "cuda"):
+    def __init__(
+        self,
+        model_name: str = "prometheus-eval/prometheus-7b-v2.0",
+        torch_dtype: str = "bfloat16",
+        tensor_parallel_size: int = 1,
+        device: str = "cuda"
+    ):
         """
         Initilize the Prometheus evaluation client.
 
         Args:
+            model_name: The name of the model to use.
             torch_dtype: The torch dtype to use. torch.bfloat16 is recommended.
+            tensor_parallel_size: The number of GPUs to use for distributed
             device: The device to load the model on.
         """
         self._model = LLM(
-            model="prometheus-eval/prometheus-7b-v2.0",
+            model=model_name,
             max_model_len=8192,
             dtype=torch_dtype,
-            tensor_parallel_size=1,
+            tensor_parallel_size=tensor_parallel_size,
             device=device,
         )
-        self._tokenizer = AutoTokenizer.from_pretrained(
-            "prometheus-eval/prometheus-7b-v2.0"
-        )
+        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
         self._sampling_params = SamplingParams(
             temperature=0.6,
             top_p=0.9,
