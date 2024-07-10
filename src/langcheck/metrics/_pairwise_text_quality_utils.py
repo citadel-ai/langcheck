@@ -99,11 +99,7 @@ def enforce_pairwise_comparison_consistency(
     sorted_available_scores = list(score_map.values())
     sorted_available_scores.sort()
 
-    # Iterate through the scores and explanations to check for consistency. A
-    # score is consistent if the score's index in the sorted_available_scores
-    # list is the inverse of the swapped score's index. For example, if the
-    # score_map is {'Response A': 0.0, 'Response B': 1.0, 'Tie': 0.5}, and the
-    # score is 0.0, the swapped score should be 1.0.
+    # Iterate through the scores and explanations to check for consistency.
     # If a score is not consistent, set it to None, and merge the two
     # explanations to show the inconsistency.
     scores = original_scores.copy()
@@ -116,6 +112,11 @@ def enforce_pairwise_comparison_consistency(
             explanations[i] = None
             continue
 
+        # A score is consistent if the score's index in the
+        # sorted_available_scores list is the inverse of the swapped score's
+        # index. For example, if the score_map is
+        # {'Response A': 0.0, 'Response B': 1.0, 'Tie': 0.5}, and the score is
+        # 0.0, the swapped score should be 1.0.
         if (
             sorted_available_scores.index(scores[i])  # type: ignore
             + sorted_available_scores.index(swapped_scores[i])  # type: ignore

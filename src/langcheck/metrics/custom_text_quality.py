@@ -214,6 +214,10 @@ def custom_pairwise_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
+        enforce_consistency: When this is True, we will only return a score if
+            the score is the same when Model A and Model B are swapped. This is
+            useful for ensuring that the evaluator's position bias is not
+            impacting the scores. Default True.
 
     Returns:
         A MetricValue object
