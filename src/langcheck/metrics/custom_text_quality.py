@@ -195,6 +195,10 @@ def custom_pairwise_evaluator(
     like:
     ``score_map = {'Response A': 0.0, 'Response B': 1.0, 'Tie': 0.5}``
 
+    NOTE: If `enforce_consistency` is True, please make sure that the score map
+    is symmetric, in the sense that swapping Model A and Model B should result
+    in inverse scores. See the code below for more details.
+
     NOTE: We have found that LLM models sometimes behave weirdly when the
     assessments are non-ascii characters (see
     https://github.com/citadel-ai/langcheck/pull/84 as an example). So, we
