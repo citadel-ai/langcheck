@@ -369,6 +369,26 @@ def custom_pairwise_evaluator(
             score_tqdm_description=score_tqdm,
         )
 
+        # NOTE: The enforce_pairwise_comparison_consistency function assumes
+        # that the score_map is symmetric, in the sense that swapping Model A
+        # and Model B should result in inverse scores. Most score maps should
+        # naturally satisfy this property, but an example of a score map that
+        # does *not* satisfy this property is:
+        # {
+        #   'Response A is much better': 0,
+        #   'Response A is slightly better': 1,
+        #   'Response B is slightly better': 2
+        # }
+        #
+        # In this case, swapping Model A and Model B will not result in
+        # inverse results. The score map should be modified to be symmetric by
+        # adding the 'Response B is much better' option:
+        # {
+        #   'Response A is much better': 0,
+        #   'Response A is slightly better': 1,
+        #   'Response B is slightly better': 2,
+        #   'Response B is much better': 3
+        # }
         scores, explanations = enforce_pairwise_comparison_consistency(
             scores,
             explanations,
