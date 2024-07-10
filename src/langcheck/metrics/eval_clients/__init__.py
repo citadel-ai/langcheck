@@ -60,5 +60,10 @@ def load_prompt_template(
         Template: The Jinja template.
     """
     if type(eval_client) is PrometheusEvalClient:
-        return get_template(f"{language}/metrics/prometheus/{metric_name}.j2")
+        try:
+            return get_template(f"{language}/metrics/prometheus/{metric_name}.j2")
+        except FileNotFoundError:
+            raise ValueError(
+                f"The {metric_name} metric (language = {language}) is not yet supported by the Prometheus eval client."
+            )
     return get_template(f"{language}/metrics/{metric_name}.j2")

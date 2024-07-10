@@ -5,14 +5,76 @@ from typing import List, Optional
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 
-from langcheck.metrics._validation import validate_parameters_reference_based
-from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics._validation import (
+    validate_parameters_answer_correctness,
+    validate_parameters_reference_based,
+)
+from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
 from langcheck.metrics.ja._tokenizers import JanomeTokenizer
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import (
     SentenceTransformerSimilarityScorer,
 )
 from langcheck.utils.progess_bar import tqdm_wrapper
+
+
+def answer_correctness(
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: List[str] | str,
+    eval_model: EvalClient,
+) -> MetricValue[Optional[float]]:
+    """Calculates the correctness of the generated outputs. This metric takes on
+    float values of either 0.0 (Incorrect), 0.5 (Partially Correct), or 1.0
+    (Correct). The score may also be `None` if it could not be computed.
+
+    We currently only support the evaluation based on an EvalClient.
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
+        prompts: The prompts used to generate the output(s)
+        eval_model: The EvalClient instance used for the evaluation
+
+    Returns:
+        A :class:`~langcheck.metrics.metric_value.MetricValue` object
+    """
+    generated_outputs, reference_outputs, prompts = (
+        validate_parameters_answer_correctness(
+            generated_outputs, reference_outputs, prompts
+        )
+    )
+
+    answer_correctness_template = load_prompt_template(
+        language="ja", eval_client=eval_model, metric_name="answer_correctness"
+    )
+
+    populated_prompts = [
+        answer_correctness_template.render(
+            {"gen_output": gen_output, "ref_output": ref, "user_query": prompt}
+        )
+        for gen_output, ref, prompt in zip(
+            generated_outputs, reference_outputs, prompts
+        )
+    ]
+
+    scores, explanations = eval_model.get_score(
+        metric_name="answer correctness",
+        language="ja",
+        prompts=populated_prompts,
+        score_map={"Correct": 1.0, "Partially Correct": 0.5, "Incorrect": 0.0},
+    )
+
+    return MetricValue(
+        metric_name="answer_correctness",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=reference_outputs,
+        sources=None,
+        explanations=explanations,
+        metric_values=scores,
+        language="ja",
+    )
 
 
 def semantic_similarity(
