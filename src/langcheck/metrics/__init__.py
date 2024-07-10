@@ -1,5 +1,8 @@
 from langcheck.metrics import en, eval_clients
-from langcheck.metrics.custom_text_quality import custom_evaluator
+from langcheck.metrics.custom_text_quality import (
+    custom_evaluator,
+    custom_pairwise_evaluator,
+)
 from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.reference_based_text_quality import (
     rouge1,
@@ -42,6 +45,7 @@ __all__ = [
     "contains_regex",
     "context_relevance",
     "custom_evaluator",
+    "custom_pairwise_evaluator",
     "MetricValue",
     "en",
     "eval_clients",

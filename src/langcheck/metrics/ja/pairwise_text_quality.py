@@ -133,7 +133,11 @@ def pairwise_comparison(
         )
 
         scores, explanations = enforce_pairwise_comparison_consistency(
-            scores, explanations, swapped_scores, swapped_explanations
+            scores,
+            explanations,
+            swapped_scores,
+            swapped_explanations,
+            pairwise_comparison_assessment_to_score,
         )
 
     return MetricValue(
