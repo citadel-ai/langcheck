@@ -96,7 +96,7 @@ class SwallowEvalClient(EvalClient):
             processed_prompts, self._sampling_params
         )
         response_texts = [
-            response.outputs[0].text if response else None
+            response.outputs[0].text if response and response != "" else None
             for response in responses
         ]
 
@@ -153,21 +153,34 @@ class SwallowEvalClient(EvalClient):
                     "content": prompt,
                 },
             ]
-            for prompt in get_score_prompts
+            for prompt in get_score_prompts if prompt
         ]
-        prompts = self._tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-        if isinstance(prompts, str):
-            prompts = [prompts]
-        else:
-            prompts = [str(p) for p in prompts]
-        responses = self._model.generate(prompts, self._sampling_params)
 
-        raw_response_texts = [
-            response.outputs[0].text if response else None
-            for response in responses
-        ]
+        responses_for_scoring = []
+        if len(messages):
+            prompts = self._tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+            if isinstance(prompts, str):
+                prompts = [prompts]
+            else:
+                prompts = [str(p) for p in prompts]
+            responses = self._model.generate(prompts, self._sampling_params)
+            raw_response_texts = [
+                response.outputs[0].text if response else None
+                for response in responses
+            ]
+        else:
+            raw_response_texts = []
+
+        idx_raw_response_texts = 0
+        for idx in range(len(get_score_prompts)):
+            if get_score_prompts[idx] is None:
+                responses_for_scoring.append(None)
+            else:
+                responses_for_scoring.append(
+                    raw_response_texts[idx_raw_response_texts])
+                idx_raw_response_texts += 1
 
         def _turn_to_score(response: str | None) -> float | None:
             if response is None:
@@ -178,7 +191,7 @@ class SwallowEvalClient(EvalClient):
                 return None
             return score_map[option_found[0]]
 
-        return [_turn_to_score(response) for response in raw_response_texts]
+        return [_turn_to_score(response) for response in responses_for_scoring]
 
     def get_score(
         self,

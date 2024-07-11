@@ -70,7 +70,7 @@ class PrometheusEvalClient(EvalClient):
             processed_prompts, self._sampling_params
         )
         response_texts = [
-            response.outputs[0].text if response else None
+            response.outputs[0].text if response and response != "" else None
             for response in responses
         ]
 
