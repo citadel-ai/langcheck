@@ -177,6 +177,52 @@ def validate_parameters_answer_relevance(
     return generated_outputs, prompts
 
 
+def validate_parameters_answer_correctness(
+    generated_outputs: List[str] | str,
+    reference_outputs: List[str] | str,
+    prompts: List[str] | str,
+) -> tuple[List[str], List[str], List[str]]:
+    """Validates and parses function parameters for the answer correctness
+    metric.
+
+    Args:
+        generated_outputs: The model generated output(s) to evaluate
+        reference_outputs: The reference output(s)
+        prompts: The prompt(s)
+
+    Returns:
+        A tuple (generated_outputs, reference_outputs, prompts) of the parsed
+        parameters, converted to lists of strings.
+    """
+    # Convert single-string parameters to lists
+    if isinstance(generated_outputs, str):
+        generated_outputs = [generated_outputs]
+    if isinstance(reference_outputs, str):
+        reference_outputs = [reference_outputs]
+    if isinstance(prompts, str):
+        prompts = [prompts]
+
+    # Check that generated_outputs, reference_outputs, and prompts are not empty
+    if not generated_outputs:
+        raise ValueError("Please specify at least one generated output")
+    if not reference_outputs:
+        raise ValueError("Please specify at least one reference output")
+    if not prompts:
+        raise ValueError("Please specify at least one prompt")
+
+    # Check that the lengths of lists match
+    if len(generated_outputs) != len(reference_outputs):
+        raise ValueError(
+            "The number of generated_outputs and reference_outputs do not match"
+        )
+    if len(generated_outputs) != len(prompts):
+        raise ValueError(
+            "The number of generated_outputs and prompts do not match"
+        )
+
+    return generated_outputs, reference_outputs, prompts
+
+
 def validate_parameters_pairwise_comparison(
     generated_outputs_a: List[str] | str,
     generated_outputs_b: List[str] | str,
@@ -277,6 +323,88 @@ def validate_parameters_custom_evaluator(
         )
 
     return generated_outputs, prompts, reference_outputs, sources
+
+
+def validate_parameters_custom_pairwise_evaluator(
+    generated_outputs_a: Optional[List[str] | str],
+    generated_outputs_b: Optional[List[str] | str],
+    prompts: Optional[List[str] | str],
+    sources_a: Optional[List[str] | str],
+    sources_b: Optional[List[str] | str],
+    reference_outputs: Optional[List[str] | str],
+) -> tuple[
+    Optional[List[str]],
+    Optional[List[str]],
+    Optional[List[str]],
+    Optional[List[str]],
+    Optional[List[str]],
+    Optional[List[str]],
+]:
+    """Validates and parses function parameters for the custom pairwise
+    evaluator metric.
+
+    Args:
+        generated_outputs_a: The model A generated output(s)
+        generated_outputs_b: The model B generated output(s)
+        prompts: The prompts used to generate the output(s)
+        sources_a: The source(s) of the generated output(s) from model A
+        sources_b: The source(s) of the generated output(s) from model B
+        reference_outputs: The reference output(s)
+
+    Returns:
+        A tuple (generated_outputs_a, generated_outputs_b, prompts, sources_a,
+        sources_b, reference_outputs) of the parsed parameters. All non-None
+        parameters are converted to lists of strings.
+    """
+    # Convert single-string parameters to lists
+    if isinstance(generated_outputs_a, str):
+        generated_outputs_a = [generated_outputs_a]
+    if isinstance(generated_outputs_b, str):
+        generated_outputs_b = [generated_outputs_b]
+    if isinstance(prompts, str):
+        prompts = [prompts]
+    if isinstance(sources_a, str):
+        sources_a = [sources_a]
+    if isinstance(sources_b, str):
+        sources_b = [sources_b]
+    if isinstance(reference_outputs, str):
+        reference_outputs = [reference_outputs]
+
+    # Check that all of the non-None parameters are the same length
+    non_none_lengths = {
+        name: len(arg)
+        for name, arg in zip(
+            [
+                "generated outputs a",
+                "generated outputs b",
+                "prompts",
+                "reference outputs",
+                "sources a",
+                "sources b",
+            ],
+            [
+                generated_outputs_a,
+                generated_outputs_b,
+                prompts,
+                reference_outputs,
+                sources_a,
+                sources_b,
+            ],
+        )
+        if arg is not None
+    }
+    if len(set(non_none_lengths.values())) > 1:
+        raise ValueError(
+            f'The number of {", ".join(non_none_lengths.keys())} do not match'
+        )
+    return (
+        generated_outputs_a,
+        generated_outputs_b,
+        prompts,
+        sources_a,
+        sources_b,
+        reference_outputs,
+    )
 
 
 def _validate_parameters(

@@ -81,6 +81,7 @@ def enforce_pairwise_comparison_consistency(
     original_explanations: list[str | None],
     swapped_scores: list[float | None],
     swapped_explanations: list[str | None],
+    score_map: dict[str, float],
 ) -> tuple[list[float | None], list[str | None]]:
     """Enforce consistency in pairwise comparison scores.
 
@@ -91,7 +92,13 @@ def enforce_pairwise_comparison_consistency(
         swapped_scores: The scores for the swapped order of the models
         swapped_explanations: The explanations for the swapped order of the
             models
+        score_map: The mapping from the assessment results to the scores (e.g.
+            {'Response A': 0.0, 'Response B': 1.0, 'Tie': 0.5})
     """
+    # Get the sorted list of available scores
+    sorted_available_scores = list(score_map.values())
+    sorted_available_scores.sort()
+
     # Iterate through the scores and explanations to check for consistency.
     # If a score is not consistent, set it to None, and merge the two
     # explanations to show the inconsistency.
@@ -104,7 +111,17 @@ def enforce_pairwise_comparison_consistency(
             scores[i] = None
             explanations[i] = None
             continue
-        if scores[i] + swapped_scores[i] != 1.0:  # type: ignore
+
+        # A score is consistent if the score's index in the
+        # sorted_available_scores list is the inverse of the swapped score's
+        # index. For example, if the score_map is
+        # {'Response A': 0.0, 'Response B': 1.0, 'Tie': 0.5}, and the score is
+        # 0.0, the swapped score should be 1.0.
+        if (
+            sorted_available_scores.index(scores[i])  # type: ignore
+            + sorted_available_scores.index(swapped_scores[i])  # type: ignore
+            != len(sorted_available_scores) - 1
+        ):
             scores[i] = None
             explanations[i] = (
                 f"Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}"

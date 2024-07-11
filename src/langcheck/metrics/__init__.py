@@ -1,7 +1,11 @@
 from langcheck.metrics import en, eval_clients
-from langcheck.metrics.custom_text_quality import custom_evaluator
+from langcheck.metrics.custom_text_quality import (
+    custom_evaluator,
+    custom_pairwise_evaluator,
+)
 from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.reference_based_text_quality import (
+    answer_correctness,
     rouge1,
     rouge2,
     rougeL,
@@ -36,12 +40,14 @@ from langcheck.metrics.text_structure import (
 
 __all__ = [
     "ai_disclaimer_similarity",
+    "answer_correctness",
     "answer_relevance",
     "contains_all_strings",
     "contains_any_strings",
     "contains_regex",
     "context_relevance",
     "custom_evaluator",
+    "custom_pairwise_evaluator",
     "MetricValue",
     "en",
     "eval_clients",
