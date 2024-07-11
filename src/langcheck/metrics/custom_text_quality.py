@@ -93,7 +93,7 @@ def custom_evaluator(
         ".j2"
     ), 'The prompt template file must be a Jinja2 template file with the extension ".j2"'
 
-    prompt_template_source = Path(template_path).read_text()
+    prompt_template_source = Path(template_path).read_text(encoding="utf-8")
     prompt_template = Template(prompt_template_source)
 
     # Validate the expected parameters in the prompt template
@@ -269,7 +269,7 @@ def custom_pairwise_evaluator(
         ".j2"
     ), 'The prompt template file must be a Jinja2 template file with the extension ".j2"'
 
-    prompt_template_source = Path(template_path).read_text()
+    prompt_template_source = Path(template_path).read_text(encoding="utf-8")
     prompt_template = Template(prompt_template_source)
 
     # Validate the expected parameters in the prompt template
