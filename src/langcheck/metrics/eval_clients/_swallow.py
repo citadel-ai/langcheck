@@ -96,7 +96,7 @@ class SwallowEvalClient(EvalClient):
             processed_prompts, self._sampling_params
         )
         response_texts = [
-            response.outputs[0].text if response and response != "" else None
+            response.outputs[0].text if response and response.outputs[0].text != "" else None
             for response in responses
         ]
 
@@ -142,6 +142,8 @@ class SwallowEvalClient(EvalClient):
             for unstructured_assessment in unstructured_assessment_result
         ]
 
+        # If there are any Nones in get_score_prompts,
+        # they are excluded from messages to prevent passing those to the model.
         messages = [
             [
                 {
@@ -155,8 +157,6 @@ class SwallowEvalClient(EvalClient):
             ]
             for prompt in get_score_prompts if prompt
         ]
-
-        responses_for_scoring = []
         if len(messages):
             prompts = self._tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
@@ -173,6 +173,7 @@ class SwallowEvalClient(EvalClient):
         else:
             raw_response_texts = []
 
+        responses_for_scoring = []
         idx_raw_response_texts = 0
         for idx in range(len(get_score_prompts)):
             if get_score_prompts[idx] is None:

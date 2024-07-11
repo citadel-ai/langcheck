@@ -31,6 +31,7 @@ class PrometheusEvalClient(EvalClient):
             model_name: The name of the model to use.
             torch_dtype: The torch dtype to use. torch.bfloat16 is recommended.
             tensor_parallel_size: The number of GPUs to use for distributed
+            execution with tensor parallelism.
             device: The device to load the model on.
         """
         self._model = LLM(
@@ -70,7 +71,7 @@ class PrometheusEvalClient(EvalClient):
             processed_prompts, self._sampling_params
         )
         response_texts = [
-            response.outputs[0].text if response and response != "" else None
+            response.outputs[0].text if response and response.outputs[0].text != "" else None
             for response in responses
         ]
 
