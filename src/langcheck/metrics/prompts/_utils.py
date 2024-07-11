@@ -14,4 +14,4 @@ def get_template(relative_path: str) -> Template:
         Template: The Jinja template.
     """
     cwd = Path(__file__).parent
-    return Template((cwd / relative_path).read_text())
+    return Template((cwd / relative_path).read_text(encoding="utf-8"))
