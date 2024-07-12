@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langcheck"
-version = "0.8.0.dev4"
+version = "0.8.0.dev5"
 description = "Simple, Pythonic building blocks to evaluate LLM-based applications"
 readme = "README.md"
 authors = [{ name = "Citadel AI", email = "info@citadel.co.jp" }]
@@ -59,6 +59,9 @@ anthropic = [
 gemini = [
     'google-generativeai'
 ]
+local-llm = [
+    'vllm'
+]
 
 all = [
     'langcheck[de]',
@@ -67,7 +70,8 @@ all = [
     'langcheck[ja-optional]',
     'langcheck[zh]',
     'langcheck[anthropic]',
-    'langcheck[gemini]'
+    'langcheck[gemini]',
+    'langcheck[local-llm]'
 ]
 
 dev = [
