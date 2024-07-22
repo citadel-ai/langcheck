@@ -59,7 +59,7 @@ def load_prompt_template(
     Returns:
         Template: The Jinja template.
     """
-    if type(eval_client) is PrometheusEvalClient:
+    if "PrometheusEvalClient" in __all__ and type(eval_client) is PrometheusEvalClient:
         try:
             return get_template(f"{language}/metrics/prometheus/{metric_name}.j2")
         except FileNotFoundError:
