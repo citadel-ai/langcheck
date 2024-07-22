@@ -1,4 +1,4 @@
-from langcheck.augment import en, ja
+from langcheck.augment import en
 from langcheck.augment.en import (
     change_case,
     gender,
@@ -11,7 +11,6 @@ from langcheck.augment.en import (
 
 __all__ = [
     "en",
-    "ja",
     "change_case",
     "gender",
     "keyboard_typo",
