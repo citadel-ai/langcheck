@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import Iterable
 
+from jinja2 import Template
+
+from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 
 
@@ -11,11 +14,23 @@ class EvalClient:
     defined in this class to compute the metric values.
     """
 
+    def load_prompt_template(self, language: str, metric_name: str) -> Template:
+        """
+        Gets a Jinja template from the specified language, eval client,
+        and metric name.
+
+        Args:
+            language (str): The language of the template.
+            metric_name (str): The name of the metric.
+
+        Returns:
+            Template: The Jinja template.
+        """
+        return get_template(f"{language}/metrics/{metric_name}.j2")
+
     def get_text_responses(
-            self,
-            prompts: Iterable[str],
-            *,
-            tqdm_description: str | None = None) -> list[str | None]:
+        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+    ) -> list[str | None]:
         """The function that gets resonses to the given prompt texts. Each
         concrete subclass needs to define the concrete implementation of this
         function to enable text scoring.
@@ -30,14 +45,15 @@ class EvalClient:
         raise NotImplementedError
 
     def get_float_score(
-            self,
-            metric_name: str,
-            language: str,
-            unstructured_assessment_result: list[str | None],
-            score_map: dict[str, float],
-            *,
-            tqdm_description: str | None = None) -> list[float | None]:
-        '''The function that transforms the unstructured assessments (i.e. long
+        self,
+        metric_name: str,
+        language: str,
+        unstructured_assessment_result: list[str | None],
+        score_map: dict[str, float],
+        *,
+        tqdm_description: str | None = None,
+    ) -> list[float | None]:
+        """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. A typical
         workflow can be:
 
@@ -62,7 +78,7 @@ class EvalClient:
         Returns:
             A list of scores for the given prompts. The scores can be None if
             the evaluation fails.
-        '''
+        """
         raise NotImplementedError
 
     def get_score(
@@ -73,9 +89,9 @@ class EvalClient:
         score_map: dict[str, float],
         *,
         intermediate_tqdm_description: str | None = None,
-        score_tqdm_description: str | None = None
+        score_tqdm_description: str | None = None,
     ) -> tuple[list[float | None], list[str | None]]:
-        '''Give scores to texts embedded in the given prompts. The function
+        """Give scores to texts embedded in the given prompts. The function
         itself calls get_text_responses and get_float_score to get the scores.
         The function returns the scores and the unstructured explanation
         strings.
@@ -98,16 +114,19 @@ class EvalClient:
             A tuple of two lists. The first list contains the scores for each
             prompt and the second list contains the unstructured assessment
             results for each prompt. Both can be None if the evaluation fails.
-        '''
+        """
         if isinstance(prompts, str):
             prompts = [prompts]
         unstructured_assessment_result = self.get_text_responses(
-            prompts, tqdm_description=intermediate_tqdm_description)
-        scores = self.get_float_score(metric_name,
-                                      language,
-                                      unstructured_assessment_result,
-                                      score_map,
-                                      tqdm_description=score_tqdm_description)
+            prompts, tqdm_description=intermediate_tqdm_description
+        )
+        scores = self.get_float_score(
+            metric_name,
+            language,
+            unstructured_assessment_result,
+            score_map,
+            tqdm_description=score_tqdm_description,
+        )
         return scores, unstructured_assessment_result
 
     def similarity_scorer(self) -> BaseSimilarityScorer:

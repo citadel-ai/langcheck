@@ -12,8 +12,6 @@ from langcheck.metrics._validation import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
-from ..prompts._utils import get_template
-
 
 def pairwise_comparison(
     generated_outputs_a: List[str] | str,
@@ -78,8 +76,8 @@ def pairwise_comparison(
         "Response A": 0.0,
     }
 
-    pairwise_comparison_template = get_template(
-        "ja/metrics/pairwise_comparison.j2"
+    pairwise_comparison_template = eval_model.load_prompt_template(
+        language="ja", metric_name="pairwise_comparison"
     )
 
     prompt_params = generate_pairwise_comparison_prompt_params(

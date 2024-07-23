@@ -15,8 +15,6 @@ from langcheck.metrics.scorer.hf_models import (
 )
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-from ..prompts._utils import get_template
-
 
 def sentiment(
     generated_outputs: List[str] | str,
@@ -134,7 +132,9 @@ def _sentiment_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    sentiment_template = get_template("ja/metrics/sentiment.j2")
+    sentiment_template = eval_client.load_prompt_template(
+        language="ja", metric_name="sentiment"
+    )
 
     sentiment_assessment_to_score = {
         "Positive": 1.0,
@@ -274,7 +274,9 @@ def _toxicity_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    toxicity_template = get_template("ja/metrics/toxicity.j2")
+    toxicity_template = eval_client.load_prompt_template(
+        language="ja", metric_name="toxicity"
+    )
 
     toxicity_assessment_to_score = {
         "1": 0,
@@ -417,7 +419,9 @@ def _fluency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    fluency_template = get_template("ja/metrics/fluency.j2")
+    fluency_template = eval_client.load_prompt_template(
+        language="ja", metric_name="fluency"
+    )
 
     fluency_assessment_to_score = {
         "Poor": 0,
@@ -545,7 +549,9 @@ def answer_relevance(
         generated_outputs, prompts
     )
 
-    answer_relevance_template = get_template("ja/metrics/answer_relevance.j2")
+    answer_relevance_template = eval_model.load_prompt_template(
+        language="ja", metric_name="answer_relevance"
+    )
 
     populated_prompts = [
         answer_relevance_template.render(

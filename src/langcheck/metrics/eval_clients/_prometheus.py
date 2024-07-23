@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import Iterable
 
+from jinja2 import Template
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 
+from ..prompts._utils import get_template
 from ._base import EvalClient
 
 
@@ -22,7 +24,7 @@ class PrometheusEvalClient(EvalClient):
         model_name: str = "prometheus-eval/prometheus-7b-v2.0",
         torch_dtype: str = "bfloat16",
         tensor_parallel_size: int = 1,
-        device: str = "cuda"
+        device: str = "cuda",
     ):
         """
         Initilize the Prometheus evaluation client.
@@ -49,6 +51,27 @@ class PrometheusEvalClient(EvalClient):
             skip_special_tokens=True,
         )
 
+    def load_prompt_template(self, language: str, metric_name: str) -> Template:
+        """
+        Gets a Jinja template from the specified language, eval client,
+        and metric name.
+
+        Args:
+            language (str): The language of the template.
+            metric_name (str): The name of the metric.
+
+        Returns:
+            Template: The Jinja template.
+        """
+        try:
+            return get_template(
+                f"{language}/metrics/prometheus/{metric_name}.j2"
+            )
+        except FileNotFoundError:
+            raise ValueError(
+                f"The {metric_name} metric (language = {language}) is not yet supported by the Prometheus eval client."
+            )
+
     def get_text_responses(self, prompts: Iterable[str]) -> list[str | None]:
         """The function that generates resonses to the given prompt texts.
 
@@ -58,8 +81,7 @@ class PrometheusEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        messages = [[{"role": "user", "content": prompt}]
-                    for prompt in prompts]
+        messages = [[{"role": "user", "content": prompt}] for prompt in prompts]
         processed_prompts = self._tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -71,7 +93,9 @@ class PrometheusEvalClient(EvalClient):
             processed_prompts, self._sampling_params
         )
         response_texts = [
-            response.outputs[0].text if response and response.outputs[0].text != "" else None
+            response.outputs[0].text
+            if response and response.outputs[0].text != ""
+            else None
             for response in responses
         ]
 
@@ -151,9 +175,7 @@ class PrometheusEvalClient(EvalClient):
         """
         if isinstance(prompts, str):
             prompts = [prompts]
-        unstructured_assessment_result = self.get_text_responses(
-            prompts
-        )
+        unstructured_assessment_result = self.get_text_responses(prompts)
         scores = self.get_float_score(
             metric_name,
             language,

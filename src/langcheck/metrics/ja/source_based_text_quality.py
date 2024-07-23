@@ -16,17 +16,16 @@ from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-from ..prompts._utils import get_template
-
 _factual_consistency_translation_model_path = "Helsinki-NLP/opus-mt-ja-en"
 _factual_consistency_translation_pipeline: Pipeline | None = None
 
 
 def factual_consistency(
-        generated_outputs: List[str] | str,
-        sources: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        eval_model: str | EvalClient = "local") -> MetricValue[Optional[float]]:
+    generated_outputs: List[str] | str,
+    sources: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    eval_model: str | EvalClient = "local",
+) -> MetricValue[Optional[float]]:
     """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
@@ -61,7 +60,8 @@ def factual_consistency(
         An MetricValue object
     """
     generated_outputs, sources, prompts = validate_parameters_source_based(
-        generated_outputs, sources, prompts)
+        generated_outputs, sources, prompts
+    )
 
     if eval_model == "local":
         scores = _factual_consistency_local(generated_outputs, sources)
@@ -71,20 +71,24 @@ def factual_consistency(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
         scores, explanations = _factual_consistency_eval_client(
-            generated_outputs, sources, eval_model)
+            generated_outputs, sources, eval_model
+        )
 
-    return MetricValue(metric_name="factual_consistency",
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=sources,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language="ja")
+    return MetricValue(
+        metric_name="factual_consistency",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=sources,
+        explanations=explanations,
+        metric_values=scores,
+        language="ja",
+    )
 
 
-def _factual_consistency_local(generated_outputs: List[str],
-                               sources: List[str]) -> List[float]:
+def _factual_consistency_local(
+    generated_outputs: List[str], sources: List[str]
+) -> List[float]:
     """Calculates the factual consistency between each generated sentence and
     its corresponding source text. The factual consistency score for one
     generated output is computed as the average of the per-sentence
@@ -111,48 +115,56 @@ def _factual_consistency_local(generated_outputs: List[str],
         _factual_consistency_translation_pipeline = pipeline(
             "translation",
             model=_factual_consistency_translation_model_path,
-            truncation=True)
+            truncation=True,
+        )
 
     # Translate the sources and generated outputs to English.
     # Currently, the type checks are not working for the pipeline, since
     # too diverse types can be returned.
     batch_size = 8
     en_source = []
-    for i in tqdm_wrapper(range(0, len(sources), batch_size),
-                          desc="Translating sources",
-                          total=(len(sources) + batch_size - 1) // batch_size):
-        batch_sources = sources[i:i + batch_size]
-        en_source.extend([
-            cast(str,
-                 d["translation_text"])  # type: ignore[reportGeneralTypeIssues]
-            for d in _factual_consistency_translation_pipeline(
-                batch_sources)  # type: ignore[reportGeneralTypeIssues]
-        ])
+    for i in tqdm_wrapper(
+        range(0, len(sources), batch_size),
+        desc="Translating sources",
+        total=(len(sources) + batch_size - 1) // batch_size,
+    ):
+        batch_sources = sources[i : i + batch_size]
+        en_source.extend(
+            [
+                cast(str, d["translation_text"])  # type: ignore[reportGeneralTypeIssues]
+                for d in _factual_consistency_translation_pipeline(
+                    batch_sources
+                )  # type: ignore[reportGeneralTypeIssues]
+            ]
+        )
     en_generated_outputs = []
-    for i in tqdm_wrapper(range(0, len(generated_outputs), batch_size),
-                          desc="Translating generated outputs",
-                          total=(len(generated_outputs) + batch_size - 1) //
-                          batch_size):
-        batch_generated_outputs = generated_outputs[i:i + batch_size]
-        en_generated_outputs.extend([
-            cast(str,
-                 d["translation_text"])  # type: ignore[reportGeneralTypeIssues]
-            for d in _factual_consistency_translation_pipeline(
-                batch_generated_outputs
-            )  # type: ignore[reportGeneralTypeIssues]
-        ])
+    for i in tqdm_wrapper(
+        range(0, len(generated_outputs), batch_size),
+        desc="Translating generated outputs",
+        total=(len(generated_outputs) + batch_size - 1) // batch_size,
+    ):
+        batch_generated_outputs = generated_outputs[i : i + batch_size]
+        en_generated_outputs.extend(
+            [
+                cast(str, d["translation_text"])  # type: ignore[reportGeneralTypeIssues]
+                for d in _factual_consistency_translation_pipeline(
+                    batch_generated_outputs
+                )  # type: ignore[reportGeneralTypeIssues]
+            ]
+        )
 
     # Compute the factual consistency scores in English.
     factual_consistency_scores = en_factual_consistency(
-        generated_outputs=en_generated_outputs, sources=en_source).metric_values
+        generated_outputs=en_generated_outputs, sources=en_source
+    ).metric_values
 
     # Local factual consistency scores are of type List[float]
     return factual_consistency_scores  # type: ignore
 
 
 def _factual_consistency_eval_client(
-        generated_outputs: List[str], sources: List[str],
-        eval_client: EvalClient) -> tuple[List[float | None], List[str | None]]:
+    generated_outputs: List[str], sources: List[str], eval_client: EvalClient
+) -> tuple[List[float | None], List[str | None]]:
     """Calculates the factual consistency and their associated explanations
     between the generated outputs and the sources using an EvalClient. This
     metric takes on float values that are either 0, 0.5, or 1, where 0 means
@@ -169,19 +181,20 @@ def _factual_consistency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    factual_consistency_template = get_template(
-        "ja/metrics/factual_consistency.j2")
+    factual_consistency_template = eval_client.load_prompt_template(
+        language="ja", metric_name="factual_consistency"
+    )
 
     factual_consistency_assessment_to_score = {
         "Fully Consistent": 1.0,
         "Partially Consistent": 0.5,
-        "Not Consistent": 0.0
+        "Not Consistent": 0.0,
     }
     populated_prompts = [
-        factual_consistency_template.render({
-            "src": source,
-            "gen_output": gen_output
-        }) for source, gen_output in zip(sources, generated_outputs)
+        factual_consistency_template.render(
+            {"src": source, "gen_output": gen_output}
+        )
+        for source, gen_output in zip(sources, generated_outputs)
     ]
 
     scores, explanations = eval_client.get_score(
@@ -194,8 +207,9 @@ def _factual_consistency_eval_client(
     return scores, explanations
 
 
-def context_relevance(sources: List[str] | str, prompts: List[str] | str,
-                      eval_model: EvalClient) -> MetricValue[Optional[float]]:
+def context_relevance(
+    sources: List[str] | str, prompts: List[str] | str, eval_model: EvalClient
+) -> MetricValue[Optional[float]]:
     """Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully
@@ -210,19 +224,24 @@ def context_relevance(sources: List[str] | str, prompts: List[str] | str,
     """
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
-    context_relevance_template = get_template("ja/metrics/context_relevance.j2")
+    context_relevance_template = eval_model.load_prompt_template(
+        language="ja", metric_name="context_relevance"
+    )
 
     context_relevance_assessment_to_score = {
         "Fully Relevant": 1.0,
         "Partially Relevant": 0.5,
-        "Not Relevant": 0.0
+        "Not Relevant": 0.0,
     }
 
     populated_prompts = [
-        context_relevance_template.render({
-            "src": source,
-            "user_query": prompt,
-        }) for source, prompt in zip(sources, prompts)
+        context_relevance_template.render(
+            {
+                "src": source,
+                "user_query": prompt,
+            }
+        )
+        for source, prompt in zip(sources, prompts)
     ]
 
     scores, explanations = eval_model.get_score(
@@ -232,11 +251,13 @@ def context_relevance(sources: List[str] | str, prompts: List[str] | str,
         score_map=context_relevance_assessment_to_score,
     )
 
-    return MetricValue(metric_name="context_relevance",
-                       prompts=prompts,
-                       generated_outputs=None,
-                       reference_outputs=None,
-                       sources=sources,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language="ja")
+    return MetricValue(
+        metric_name="context_relevance",
+        prompts=prompts,
+        generated_outputs=None,
+        reference_outputs=None,
+        sources=sources,
+        explanations=explanations,
+        metric_values=scores,
+        language="ja",
+    )

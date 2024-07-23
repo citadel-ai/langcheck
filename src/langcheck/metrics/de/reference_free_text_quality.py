@@ -25,8 +25,6 @@ from langcheck.metrics.scorer.hf_models import (
 from langcheck.stats import compute_stats
 from langcheck.utils.progess_bar import tqdm_wrapper
 
-from ..prompts._utils import get_template
-
 _translation_model_path = "Helsinki-NLP/opus-mt-de-en"
 
 LANG = "de"
@@ -74,7 +72,8 @@ def sentiment(
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
     if eval_model == "local":
         scores = _sentiment_local(generated_outputs, local_overflow_strategy)
@@ -84,21 +83,25 @@ def sentiment(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
 
-        scores, explanations = _sentiment_eval_client(generated_outputs,
-                                                      eval_model)
+        scores, explanations = _sentiment_eval_client(
+            generated_outputs, eval_model
+        )
 
-    return MetricValue(metric_name="sentiment",
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language=LANG)
+    return MetricValue(
+        metric_name="sentiment",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=explanations,
+        metric_values=scores,
+        language=LANG,
+    )
 
 
-def _sentiment_local(generated_outputs: List[str],
-                     overflow_strategy: str) -> List[Optional[float]]:
+def _sentiment_local(
+    generated_outputs: List[str], overflow_strategy: str
+) -> List[Optional[float]]:
     """Calculates the sentiment scores of generated outputs using the
     twitter-xlm-roberta-base-sentiment-finetunned model. This metric takes on
     float values between [0, 1], where 0 is negative sentiment and 1 is positive
@@ -121,7 +124,8 @@ def _sentiment_local(generated_outputs: List[str],
         # is positive
         class_weights=[0, 0.5, 1],
         overflow_strategy=overflow_strategy,
-        max_input_length=512)
+        max_input_length=512,
+    )
     return scorer.score(generated_outputs)
 
 
@@ -143,12 +147,14 @@ def _sentiment_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    sentiment_template = get_template("de/metrics/sentiment.j2")
+    sentiment_template = eval_client.load_prompt_template(
+        language="de", metric_name="sentiment"
+    )
 
     sentiment_assessment_to_score = {
         "Positive": 1.0,
         "Neutral": 0.5,
-        "Negative": 0.0
+        "Negative": 0.0,
     }
     populated_prompts = [
         sentiment_template.render({"gen_output": gen_output})
@@ -159,7 +165,8 @@ def _sentiment_eval_client(
         metric_name="sentiment",
         language=LANG,
         prompts=populated_prompts,
-        score_map=sentiment_assessment_to_score)
+        score_map=sentiment_assessment_to_score,
+    )
 
     return scores, explanations
 
@@ -198,7 +205,8 @@ def fluency(
     """
 
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
     if isinstance(generated_outputs, str):
         generated_outputs = [generated_outputs]
@@ -215,23 +223,26 @@ def fluency(
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
-        scores, explanations = _fluency_eval_client(generated_outputs,
-                                                    eval_model)
+        scores, explanations = _fluency_eval_client(
+            generated_outputs, eval_model
+        )
 
-    return MetricValue(metric_name="fluency",
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language=LANG)
+    return MetricValue(
+        metric_name="fluency",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=explanations,
+        metric_values=scores,
+        language=LANG,
+    )
 
 
 def _fluency_eval_client(
     generated_outputs: List[str], eval_client: EvalClient
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    '''Calculates the fluency scores and their associated explanations of
+    """Calculates the fluency scores and their associated explanations of
     generated outputs using the provided EvalClient. This metric takes on float
     values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
     "fair" fluency, and 1 is "good" fluency.  If a score could not be computed,
@@ -244,8 +255,10 @@ def _fluency_eval_client(
     Returns:
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
-    '''
-    fluency_template = get_template("de/metrics/fluency.j2")
+    """
+    fluency_template = eval_client.load_prompt_template(
+        language="de", metric_name="fluency"
+    )
 
     fluency_assessment_to_score = {
         "Poor": 0,
@@ -262,7 +275,8 @@ def _fluency_eval_client(
         metric_name="fluency",
         language=LANG,
         prompts=populated_prompts,
-        score_map=fluency_assessment_to_score)
+        score_map=fluency_assessment_to_score,
+    )
 
     return scores, explanations
 
@@ -305,7 +319,8 @@ def toxicity(
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
     if eval_model == "local":
         scores = _toxicity_local(generated_outputs, local_overflow_strategy)
@@ -315,21 +330,25 @@ def toxicity(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
 
-        scores, explanations = _toxicity_eval_client(generated_outputs,
-                                                     eval_model)
+        scores, explanations = _toxicity_eval_client(
+            generated_outputs, eval_model
+        )
 
-    return MetricValue(metric_name="toxicity",
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language=LANG)
+    return MetricValue(
+        metric_name="toxicity",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=explanations,
+        metric_values=scores,
+        language=LANG,
+    )
 
 
-def _toxicity_local(generated_outputs: List[str],
-                    overflow_strategy: str) -> List[Optional[float]]:
+def _toxicity_local(
+    generated_outputs: List[str], overflow_strategy: str
+) -> List[Optional[float]]:
     """Calculates the toxicity scores of generated outputs using the Detoxify
     model. This metric takes on float values between [0, 1], where 0 is low
     toxicity and 1 is high toxicity.
@@ -345,8 +364,9 @@ def _toxicity_local(generated_outputs: List[str],
     Returns:
         A list of scores
     """
-    return DetoxifyScorer(
-        lang=LANG, overflow_strategy=overflow_strategy).score(generated_outputs)
+    return DetoxifyScorer(lang=LANG, overflow_strategy=overflow_strategy).score(
+        generated_outputs
+    )
 
 
 def _toxicity_eval_client(
@@ -366,14 +386,16 @@ def _toxicity_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    toxicity_template = get_template("de/metrics/toxicity.j2")
+    toxicity_template = eval_client.load_prompt_template(
+        language="de", metric_name="toxicity"
+    )
 
     toxicity_assessment_to_score = {
         "1": 0,
         "2": 0.25,
         "3": 0.5,
         "4": 0.75,
-        "5": 1.0
+        "5": 1.0,
     }
     populated_prompts = [
         toxicity_template.render({"gen_output": gen_output})
@@ -384,14 +406,16 @@ def _toxicity_eval_client(
         metric_name="toxicity",
         language=LANG,
         prompts=populated_prompts,
-        score_map=toxicity_assessment_to_score)
+        score_map=toxicity_assessment_to_score,
+    )
 
     return scores, explanations
 
 
 def flesch_kincaid_grade(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+) -> MetricValue[float]:
     """Calculates the readability of generated outputs using the Flesch-Kincaid.
     It is the same as in English (but higher):
     ref:
@@ -403,9 +427,10 @@ def flesch_kincaid_grade(
 
 
 def flesch_reading_ease(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None) -> MetricValue[float]:
-    '''Calculates the readability of generated outputs using the Flesch Reading
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+) -> MetricValue[float]:
+    """Calculates the readability of generated outputs using the Flesch Reading
     Ease Score. This metric takes on float values between (-∞, 121.22], but
     typically ranges between 0 and 100, where higher scores mean the text is
     easier to read.
@@ -424,36 +449,42 @@ def flesch_reading_ease(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
     output_stats = [
         compute_stats(output)
         for output in tqdm_wrapper(generated_outputs, desc="Computing stats")
     ]
     scores = [
-        180 - (stat.num_words / stat.num_sentences) - 58.5 *
-        (stat.num_syllables / stat.num_words) for stat in output_stats
+        180
+        - (stat.num_words / stat.num_sentences)
+        - 58.5 * (stat.num_syllables / stat.num_words)
+        for stat in output_stats
     ]
-    return MetricValue(metric_name="flesch_reading_ease",
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=None,
-                       metric_values=scores,
-                       language=LANG)
+    return MetricValue(
+        metric_name="flesch_reading_ease",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=None,
+        metric_values=scores,
+        language=LANG,
+    )
 
 
 def ai_disclaimer_similarity(
-        generated_outputs: List[str] | str,
-        prompts: Optional[List[str] | str] = None,
-        ai_disclaimer_phrase: str = (
-            "Ich habe keine persönlichen Meinungen, Emotionen oder Bewusstsein."
-        ),
-        eval_model: str | EvalClient = "local") -> MetricValue[float]:
-    '''Calculates the degree to which the LLM's output contains a disclaimer
+    generated_outputs: List[str] | str,
+    prompts: Optional[List[str] | str] = None,
+    ai_disclaimer_phrase: str = (
+        "Ich habe keine persönlichen Meinungen, Emotionen oder Bewusstsein."
+    ),
+    eval_model: str | EvalClient = "local",
+) -> MetricValue[float]:
+    """Calculates the degree to which the LLM's output contains a disclaimer
     that it is an AI. This is calculated by computing the semantic similarity
     between the generated outputs and a reference AI disclaimer phrase; by
     default, this phrase is "Ich habe keine persönlichen Meinungen, Emotionen
@@ -474,27 +505,32 @@ def ai_disclaimer_similarity(
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
-    '''
+    """
     generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
-    semantic_similarity_values = semantic_similarity(generated_outputs,
-                                                     ai_disclaimer_phrase_list,
-                                                     prompts, eval_model)
-    return MetricValue(metric_name="ai_disclaimer_similarity",
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=None,
-                       metric_values=semantic_similarity_values.metric_values,
-                       language=LANG)
+    semantic_similarity_values = semantic_similarity(
+        generated_outputs, ai_disclaimer_phrase_list, prompts, eval_model
+    )
+    return MetricValue(
+        metric_name="ai_disclaimer_similarity",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=None,
+        metric_values=semantic_similarity_values.metric_values,
+        language=LANG,
+    )
 
 
-def answer_relevance(generated_outputs: List[str] | str,
-                     prompts: List[str] | str,
-                     eval_model: EvalClient) -> MetricValue[Optional[float]]:
+def answer_relevance(
+    generated_outputs: List[str] | str,
+    prompts: List[str] | str,
+    eval_model: EvalClient,
+) -> MetricValue[Optional[float]]:
     """Calculates the relevance of generated outputs to the prompt. This metric
     takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
     Relevant), or 1.0 (Fully Relevant). The score may also be `None` if it could
@@ -503,34 +539,40 @@ def answer_relevance(generated_outputs: List[str] | str,
     We currently only support the evaluation based on an EvalClient.
     """
     generated_outputs, prompts = validate_parameters_answer_relevance(
-        generated_outputs, prompts)
+        generated_outputs, prompts
+    )
 
-    answer_relevance_template = get_template("de/metrics/answer_relevance.j2")
+    answer_relevance_template = eval_model.load_prompt_template(
+        language="de", metric_name="answer_relevance"
+    )
 
     populated_prompts = [
-        answer_relevance_template.render({
-            "gen_output": gen_output,
-            "user_query": prompt
-        }) for gen_output, prompt in zip(generated_outputs, prompts)
+        answer_relevance_template.render(
+            {"gen_output": gen_output, "user_query": prompt}
+        )
+        for gen_output, prompt in zip(generated_outputs, prompts)
     ]
 
     answer_relevance_assessment_to_score = {
         "Fully Relevant": 1.0,
         "Partially Relevant": 0.5,
-        "Not Relevant": 0.0
+        "Not Relevant": 0.0,
     }
 
     scores, explanations = eval_model.get_score(
         metric_name="answer relevance",
         language="de",
         prompts=populated_prompts,
-        score_map=answer_relevance_assessment_to_score)
+        score_map=answer_relevance_assessment_to_score,
+    )
 
-    return MetricValue(metric_name="answer_relevance",
-                       prompts=prompts,
-                       generated_outputs=generated_outputs,
-                       reference_outputs=None,
-                       sources=None,
-                       explanations=explanations,
-                       metric_values=scores,
-                       language=LANG)
+    return MetricValue(
+        metric_name="answer_relevance",
+        prompts=prompts,
+        generated_outputs=generated_outputs,
+        reference_outputs=None,
+        sources=None,
+        explanations=explanations,
+        metric_values=scores,
+        language=LANG,
+    )
