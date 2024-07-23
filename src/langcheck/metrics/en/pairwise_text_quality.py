@@ -9,7 +9,7 @@ from langcheck.metrics._pairwise_text_quality_utils import (
 from langcheck.metrics._validation import (
     validate_parameters_pairwise_comparison,
 )
-from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
 
@@ -76,8 +76,8 @@ def pairwise_comparison(
         "Response A": 0.0,
     }
 
-    pairwise_comparison_template = load_prompt_template(
-        language="en", eval_client=eval_model, metric_name="pairwise_comparison"
+    pairwise_comparison_template = eval_model.load_prompt_template(
+        language="en", metric_name="pairwise_comparison"
     )
     prompt_params = generate_pairwise_comparison_prompt_params(
         generated_outputs_a,

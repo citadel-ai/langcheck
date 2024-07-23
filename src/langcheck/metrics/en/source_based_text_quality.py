@@ -13,7 +13,7 @@ from langcheck.metrics._validation import (
     validate_parameters_context_relevance,
     validate_parameters_source_based,
 )
-from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progess_bar import tqdm_wrapper
 
@@ -225,9 +225,8 @@ def _factual_consistency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    factual_consistency_template = load_prompt_template(
+    factual_consistency_template = eval_client.load_prompt_template(
         language="en",
-        eval_client=eval_client,
         metric_name="factual_consistency",
     )
     factual_consistency_assessment_to_score = {
@@ -269,8 +268,8 @@ def context_relevance(
     """
     prompts, sources = validate_parameters_context_relevance(prompts, sources)
 
-    context_relevance_template = load_prompt_template(
-        language="en", eval_client=eval_model, metric_name="context_relevance"
+    context_relevance_template = eval_model.load_prompt_template(
+        language="en", metric_name="context_relevance"
     )
 
     context_relevance_assessment_to_score = {

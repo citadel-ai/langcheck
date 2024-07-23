@@ -8,7 +8,7 @@ from langcheck.metrics._validation import (
     validate_parameters_answer_correctness,
     validate_parameters_reference_based,
 )
-from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import (
     SentenceTransformerSimilarityScorer,
@@ -43,8 +43,8 @@ def answer_correctness(
         )
     )
 
-    answer_correctness_template = load_prompt_template(
-        language="en", eval_client=eval_model, metric_name="answer_correctness"
+    answer_correctness_template = eval_model.load_prompt_template(
+        language="en", metric_name="answer_correctness"
     )
 
     populated_prompts = [

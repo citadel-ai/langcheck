@@ -9,7 +9,7 @@ from langcheck.metrics._validation import (
 from langcheck.metrics.en.reference_based_text_quality import (
     semantic_similarity,
 )
-from langcheck.metrics.eval_clients import EvalClient, load_prompt_template
+from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import (
@@ -131,8 +131,8 @@ def _sentiment_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    sentiment_template = load_prompt_template(
-        language="en", eval_client=eval_client, metric_name="sentiment"
+    sentiment_template = eval_client.load_prompt_template(
+        language="en", metric_name="sentiment"
     )
 
     sentiment_assessment_to_score = {
@@ -266,8 +266,8 @@ def _fluency_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    fluency_template = load_prompt_template(
-        language="en", eval_client=eval_client, metric_name="fluency"
+    fluency_template = eval_client.load_prompt_template(
+        language="en", metric_name="fluency"
     )
 
     fluency_assessment_to_score = {
@@ -394,8 +394,8 @@ def _toxicity_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    toxicity_template = load_prompt_template(
-        language="en", eval_client=eval_client, metric_name="toxicity"
+    toxicity_template = eval_client.load_prompt_template(
+        language="en", metric_name="toxicity"
     )
 
     toxicity_assessment_to_score = {
@@ -582,8 +582,8 @@ def answer_relevance(
         generated_outputs, prompts
     )
 
-    answer_relevance_template = load_prompt_template(
-        language="en", eval_client=eval_model, metric_name="answer_relevance"
+    answer_relevance_template = eval_model.load_prompt_template(
+        language="en", metric_name="answer_relevance"
     )
 
     populated_prompts = [
