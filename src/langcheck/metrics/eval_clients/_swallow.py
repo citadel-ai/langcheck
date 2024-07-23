@@ -52,7 +52,7 @@ class SwallowEvalClient(EvalClient):
         )
         self._system_prompts = {
             "en": "You are a helpful and competent assistant.",
-            "ja": "あなたは誠実で優秀な日本人のアシスタントです。",
+            "ja": "あなたは誠実で優秀な日本人のアシスタントです。以下は、タスクを説明する指示です。要求を適切に満たす応答を日本語で書きなさい。",
         }
 
     def get_text_responses(
