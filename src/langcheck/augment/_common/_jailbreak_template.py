@@ -5,7 +5,7 @@ import random
 from langcheck.metrics.prompts._utils import get_template
 
 
-def _jailbreak_template(
+def jailbreak_template_common(
     instances: list[str] | str,
     templates: list[str] | None,
     available_templates: list[str],
@@ -17,7 +17,7 @@ def _jailbreak_template(
 
     Args:
         instances: A single string or a list of strings to be augmented.
-        templates: A list of applied templates. If None, some templates are
+        templates: A list templates to apply. If None, some templates are
             randomly selected and used.
         available_templates: A list of available templates.
         language: The language of the templates.

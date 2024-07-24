@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .._common._jailbreak_template import _jailbreak_template
+from .._common._jailbreak_template import jailbreak_template_common
 
 AVAILABLE_JAILBREAK_TEMPLATES = [
     "basic",
@@ -19,7 +19,7 @@ def jailbreak_template(
 
     Args:
         instances: A single string or a list of strings to be augmented.
-        templates: A list of applied templates. If None, some templates are
+        templates: A list templates to apply. If None, some templates are
             randomly selected and used.
         num_perturbations: The number of perturbed instances to generate for
             each string in instances. Should be equal to or less than the number
@@ -28,7 +28,7 @@ def jailbreak_template(
     Returns:
         A list of perturbed instances.
     """
-    return _jailbreak_template(
+    return jailbreak_template_common(
         instances,
         templates,
         AVAILABLE_JAILBREAK_TEMPLATES,

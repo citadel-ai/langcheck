@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .._common._jailbreak_template import _jailbreak_template
+from .._common._jailbreak_template import jailbreak_template_common
 
 AVAILABLE_JAILBREAK_TEMPLATES = [
     "basic",
@@ -30,7 +30,7 @@ def jailbreak_template(
     Returns:
         A list of perturbed instances.
     """
-    return _jailbreak_template(
+    return jailbreak_template_common(
         instances,
         templates,
         AVAILABLE_JAILBREAK_TEMPLATES,
