@@ -12,7 +12,7 @@ def test_invalid_template():
 def test_invalid_num_perturbations():
     with pytest.raises(ValueError):
         jailbreak_template(
-            "こんにちは", ["good_vs_evil", "john"], num_perturbations=3
+            "こんにちは", ["chatgpt_good_vs_evil", "john"], num_perturbations=3
         )
 
 
@@ -24,7 +24,7 @@ def test_invalid_num_perturbations():
         (
             ["こんにちは!", "こんにちは?"],
             [
-                "good_vs_evil",
+                "chatgpt_good_vs_evil",
                 "john",
             ],
             2,

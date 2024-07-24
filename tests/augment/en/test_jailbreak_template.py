@@ -11,7 +11,9 @@ def test_invalid_template():
 
 def test_invalid_num_perturbations():
     with pytest.raises(ValueError):
-        jailbreak_template("Hello, world", ["dan", "john"], num_perturbations=3)
+        jailbreak_template(
+            "Hello, world", ["chatgpt_dan", "john"], num_perturbations=3
+        )
 
 
 @pytest.mark.parametrize(
@@ -22,8 +24,8 @@ def test_invalid_num_perturbations():
         (
             ["Hello, world!", "Hello, world?"],
             [
-                "dan",
-                "good_vs_evil",
+                "chatgpt_dan",
+                "chatgpt_good_vs_evil",
                 "john",
                 "universal_adversarial_suffix",
             ],

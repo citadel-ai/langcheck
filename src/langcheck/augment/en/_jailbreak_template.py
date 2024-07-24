@@ -4,8 +4,8 @@ from .._common._jailbreak_template import jailbreak_template_common
 
 AVAILABLE_JAILBREAK_TEMPLATES = [
     "basic",
-    "dan",
-    "good_vs_evil",
+    "chatgpt_dan",
+    "chatgpt_good_vs_evil",
     "john",
     "universal_adversarial_suffix",
 ]
