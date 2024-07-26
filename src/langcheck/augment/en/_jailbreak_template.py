@@ -26,6 +26,7 @@ def jailbreak_template(
     templates: list[str] | None = None,
     *,
     num_perturbations: int = 1,
+    randomize_order: bool = True,
     seed: int | None = None,
 ) -> list[str]:
     """Applies jailbreak templates to each string in instances.
@@ -42,6 +43,9 @@ def jailbreak_template(
         num_perturbations: The number of perturbed instances to generate for
             each string in instances. Should be equal to or less than the number
             of templates.
+        randomize_order: If True, the order of the templates is randomized.
+            When turned off, num_perturbations needs to be equal to the number
+            of templates.
         seed: The seed for the random number generator. You can fix the seed to
             deterministically select the same templates.
 
@@ -54,5 +58,6 @@ def jailbreak_template(
         AVAILABLE_JAILBREAK_TEMPLATES,
         "en",
         num_perturbations=num_perturbations,
+        randomize_order=randomize_order,
         seed=seed,
     )
