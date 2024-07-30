@@ -2,6 +2,7 @@ from langcheck.augment import en
 from langcheck.augment.en import (
     change_case,
     gender,
+    jailbreak_template,
     keyboard_typo,
     ocr_typo,
     remove_punctuation,
@@ -10,9 +11,10 @@ from langcheck.augment.en import (
 )
 
 __all__ = [
-    "change_case",
     "en",
+    "change_case",
     "gender",
+    "jailbreak_template",
     "keyboard_typo",
     "ocr_typo",
     "synonym",
