@@ -5,6 +5,7 @@ from langcheck.augment.en import (
     jailbreak_template,
     keyboard_typo,
     ocr_typo,
+    payload_splitting,
     remove_punctuation,
     rephrase,
     synonym,
