@@ -11,11 +11,19 @@ from ..prompts._utils import get_template
 from ._base import EvalClient
 
 
-class SwallowEvalClient(EvalClient):
-    """EvalClient defined for the Swallow models.
-    Swallow models only support English and Japanese.
+class LlamaEvalClient(EvalClient):
+    """EvalClient defined for the Llama-based models.
+    It currently only supports English and Japanese.
     The default model is set to "tokyotech-llm/Llama-3-Swallow-8B-Instruct-v0.1".
-    For other models, refer to the model hub at <https://huggingface.co/tokyotech-llm>.
+    The following models are also available:
+    - `tokyotech-llm/Llama-3-Swallow-70B-Instruct-v0.1`
+    - `elyza/Llama-3-ELYZA-JP-8B`
+    - `rinna/llama-3-youko-8b-instruct`
+    - `rinna/llama-3-youko-70b-instruct`
+    - `meta-llama/Meta-Llama-3.1-8B-Instruct`
+    - `meta-llama/Meta-Llama-3.1-70B-Instruct`
+    To use the 70B models, set tensor_parallel_size to 8 or more.
+    To use the Llama 3.1 models, you need to agree to the terms of service and login with your huggingface account.
     """
 
     def __init__(
@@ -26,7 +34,7 @@ class SwallowEvalClient(EvalClient):
         device: str = "cuda",
     ):
         """
-        Initialize the Swallow evaluation client.
+        Initialize the Llama evaluation client.
 
         Args:
             model_name: The name of the model to use.
@@ -96,7 +104,9 @@ class SwallowEvalClient(EvalClient):
             processed_prompts, self._sampling_params
         )
         response_texts = [
-            response.outputs[0].text if response and response.outputs[0].text != "" else None
+            response.outputs[0].text
+            if response and response.outputs[0].text != ""
+            else None
             for response in responses
         ]
 
@@ -127,8 +137,7 @@ class SwallowEvalClient(EvalClient):
             raise ValueError(f"Unsupported language: {language}")
 
         options = list(score_map.keys())
-        get_score_template = get_template(
-            f"{language}/get_score/plain_text.j2")
+        get_score_template = get_template(f"{language}/get_score/plain_text.j2")
         get_score_prompts = [
             get_score_template.render(
                 {
@@ -155,7 +164,8 @@ class SwallowEvalClient(EvalClient):
                     "content": prompt,
                 },
             ]
-            for prompt in get_score_prompts if prompt
+            for prompt in get_score_prompts
+            if prompt
         ]
         if len(messages):
             prompts = self._tokenizer.apply_chat_template(
@@ -180,7 +190,8 @@ class SwallowEvalClient(EvalClient):
                 responses_for_scoring.append(None)
             else:
                 responses_for_scoring.append(
-                    raw_response_texts[idx_raw_response_texts])
+                    raw_response_texts[idx_raw_response_texts]
+                )
                 idx_raw_response_texts += 1
 
         def _turn_to_score(response: str | None) -> float | None:
@@ -236,6 +247,6 @@ class SwallowEvalClient(EvalClient):
 
     def similarity_scorer(self):
         raise NotImplementedError(
-            "Embedding-based metrics are not supported in SwallowEvalClient."
+            "Embedding-based metrics are not supported in LlamaEvalClient."
             "Use other EvalClients to get these metrics."
         )
