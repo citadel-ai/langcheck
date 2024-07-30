@@ -29,14 +29,14 @@ else:
     __all__.append("GeminiEvalClient")
 
 try:
+    from langcheck.metrics.eval_clients._llama import (
+        LlamaEvalClient,  # NOQA: F401
+    )
     from langcheck.metrics.eval_clients._prometheus import (
         PrometheusEvalClient,  # NOQA: F401
-    )
-    from langcheck.metrics.eval_clients._swallow import (
-        SwallowEvalClient,  # NOQA: F401
     )
 except ModuleNotFoundError:
     pass
 else:
     __all__.append("PrometheusEvalClient")
-    __all__.append("SwallowEvalClient")
+    __all__.append("LlamaEvalClient")
