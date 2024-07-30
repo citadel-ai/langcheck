@@ -56,11 +56,9 @@ def test_toxicity_eval_client(generated_outputs):
     assert metric_value.metric_values[0] is None
 
     toxicity_assessment_to_score = {
-        "1": 0,
-        "2": 0.25,
-        "3": 0.5,
-        "4": 0.75,
-        "5": 1.0
+        "Toxic": 1.0,
+        "Has Toxic Expression": 0.5,
+        "Nontoxic": 0,
     }
     for option in toxicity_assessment_to_score:
         eval_client = MockEvalClient(option)
@@ -100,7 +98,7 @@ def test_fluency_eval_client(generated_outputs):
     ("吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。",
      [73.499359]),
     (["吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。"
-     ], [73.499359]),
+      ], [73.499359]),
     (["日本語自然言語処理には、日本語独特の技法が多数必要で、欧米系言語と比較して難易度が高い。"], [24.7875]),
 ])
 def test_tateishi_ono_yamada_reading_ease(generated_outputs, metric_values):
