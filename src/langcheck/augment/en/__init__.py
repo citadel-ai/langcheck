@@ -6,6 +6,7 @@ from langcheck.augment.en._ocr_typo import ocr_typo
 from langcheck.augment.en._remove_punctuation import remove_punctuation
 from langcheck.augment.en._rephrase import rephrase
 from langcheck.augment.en._synonym import synonym
+from langcheck.augment.en._to_full_width import to_full_width
 
 __all__ = [
     "change_case",
@@ -16,4 +17,5 @@ __all__ = [
     "remove_punctuation",
     "rephrase",
     "synonym",
+    "to_full_width",
 ]

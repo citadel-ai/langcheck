@@ -16,6 +16,7 @@ classifiers = [
 keywords = ["llm", "ai", "nlp", "evaluation", "validation", "testing"]
 dependencies = [
     'dash >= 2.11',  # Dash 2.11 introduces a breaking change with Jupyter notebook support
+    'jaconv',
     'Jinja2',
     'nlpaug',
     'nltk >= 3',
