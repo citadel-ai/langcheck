@@ -20,13 +20,13 @@ There are several different types of metrics:
 +---------------------------------------------+----------------------------------------------------------------------------+----------------+
 |               Type of Metric                |                                  Examples                                  |   Languages    |
 +=============================================+============================================================================+================+
-| :ref:`reference-based-text-quality-metrics` | ``toxicity(generated_outputs)``                                            | EN, JA, DE, ZH |
+| :ref:`reference-free-text-quality-metrics`  | ``toxicity(generated_outputs)``                                            | EN, JA, DE, ZH |
 |                                             |                                                                            |                |
 |                                             | ``sentiment(generated_outputs)``                                           |                |
 |                                             |                                                                            |                |
 |                                             | ``ai_disclaimer_similarity(generated_outputs)``                            |                |
 +---------------------------------------------+----------------------------------------------------------------------------+----------------+
-| :ref:`reference-free-text-quality-metrics`  | ``semantic_similarity(generated_outputs, reference_outputs)``              | EN, JA, DE, ZH |
+| :ref:`reference-based-text-quality-metrics` | ``semantic_similarity(generated_outputs, reference_outputs)``              | EN, JA, DE, ZH |
 |                                             |                                                                            |                |
 |                                             | ``rouge2(generated_outputs, reference_outputs)``                           |                |
 +---------------------------------------------+----------------------------------------------------------------------------+----------------+
