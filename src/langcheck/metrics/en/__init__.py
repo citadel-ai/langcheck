@@ -2,6 +2,7 @@ from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.query_based_text_quality import (
     answer_relevance,
     answer_safety,
+    hate_speech,
     personal_data_leakage,
 )
 from langcheck.metrics.en.reference_based_text_quality import (
@@ -34,6 +35,7 @@ __all__ = [
     "flesch_kincaid_grade",
     "flesch_reading_ease",
     "fluency",
+    "hate_speech",
     "pairwise_comparison",
     "personal_data_leakage",
     "rouge1",

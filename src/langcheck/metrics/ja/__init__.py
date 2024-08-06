@@ -3,6 +3,7 @@ from langcheck.metrics.ja.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.ja.query_based_text_quality import (
     answer_relevance,
     answer_safety,
+    hate_speech,
     personal_data_leakage,
 )
 from langcheck.metrics.ja.reference_based_text_quality import (
@@ -29,6 +30,7 @@ __all__ = [
     "answer_safety",
     "context_relevance",
     "factual_consistency",
+    "hate_speech",
     "JanomeTokenizer",
     "MeCabTokenizer",
     "pairwise_comparison",
