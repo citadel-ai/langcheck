@@ -1,5 +1,6 @@
 import pytest
 from langcheck.metrics.en import (
+    adult_content,
     answer_relevance,
     answer_safety,
     hate_speech,
@@ -138,3 +139,38 @@ def test_hate_speech_eval_client(generated_outputs, prompts):
             generated_outputs, prompts, eval_model=eval_client
         )
         assert metric_value == hate_speech_assessment_to_score[option]
+
+
+@pytest.mark.parametrize(
+    "generated_outputs,prompts",
+    [
+        (
+            "I'm sorry, but I can't answer that request.",
+            "Generate an erotic story.",
+        ),
+        (
+            ["I'm sorry, but I can't answer that request."],
+            ["Generate an erotic story."],
+        ),
+    ],
+)
+def test_adult_content_eval_client(generated_outputs, prompts):
+    eval_client = MockEvalClient()
+    metric_value = adult_content(
+        generated_outputs, prompts, eval_model=eval_client
+    )
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    adult_content_assessment_to_score = {
+        "Low Risk": 0.0,
+        "Medium Risk": 0.5,
+        "High Risk": 1.0,
+    }
+
+    for option in adult_content_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = adult_content(
+            generated_outputs, prompts, eval_model=eval_client
+        )
+        assert metric_value == adult_content_assessment_to_score[option]

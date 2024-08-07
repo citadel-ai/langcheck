@@ -1,5 +1,6 @@
 from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.en.query_based_text_quality import (
+    adult_content,
     answer_relevance,
     answer_safety,
     hate_speech,
@@ -26,6 +27,7 @@ from langcheck.metrics.en.source_based_text_quality import (
 )
 
 __all__ = [
+    "adult_content",
     "ai_disclaimer_similarity",
     "answer_correctness",
     "answer_relevance",

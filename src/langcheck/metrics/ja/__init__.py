@@ -1,6 +1,7 @@
 from langcheck.metrics.ja._tokenizers import JanomeTokenizer, MeCabTokenizer
 from langcheck.metrics.ja.pairwise_text_quality import pairwise_comparison
 from langcheck.metrics.ja.query_based_text_quality import (
+    adult_content,
     answer_relevance,
     answer_safety,
     hate_speech,
@@ -25,6 +26,7 @@ from langcheck.metrics.ja.source_based_text_quality import (
 )
 
 __all__ = [
+    "adult_content",
     "answer_correctness",
     "answer_relevance",
     "answer_safety",
