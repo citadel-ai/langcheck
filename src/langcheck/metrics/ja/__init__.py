@@ -17,6 +17,7 @@ from langcheck.metrics.ja.reference_based_text_quality import (
 )
 from langcheck.metrics.ja.reference_free_text_quality import (
     fluency,
+    jailbreak_prompt,
     sentiment,
     tateishi_ono_yamada_reading_ease,
     toxicity,
@@ -35,6 +36,7 @@ __all__ = [
     "factual_consistency",
     "harmful_activity",
     "hate_speech",
+    "jailbreak_prompt",
     "JanomeTokenizer",
     "MeCabTokenizer",
     "pairwise_comparison",

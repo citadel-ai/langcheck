@@ -563,3 +563,48 @@ def ai_disclaimer_similarity(
         metric_values=semantic_similarity_values.metric_values,
         language="en",
     )
+
+
+def jailbreak_prompt(
+    prompts: list[str] | str,
+    eval_model: EvalClient,
+) -> MetricValue[float | None]:
+    """Calculates whether jailbreak techniques are included in the prompts.
+    This metric takes on float values of either 0.0 (Low Risk),
+    0.5 (Medium Risk), or 1.0 (High Risk). The score may also be `None`
+    if it could not be computed.
+
+    We currently only support the evaluation based on an EvalClient.
+    """
+    prompts, _ = validate_parameters_reference_free(prompts, None)
+
+    jailbreak_prompt_template = eval_model.load_prompt_template(
+        language="en", metric_name="jailbreak_prompt"
+    )
+
+    populated_prompts = [
+        jailbreak_prompt_template.render({"user_query": prompt})
+        for prompt in prompts
+    ]
+
+    scores, explanations = eval_model.get_score(
+        metric_name="jailbreak prompt",
+        language="en",
+        prompts=populated_prompts,
+        score_map={
+            "Low Risk": 0.0,
+            "Medium Risk": 0.5,
+            "High Risk": 1.0,
+        },
+    )
+
+    return MetricValue(
+        metric_name="jailbreak_prompt",
+        prompts=prompts,
+        generated_outputs=None,
+        reference_outputs=None,
+        sources=None,
+        explanations=explanations,
+        metric_values=scores,
+        language="en",
+    )

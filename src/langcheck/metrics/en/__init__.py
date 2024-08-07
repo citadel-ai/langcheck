@@ -19,6 +19,7 @@ from langcheck.metrics.en.reference_free_text_quality import (
     flesch_kincaid_grade,
     flesch_reading_ease,
     fluency,
+    jailbreak_prompt,
     sentiment,
     toxicity,
 )
@@ -40,6 +41,7 @@ __all__ = [
     "fluency",
     "harmful_activity",
     "hate_speech",
+    "jailbreak_prompt",
     "pairwise_comparison",
     "personal_data_leakage",
     "rouge1",

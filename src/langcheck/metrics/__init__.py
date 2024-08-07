@@ -24,6 +24,7 @@ from langcheck.metrics.en.reference_free_text_quality import (
     flesch_kincaid_grade,
     flesch_reading_ease,
     fluency,
+    jailbreak_prompt,
     sentiment,
     toxicity,
 )
@@ -71,6 +72,7 @@ __all__ = [
     "is_int",
     "is_json_array",
     "is_json_object",
+    "jailbreak_prompt",
     "matches_regex",
     "pairwise_comparison",
     "personal_data_leakage",
