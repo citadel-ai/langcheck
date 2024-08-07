@@ -8,6 +8,7 @@ from langcheck.metrics.en.query_based_text_quality import (
     adult_content,
     answer_relevance,
     answer_safety,
+    harmful_activity,
     hate_speech,
     personal_data_leakage,
 )
@@ -64,6 +65,7 @@ __all__ = [
     "flesch_kincaid_grade",
     "flesch_reading_ease",
     "fluency",
+    "harmful_activity",
     "hate_speech",
     "is_float",
     "is_int",

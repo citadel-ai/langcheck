@@ -4,6 +4,7 @@ from langcheck.metrics.ja.query_based_text_quality import (
     adult_content,
     answer_relevance,
     answer_safety,
+    harmful_activity,
     hate_speech,
     personal_data_leakage,
 )
@@ -32,6 +33,7 @@ __all__ = [
     "answer_safety",
     "context_relevance",
     "factual_consistency",
+    "harmful_activity",
     "hate_speech",
     "JanomeTokenizer",
     "MeCabTokenizer",
