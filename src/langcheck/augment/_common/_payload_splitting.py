@@ -10,6 +10,7 @@ def payload_splitting_common(
     language: str,
     *,
     num_perturbations: int = 1,
+    seed: int | None = None,
 ) -> list[str]:
     """Applies payload splitting augmentation to each string in instances.
 
@@ -21,10 +22,15 @@ def payload_splitting_common(
         num_perturbations: The number of perturbed instances to generate for
             each string in instances. Should be equal to or less than the number
             of templates.
+        seed: The seed for the random number generator. You can fix the seed to
+            deterministically select the same templates.
 
     Returns:
         A list of perturbed instances.
     """
+
+    if seed is not None:
+        random.seed(seed)
 
     instances = [instances] if isinstance(instances, str) else instances
 

@@ -36,7 +36,8 @@ def jailbreak_template_common(
         A list of perturbed instances.
     """
 
-    random.seed(seed)
+    if seed is not None:
+        random.seed(seed)
 
     instances = [instances] if isinstance(instances, str) else instances
 
