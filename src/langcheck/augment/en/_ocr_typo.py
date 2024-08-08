@@ -53,6 +53,10 @@ def ocr_typo(
     kwargs["aug_char_max"] = kwargs.get("aug_char_max")
     kwargs["aug_word_max"] = kwargs.get("aug_word_max")
 
+    # Validation on aug_char_p
+    if kwargs["aug_char_p"] < 0 or kwargs["aug_char_p"] > 1:
+        raise ValueError("aug_char_p must be between 0 and 1")
+
     instances = [instances] if isinstance(instances, str) else instances
     perturbed_instances = []
     aug = OcrAug(**kwargs)
