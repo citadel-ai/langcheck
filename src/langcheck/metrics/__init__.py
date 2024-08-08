@@ -4,6 +4,14 @@ from langcheck.metrics.custom_text_quality import (
     custom_pairwise_evaluator,
 )
 from langcheck.metrics.en.pairwise_text_quality import pairwise_comparison
+from langcheck.metrics.en.query_based_text_quality import (
+    adult_content,
+    answer_relevance,
+    answer_safety,
+    harmful_activity,
+    hate_speech,
+    personal_data_leakage,
+)
 from langcheck.metrics.en.reference_based_text_quality import (
     answer_correctness,
     rouge1,
@@ -13,10 +21,10 @@ from langcheck.metrics.en.reference_based_text_quality import (
 )
 from langcheck.metrics.en.reference_free_text_quality import (
     ai_disclaimer_similarity,
-    answer_relevance,
     flesch_kincaid_grade,
     flesch_reading_ease,
     fluency,
+    jailbreak_prompt,
     sentiment,
     toxicity,
 )
@@ -39,9 +47,11 @@ from langcheck.metrics.text_structure import (
 )
 
 __all__ = [
+    "adult_content",
     "ai_disclaimer_similarity",
     "answer_correctness",
     "answer_relevance",
+    "answer_safety",
     "contains_all_strings",
     "contains_any_strings",
     "contains_regex",
@@ -56,12 +66,16 @@ __all__ = [
     "flesch_kincaid_grade",
     "flesch_reading_ease",
     "fluency",
+    "harmful_activity",
+    "hate_speech",
     "is_float",
     "is_int",
     "is_json_array",
     "is_json_object",
+    "jailbreak_prompt",
     "matches_regex",
     "pairwise_comparison",
+    "personal_data_leakage",
     "rouge1",
     "rouge2",
     "rougeL",

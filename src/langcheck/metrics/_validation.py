@@ -142,11 +142,10 @@ def validate_parameters_context_relevance(
     return prompts, sources
 
 
-def validate_parameters_answer_relevance(
+def validate_parameters_query_based(
     generated_outputs: List[str] | str, prompts: List[str] | str
 ) -> tuple[List[str], List[str]]:
-    """Validates and parses function parameters for the answer relevance
-    metric.
+    """Validates and parses function parameters for the query based metric.
 
     Args:
         generated_outputs: The model generated output(s) to evaluate

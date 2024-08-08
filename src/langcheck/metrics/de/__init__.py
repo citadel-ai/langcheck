@@ -1,5 +1,6 @@
 from langcheck.metrics.de._tokenizers import DeTokenizer
 from langcheck.metrics.de._translation import Translate
+from langcheck.metrics.de.query_based_text_quality import answer_relevance
 from langcheck.metrics.de.reference_based_text_quality import (
     rouge1,
     rouge2,
@@ -8,7 +9,6 @@ from langcheck.metrics.de.reference_based_text_quality import (
 )
 from langcheck.metrics.de.reference_free_text_quality import (
     ai_disclaimer_similarity,
-    answer_relevance,
     flesch_kincaid_grade,
     flesch_reading_ease,
     fluency,
