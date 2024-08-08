@@ -24,6 +24,10 @@ def change_case(
         A list of perturbed instances.
     """
 
+    # Validation on aug_char_p
+    if aug_char_p < 0 or aug_char_p > 1:
+        raise ValueError("aug_char_p must be between 0 and 1")
+
     instances = [instances] if isinstance(instances, str) else instances
     perturbed_instances = []
     for instance in instances:

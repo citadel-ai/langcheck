@@ -4,10 +4,12 @@ import random
 import string
 
 
-def remove_punctuation(instances: list[str] | str,
-                       *,
-                       aug_char_p: float = 1.0,
-                       num_perturbations: int = 1) -> list[str]:
+def remove_punctuation(
+    instances: list[str] | str,
+    *,
+    aug_char_p: float = 1.0,
+    num_perturbations: int = 1,
+) -> list[str]:
     """Applies a text perturbation to each string in instances (usually a list
     of prompts) where some punctuation is removed.
 
@@ -20,6 +22,10 @@ def remove_punctuation(instances: list[str] | str,
     Returns:
         A list of perturbed instances.
     """
+
+    # Validation on aug_char_p
+    if aug_char_p < 0 or aug_char_p > 1:
+        raise ValueError("aug_char_p must be between 0 and 1")
 
     instances = [instances] if isinstance(instances, str) else instances
     perturbed_instances = []
