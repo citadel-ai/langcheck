@@ -23,7 +23,7 @@ def payload_splitting_common(
             each string in instances. Should be equal to or less than the number
             of templates.
         seed: The seed for the random number generator. You can fix the seed to
-            deterministically select the same templates.
+            deterministically choose the indices to split the instances.
 
     Returns:
         A list of perturbed instances.
