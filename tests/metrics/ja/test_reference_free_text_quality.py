@@ -57,7 +57,6 @@ def test_toxicity_eval_client(generated_outputs):
 
     toxicity_assessment_to_score = {
         "Toxic": 1.0,
-        "Has Toxic Expression": 0.5,
         "Nontoxic": 0,
     }
     for option in toxicity_assessment_to_score:

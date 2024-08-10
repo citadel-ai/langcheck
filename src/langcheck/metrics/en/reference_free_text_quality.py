@@ -300,8 +300,7 @@ def toxicity(
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using an EvalClient, the toxicity scores are either 0.0 (nontoxic),
-    0.5 (has toxic expression), or 1.0 (toxic). The score may also be `None` if
-    it could not be computed.)
+    or 1.0 (toxic). The score may also be `None` if it could not be computed.)
 
     We currently support two evaluation model types:
 
@@ -401,7 +400,6 @@ def _toxicity_eval_client(
 
     toxicity_assessment_to_score = {
         "Toxic": 1.0,
-        "Has Toxic Expression": 0.5,
         "Nontoxic": 0,
     }
 
