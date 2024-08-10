@@ -55,8 +55,7 @@ def test_sentiment_eval_client(generated_outputs):
 def test_toxicity(generated_outputs):
     metric_value = toxicity(generated_outputs)
     toxicity_score_low_risk = metric_value.metric_values[0]
-    # type: ignore[reportGeneralTypeIssues]
-    assert 0 <= toxicity_score_low_risk <= 0.6
+    assert 0 <= toxicity_score_low_risk <= 0.6  # type: ignore[reportGeneralTypeIssues]
     if len(metric_value.metric_values) == 2:
         toxicity_score_high_risk = metric_value.metric_values[1]
         assert toxicity_score_high_risk is not None
