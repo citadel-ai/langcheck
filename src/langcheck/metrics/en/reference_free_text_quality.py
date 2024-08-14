@@ -299,8 +299,9 @@ def toxicity(
 ) -> MetricValue[Optional[float]]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
-    (NOTE: when using an EvalClient, the toxicity scores are either 0.0 (nontoxic),
-    or 1.0 (toxic). The score may also be `None` if it could not be computed.)
+    (NOTE: when using an EvalClient, the toxicity scores are either 0.0
+    (nontoxic), or 1.0 (toxic). The score may also be `None` if it could not be
+    computed.)
 
     We currently support two evaluation model types:
 
