@@ -15,8 +15,7 @@ _TokensType = TypeVar("_TokensType")
 
 
 class BaseSingleScorer(Generic[_TokensType]):
-    """Base class for single input scorers.
-    """
+    """Base class for single input scorers."""
 
     def __init__(self) -> None:
         self.batch_size = 8
@@ -33,8 +32,9 @@ class BaseSingleScorer(Generic[_TokensType]):
         """
         raise NotImplementedError
 
-    def _slice_tokens(self, tokens: _TokensType, start_idx: int,
-                      end_idx: int) -> _TokensType:
+    def _slice_tokens(
+        self, tokens: _TokensType, start_idx: int, end_idx: int
+    ) -> _TokensType:
         """Slice the tokens. The returned type should be the same as the tokens.
         It is equivalent to tokens[start_idx:end_idx] for slicable data types
         such as list.
@@ -42,20 +42,20 @@ class BaseSingleScorer(Generic[_TokensType]):
         raise NotImplementedError
 
     def score(self, inputs: list[str]) -> list[Optional[float]]:
-        """Score the inputs. Basically subclasses should not override this.
-        """
+        """Score the inputs. Basically subclasses should not override this."""
 
         tokens = self._tokenize(inputs)
 
         input_length = len(inputs)
 
         scores: list[Optional[float]] = []
-        for i in tqdm_wrapper(range(0, input_length, self.batch_size),
-                              total=(input_length + self.batch_size - 1) //
-                              self.batch_size):
-
+        for i in tqdm_wrapper(
+            range(0, input_length, self.batch_size),
+            total=(input_length + self.batch_size - 1) // self.batch_size,
+        ):
             batch_tokens = self._slice_tokens(
-                tokens, i, min(i + self.batch_size, input_length))
+                tokens, i, min(i + self.batch_size, input_length)
+            )
 
             scores.extend(self._score_tokens(batch_tokens))
 
@@ -76,8 +76,9 @@ class BaseSimilarityScorer:
         """
         raise NotImplementedError
 
-    def _get_similarity_score(self, embedding1: Tensor,
-                              embedding2: Tensor) -> list[float]:
+    def _get_similarity_score(
+        self, embedding1: Tensor, embedding2: Tensor
+    ) -> list[float]:
         """Calculate the similarity score between the two embeddings. The
         returned list should have the same length as the embeddings. Each
         element in the list should be the similarity score of the two
@@ -99,12 +100,13 @@ class BaseSimilarityScorer:
         embeddings2 = []
 
         # Wrap the encoding process in a progress bar.
-        for i in tqdm_wrapper(range(0, input_length, self.batch_size),
-                              total=(input_length + self.batch_size - 1) //
-                              self.batch_size,
-                              desc="Getting embeddings"):
-            batch_inputs1 = inputs1[i:min(i + self.batch_size, input_length)]
-            batch_inputs2 = inputs2[i:min(i + self.batch_size, input_length)]
+        for i in tqdm_wrapper(
+            range(0, input_length, self.batch_size),
+            total=(input_length + self.batch_size - 1) // self.batch_size,
+            desc="Getting embeddings",
+        ):
+            batch_inputs1 = inputs1[i : min(i + self.batch_size, input_length)]
+            batch_inputs2 = inputs2[i : min(i + self.batch_size, input_length)]
 
             embeddings1.append(self._embed(batch_inputs1))
             embeddings2.append(self._embed(batch_inputs2))
@@ -114,16 +116,18 @@ class BaseSimilarityScorer:
         embedding2 = torch.cat(embeddings2, dim=0)
 
         scores: list[float] = []
-        for i in tqdm_wrapper(range(0, input_length, self.batch_size),
-                              total=(input_length + self.batch_size - 1) //
-                              self.batch_size,
-                              desc="Computing semantic similarity"):
+        for i in tqdm_wrapper(
+            range(0, input_length, self.batch_size),
+            total=(input_length + self.batch_size - 1) // self.batch_size,
+            desc="Computing semantic similarity",
+        ):
             start_idx = i
             end_idx = min(i + self.batch_size, input_length)
             batch_embedding1 = embedding1[start_idx:end_idx]
             batch_embedding2 = embedding2[start_idx:end_idx]
 
             scores.extend(
-                self._get_similarity_score(batch_embedding1, batch_embedding2))
+                self._get_similarity_score(batch_embedding1, batch_embedding2)
+            )
 
         return scores
