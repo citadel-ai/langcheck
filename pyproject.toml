@@ -75,7 +75,7 @@ all = [
 ]
 
 dev = [
-    "ruff",
+    "ruff<0.6",
     "pyright",
     "pandas-stubs",
     "pytest",
