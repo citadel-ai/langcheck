@@ -4,6 +4,7 @@ import random
 from typing import List
 
 import pytest
+
 from langcheck.augment.ja import conv_hiragana
 
 

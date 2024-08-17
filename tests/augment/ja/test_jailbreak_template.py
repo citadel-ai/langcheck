@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+
 from langcheck.augment.ja import jailbreak_template
 
 

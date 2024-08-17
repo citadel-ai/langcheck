@@ -1,10 +1,10 @@
 import pytest
+
 from langcheck.metrics.zh import (
     sentiment,
     toxicity,
     xuyaochen_report_readability,
 )
-
 from tests.utils import MockEvalClient, is_close
 
 ################################################################################

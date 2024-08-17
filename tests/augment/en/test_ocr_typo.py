@@ -4,6 +4,7 @@ import random
 from typing import List
 
 import pytest
+
 from langcheck.augment.en import ocr_typo
 
 

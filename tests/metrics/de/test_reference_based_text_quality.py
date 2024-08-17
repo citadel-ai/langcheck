@@ -2,13 +2,13 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types import CreateEmbeddingResponse
+
 from langcheck.metrics.de import rouge1, rouge2, rougeL, semantic_similarity
 from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
 )
-from openai.types import CreateEmbeddingResponse
-
 from tests.utils import is_close
 
 ################################################################################

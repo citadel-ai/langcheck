@@ -2,6 +2,7 @@ from typing import Optional
 
 import pandas as pd
 import pytest
+
 from langcheck.metrics import is_float
 from langcheck.metrics.metric_value import MetricValue
 

@@ -1,6 +1,7 @@
 from typing import List
 
 import pytest
+
 from langcheck.metrics.de import DeTokenizer
 
 

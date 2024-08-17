@@ -5,11 +5,12 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types.chat import ChatCompletion
+
 from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
 )
-from openai.types.chat import ChatCompletion
 
 
 def test_get_text_response_openai():

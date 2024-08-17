@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from google.generativeai.types import generation_types
+
 from langcheck.metrics.eval_clients import GeminiEvalClient
 
 

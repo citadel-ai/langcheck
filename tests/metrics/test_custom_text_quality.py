@@ -1,8 +1,8 @@
 import tempfile
 
 import pytest
-from langcheck.metrics import custom_evaluator, custom_pairwise_evaluator
 
+from langcheck.metrics import custom_evaluator, custom_pairwise_evaluator
 from tests.utils import MockEvalClient
 
 ################################################################################
