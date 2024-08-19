@@ -1,4 +1,5 @@
 import pytest
+
 from langcheck.metrics.ja import (
     adult_content,
     answer_relevance,
@@ -7,7 +8,6 @@ from langcheck.metrics.ja import (
     hate_speech,
     personal_data_leakage,
 )
-
 from tests.utils import MockEvalClient
 
 

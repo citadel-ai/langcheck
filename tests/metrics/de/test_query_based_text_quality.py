@@ -1,6 +1,6 @@
 import pytest
-from langcheck.metrics.de import answer_relevance
 
+from langcheck.metrics.de import answer_relevance
 from tests.utils import MockEvalClient
 
 
