@@ -51,26 +51,43 @@ class PrometheusEvalClient(EvalClient):
             skip_special_tokens=True,
         )
 
-    def load_prompt_template(self, language: str, metric_name: str) -> Template:
+    def load_prompt_template(
+        self,
+        language: str,
+        metric_name: str,
+        eval_prompt_version: str | None = None,
+    ) -> Template:
         """
-        Gets a Jinja template from the specified language, eval client,
-        and metric name.
+        Gets a Jinja template from the specified language, eval client, metric
+        name, and (optionally) eval prompt version.
 
         Args:
             language (str): The language of the template.
             metric_name (str): The name of the metric.
+            eval_prompt_version (str | None): The version of the eval prompt.
+                If None, the default version is used.
 
         Returns:
             Template: The Jinja template.
         """
-        try:
-            return get_template(
-                f"{language}/metrics/prometheus/{metric_name}.j2"
-            )
-        except FileNotFoundError:
-            raise ValueError(
-                f"The {metric_name} metric (language = {language}) is not yet supported by the Prometheus eval client."
-            )
+        if eval_prompt_version is None:
+            try:
+                return get_template(
+                    f"{language}/metrics/prometheus/{metric_name}.j2"
+                )
+            except FileNotFoundError:
+                raise ValueError(
+                    f"The {metric_name} metric (language = {language}) is not yet supported by the Prometheus eval client."
+                )
+        else:
+            try:
+                return get_template(
+                    f"{language}/metrics/prometheus/{metric_name}_{eval_prompt_version}.j2"
+                )
+            except FileNotFoundError:
+                raise ValueError(
+                    f"The {metric_name} metric (language = {language}, version = {eval_prompt_version}) is not yet supported by the Prometheus eval client."
+                )
 
     def get_text_responses(self, prompts: Iterable[str]) -> list[str | None]:
         """The function that generates resonses to the given prompt texts.
