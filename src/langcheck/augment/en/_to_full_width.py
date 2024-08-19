@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import random
-import string
+
+import jaconv
 
 
-def remove_punctuation(
+def to_full_width(
     instances: list[str] | str,
     *,
     aug_char_p: float = 1.0,
@@ -12,15 +13,16 @@ def remove_punctuation(
     seed: int | None = None,
 ) -> list[str]:
     """Applies a text perturbation to each string in instances (usually a list
-    of prompts) where some punctuation is removed.
+    of prompts) where some ascii characters are converted into full-width
+    characters defined in UTF-8.
 
     Args:
         instances: A single string or a list of strings to be augmented.
-        aug_char_p: Percentage of puncutation characters that will be removed.
+        aug_char_p: Percentage of all characters that will be augmented.
         num_perturbations: The number of perturbed instances to generate for
             each string in instances.
         seed: The seed for the random number generator. You can fix the seed to
-            deterministically choose which characters to remove.
+            deterministically choose which characters to change.
 
     Returns:
         A list of perturbed instances.
@@ -39,12 +41,12 @@ def remove_punctuation(
         for _ in range(num_perturbations):
             perturbed_instance = ""
             for char in instance:
-                if char not in string.punctuation:
-                    perturbed_instance += char  # No augmentation
-                elif random.random() > aug_char_p:
+                if random.random() > aug_char_p:
                     perturbed_instance += char  # No augmentation
                 else:
-                    pass  # Remove character
+                    perturbed_instance += jaconv.h2z(
+                        char, kana=False, ascii=True, digit=True
+                    )
             perturbed_instances.append(perturbed_instance)
 
     return perturbed_instances

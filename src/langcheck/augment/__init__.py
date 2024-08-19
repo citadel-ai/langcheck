@@ -5,9 +5,11 @@ from langcheck.augment.en import (
     jailbreak_template,
     keyboard_typo,
     ocr_typo,
+    payload_splitting,
     remove_punctuation,
     rephrase,
     synonym,
+    to_full_width,
 )
 
 __all__ = [
@@ -17,9 +19,11 @@ __all__ = [
     "jailbreak_template",
     "keyboard_typo",
     "ocr_typo",
-    "synonym",
+    "payload_splitting",
     "remove_punctuation",
     "rephrase",
+    "synonym",
+    "to_full_width",
 ]
 
 # Try to import language-specific packages. These packages will be hidden if

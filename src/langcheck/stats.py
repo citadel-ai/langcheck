@@ -24,9 +24,9 @@ def compute_stats(input_text: str) -> TextStats:
     """
 
     try:
-        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
     except LookupError:
-        nltk.download("punkt")
+        nltk.download("punkt_tab")
 
     try:
         nltk.data.find("corpora/cmudict")
@@ -36,7 +36,8 @@ def compute_stats(input_text: str) -> TextStats:
     sentences = nltk.tokenize.sent_tokenize(input_text)
 
     words = sum(
-        [nltk.tokenize.word_tokenize(sentence) for sentence in sentences], [])
+        [nltk.tokenize.word_tokenize(sentence) for sentence in sentences], []
+    )
 
     # Filter out "words" like "!", ".", ... etc
     def _all_punctuations(input_str: str) -> bool:
@@ -52,19 +53,27 @@ def compute_stats(input_text: str) -> TextStats:
     def _count_syllables(word):
         word = word.lower()
         if word in syllable_dict:
-            return len([
-                phoneme for phoneme in syllable_dict[word][0]
-                if phoneme[-1] in ["0", "1", "2"]
-            ])
+            return len(
+                [
+                    phoneme
+                    for phoneme in syllable_dict[word][0]
+                    if phoneme[-1] in ["0", "1", "2"]
+                ]
+            )
         else:
             syllables = tokenizer.tokenize(word)
-            return len([
-                syllable for syllable in syllables
-                if not _all_punctuations(syllable)
-            ])
+            return len(
+                [
+                    syllable
+                    for syllable in syllables
+                    if not _all_punctuations(syllable)
+                ]
+            )
 
     num_syllables = sum([_count_syllables(word) for word in words])
 
-    return TextStats(num_sentences=len(sentences),
-                     num_words=len(words),
-                     num_syllables=num_syllables)
+    return TextStats(
+        num_sentences=len(sentences),
+        num_words=len(words),
+        num_syllables=num_syllables,
+    )

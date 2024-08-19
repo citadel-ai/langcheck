@@ -1,6 +1,7 @@
 from typing import List
 
 import pytest
+
 from langcheck.metrics.zh import HanLPTokenizer
 from langcheck.metrics.zh._tokenizers import _ChineseTokenizer
 

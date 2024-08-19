@@ -1,4 +1,5 @@
 import pytest
+
 from langcheck.metrics.ja import (
     fluency,
     jailbreak_prompt,
@@ -6,7 +7,6 @@ from langcheck.metrics.ja import (
     tateishi_ono_yamada_reading_ease,
     toxicity,
 )
-
 from tests.utils import MockEvalClient, is_close
 
 ################################################################################
@@ -60,11 +60,8 @@ def test_toxicity_eval_client(generated_outputs):
     assert metric_value.metric_values[0] is None
 
     toxicity_assessment_to_score = {
-        "1": 0,
-        "2": 0.25,
-        "3": 0.5,
-        "4": 0.75,
-        "5": 1.0,
+        "Toxic": 1.0,
+        "Nontoxic": 0,
     }
     for option in toxicity_assessment_to_score:
         eval_client = MockEvalClient(option)

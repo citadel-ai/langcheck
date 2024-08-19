@@ -14,6 +14,7 @@ def synonym(
     instances: list[str] | str,
     *,
     num_perturbations: int = 1,
+    seed: int | None = None,
     **kwargs,
 ) -> list[str]:
     """Applies a text perturbation to each string in instances (usually a list
@@ -25,6 +26,8 @@ def synonym(
             each string in instances
         aug_p: Percentage of words with synonymous which will be augmented.
             Defaults to `0.8`.
+        seed: The seed for the random number generator. You can fix the seed to
+            deterministically choose which words to change.
 
     Returns:
         A list of perturbed instances.
@@ -37,6 +40,10 @@ def synonym(
         WorksApplications/SudachiPy?tab=readme-ov-file#setup>`_ to install them.
 
     """
+
+    if seed is not None:
+        random.seed(seed)
+
     _SudachiDict = Dictionary()  # type: ignore[reportUnboundVariable]
 
     chikkar = Chikkar()
@@ -53,8 +60,9 @@ def synonym(
             perturbed_instance = ""
             for token in tokens:
                 synonym = token.surface()
-                if (synonyms := chikkar.find(token.normalized_form())
-                   ) and random.random() < kwargs["aug_p"]:
+                if (
+                    synonyms := chikkar.find(token.normalized_form())
+                ) and random.random() < kwargs["aug_p"]:
                     synonym = random.choice(synonyms)
                 perturbed_instance += synonym
             perturbed_instances.append(perturbed_instance)

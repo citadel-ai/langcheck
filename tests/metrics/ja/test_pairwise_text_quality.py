@@ -1,6 +1,6 @@
 import pytest
-from langcheck.metrics.ja.pairwise_text_quality import pairwise_comparison
 
+from langcheck.metrics.ja.pairwise_text_quality import pairwise_comparison
 from tests.utils import MockEvalClient
 
 ################################################################################

@@ -106,9 +106,9 @@ def _factual_consistency_local(
     """
     # Confirm necessary data for nltk.tokenize.sent_tokenize() exists
     try:
-        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
     except LookupError:
-        nltk.download("punkt")
+        nltk.download("punkt_tab")
 
     # Split the generated outputs into individual sentences. This is consistent
     # with how UniEval calculates factual consistency, where the factual

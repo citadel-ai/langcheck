@@ -16,19 +16,21 @@ from langcheck.augment.en._gender._gender_pronouns import (
 # This dictionary is used to determine the form of the pronoun.
 # Note that his and hers are not included in this dictionary because they can be
 # either of two different forms depending on the context.
-_PRONOUNS_FORM_DICT = MappingProxyType({
-    "she": "subject",
-    "he": "subject",
-    "they": "subject",
-    "their": "dependent_possessive",
-    "him": "object",
-    "them": "object",
-    "hers": "independent_possessive",
-    "theirs": "independent_possessive",
-    "himself": "reflexive",
-    "herself": "reflexive",
-    "themselves": "reflexive"
-})
+_PRONOUNS_FORM_DICT = MappingProxyType(
+    {
+        "she": "subject",
+        "he": "subject",
+        "they": "subject",
+        "their": "dependent_possessive",
+        "him": "object",
+        "them": "object",
+        "hers": "independent_possessive",
+        "theirs": "independent_possessive",
+        "himself": "reflexive",
+        "herself": "reflexive",
+        "themselves": "reflexive",
+    }
+)
 
 
 def _get_pronoun_form(word: str, tag: str) -> str | None:
@@ -74,13 +76,13 @@ def _replace_gender_pronouns(
         str: Augmented text.
     """
     try:
-        nltk.data.find("taggers/averaged_perceptron_tagger")
+        nltk.data.find("taggers/averaged_perceptron_tagger_eng")
     except LookupError:
-        nltk.download("averaged_perceptron_tagger")
+        nltk.download("averaged_perceptron_tagger_eng")
     try:
-        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
     except LookupError:
-        nltk.download("punkt")
+        nltk.download("punkt_tab")
     tagged_words = pos_tag(word_tokenize(text))
     augmented_words = [
         _replace_pronoun(word, tag, target_pronouns)
@@ -96,25 +98,26 @@ def gender(
 ) -> list[str]:
     """Replace pronouns with that of specified gender.
 
-        Args:
-            texts: Iterable of texts to be augmented.
-            to_gender: Replacing pronoun type string ('male', 'female',
-            'neutral', or 'plural'). Default to `plural`.
+    Args:
+        texts: Iterable of texts to be augmented.
+        to_gender: Replacing pronoun type string ('male', 'female',
+        'neutral', or 'plural'). Default to `plural`.
 
-        Returns:
-            List of sentences with replaced pronouns.
+    Returns:
+        List of sentences with replaced pronouns.
 
-        .. note::
-            Replacing neopronouns with other neopronouns is not supported yet
-            because `NLTK <https://www.nltk.org/>`_ does not recognize them.
+    .. note::
+        Replacing neopronouns with other neopronouns is not supported yet
+        because `NLTK <https://www.nltk.org/>`_ does not recognize them.
 
     """
-    if (to_gender is not None) and (to_gender not in [
-            "female", "male", "neutral", "plural"
-    ]):
+    if (to_gender is not None) and (
+        to_gender not in ["female", "male", "neutral", "plural"]
+    ):
         raise ValueError(
             f"The argument 'gender' must be one of 'female', 'male', 'neutral',"
-            f" or 'plural', but got {to_gender}.")
+            f" or 'plural', but got {to_gender}."
+        )
     target_gender = choice(_PRONOUNS_DICT[to_gender])
 
     if isinstance(texts, str):
@@ -124,4 +127,5 @@ def gender(
     else:
         raise TypeError(
             f"Expected texts to be a string or iterable of strings but got "
-            f"{type(texts)}.")
+            f"{type(texts)}."
+        )
