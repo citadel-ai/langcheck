@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List, Optional, Tuple, Union
 
 import torch
-from langcheck._handle_logs import _handle_logging_level
 from transformers import (
     BatchEncoding,
     BertForSequenceClassification,
@@ -11,6 +10,8 @@ from transformers import (
     XLMRobertaForSequenceClassification,
     XLMRobertaTokenizer,
 )
+
+from langcheck._handle_logs import _handle_logging_level
 
 from ._base import BaseSingleScorer
 

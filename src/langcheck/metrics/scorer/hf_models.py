@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 import torch
-from langcheck._handle_logs import _handle_logging_level
 from transformers import BatchEncoding
+
+from langcheck._handle_logs import _handle_logging_level
 
 from ._base import BaseSimilarityScorer, BaseSingleScorer
 

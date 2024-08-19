@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+
 from langcheck.metrics.model_manager import _model_management
 from langcheck.metrics.model_manager._model_management import (
     ModelManager,

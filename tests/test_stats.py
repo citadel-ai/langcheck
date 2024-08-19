@@ -1,4 +1,5 @@
 import pytest
+
 from langcheck.stats import compute_stats
 
 ################################################################################

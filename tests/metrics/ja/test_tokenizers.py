@@ -2,6 +2,7 @@ import pkgutil
 from typing import List
 
 import pytest
+
 from langcheck.metrics.ja import JanomeTokenizer, MeCabTokenizer
 from langcheck.metrics.ja._tokenizers import _JapaneseTokenizer
 

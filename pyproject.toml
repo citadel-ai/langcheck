@@ -19,7 +19,7 @@ dependencies = [
     'jaconv',
     'Jinja2',
     'nlpaug',
-    'nltk >= 3',
+    'nltk >= 3.9',
     'openai >= 1',
     'pandas >= 1',
     'plotly >= 5',
@@ -76,7 +76,7 @@ all = [
 ]
 
 dev = [
-    "ruff<0.6",
+    "ruff >= 0.6",
     "pyright",
     "pandas-stubs",
     "pytest",

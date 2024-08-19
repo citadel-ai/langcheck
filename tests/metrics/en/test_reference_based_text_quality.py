@@ -2,6 +2,8 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
+from openai.types import CreateEmbeddingResponse
+
 from langcheck.metrics.en import (
     answer_correctness,
     rouge1,
@@ -13,8 +15,6 @@ from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
 )
-from openai.types import CreateEmbeddingResponse
-
 from tests.utils import MockEvalClient, is_close
 
 ################################################################################
