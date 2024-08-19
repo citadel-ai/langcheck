@@ -296,6 +296,7 @@ def toxicity(
     prompts: Optional[List[str] | str] = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
+    eval_prompt_version: str = "v2",
 ) -> MetricValue[Optional[float]]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
@@ -342,7 +343,7 @@ def toxicity(
         ), "An EvalClient must be provided for non-local model types."
 
         scores, explanations = _toxicity_eval_client(
-            generated_outputs, eval_model
+            generated_outputs, eval_model, eval_prompt_version
         )
 
     return MetricValue(
@@ -379,7 +380,9 @@ def _toxicity_local(
 
 
 def _toxicity_eval_client(
-    generated_outputs: List[str], eval_client: EvalClient
+    generated_outputs: List[str],
+    eval_client: EvalClient,
+    eval_prompt_version: str,
 ) -> Tuple[List[Optional[float]], List[Optional[str]]]:
     """Calculates the toxicity scores and their associated explanations of
     generated outputs using the provided EvalClient. This metric takes on float
@@ -395,14 +398,28 @@ def _toxicity_eval_client(
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
-    toxicity_template = eval_client.load_prompt_template(
-        language="en", metric_name="toxicity"
-    )
-
     toxicity_assessment_to_score = {
-        "Toxic": 1.0,
-        "Nontoxic": 0,
+        "v1": {
+            "1": 0,
+            "2": 0.25,
+            "3": 0.5,
+            "4": 0.75,
+            "5": 1.0,
+        },
+        "v2": {
+            "Toxic": 1.0,
+            "Nontoxic": 0,
+        },
     }
+    assert (
+        eval_prompt_version in toxicity_assessment_to_score
+    ), f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are {list(toxicity_assessment_to_score.keys())}."
+
+    toxicity_template = eval_client.load_prompt_template(
+        language="en",
+        metric_name="toxicity",
+        eval_prompt_version=eval_prompt_version,
+    )
 
     populated_prompts = [
         toxicity_template.render({"gen_output": gen_output})
@@ -413,7 +430,7 @@ def _toxicity_eval_client(
         metric_name="toxicity",
         language="en",
         prompts=populated_prompts,
-        score_map=toxicity_assessment_to_score,
+        score_map=toxicity_assessment_to_score[eval_prompt_version],
     )
 
     return scores, explanations

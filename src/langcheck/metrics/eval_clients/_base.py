@@ -14,7 +14,9 @@ class EvalClient:
     defined in this class to compute the metric values.
     """
 
-    def load_prompt_template(self, language: str, metric_name: str) -> Template:
+    def load_prompt_template(
+        self, language: str, metric_name: str, eval_prompt_version: str
+    ) -> Template:
         """
         Gets a Jinja template from the specified language, eval client,
         and metric name.
@@ -26,7 +28,9 @@ class EvalClient:
         Returns:
             Template: The Jinja template.
         """
-        return get_template(f"{language}/metrics/{metric_name}.j2")
+        return get_template(
+            f"{language}/metrics/{metric_name}_{eval_prompt_version}.j2"
+        )
 
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
