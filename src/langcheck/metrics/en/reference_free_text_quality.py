@@ -326,6 +326,8 @@ def toxicity(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
+        eval_prompt_version: The version of the eval prompt to use when the
+            EvalClient is used. The default version is 'v2' (latest).
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -393,12 +395,14 @@ def _toxicity_eval_client(
     Args:
         generated_outputs: A list of model generated outputs to evaluate
         eval_client: EvalClient instance used to evaluate the generated outputs
+        eval_prompt_version: The version of the eval prompt to use
 
     Returns:
         score_list: a list of scores
         explanation_list: a list of explanations for the scores
     """
     toxicity_assessment_to_score = {
+        # The v1 prompt returns the toxicity on a scale of 1 to 5
         "v1": {
             "1": 0,
             "2": 0.25,
@@ -406,6 +410,7 @@ def _toxicity_eval_client(
             "4": 0.75,
             "5": 1.0,
         },
+        # The v2 prompt returns either "Toxic" or "Nontoxic"
         "v2": {
             "Toxic": 1.0,
             "Nontoxic": 0,
