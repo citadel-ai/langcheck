@@ -19,7 +19,7 @@ dependencies = [
     'jaconv',
     'Jinja2',
     'nlpaug',
-    'nltk >= 3',
+    'nltk >= 3.9',
     'openai >= 1',
     'pandas >= 1',
     'plotly >= 5',
