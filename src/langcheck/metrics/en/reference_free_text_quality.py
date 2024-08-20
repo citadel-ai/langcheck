@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List, Optional, Tuple
 
 from langcheck.metrics._validation import (
-    validate_parameters_answer_relevance,
     validate_parameters_reference_free,
 )
 from langcheck.metrics.en.reference_based_text_quality import (
@@ -564,48 +563,43 @@ def ai_disclaimer_similarity(
     )
 
 
-def answer_relevance(
-    generated_outputs: List[str] | str,
-    prompts: List[str] | str,
+def jailbreak_prompt(
+    prompts: list[str] | str,
     eval_model: EvalClient,
-) -> MetricValue[Optional[float]]:
-    """Calculates the relevance of generated outputs to the prompt. This metric
-    takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
-    Relevant), or 1.0 (Fully Relevant). The score may also be `None` if it could
-    not be computed.
+) -> MetricValue[float | None]:
+    """Calculates whether jailbreak techniques are included in the prompts.
+    This metric takes on float values of either 0.0 (Low Risk),
+    0.5 (Medium Risk), or 1.0 (High Risk). The score may also be `None`
+    if it could not be computed.
 
     We currently only support the evaluation based on an EvalClient.
     """
-    generated_outputs, prompts = validate_parameters_answer_relevance(
-        generated_outputs, prompts
-    )
+    prompts, _ = validate_parameters_reference_free(prompts, None)
 
-    answer_relevance_template = eval_model.load_prompt_template(
-        language="en", metric_name="answer_relevance"
+    jailbreak_prompt_template = eval_model.load_prompt_template(
+        language="en", metric_name="jailbreak_prompt"
     )
 
     populated_prompts = [
-        answer_relevance_template.render(
-            {"gen_output": gen_output, "user_query": prompt}
-        )
-        for gen_output, prompt in zip(generated_outputs, prompts)
+        jailbreak_prompt_template.render({"user_query": prompt})
+        for prompt in prompts
     ]
 
     scores, explanations = eval_model.get_score(
-        metric_name="answer relevance",
+        metric_name="jailbreak prompt",
         language="en",
         prompts=populated_prompts,
         score_map={
-            "Not Relevant": 0.0,
-            "Partially Relevant": 0.5,
-            "Fully Relevant": 1.0,
+            "Low Risk": 0.0,
+            "Medium Risk": 0.5,
+            "High Risk": 1.0,
         },
     )
 
     return MetricValue(
-        metric_name="answer_relevance",
+        metric_name="jailbreak_prompt",
         prompts=prompts,
-        generated_outputs=generated_outputs,
+        generated_outputs=None,
         reference_outputs=None,
         sources=None,
         explanations=explanations,
