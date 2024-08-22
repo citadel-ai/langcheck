@@ -67,6 +67,7 @@ There are several different types of metrics:
    :hidden:
    :maxdepth: 4
 
+   langcheck.metrics.custom_text_quality
    langcheck.metrics.metric_value
    langcheck.metrics.reference_based_text_quality
    langcheck.metrics.text_structure

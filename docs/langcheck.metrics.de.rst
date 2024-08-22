@@ -16,6 +16,7 @@ langcheck.metrics.de
    :hidden:
    :maxdepth: 4
 
+   langcheck.metrics.de.query_based_text_quality
    langcheck.metrics.de.reference_based_text_quality
    langcheck.metrics.de.reference_free_text_quality
    langcheck.metrics.de.source_based_text_quality
