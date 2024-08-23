@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Union
 
+import pandas as pd
+
 SingleInputType = Union[str, list[str], None]
 
 
@@ -63,10 +65,7 @@ class MetricInputs:
                 # Add mapping for the input key itself
                 self.input_record_mapping[input_key] = input_key
 
-        self.input_records: list[dict[str, str | None]] | None = None
-
-    def validate(self):
-        """TODO"""
+        # Do the validation of parameters
         # Validate that single_inputs and pairwise_inputs are disjoint
         single_input_keys = set(self.single_inputs.keys())
         pairwise_input_keys = set(self.pairwise_inputs.keys())
@@ -90,9 +89,6 @@ class MetricInputs:
                 f"Missing required parameters: {missing_required_params}"
             )
 
-        # Dictionary to check the collision in the prompt variable mapping
-        input_record_to_arg = {}
-
         # Validate the single inputs
         for single_input_key in single_input_keys:
             single_input = self.single_inputs[single_input_key]
@@ -105,15 +101,6 @@ class MetricInputs:
                 )
             elif single_input_key not in self.optional_params:
                 raise ValueError(f"Unknown parameter '{single_input_key}'")
-
-            input_record_name = self.input_record_mapping[single_input_key]
-            if input_record_name in input_record_to_arg:
-                raise ValueError(
-                    f"Prompt variable '{input_record_name}' is mapped from multiple arguments: "
-                    f"{input_record_to_arg[input_record_name]} and {single_input_key}"
-                )
-
-            input_record_to_arg[input_record_name] = single_input_key
 
         # Validate the pairwise inputs
         for pairwise_input_key in pairwise_input_keys:
@@ -134,22 +121,18 @@ class MetricInputs:
             else:
                 raise ValueError(f"Unknown parameter '{pairwise_input_key}'")
 
-            input_record_name_single = self.input_record_mapping[
-                single_input_key
-            ]
-            input_record_names = [
-                input_record_name_single + "_a",
-                input_record_name_single + "_b",
-            ]
-
-            for input_record_name in input_record_names:
-                if input_record_name in input_record_to_arg:
-                    raise ValueError(
-                        f"Prompt variable '{input_record_name}' is mapped from multiple arguments: "
-                        f"{input_record_to_arg[input_record_name]} and {pairwise_input_key}"
-                    )
-
-                input_record_to_arg[input_record_name] = pairwise_input_key
+            # If to_df is called, each key is mapped into two columns: key_a and
+            # key_b. Check that the key is not already used.
+            df_key_a = pairwise_input_key + "_a"
+            if df_key_a in all_input_keys:
+                raise ValueError(
+                    f"Key '{df_key_a} will be added as a dataframe column, but it is already used as a input key."
+                )
+            df_key_b = pairwise_input_key + "_b"
+            if df_key_b in all_input_keys:
+                raise ValueError(
+                    f"Key '{df_key_b} will be added as a dataframe column, but it is already used as a input key."
+                )
 
         # Validate the lengths of the inputs
         input_lengths: set[int] = set()
@@ -182,8 +165,8 @@ class MetricInputs:
                 f"All inputs should have the same length. {single_input_lengths}\n{pairwise_input_lengths}"
             )
 
-        input_length = input_lengths.pop()
-        if input_length == 0:
+        self.input_length = input_lengths.pop()
+        if self.input_length == 0:
             raise ValueError("All inputs should have at least one element.")
 
         # Validate the mapping to prompt variables
@@ -217,8 +200,8 @@ class MetricInputs:
 
                 input_record_to_arg[input_record_name] = pairwise_input_key
 
-        self.input_records = []
-        for i in range(input_length):
+        self.input_records: list[dict[str, str | None]] = []
+        for i in range(self.input_length):
             input_record = {}
             for single_key in self.single_inputs:
                 single_input = self.single_inputs[single_key]
@@ -254,3 +237,44 @@ class MetricInputs:
             )
 
         return self.input_records
+
+    def to_df(self) -> pd.DataFrame:
+        """Convert the inputs to a DataFrame."""
+        if self.input_length is None:
+            raise ValueError(
+                "Please run `validate` before calling this method."
+            )
+        input_lists = {}
+        for single_key in self.single_inputs:
+            single_input = self.single_inputs[single_key]
+            if single_input is None:
+                input_lists[single_key] = [None] * self.input_length
+            else:
+                input_lists[single_key] = single_input
+
+        for pairwise_key in self.pairwise_inputs:
+            pairwise_input_a, pairwise_input_b = self.pairwise_inputs[
+                pairwise_key
+            ]
+            if pairwise_input_a is None:
+                input_lists[pairwise_key + "_a"] = [None] * self.input_length
+            else:
+                input_lists[pairwise_key + "_a"] = pairwise_input_a
+
+            if pairwise_input_b is None:
+                input_lists[pairwise_key + "_b"] = [None] * self.input_length
+            else:
+                input_lists[pairwise_key + "_b"] = pairwise_input_b
+
+        return pd.DataFrame(input_lists)
+
+    def get_input_list(
+        self, key: str
+    ) -> tuple[list[str] | None, list[str] | None] | list[str] | None:
+        """Get the input list for the key."""
+        if key in self.single_inputs:
+            return self.single_inputs[key]
+        elif key in self.pairwise_inputs:
+            return self.pairwise_inputs[key]
+        else:
+            raise ValueError(f"Unknown key: {key}")
