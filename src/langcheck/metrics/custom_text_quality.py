@@ -2,16 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jinja2 import Environment, Template, meta
+from jinja2 import Template
 
 from langcheck.metrics._pairwise_text_quality_utils import (
     enforce_pairwise_comparison_consistency,
 )
-from langcheck.metrics._validation import (
-    validate_parameters_custom_evaluator,
-    validate_parameters_custom_pairwise_evaluator,
-)
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import MetricInputs
 from langcheck.metrics.metric_value import MetricValue
 
 
@@ -67,24 +64,29 @@ def custom_evaluator(
     Returns:
         A MetricValue object
     """
-    generated_outputs, prompts, reference_outputs, sources = (
-        validate_parameters_custom_evaluator(
-            generated_outputs, prompts, reference_outputs, sources
-        )
-    )
-    # Find the length of the first non-None list (they are guaranteed to all be
-    # the same length)
-    num_examples = next(
-        (
-            len(lst)
-            for lst in [generated_outputs, prompts, reference_outputs, sources]
-            if lst is not None
-        ),
-        0,
-    )
-
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
+
+    metric_inputs = MetricInputs(
+        single_inputs={
+            "generated_outputs": generated_outputs,
+            "prompts": prompts,
+            "sources": sources,
+            "reference_outputs": reference_outputs,
+        },
+        optional_params=[
+            "generated_outputs",
+            "prompts",
+            "sources",
+            "reference_outputs",
+        ],
+        input_record_mapping={
+            "generated_outputs": "gen_output",
+            "prompts": "user_query",
+            "sources": "src",
+            "reference_outputs": "ref_output",
+        },
+    )
 
     assert Path(
         template_path
@@ -94,48 +96,13 @@ def custom_evaluator(
     ), 'The prompt template file must be a Jinja2 template file with the extension ".j2"'
 
     prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+    metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
-    # Validate the expected parameters in the prompt template
-    env = Environment()
-    expected_params = meta.find_undeclared_variables(
-        env.parse(prompt_template_source)
-    )
-    allowed_params = ["gen_output", "user_query", "src", "ref_output"]
-    assert all(
-        param in allowed_params for param in expected_params
-    ), f"The prompt template contains invalid parameters. The allowed parameters are {allowed_params} but the prompt template expects the parameters {expected_params}"
-    expected_param_to_arg = {
-        "gen_output": generated_outputs,
-        "user_query": prompts,
-        "src": sources,
-        "ref_output": reference_outputs,
-    }
-    for param in expected_params:
-        assert (
-            expected_param_to_arg[param] is not None
-        ), f'The prompt template expects the parameter "{param}" but it is not provided.'
-
-    def _args_to_prompt_param(
-        generated_outputs, prompts, sources, reference_outputs, index
-    ):
-        prompt_param = {}
-        if generated_outputs is not None:
-            prompt_param["gen_output"] = generated_outputs[index]
-        if prompts is not None:
-            prompt_param["user_query"] = prompts[index]
-        if sources is not None:
-            prompt_param["src"] = sources[index]
-        if reference_outputs is not None:
-            prompt_param["ref_output"] = reference_outputs[index]
-        return prompt_param
-
-    populated_prompts = []
-    for i in range(num_examples):
-        prompt_param = _args_to_prompt_param(
-            generated_outputs, prompts, sources, reference_outputs, i
-        )
-        populated_prompts.append(prompt_template.render(prompt_param))
+    input_records = metric_inputs.get_input_records()
+    populated_prompts = [
+        prompt_template.render(input_record) for input_record in input_records
+    ]
 
     scores, explanations = eval_model.get_score(
         metric_name=metric_name,
@@ -146,10 +113,7 @@ def custom_evaluator(
 
     return MetricValue(
         metric_name=metric_name,
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=reference_outputs,
-        sources=sources,
+        metric_inputs=metric_inputs,
         explanations=explanations,
         metric_values=scores,
         language=language,
@@ -226,41 +190,32 @@ def custom_pairwise_evaluator(
     Returns:
         A MetricValue object
     """
-    (
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
-    ) = validate_parameters_custom_pairwise_evaluator(
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
-    )
-    # Find the length of the first non-None list (they are guaranteed to all be
-    # the same length)
-    num_examples = next(
-        (
-            len(lst)
-            for lst in [
-                generated_outputs_a,
-                generated_outputs_b,
-                prompts,
-                sources_a,
-                sources_b,
-                reference_outputs,
-            ]
-            if lst is not None
-        ),
-        0,
-    )
 
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
+
+    metric_inputs = MetricInputs(
+        single_inputs={
+            "prompts": prompts,
+            "reference_outputs": reference_outputs,
+        },
+        pairwise_inputs={
+            "generated_outputs": (generated_outputs_a, generated_outputs_b),
+            "sources": (sources_a, sources_b),
+        },
+        optional_params=[
+            "generated_outputs",
+            "prompts",
+            "sources",
+            "reference_outputs",
+        ],
+        input_record_mapping={
+            "generated_outputs": "gen_output",
+            "prompts": "user_query",
+            "sources": "src",
+            "reference_outputs": "ref_output",
+        },
+    )
 
     assert Path(
         template_path
@@ -270,73 +225,13 @@ def custom_pairwise_evaluator(
     ), 'The prompt template file must be a Jinja2 template file with the extension ".j2"'
 
     prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+    metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
-    # Validate the expected parameters in the prompt template
-    env = Environment()
-    expected_params = meta.find_undeclared_variables(
-        env.parse(prompt_template_source)
-    )
-    allowed_params = [
-        "gen_output_a",
-        "gen_output_b",
-        "user_query",
-        "src_a",
-        "src_b",
-        "ref_output",
+    input_records = metric_inputs.get_input_records()
+    populated_prompts = [
+        prompt_template.render(input_record) for input_record in input_records
     ]
-    assert all(
-        param in allowed_params for param in expected_params
-    ), f"The prompt template contains invalid parameters. The allowed parameters are {allowed_params} but the prompt template expects the parameters {expected_params}"
-    expected_param_to_arg = {
-        "gen_output_a": generated_outputs_a,
-        "gen_output_b": generated_outputs_b,
-        "user_query": prompts,
-        "src_a": sources_a,
-        "src_b": sources_b,
-        "ref_output": reference_outputs,
-    }
-    for param in expected_params:
-        assert (
-            expected_param_to_arg[param] is not None
-        ), f'The prompt template expects the parameter "{param}" but it is not provided.'
-
-    def _args_to_prompt_param(
-        generated_outputs_1,
-        generated_outputs_2,
-        prompts,
-        sources_1,
-        sources_2,
-        reference_outputs,
-        index,
-    ):
-        prompt_param = {}
-        if generated_outputs_1 is not None:
-            prompt_param["gen_output_a"] = generated_outputs_1[index]
-        if generated_outputs_2 is not None:
-            prompt_param["gen_output_b"] = generated_outputs_2[index]
-        if prompts is not None:
-            prompt_param["user_query"] = prompts[index]
-        if sources_1 is not None:
-            prompt_param["src_a"] = sources_1[index]
-        if sources_2 is not None:
-            prompt_param["src_b"] = sources_2[index]
-        if reference_outputs is not None:
-            prompt_param["ref_output"] = reference_outputs[index]
-        return prompt_param
-
-    populated_prompts = []
-    for i in range(num_examples):
-        prompt_param = _args_to_prompt_param(
-            generated_outputs_a,
-            generated_outputs_b,
-            prompts,
-            sources_a,
-            sources_b,
-            reference_outputs,
-            i,
-        )
-        populated_prompts.append(prompt_template.render(prompt_param))
 
     scores, explanations = eval_model.get_score(
         metric_name=metric_name,
@@ -347,18 +242,11 @@ def custom_pairwise_evaluator(
 
     if enforce_consistency:
         # Swap the generated outputs and sources and enforce consistency
-        swapped_prompts = []
-        for i in range(num_examples):
-            prompt_param = _args_to_prompt_param(
-                generated_outputs_b,
-                generated_outputs_a,
-                prompts,
-                sources_b,
-                sources_a,
-                reference_outputs,
-                i,
-            )
-            swapped_prompts.append(prompt_template.render(prompt_param))
+        swapped_records = metric_inputs.get_input_records(swap_pairwise=True)
+        swapped_prompts = [
+            prompt_template.render(swapped_record)
+            for swapped_record in swapped_records
+        ]
 
         intermediate_tqdm = (
             "[Swapped model outputs order] Intermediate assessments (1/2)"
@@ -403,10 +291,7 @@ def custom_pairwise_evaluator(
 
     return MetricValue(
         metric_name=metric_name,
-        prompts=prompts,
-        generated_outputs=(generated_outputs_a, generated_outputs_b),
-        reference_outputs=reference_outputs,
-        sources=(sources_a, sources_b),
+        metric_inputs=metric_inputs,
         explanations=explanations,
         metric_values=scores,
         language=language,

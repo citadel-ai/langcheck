@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Union
 
 import pandas as pd
+from jinja2 import Environment, meta
 
 SingleInputType = Union[str, list[str], None]
 
@@ -16,7 +17,9 @@ def _map_pairwise_input_to_list(
     )
 
 
-def _map_single_input_to_list(input: SingleInputType) -> list[str] | None:
+def _map_single_input_to_list(
+    input: SingleInputType,
+) -> list[str] | None:
     if input is None:
         return None
     elif isinstance(input, str):
@@ -32,7 +35,7 @@ class MetricInputs:
         self,
         single_inputs: dict[str, SingleInputType],
         pairwise_inputs: dict[str, tuple[SingleInputType, SingleInputType]]
-        | None,
+        | None = None,
         required_params: list[str] | None = None,
         optional_params: list[str] | None = None,
         input_record_mapping: dict[str, str] | None = None,
@@ -162,7 +165,7 @@ class MetricInputs:
             )
 
             raise ValueError(
-                f"All inputs should have the same length. {single_input_lengths}\n{pairwise_input_lengths}"
+                f"All inputs should have the same length.\n {single_input_lengths}\n{pairwise_input_lengths}"
             )
 
         self.input_length = input_lengths.pop()
@@ -170,21 +173,21 @@ class MetricInputs:
             raise ValueError("All inputs should have at least one element.")
 
         # Validate the mapping to prompt variables
-        input_record_to_arg = {}
+        self.input_record_to_arg = {}
 
         for single_input_key in single_input_keys:
             input_record_name = self.input_record_mapping[single_input_key]
-            if input_record_name in input_record_to_arg:
+            if input_record_name in self.input_record_to_arg:
                 raise ValueError(
-                    f"Prompt variable '{input_record_name}' is mapped from multiple arguments: "
-                    f"{input_record_to_arg[input_record_name]} and {single_input_key}"
+                    f"Input record attribute '{input_record_name}' is mapped from multiple arguments: "
+                    f"{self.input_record_to_arg[input_record_name]} and {single_input_key}"
                 )
 
-            input_record_to_arg[input_record_name] = single_input_key
+            self.input_record_to_arg[input_record_name] = single_input_key
 
         for pairwise_input_key in pairwise_input_keys:
             input_record_name_single = self.input_record_mapping[
-                single_input_key
+                pairwise_input_key
             ]
             input_record_names = [
                 input_record_name_single + "_a",
@@ -192,15 +195,19 @@ class MetricInputs:
             ]
 
             for input_record_name in input_record_names:
-                if input_record_name in input_record_to_arg:
+                if input_record_name in self.input_record_to_arg:
                     raise ValueError(
-                        f"Prompt variable '{input_record_name}' is mapped from multiple arguments: "
-                        f"{input_record_to_arg[input_record_name]} and {pairwise_input_key}"
+                        f"Input record attribute '{input_record_name}' is mapped from multiple arguments: "
+                        f"{self.input_record_to_arg[input_record_name]} and {pairwise_input_key}"
                     )
 
-                input_record_to_arg[input_record_name] = pairwise_input_key
+                self.input_record_to_arg[input_record_name] = pairwise_input_key
 
-        self.input_records: list[dict[str, str | None]] = []
+    def get_input_records(
+        self, swap_pairwise: bool = False
+    ) -> list[dict[str, str | None]]:
+        """TODO"""
+        input_records: list[dict[str, str | None]] = []
         for i in range(self.input_length):
             input_record = {}
             for single_key in self.single_inputs:
@@ -215,6 +222,11 @@ class MetricInputs:
                 pairwise_input_a, pairwise_input_b = self.pairwise_inputs[
                     pairwise_key
                 ]
+                if swap_pairwise:
+                    pairwise_input_a, pairwise_input_b = (
+                        pairwise_input_b,
+                        pairwise_input_a,
+                    )
                 input_record_key_a = (
                     self.input_record_mapping[pairwise_key] + "_a"
                 )
@@ -229,14 +241,9 @@ class MetricInputs:
                     input_record[input_record_key_b] = None
                 else:
                     input_record[input_record_key_b] = pairwise_input_b[i]
+            input_records.append(input_record)
 
-    def get_input_records(self) -> list[dict[str, str | None]]:
-        if self.input_records is None:
-            raise ValueError(
-                "Please run `validate` before calling this method."
-            )
-
-        return self.input_records
+        return input_records
 
     def to_df(self) -> pd.DataFrame:
         """Convert the inputs to a DataFrame."""
@@ -278,3 +285,29 @@ class MetricInputs:
             return self.pairwise_inputs[key]
         else:
             raise ValueError(f"Unknown key: {key}")
+
+    def validate_template(self, template_src: str):
+        """TODO"""
+        # Validate the expected parameters in the prompt template
+        env = Environment()
+        expected_params = meta.find_undeclared_variables(
+            env.parse(template_src)
+        )
+
+        allowed_params = self.input_record_to_arg.keys()
+        assert all(
+            param in allowed_params for param in expected_params
+        ), f"The prompt template contains invalid parameters. The allowed parameters are {allowed_params} but the prompt template expects the parameters {expected_params}"
+
+        for param in expected_params:
+            arg_key = self.input_record_to_arg[param]
+            if arg_key in self.single_inputs:
+                assert (
+                    self.single_inputs[arg_key] is not None
+                ), f'The prompt template expects the parameter "{param}" but it is not provided.'
+            else:
+                pairwise_inputs_a, _ = self.pairwise_inputs[arg_key]
+                # It is already validated that both inputs are None or not None
+                assert (
+                    pairwise_inputs_a is not None
+                ), f'The prompt template expects the parameter "{param}" but it is not provided.'
