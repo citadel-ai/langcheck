@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from langcheck.metrics._validation import validate_parameters_query_based
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_standard_metric_inputs
 from langcheck.metrics.metric_value import MetricValue

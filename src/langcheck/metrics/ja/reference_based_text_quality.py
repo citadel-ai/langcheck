@@ -5,9 +5,6 @@ from typing import List, Optional
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 
-from langcheck.metrics._validation import (
-    validate_parameters_reference_based,
-)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.ja._tokenizers import JanomeTokenizer
 from langcheck.metrics.metric_inputs import (
@@ -113,11 +110,6 @@ def semantic_similarity(
         )
     )
 
-    generated_outputs, reference_outputs, prompts = (
-        validate_parameters_reference_based(
-            generated_outputs, reference_outputs, prompts
-        )
-    )
     if eval_model == "local":
         scorer = SentenceTransformerSimilarityScorer(language="ja")
     else:  # EvalClient
