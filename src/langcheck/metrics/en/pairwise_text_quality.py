@@ -3,13 +3,10 @@ from __future__ import annotations
 from typing import List, Optional
 
 from langcheck.metrics._pairwise_text_quality_utils import (
-    enforce_pairwise_comparison_consistency,
-    generate_pairwise_comparison_prompt_params,
-)
-from langcheck.metrics._validation import (
-    validate_parameters_pairwise_comparison,
+    compute_pairwise_comparison_metric_values_with_consistency,
 )
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import get_standard_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
 
 
@@ -50,20 +47,12 @@ def pairwise_comparison(
     Returns:
         An MetricValue object
     """
-    (
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
-    ) = validate_parameters_pairwise_comparison(
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
+    metric_inputs = get_standard_metric_inputs(
+        generated_outputs=(generated_outputs_a, generated_outputs_b),
+        prompts=prompts,
+        sources=(sources_a, sources_b),
+        reference_outputs=reference_outputs,
+        required_params=[],
     )
 
     assert (
@@ -76,74 +65,26 @@ def pairwise_comparison(
         "Response A": 0.0,
     }
 
+    metric_name = "pairwise_comparison"
+    language = "en"
     pairwise_comparison_template = eval_model.load_prompt_template(
-        language="en", metric_name="pairwise_comparison"
-    )
-    prompt_params = generate_pairwise_comparison_prompt_params(
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
-    )
-
-    populated_prompts = [
-        pairwise_comparison_template.render(prompt_param)
-        for prompt_param in prompt_params
-    ]
-
-    scores, explanations = eval_model.get_score(
-        metric_name="comparison of two responses",
-        language="en",
-        prompts=populated_prompts,
-        score_map=pairwise_comparison_assessment_to_score,
+        language=language, metric_name=metric_name
     )
 
     if enforce_consistency:
-        # Swap the generated outputs and enforce consistency
-        swapped_prompt_params = generate_pairwise_comparison_prompt_params(
-            generated_outputs_b,
-            generated_outputs_a,
-            prompts,
-            sources_b,
-            sources_a,
-            reference_outputs,
-        )
-
-        populated_swapped_prompts = [
-            pairwise_comparison_template.render(prompt_param)
-            for prompt_param in swapped_prompt_params
-        ]
-
-        intermediate_tqdm = (
-            "[Swapped model outputs order] Intermediate assessments (1/2)"
-        )
-        score_tqdm = "[Swapped model outputs order] Calculating scores (2/2)"
-        swapped_scores, swapped_explanations = eval_model.get_score(
-            metric_name="comparison of two responses",
-            language="en",
-            prompts=populated_swapped_prompts,
+        return compute_pairwise_comparison_metric_values_with_consistency(
+            eval_client=eval_model,
+            metric_inputs=metric_inputs,
+            template=pairwise_comparison_template,
+            metric_name=metric_name,
+            language=language,
             score_map=pairwise_comparison_assessment_to_score,
-            intermediate_tqdm_description=intermediate_tqdm,
-            score_tqdm_description=score_tqdm,
         )
-
-        scores, explanations = enforce_pairwise_comparison_consistency(
-            scores,
-            explanations,
-            swapped_scores,
-            swapped_explanations,
-            pairwise_comparison_assessment_to_score,
+    else:
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=pairwise_comparison_template,
+            metric_name=metric_name,
+            language=language,
+            score_map=pairwise_comparison_assessment_to_score,
         )
-
-    return MetricValue(
-        metric_name="pairwise_comparison",
-        prompts=prompts,
-        generated_outputs=(generated_outputs_a, generated_outputs_b),
-        reference_outputs=reference_outputs,
-        sources=(sources_a, sources_b),
-        explanations=explanations,
-        metric_values=scores,
-        language="en",
-    )

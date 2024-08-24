@@ -95,13 +95,11 @@ class MetricInputs:
         # Validate the single inputs
         for single_input_key in single_input_keys:
             single_input = self.single_inputs[single_input_key]
-            if (
-                single_input_key in self.required_params
-                and single_input is None
-            ):
-                raise ValueError(
-                    f"Required parameter '{single_input_key}' is None."
-                )
+            if single_input_key in self.required_params:
+                if single_input is None:
+                    raise ValueError(
+                        f"Required parameter '{single_input_key}' is None."
+                    )
             elif single_input_key not in self.optional_params:
                 raise ValueError(f"Unknown parameter '{single_input_key}'")
 
@@ -115,13 +113,7 @@ class MetricInputs:
                     raise ValueError(
                         f"Required parameter '{pairwise_input_key}' is None."
                     )
-            elif pairwise_input_key in self.optional_params:
-                # Raise an error if only one of the inputs is None
-                if (pairwise_input_a is None) ^ (pairwise_input_b is None):
-                    raise ValueError(
-                        f"Both inputs of '{pairwise_input_key}' should be None or not None."
-                    )
-            else:
+            elif pairwise_input_key not in self.optional_params:
                 raise ValueError(f"Unknown parameter '{pairwise_input_key}'")
 
             # If to_df is called, each key is mapped into two columns: key_a and
@@ -165,7 +157,7 @@ class MetricInputs:
             )
 
             raise ValueError(
-                f"All inputs should have the same length.\n {single_input_lengths}\n{pairwise_input_lengths}"
+                f"All inputs should have the same length.\n{single_input_lengths}\n{pairwise_input_lengths}"
             )
 
         self.input_length = input_lengths.pop()
@@ -306,8 +298,104 @@ class MetricInputs:
                     self.single_inputs[arg_key] is not None
                 ), f'The prompt template expects the parameter "{param}" but it is not provided.'
             else:
-                pairwise_inputs_a, _ = self.pairwise_inputs[arg_key]
-                # It is already validated that both inputs are None or not None
+                pairwise_inputs_a, pairwise_inputs_b = self.pairwise_inputs[
+                    arg_key
+                ]
                 assert (
                     pairwise_inputs_a is not None
-                ), f'The prompt template expects the parameter "{param}" but it is not provided.'
+                ), f'The prompt template expects the parameter "{param}_a" but it is not provided.'
+                assert (
+                    pairwise_inputs_b is not None
+                ), f'The prompt template expects the parameter "{param}_b" but it is not provided.'
+
+    def get_required_single_input(self, key: str) -> list[str]:
+        """Get the list of a required parameter in single_inputs. Mainly used
+        for metrics without eval clients.
+        """
+        if (key not in self.single_inputs) or (key not in self.required_params):
+            raise ValueError(f"Unknown key: {key}")
+
+        single_input = self.single_inputs[key]
+
+        # It is already validated that the input is not None
+        assert isinstance(single_input, list)
+
+        return single_input
+
+
+def get_standard_metric_inputs(
+    *,
+    generated_outputs: SingleInputType
+    | tuple[SingleInputType, SingleInputType] = None,
+    prompts: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
+    sources: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
+    reference_outputs: SingleInputType
+    | tuple[SingleInputType, SingleInputType] = None,
+    required_params: list[str],
+) -> MetricInputs:
+    """TODO"""
+    allowed_params = [
+        "generated_outputs",
+        "prompts",
+        "sources",
+        "reference_outputs",
+    ]
+    for param in required_params:
+        if param not in allowed_params:
+            raise ValueError(f"Unknown parameter: {param}")
+    optional_params = list(set(allowed_params) - set(required_params))
+    all_inputs = {
+        "generated_outputs": generated_outputs,
+        "prompts": prompts,
+        "sources": sources,
+        "reference_outputs": reference_outputs,
+    }
+    # Split single and pairwise inputs
+    single_inputs = {
+        key: value
+        for key, value in all_inputs.items()
+        if not isinstance(value, tuple)
+    }
+    pairwise_inputs = {
+        key: value
+        for key, value in all_inputs.items()
+        if isinstance(value, tuple)
+    }
+    return MetricInputs(
+        single_inputs=single_inputs,
+        pairwise_inputs=pairwise_inputs,
+        required_params=required_params,
+        optional_params=optional_params,
+        input_record_mapping={
+            "generated_outputs": "gen_output",
+            "prompts": "user_query",
+            "sources": "src",
+            "reference_outputs": "ref_output",
+        },
+    )
+
+
+def get_standard_metric_inputs_with_required_lists(
+    *,
+    generated_outputs: SingleInputType
+    | tuple[SingleInputType, SingleInputType] = None,
+    prompts: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
+    sources: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
+    reference_outputs: SingleInputType
+    | tuple[SingleInputType, SingleInputType] = None,
+    required_params: list[str],
+) -> tuple[MetricInputs, list[list[str]]]:
+    """TODO"""
+    metric_inputs = get_standard_metric_inputs(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        sources=sources,
+        reference_outputs=reference_outputs,
+        required_params=required_params,
+    )
+
+    required_lists = [
+        metric_inputs.get_required_single_input(param)
+        for param in required_params
+    ]
+    return metric_inputs, required_lists

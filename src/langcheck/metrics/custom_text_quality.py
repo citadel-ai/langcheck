@@ -5,10 +5,10 @@ from pathlib import Path
 from jinja2 import Template
 
 from langcheck.metrics._pairwise_text_quality_utils import (
-    enforce_pairwise_comparison_consistency,
+    compute_pairwise_comparison_metric_values_with_consistency,
 )
 from langcheck.metrics.eval_clients import EvalClient
-from langcheck.metrics.metric_inputs import MetricInputs
+from langcheck.metrics.metric_inputs import get_standard_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
 
 
@@ -67,25 +67,12 @@ def custom_evaluator(
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
 
-    metric_inputs = MetricInputs(
-        single_inputs={
-            "generated_outputs": generated_outputs,
-            "prompts": prompts,
-            "sources": sources,
-            "reference_outputs": reference_outputs,
-        },
-        optional_params=[
-            "generated_outputs",
-            "prompts",
-            "sources",
-            "reference_outputs",
-        ],
-        input_record_mapping={
-            "generated_outputs": "gen_output",
-            "prompts": "user_query",
-            "sources": "src",
-            "reference_outputs": "ref_output",
-        },
+    metric_inputs = get_standard_metric_inputs(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        sources=sources,
+        reference_outputs=reference_outputs,
+        required_params=[],
     )
 
     assert Path(
@@ -99,24 +86,12 @@ def custom_evaluator(
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
-    input_records = metric_inputs.get_input_records()
-    populated_prompts = [
-        prompt_template.render(input_record) for input_record in input_records
-    ]
-
-    scores, explanations = eval_model.get_score(
-        metric_name=metric_name,
-        language=language,
-        prompts=populated_prompts,
-        score_map=score_map,
-    )
-
-    return MetricValue(
-        metric_name=metric_name,
+    return eval_model.compute_metric_values_from_template(
         metric_inputs=metric_inputs,
-        explanations=explanations,
-        metric_values=scores,
+        template=prompt_template,
+        metric_name=metric_name,
         language=language,
+        score_map=score_map,
     )
 
 
@@ -194,27 +169,12 @@ def custom_pairwise_evaluator(
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
 
-    metric_inputs = MetricInputs(
-        single_inputs={
-            "prompts": prompts,
-            "reference_outputs": reference_outputs,
-        },
-        pairwise_inputs={
-            "generated_outputs": (generated_outputs_a, generated_outputs_b),
-            "sources": (sources_a, sources_b),
-        },
-        optional_params=[
-            "generated_outputs",
-            "prompts",
-            "sources",
-            "reference_outputs",
-        ],
-        input_record_mapping={
-            "generated_outputs": "gen_output",
-            "prompts": "user_query",
-            "sources": "src",
-            "reference_outputs": "ref_output",
-        },
+    metric_inputs = get_standard_metric_inputs(
+        generated_outputs=(generated_outputs_a, generated_outputs_b),
+        prompts=prompts,
+        sources=(sources_a, sources_b),
+        reference_outputs=reference_outputs,
+        required_params=[],
     )
 
     assert Path(
@@ -228,71 +188,20 @@ def custom_pairwise_evaluator(
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
-    input_records = metric_inputs.get_input_records()
-    populated_prompts = [
-        prompt_template.render(input_record) for input_record in input_records
-    ]
-
-    scores, explanations = eval_model.get_score(
-        metric_name=metric_name,
-        language=language,
-        prompts=populated_prompts,
-        score_map=score_map,
-    )
-
     if enforce_consistency:
-        # Swap the generated outputs and sources and enforce consistency
-        swapped_records = metric_inputs.get_input_records(swap_pairwise=True)
-        swapped_prompts = [
-            prompt_template.render(swapped_record)
-            for swapped_record in swapped_records
-        ]
-
-        intermediate_tqdm = (
-            "[Swapped model outputs order] Intermediate assessments (1/2)"
-        )
-        score_tqdm = "[Swapped model outputs order] Calculating scores (2/2)"
-        swapped_scores, swapped_explanations = eval_model.get_score(
+        return compute_pairwise_comparison_metric_values_with_consistency(
+            eval_client=eval_model,
+            metric_inputs=metric_inputs,
+            template=prompt_template,
             metric_name=metric_name,
             language=language,
-            prompts=swapped_prompts,
             score_map=score_map,
-            intermediate_tqdm_description=intermediate_tqdm,
-            score_tqdm_description=score_tqdm,
         )
-
-        # NOTE: The enforce_pairwise_comparison_consistency function assumes
-        # that the score_map is symmetric, in the sense that swapping Model A
-        # and Model B should result in inverse scores. Most score maps should
-        # naturally satisfy this property, but an example of a score map that
-        # does *not* satisfy this property is:
-        # {
-        #   'Response A is much better': 0,
-        #   'Response A is slightly better': 1,
-        #   'Response B is slightly better': 2
-        # }
-        #
-        # In this case, swapping Model A and Model B will not result in
-        # inverse results. The score map should be modified to be symmetric by
-        # adding the 'Response B is much better' option:
-        # {
-        #   'Response A is much better': 0,
-        #   'Response A is slightly better': 1,
-        #   'Response B is slightly better': 2,
-        #   'Response B is much better': 3
-        # }
-        scores, explanations = enforce_pairwise_comparison_consistency(
-            scores,
-            explanations,
-            swapped_scores,
-            swapped_explanations,
-            score_map,
+    else:
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=prompt_template,
+            metric_name=metric_name,
+            language=language,
+            score_map=score_map,
         )
-
-    return MetricValue(
-        metric_name=metric_name,
-        metric_inputs=metric_inputs,
-        explanations=explanations,
-        metric_values=scores,
-        language=language,
-    )

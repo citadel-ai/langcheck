@@ -135,6 +135,24 @@ class MetricValue(Generic[NumericType]):
                 f"'{self.__class__.__name__}' object has no attribute '{name}'"
             )
 
+    @property
+    def is_scatter_compatible(self) -> bool:
+        """Checks if the metric value is compatible with the scatter plot
+        method. It is only available for metric values with only non-pairwise
+        metric values used from initial release (generated_outputs, prompts,
+        reference_outputs and sources)
+        """
+        allowed_inputs = [
+            "generated_outputs",
+            "prompts",
+            "reference_outputs",
+            "sources",
+        ]
+        return len(self.metric_inputs.pairwise_inputs) == 0 and all(
+            input_name in allowed_inputs
+            for input_name in self.metric_inputs.single_inputs
+        )
+
     def scatter(self, jupyter_mode: str = "inline") -> None:
         """Shows an interactive scatter plot of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.

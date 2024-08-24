@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from langcheck.metrics._validation import validate_parameters_reference_based
-from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.metric_inputs import (
+    get_standard_metric_inputs_with_required_lists,
+)
+from langcheck.metrics.metric_value import (
+    MetricValue,
+)
 from langcheck.utils.progess_bar import tqdm_wrapper
 
 
@@ -24,9 +28,12 @@ def exact_match(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, reference_outputs, prompts = (
-        validate_parameters_reference_based(
-            generated_outputs, reference_outputs, prompts
+    metric_inputs, [generated_outputs, reference_outputs] = (
+        get_standard_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            reference_outputs=reference_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs", "reference_outputs"],
         )
     )
 
@@ -42,10 +49,7 @@ def exact_match(
 
     return MetricValue(
         metric_name="exact_match",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=reference_outputs,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=metric_values,
         language=None,

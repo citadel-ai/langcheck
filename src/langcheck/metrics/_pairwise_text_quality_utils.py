@@ -1,79 +1,10 @@
 from __future__ import annotations
 
+from jinja2 import Template
 
-def generate_pairwise_comparison_prompt_params(
-    generated_outputs_1: list[str],
-    generated_outputs_2: list[str],
-    prompts: list[str],
-    sources_1: list[str] | None,
-    sources_2: list[str] | None,
-    reference_outputs: list[str] | None,
-) -> list[dict[str, str | None]]:
-    """Generate a list of parameters that can be used for the jinja templates
-    of the pairwise comparison metrics.
-
-    Args:
-        generated_outputs_1: Model 1's generated output(s) to evaluate
-        generated_outputs_2: Model 2's generated output(s) to evaluate
-        prompts: The prompts used to generate the output(s).
-        sources_1: (Optional) the source(s) of Model 1's generated output(s)
-        sources_2: (Optional) the source(s) of Model 2's generated output(s)
-        reference_outputs: (Optional) the reference output(s)
-
-    Returns:
-        A list of dictionaries containing the parameters for the jinja
-        templates the formats are as follows:
-        [
-            {
-                'src': SOURCE,
-                'ref_output': REFERENCE_OUTPUT,
-                'user_query': PROMPT,
-                'gen_output_1': GENERATED_OUTPUT_1,
-                'gen_output_2': GENERATED_OUTPUT_2
-            },
-            ...
-        ]
-    """
-    # Combine sources_1 and sources_2 into a single list if both are
-    # provided.
-    if sources_1 is not None and sources_2 is not None:
-        sources = []
-        for source_1, source_2 in zip(sources_1, sources_2):
-            if source_1 is None:
-                sources.append(source_2)
-            elif source_2 is None:
-                sources.append(source_1)
-            else:
-                sources.append(source_1 + "\n" + source_2)
-    else:
-        sources = sources_1 if sources_1 is not None else sources_2
-
-    if sources is None:
-        sources_list = [None] * len(prompts)
-    else:
-        sources_list = sources
-
-    if reference_outputs is None:
-        reference_outputs_list = [None] * len(prompts)
-    else:
-        reference_outputs_list = reference_outputs
-
-    return [
-        {
-            "src": src,
-            "ref_output": ref_output,
-            "user_query": prompt,
-            "gen_output_1": gen_output_1,
-            "gen_output_2": gen_output_2,
-        }
-        for src, ref_output, prompt, gen_output_1, gen_output_2 in zip(
-            sources_list,
-            reference_outputs_list,
-            prompts,
-            generated_outputs_1,
-            generated_outputs_2,
-        )
-    ]
+from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import MetricInputs
+from langcheck.metrics.metric_value import MetricValue
 
 
 def enforce_pairwise_comparison_consistency(
@@ -127,3 +58,105 @@ def enforce_pairwise_comparison_consistency(
                 f"Original assessment: {explanations[i]}\nSwapped assessment: {swapped_explanations[i]}"
             )
     return scores, explanations
+
+
+def compute_pairwise_comparison_metric_values_with_consistency(
+    eval_client: EvalClient,
+    metric_inputs: MetricInputs,
+    template: Template,
+    metric_name: str,
+    language: str,
+    score_map: dict[str, float],
+) -> MetricValue[float | None]:
+    """Utility function to compute the pairwise metric values from the given
+    Jinja template with the metric inputs. This function always enforces the
+    consistency between in the pairwise comparison scores.  This function
+    assumes that the template parameters are already validated and the template is ready to be rendered.
+
+    Args:
+        eval_client: The EvalClient instance that is used to compute the scores.
+        metric_inputs: The metric inputs that contain the prompts,
+            generated outputs, reference outputs... etc.
+        template: The Jinja template that is ready to be rendered.
+        enforce_pairwise_consistency: Whether to enforce pairwise
+            consistency when computing the metric values.
+        metric_name: The name of the metric to be used. (e.g. "toxicity")
+        language: The language of the prompts. (e.g. "en")
+        score_map: The mapping from the short assessment results
+            (e.g. "Good") to the scores.
+
+    Returns:
+        MetricValue: The metric values computed from the template.
+    """
+    input_records = metric_inputs.get_input_records()
+    populated_prompts = [
+        template.render(input_record) for input_record in input_records
+    ]
+
+    for prompt in populated_prompts:
+        print(prompt)
+
+    scores, explanations = eval_client.get_score(
+        metric_name=metric_name,
+        language=language,
+        prompts=populated_prompts,
+        score_map=score_map,
+    )
+
+    # Swap the generated outputs and sources to enforce consistency
+    swapped_records = metric_inputs.get_input_records(swap_pairwise=True)
+    swapped_prompts = [
+        template.render(swapped_record) for swapped_record in swapped_records
+    ]
+
+    for prompt in swapped_prompts:
+        print(prompt)
+
+    intermediate_tqdm = (
+        "[Swapped model outputs order] Intermediate assessments (1/2)"
+    )
+    score_tqdm = "[Swapped model outputs order] Calculating scores (2/2)"
+    swapped_scores, swapped_explanations = eval_client.get_score(
+        metric_name=metric_name,
+        language=language,
+        prompts=swapped_prompts,
+        score_map=score_map,
+        intermediate_tqdm_description=intermediate_tqdm,
+        score_tqdm_description=score_tqdm,
+    )
+
+    # NOTE: The enforce_pairwise_comparison_consistency function assumes
+    # that the score_map is symmetric, in the sense that swapping Model A
+    # and Model B should result in inverse scores. Most score maps should
+    # naturally satisfy this property, but an example of a score map that
+    # does *not* satisfy this property is:
+    # {
+    #   'Response A is much better': 0,
+    #   'Response A is slightly better': 1,
+    #   'Response B is slightly better': 2
+    # }
+    #
+    # In this case, swapping Model A and Model B will not result in
+    # inverse results. The score map should be modified to be symmetric by
+    # adding the 'Response B is much better' option:
+    # {
+    #   'Response A is much better': 0,
+    #   'Response A is slightly better': 1,
+    #   'Response B is slightly better': 2,
+    #   'Response B is much better': 3
+    # }
+    scores, explanations = enforce_pairwise_comparison_consistency(
+        scores,
+        explanations,
+        swapped_scores,
+        swapped_explanations,
+        score_map,
+    )
+
+    return MetricValue(
+        metric_name=metric_name,
+        metric_inputs=metric_inputs,
+        explanations=explanations,
+        metric_values=scores,
+        language=language,
+    )

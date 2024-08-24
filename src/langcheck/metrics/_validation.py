@@ -56,31 +56,6 @@ def validate_parameters_reference_free(
     return _generated_outputs, _prompts
 
 
-def validate_parameters_text_structure(
-    generated_outputs: List[str] | str, prompts: Optional[List[str] | str]
-) -> tuple[List[str], Optional[List[str]]]:
-    """Validates and parses function parameters for text structure metrics in
-    langcheck.metrics.
-
-    Args:
-        generated_outputs: The model generated output(s) to evaluate
-        prompts: The prompts used to generate the output(s). Prompts are
-            optional metadata and not used to calculate the metric.
-
-    Returns:
-        A tuple (generated_outputs, prompts) of the parsed parameters. All
-        non-None parameters are converted to lists of strings.
-    """
-    _generated_outputs, _prompts, _, _ = _validate_parameters(
-        generated_outputs, prompts, None, None
-    )
-
-    # For type checking
-    assert _prompts is None or isinstance(_prompts, list)
-
-    return _generated_outputs, _prompts
-
-
 def validate_parameters_source_based(
     generated_outputs: List[str] | str,
     sources: List[str] | str,
@@ -220,57 +195,6 @@ def validate_parameters_answer_correctness(
         )
 
     return generated_outputs, reference_outputs, prompts
-
-
-def validate_parameters_pairwise_comparison(
-    generated_outputs_a: List[str] | str,
-    generated_outputs_b: List[str] | str,
-    prompts: List[str] | str,
-    sources_a: Optional[List[str] | str],
-    sources_b: Optional[List[str] | str],
-    reference_outputs: Optional[List[str] | str],
-) -> tuple[
-    List[str],
-    List[str],
-    List[str],
-    Optional[List[str]],
-    Optional[List[str]],
-    Optional[List[str]],
-]:
-    """Validates and parses function parameters for the pairwise comparison
-    metric.
-
-    Args:
-        generated_outputs_a: Model A's generated output(s) to evaluate
-        generated_outputs_b: Model B's generated output(s) to evaluate
-        prompts: The prompts used to generate the output(s).
-        sources_a: (Optional) the source(s) of Model A's generated output(s)
-        sources_b: (Optional) the source(s) of Model B's generated output(s)
-        reference_outputs: (Optional) the reference output(s)
-
-    Returns:
-        A tuple (generated_outputs_a, generated_outputs_b, prompts,
-        sources_a, sources_b, reference_outputs) of the parsed parameters. All
-        non-None parameters are converted to lists of strings.
-    """
-    _generated_outputs_a, _prompts, _reference_outputs, _sources_a = (
-        _validate_parameters(
-            generated_outputs_a, prompts, reference_outputs, sources_a
-        )
-    )
-    _generated_outputs_b, _, _, _sources_b = _validate_parameters(
-        generated_outputs_b, None, None, sources_b
-    )
-    # For type checking
-    assert _prompts is not None
-    return (
-        _generated_outputs_a,
-        _generated_outputs_b,
-        _prompts,
-        _sources_a,
-        _sources_b,
-        _reference_outputs,
-    )
 
 
 def _validate_parameters(

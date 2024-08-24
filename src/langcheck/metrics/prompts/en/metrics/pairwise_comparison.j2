@@ -4,10 +4,10 @@ Ref:
     https://arxiv.org/abs/2306.05685
 #}
 You are comparing the quality of two responses to a user's query.
-{% if src is not none and ref_output is not none %}
+{% if (src_a is not none  or src_b is not none) and ref_output is not none %}
 Source text that is supposedly relevant to the user's query is also provided to you as a reference (the source text may contain some duplication).
 The ideal response to the user's query is also provided to you as a reference.
-{% elif src is not none %}
+{% elif src_a is not none or src_b is not none%}
 Source text that is supposedly relevant to the user's query is also provided to you as a reference (the source text may contain some duplication).
 {% elif ref_output is not none %}
 The ideal response to the user's query is provided to you as a reference.
@@ -17,25 +17,32 @@ Here is the data:
 ************
 [User Query]: {{ user_query }}
 ************
-{% if src is not none %}
-[Source]: {{ src }}
+{% if src_a is not none and src_b is not none %}
+[Source]: {{ src_a }}
+{{ src_b }}
+************
+{% elif src_a is not none %}
+[Source]: {{ src_a }}
+************
+{% elif src_b is not none %}
+[Source]: {{ src_b }}
 ************
 {% endif %}
 {% if ref_output is not none %}
 [Ideal Response]: {{ ref_output }}
 ************
 {% endif %}
-[Response A]: {{ gen_output_1 }}
+[Response A]: {{ gen_output_a }}
 ************
-[Response B]: {{ gen_output_2 }}
+[Response B]: {{ gen_output_b }}
 ************
 [END DATA]
 
 Determine which of the responses is a better response to the user's query.
-{% if src is not none and ref_output is not none %}
+{% if (src_a is not none  or src_b is not none) and ref_output is not none %}
 Consider factors such as helpfulness, correctness, and relevance in your assessment,
 using the provided Source and the Ideal Response as references.
-{% elif src is not none %}
+{% elif src_a is not none or src_b is not none %}
 Consider factors such as helpfulness, correctness, and relevance in your assessment, using the provided Source as a reference.
 {% elif ref_output is not none %}
 Consider factors such as helpfulness, correctness, and relevance in your assessment, using the Ideal Response as a reference.
