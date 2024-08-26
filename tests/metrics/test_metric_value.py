@@ -65,7 +65,8 @@ def test_optional_metric_values():
     metric_inputs = MetricInputs(
         single_inputs={
             "generated_outputs": dummy_generated_outputs,
-        }
+        },
+        required_params=["generated_outputs"],
     )
     metric_value: MetricValue[Optional[float]] = MetricValue(
         metric_name="test",
@@ -92,6 +93,7 @@ def test_pairwise_metric_value():
                 dummy_generated_outputs_b,
             ),
         },
+        required_params=["generated_outputs"],
     )
     metric_value = MetricValue(
         metric_name="test",
