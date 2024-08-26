@@ -93,6 +93,7 @@ def test_pairwise_metric_value():
                 dummy_generated_outputs_a,
                 dummy_generated_outputs_b,
             ),
+            "sources": (None, None),
         },
         required_params=["generated_outputs"],
     )
