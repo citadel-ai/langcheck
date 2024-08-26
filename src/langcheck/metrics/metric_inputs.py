@@ -40,7 +40,20 @@ class MetricInputs:
         optional_params: list[str] | None = None,
         input_record_mapping: dict[str, str] | None = None,
     ):
-        """TODO"""
+        """Initialize the MetricInputs object.
+
+        Args:
+            single_inputs: A dictionary of single inputs. The keys are the
+                parameter names and the values are the input lists.
+            pairwise_inputs: A dictionary of pairwise inputs. The keys are the
+                parameter names and the values are tuples of two input lists.
+            required_params: A list of required parameters.
+            optional_params: A list of optional parameters.
+            input_record_mapping: A dictionary that maps the input keys to the
+                record attributes of the return values from `get_input_records`.
+                The keys are the input keys and the values are the record
+                attributes.
+        """
         # Instantiate the paramater lists if None
         self.required_params = required_params or []
         self.optional_params = optional_params or []
@@ -198,7 +211,17 @@ class MetricInputs:
     def get_input_records(
         self, swap_pairwise: bool = False
     ) -> list[dict[str, str | None]]:
-        """TODO"""
+        """Get 'input records' that can be used as arguments for the prompt
+        template.
+        Each record is a dictionary where the keys are the record attributes
+        specified in the `input_record_mapping` and the values are the input
+        values, which are corresponding elements from the input lists.
+        For pairwise inputs, the values for the first list and the second list
+        are stored in the attributes with the suffixes "_a" and "_b".
+
+        Args:
+            swap_pairwise: If True, swap the pairwise inputs.
+        """
         input_records: list[dict[str, str | None]] = []
         for i in range(self.input_length):
             input_record = {}
@@ -279,7 +302,12 @@ class MetricInputs:
             raise ValueError(f"Unknown key: {key}")
 
     def validate_template(self, template_src: str):
-        """TODO"""
+        """Validate that the given prompt template string is compatible with
+        the input parameters.
+
+        Args:
+            template_src: The prompt template string.
+        """
         # Validate the expected parameters in the prompt template
         env = Environment()
         expected_params = meta.find_undeclared_variables(
@@ -333,7 +361,18 @@ def get_standard_metric_inputs(
     | tuple[SingleInputType, SingleInputType] = None,
     required_params: list[str],
 ) -> MetricInputs:
-    """TODO"""
+    """Create a metric inputs object with the standard parameters
+    (i.e. generated_outputs, prompts, sources, reference_outputs).
+
+    Args:
+        generated_outputs: The generated outputs.
+        prompts: The prompts.
+        sources: The sources.
+        reference_outputs: The reference outputs.
+        required_params: A list of required parameters.
+    Returns:
+        A MetricInputs object.
+    """
     allowed_params = [
         "generated_outputs",
         "prompts",
@@ -385,7 +424,21 @@ def get_standard_metric_inputs_with_required_lists(
     | tuple[SingleInputType, SingleInputType] = None,
     required_params: list[str],
 ) -> tuple[MetricInputs, list[list[str]]]:
-    """TODO"""
+    """Create a metric inputs object with the standard parameters
+    (i.e. generated_outputs, prompts, sources, reference_outputs). This function
+    also returns the list of required parameters as raw lists, which is useful
+    for metrics without eval clients.
+
+    Args:
+        generated_outputs: The generated outputs.
+        prompts: The prompts.
+        sources: The sources.
+        reference_outputs: The reference outputs.
+        required_params: A list of required parameters.
+
+    Returns:
+        A MetricInputs object and the required lists.
+    """
     metric_inputs = get_standard_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
