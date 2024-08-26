@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Union
+from typing import List, Union
 
 import pandas as pd
 from jinja2 import Environment, meta
 
-SingleInputType = Union[str, list[str], None]
+SingleInputType = Union[str, List[str], None]
 
 
 def _map_pairwise_input_to_list(
