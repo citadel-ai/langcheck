@@ -96,6 +96,7 @@ def test_pairwise_metric_value():
             "sources": (None, None),
         },
         required_params=["generated_outputs"],
+        optional_params=["sources"],
     )
     metric_value = MetricValue(
         metric_name="test",
