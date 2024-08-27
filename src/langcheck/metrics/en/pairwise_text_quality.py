@@ -41,6 +41,8 @@ def simulated_annotators(
     # Load preprocessed chatarena data
     with open("processed_chatarena_examples.jsonl") as f:
         chatarena_data = [json.loads(line) for line in f]
+    assert len(
+        chatarena_data) >= k, "Not enough examples in the chatarena data"
 
     # Load the prompt template
     prompt_template = get_template(
@@ -53,8 +55,6 @@ def simulated_annotators(
     confidence_scores = []
     for prompt in populated_prompts:
         # Generate few-shot examples
-        assert len(
-            chatarena_data) >= k, "Not enough examples in the chatarena data"
         few_shot_examples = random.sample(chatarena_data, k)
 
         # Construct the full prompt using k few-shot examples
