@@ -73,8 +73,10 @@ def simulated_annotators(
         for _ in range(n):
             response = eval_model.get_text_responses_with_log_likelihood(
                 [prompt])[0]
-            if response and response[1][0][0] in ["A", "B"]:
-                scores.append(math.exp(response[1][0][1]))
+            if response:
+                first_token, log_likelihoods = response[1][0]
+                if first_token in ["A", "B"]:
+                    scores.append(math.exp(log_likelihoods))
 
         if len(scores) != 0:
             confidence_scores.append(sum(scores) / len(scores))
