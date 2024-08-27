@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import json
+import math
+import random
+import re
 from typing import List, Optional
 
 from langcheck.metrics._pairwise_text_quality_utils import (
@@ -12,6 +16,68 @@ from langcheck.metrics._validation import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
+from ..prompts._utils import get_template
+
+
+def simulated_annotators(
+    prompt_params: List[dict[str, str | None]],
+    eval_model: EvalClient,
+    k: int = 5,
+    n: int = 5
+) -> List[float | None]:
+    """Compute a confidence score for the pairwise comparison metric based on
+    the method Simulated Annotators proposed in the paper "Trust or Escalate:
+    LLM Judges with Provable Guarantees for Human Agreement"
+    (https://arxiv.org/abs/2407.18370)
+
+    Args:
+        prompt_params: The parameters used to populate the prompt template.
+        eval_model: The EvalClient instance used for the evaluation.
+        k: the number of examples of preference annotations
+        n: the numbre of simulated annotators
+    Returns:
+        A confidence score for the pairwise comparison metric
+    """
+    # Load preprocessed chatarena data
+    with open("processed_chatarena_examples.jsonl") as f:
+        chatarena_data = [json.loads(line) for line in f]
+
+    # Load the prompt template
+    prompt_template = get_template(
+        "en/confidence_estimating/simulated_annotators.j2")
+    populated_prompts = [
+        prompt_template.render(prompt_param)
+        for prompt_param in prompt_params
+    ]
+
+    confidence_scores = []
+    for prompt in populated_prompts:
+        # Generate few-shot examples
+        assert len(
+            chatarena_data) >= k, "Not enough examples in the chatarena data"
+        few_shot_examples = random.sample(chatarena_data, k)
+
+        # Construct the full prompt using k few-shot examples
+        few_shot_prompt = "\n".join(
+            f"[Question]\n{example['prompt']}\n\n[Assistant A's response]\n{example['model_a']}\n\n[Assistant B's response]\n{example['model_b']}\n\n[Verdict]\n{example['winner']}\n" for example in few_shot_examples)
+        prompt = re.split(r"\[Few-shot examples\]", prompt)[0] + \
+            few_shot_prompt + re.split(r"\[Few-shot examples\]", prompt)[1]
+
+        # Simulate n annotators
+        scores = []
+        for _ in range(n):
+            response = eval_model.get_text_responses_with_log_likelihood(
+                [prompt])[0]
+            if response and response[1][0][0] in ["A", "B"]:
+                scores.append(math.exp(response[1][0][1]))
+
+        if len(scores) != 0:
+            confidence_scores.append(sum(scores) / len(scores))
+        else:
+            confidence_scores.append(None)
+
+    return confidence_scores
+
 
 def pairwise_comparison(
     generated_outputs_a: List[str] | str,
@@ -21,7 +87,10 @@ def pairwise_comparison(
     sources_b: Optional[List[str] | str] = None,
     reference_outputs: Optional[List[str] | str] = None,
     enforce_consistency: bool = True,
+    calculated_confidence: bool = False,
     eval_model: EvalClient | None = None,
+
+
 ) -> MetricValue[Optional[float]]:
     """Calculates the pairwise comparison metric. This metric takes on float
     values of either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B
@@ -42,6 +111,8 @@ def pairwise_comparison(
             the score is the same when Model A and Model B are swapped. This is
             useful for ensuring that the evaluator's position bias is not
             impacting the scores. Default True.
+        calculated_confidence: When this is True, we will calculate a confidence
+            score for the pairwise comparison metric. Default False.
         eval_model: The EvalClient instance used for the evaluation. This is
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
@@ -136,6 +207,18 @@ def pairwise_comparison(
             swapped_explanations,
             pairwise_comparison_assessment_to_score,
         )
+
+    if calculated_confidence:
+        print("Warning: The source texts and reference outputs are not used to calculate the confidence score.")
+        confidence_scores = simulated_annotators(
+            prompt_params, eval_model
+        )
+        # Append the confidence scores to the explanations
+        explanations = [
+            f"{explanation}\n\nConfidence score: {confidence_score}"
+            if explanation and confidence_score else explanation
+            for explanation, confidence_score in zip(explanations, confidence_scores)
+        ]
 
     return MetricValue(
         metric_name="pairwise_comparison",

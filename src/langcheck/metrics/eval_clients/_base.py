@@ -55,6 +55,23 @@ class EvalClient:
         """
         raise NotImplementedError
 
+    def get_text_responses_with_log_likelihood(
+        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+    ) -> list[tuple[str, list[tuple[str, float]]] | None]:
+        """The function that gets responses with log likelihood to the given prompt
+        texts. Each concrete subclass needs to define the concrete implementation
+        of this function to enable text scoring.
+
+        Args:
+            prompts: The prompts you want to get the responses for.
+
+        Returns:
+            A list of responses to the prompts. Each response is a tuple of the
+            output text and the list of tuples of the output tokens and the log
+            probabilities. The responses can be None if the evaluation fails.
+        """
+        raise NotImplementedError
+
     def get_float_score(
         self,
         metric_name: str,

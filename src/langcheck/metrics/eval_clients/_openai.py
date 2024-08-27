@@ -127,6 +127,42 @@ class OpenAIEvalClient(EvalClient):
 
         return response_texts
 
+    def get_text_responses_with_log_likelihood(
+        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+    ) -> list[tuple[str, list[tuple[str, float]]] | None]:
+        """The function that gets responses with log likelihood to the given prompt
+        texts. Each concrete subclass needs to define the concrete implementation
+        of this function to enable text scoring.
+
+        Args:
+            prompts: The prompts you want to get the responses for.
+
+        Returns:
+            A list of responses to the prompts. Each response is a tuple of the
+            output text and the list of tuples of the output tokens and the log
+            probabilities. The responses can be None if the evaluation fails.
+        """
+        config = {"model": "gpt-3.5-turbo", "seed": 123, "logprobs": True}
+        config.update(self._openai_args or {})
+        tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
+        responses = self._call_api(
+            prompts=prompts, config=config, tqdm_description=tqdm_description
+        )
+        response_texts_with_log_likelihood = []
+        for response in responses:
+            if response is None:
+                response_texts_with_log_likelihood.append(None)
+            else:
+                response_texts_with_log_likelihood.append(
+                    (
+                        response.choices[0].message.content,
+                        [(x.token, x.logprob)
+                         for x in response.choices[0].logprobs.content],
+                    )
+                )
+
+        return response_texts_with_log_likelihood
+
     def get_float_score(
         self,
         metric_name: str,
@@ -231,7 +267,8 @@ class OpenAIEvalClient(EvalClient):
                 continue
             # By leveraging the function calling API, this should be pretty
             # rare, but we're dealing with LLMs here so nothing is absolute!
-            print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
+            print(
+                f'OpenAI returned an unrecognized assessment: "{assessment}"')
 
         return [
             score_map[assessment]
@@ -346,7 +383,8 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             "You need to specify the embedding_model_name to get the score for "
             "this metric."
         )
-        openai_args = {**self._openai_args, "model": self._embedding_model_name}
+        openai_args = {**self._openai_args,
+                       "model": self._embedding_model_name}
         return OpenAISimilarityScorer(
             openai_client=self._client, openai_args=openai_args
         )
