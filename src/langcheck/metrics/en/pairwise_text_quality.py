@@ -4,6 +4,7 @@ import json
 import math
 import random
 import re
+from pathlib import Path
 from typing import List, Optional
 
 from langcheck.metrics._pairwise_text_quality_utils import (
@@ -23,7 +24,7 @@ def simulated_annotators(
     prompt_params: List[dict[str, str | None]],
     eval_model: EvalClient,
     k: int = 5,
-    n: int = 5
+    n: int = 5,
 ) -> List[float | None]:
     """Compute a confidence score for the pairwise comparison metric based on
     the method Simulated Annotators proposed in the paper "Trust or Escalate:
@@ -39,17 +40,17 @@ def simulated_annotators(
         A confidence score for the pairwise comparison metric
     """
     # Load preprocessed chatarena data
-    with open("processed_chatarena_examples.jsonl") as f:
+    cwd = Path(__file__).parent
+    with open(cwd / "processed_chatarena_examples.jsonl") as f:
         chatarena_data = [json.loads(line) for line in f]
-    assert len(
-        chatarena_data) >= k, "Not enough examples in the chatarena data"
+    assert len(chatarena_data) >= k, "Not enough examples in the chatarena data"
 
     # Load the prompt template
     prompt_template = get_template(
-        "en/confidence_estimating/simulated_annotators.j2")
+        "en/confidence_estimating/simulated_annotators.j2"
+    )
     populated_prompts = [
-        prompt_template.render(prompt_param)
-        for prompt_param in prompt_params
+        prompt_template.render(prompt_param) for prompt_param in prompt_params
     ]
 
     confidence_scores = []
@@ -65,14 +66,18 @@ def simulated_annotators(
             "[Verdict]\n{example['winner']}\n"
             for example in few_shot_examples
         )
-        prompt = re.split(r"\[Few-shot examples\]", prompt)[0] + \
-            few_shot_prompt + re.split(r"\[Few-shot examples\]", prompt)[1]
+        prompt = (
+            re.split(r"\[Few-shot examples\]", prompt)[0]
+            + few_shot_prompt
+            + re.split(r"\[Few-shot examples\]", prompt)[1]
+        )
 
         # Simulate n annotators
         scores = []
         for _ in range(n):
             response = eval_model.get_text_responses_with_log_likelihood(
-                [prompt])[0]
+                [prompt]
+            )[0]
             if response:
                 first_token, log_likelihoods = response[1][0]
                 if first_token in ["A", "B"]:
@@ -218,16 +223,21 @@ def pairwise_comparison(
         )
 
     if calculated_confidence:
-        print("Warning: The source texts and reference outputs are not used to"
-              "calculate the confidence score.")
+        print(
+            "Warning: The source texts and reference outputs are not used to"
+            "calculate the confidence score."
+        )
         confidence_scores = simulated_annotators(
             prompt_params, eval_model, k, n
         )
         # Append the confidence scores to the explanations
         explanations = [
             f"{explanation}\n\nConfidence score: {confidence_score}"
-            if explanation and confidence_score else explanation
-            for explanation, confidence_score in zip(explanations, confidence_scores)
+            if explanation and confidence_score
+            else explanation
+            for explanation, confidence_score in zip(
+                explanations, confidence_scores
+            )
         ]
 
     return MetricValue(
