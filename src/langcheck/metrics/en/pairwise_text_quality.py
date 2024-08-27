@@ -93,6 +93,8 @@ def pairwise_comparison(
     reference_outputs: Optional[List[str] | str] = None,
     enforce_consistency: bool = True,
     calculated_confidence: bool = False,
+    k: int = 5,
+    n: int = 5,
     eval_model: EvalClient | None = None,
 ) -> MetricValue[Optional[float]]:
     """Calculates the pairwise comparison metric. This metric takes on float
@@ -116,6 +118,8 @@ def pairwise_comparison(
             impacting the scores. Default True.
         calculated_confidence: When this is True, we will calculate a confidence
             score for the pairwise comparison metric. Default False.
+        k: the number of examples of preference annotations
+        n: the numbre of simulated annotators
         eval_model: The EvalClient instance used for the evaluation. This is
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
@@ -215,7 +219,7 @@ def pairwise_comparison(
         print("Warning: The source texts and reference outputs are not used to"
               "calculate the confidence score.")
         confidence_scores = simulated_annotators(
-            prompt_params, eval_model
+            prompt_params, eval_model, k, n
         )
         # Append the confidence scores to the explanations
         explanations = [
