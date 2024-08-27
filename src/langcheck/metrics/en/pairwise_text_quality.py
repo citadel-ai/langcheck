@@ -59,7 +59,12 @@ def simulated_annotators(
 
         # Construct the full prompt using k few-shot examples
         few_shot_prompt = "\n".join(
-            f"[Question]\n{example['prompt']}\n\n[Assistant A's response]\n{example['model_a']}\n\n[Assistant B's response]\n{example['model_b']}\n\n[Verdict]\n{example['winner']}\n" for example in few_shot_examples)
+            f"[Question]\n{example['prompt']}\n\n"
+            "[Assistant A's response]\n{example['model_a']}\n\n"
+            "[Assistant B's response]\n{example['model_b']}\n\n"
+            "[Verdict]\n{example['winner']}\n"
+            for example in few_shot_examples
+        )
         prompt = re.split(r"\[Few-shot examples\]", prompt)[0] + \
             few_shot_prompt + re.split(r"\[Few-shot examples\]", prompt)[1]
 
@@ -207,7 +212,8 @@ def pairwise_comparison(
         )
 
     if calculated_confidence:
-        print("Warning: The source texts and reference outputs are not used to calculate the confidence score.")
+        print("Warning: The source texts and reference outputs are not used to"
+              "calculate the confidence score.")
         confidence_scores = simulated_annotators(
             prompt_params, eval_model
         )
