@@ -89,8 +89,6 @@ def pairwise_comparison(
     enforce_consistency: bool = True,
     calculated_confidence: bool = False,
     eval_model: EvalClient | None = None,
-
-
 ) -> MetricValue[Optional[float]]:
     """Calculates the pairwise comparison metric. This metric takes on float
     values of either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B
