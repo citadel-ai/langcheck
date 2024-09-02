@@ -76,9 +76,7 @@ def simulated_annotators(
             )
 
         # Get the response and log likelihoods
-        responses = eval_model.get_text_responses_with_log_likelihood(
-            prompts
-        )
+        responses = eval_model.get_text_responses_with_log_likelihood(prompts)
         scores = []
         for response in responses:
             if response:
@@ -129,7 +127,7 @@ def pairwise_comparison(
         calculated_confidence: When this is True, we will calculate a confidence
             score for the pairwise comparison metric. Default False.
         k: the number of examples of preference annotations
-        n: the numbre of simulated annotators
+        n: the number of simulated annotators
         eval_model: The EvalClient instance used for the evaluation. This is
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
