@@ -55,28 +55,29 @@ def simulated_annotators(
 
     confidence_scores = []
     for prompt in populated_prompts:
-        # Generate few-shot examples
-        few_shot_examples = random.sample(chatarena_data, k)
-
-        # Construct the full prompt using k few-shot examples
-        few_shot_prompt = "\n".join(
-            f"[Question]\n{example['prompt']}\n\n"
-            "[Assistant A's response]\n{example['model_a']}\n\n"
-            "[Assistant B's response]\n{example['model_b']}\n\n"
-            "[Verdict]\n{example['winner']}\n"
-            for example in few_shot_examples
-        )
-        prompt = (
-            re.split(r"\[Few-shot examples\]", prompt)[0]
-            + few_shot_prompt
-            + re.split(r"\[Few-shot examples\]", prompt)[1]
-        )
-
         # Simulate n annotators
         scores = []
         for _ in range(n):
+            # Generate few-shot examples
+            few_shot_examples = random.sample(chatarena_data, k)
+
+            # Construct the full prompt using k few-shot examples
+            few_shot_prompt = "\n".join(
+                f"[Question]\n{example['prompt']}\n\n"
+                "[Assistant A's response]\n{example['model_a']}\n\n"
+                "[Assistant B's response]\n{example['model_b']}\n\n"
+                "[Verdict]\n{example['winner']}\n"
+                for example in few_shot_examples
+            )
+            concated_prompt = (
+                re.split(r"\[Few-shot examples\]", prompt)[0]
+                + few_shot_prompt
+                + re.split(r"\[Few-shot examples\]", prompt)[1]
+            )
+
+            # Get the response and log likelihoods
             response = eval_model.get_text_responses_with_log_likelihood(
-                [prompt]
+                [concated_prompt]
             )[0]
             if response:
                 first_token, log_likelihoods = response[1][0]

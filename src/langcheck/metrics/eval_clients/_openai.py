@@ -144,7 +144,7 @@ class OpenAIEvalClient(EvalClient):
         """
         config = {"model": "gpt-3.5-turbo", "seed": 123, "logprobs": True}
         config.update(self._openai_args or {})
-        tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
+        tqdm_description = tqdm_description or "Getting log likelihoods"
         responses = self._call_api(
             prompts=prompts, config=config, tqdm_description=tqdm_description
         )
