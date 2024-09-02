@@ -134,6 +134,10 @@ class OpenAIEvalClient(EvalClient):
         texts. Each concrete subclass needs to define the concrete implementation
         of this function to enable text scoring.
 
+        NOTE: Please make sure that the model you use supports logprobs. In
+        Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
+        supports logprobs (https://learn.microsoft.com/en-us/azure/ai-services/openai/whats-new#new-ga-api-release).
+
         Args:
             prompts: The prompts you want to get the responses for.
 
@@ -156,8 +160,10 @@ class OpenAIEvalClient(EvalClient):
                 response_texts_with_log_likelihood.append(
                     (
                         response.choices[0].message.content,
-                        [(x.token, x.logprob)
-                         for x in response.choices[0].logprobs.content],
+                        [
+                            (x.token, x.logprob)
+                            for x in response.choices[0].logprobs.content
+                        ],
                     )
                 )
 
@@ -267,8 +273,7 @@ class OpenAIEvalClient(EvalClient):
                 continue
             # By leveraging the function calling API, this should be pretty
             # rare, but we're dealing with LLMs here so nothing is absolute!
-            print(
-                f'OpenAI returned an unrecognized assessment: "{assessment}"')
+            print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
 
         return [
             score_map[assessment]
@@ -383,8 +388,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             "You need to specify the embedding_model_name to get the score for "
             "this metric."
         )
-        openai_args = {**self._openai_args,
-                       "model": self._embedding_model_name}
+        openai_args = {**self._openai_args, "model": self._embedding_model_name}
         return OpenAISimilarityScorer(
             openai_client=self._client, openai_args=openai_args
         )
