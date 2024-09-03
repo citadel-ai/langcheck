@@ -49,12 +49,9 @@ def simulated_annotators(
     prompt_template = get_template(
         "en/confidence_estimating/simulated_annotators.j2"
     )
-    populated_prompts = [
-        prompt_template.render(prompt_param) for prompt_param in prompt_params
-    ]
 
     confidence_scores = []
-    for prompt in populated_prompts:
+    for prompt_param in prompt_params:
         # Simulate n annotators
         prompts = []
         for _ in range(n):
@@ -62,7 +59,7 @@ def simulated_annotators(
             few_shot_examples = random.sample(chatarena_data, k)
 
             # Construct the full prompt using k few-shot examples
-            few_shot_prompt = "\n".join(
+            prompt_param["few_shot_examples"] = "\n".join(
                 f"[Question]\n{example['prompt']}\n\n"
                 "[Assistant A's response]\n{example['model_a']}\n\n"
                 "[Assistant B's response]\n{example['model_b']}\n\n"
@@ -70,15 +67,11 @@ def simulated_annotators(
                 for example in few_shot_examples
             )
             prompts.append(
-                re.split(r"\[Few-shot examples\]", prompt)[0]
-                + few_shot_prompt
-                + re.split(r"\[Few-shot examples\]", prompt)[1]
+                prompt_template.render(prompt_param)
             )
 
         # Get the response and log likelihoods
-        responses = eval_model.get_text_responses_with_log_likelihood(
-            prompts
-        )
+        responses = eval_model.get_text_responses_with_log_likelihood(prompts)
         scores = []
         for response in responses:
             if response:
@@ -129,7 +122,7 @@ def pairwise_comparison(
         calculated_confidence: When this is True, we will calculate a confidence
             score for the pairwise comparison metric. Default False.
         k: the number of examples of preference annotations
-        n: the numbre of simulated annotators
+        n: the number of simulated annotators
         eval_model: The EvalClient instance used for the evaluation. This is
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
