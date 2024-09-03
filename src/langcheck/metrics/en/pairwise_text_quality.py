@@ -24,6 +24,7 @@ def simulated_annotators(
     eval_model: EvalClient,
     k: int = 5,
     n: int = 5,
+    seed: int | None = None,
 ) -> List[float | None]:
     """Compute a confidence score for the pairwise comparison metric based on
     the method Simulated Annotators proposed in the paper "Trust or Escalate:
@@ -35,6 +36,7 @@ def simulated_annotators(
         eval_model: The EvalClient instance used for the evaluation.
         k: the number of examples of preference annotations
         n: the numbre of simulated annotators
+        seed: the random seed for selecting the few-shot examples
     Returns:
         A confidence score for the pairwise comparison metric
     """
@@ -43,6 +45,9 @@ def simulated_annotators(
     with open(cwd / "processed_chatarena_examples.jsonl") as f:
         chatarena_data = [json.loads(line) for line in f]
     assert len(chatarena_data) >= k, "Not enough examples in the chatarena data"
+
+    if seed is not None:
+        random.seed(seed)
 
     # Load the prompt template
     prompt_template = get_template(
@@ -97,6 +102,7 @@ def pairwise_comparison(
     calculated_confidence: bool = False,
     k: int = 5,
     n: int = 5,
+    seed: int | None = None,
     eval_model: EvalClient | None = None,
 ) -> MetricValue[Optional[float]]:
     """Calculates the pairwise comparison metric. This metric takes on float
@@ -122,6 +128,7 @@ def pairwise_comparison(
             score for the pairwise comparison metric. Default False.
         k: the number of examples of preference annotations
         n: the number of simulated annotators
+        seed: the random seed for the simulated annotators
         eval_model: The EvalClient instance used for the evaluation. This is
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
@@ -223,7 +230,7 @@ def pairwise_comparison(
             "calculate the confidence score."
         )
         confidence_scores = simulated_annotators(
-            prompt_params, eval_model, k, n
+            prompt_params, eval_model, k, n, seed
         )
         # Append the confidence scores to the explanations
         explanations = [
