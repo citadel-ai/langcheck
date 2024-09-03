@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from typing import Any, Iterable
+from typing import Any, Iterable, List, Optional
 
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
@@ -12,7 +12,7 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
-from ._base import EvalClient
+from ._base import EvalClient, ResponseDict
 
 
 class OpenAIEvalClient(EvalClient):
@@ -128,8 +128,12 @@ class OpenAIEvalClient(EvalClient):
         return response_texts
 
     def get_text_responses_with_log_likelihood(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
-    ) -> list[tuple[str, list[tuple[str, float]]] | None]:
+        self,
+        prompts: Iterable[str],
+        top_logprobs: int | None = None,
+        *,
+        tqdm_description: str | None = None,
+    ) -> List[Optional[ResponseDict]]:
         """The function that gets responses with log likelihood to the given prompt
         texts. Each concrete subclass needs to define the concrete implementation
         of this function to enable text scoring.
@@ -140,6 +144,7 @@ class OpenAIEvalClient(EvalClient):
 
         Args:
             prompts: The prompts you want to get the responses for.
+            top_logprobs: The number of logprobs to return for each token.
 
         Returns:
             A list of responses to the prompts. Each response is a tuple of the
@@ -147,6 +152,8 @@ class OpenAIEvalClient(EvalClient):
             probabilities. The responses can be None if the evaluation fails.
         """
         config = {"model": "gpt-3.5-turbo", "seed": 123, "logprobs": True}
+        if top_logprobs:
+            config["top_logprobs"] = top_logprobs
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Getting log likelihoods"
         responses = self._call_api(
@@ -157,15 +164,26 @@ class OpenAIEvalClient(EvalClient):
             if response is None:
                 response_texts_with_log_likelihood.append(None)
             else:
-                response_texts_with_log_likelihood.append(
-                    (
-                        response.choices[0].message.content,
-                        [
-                            (x.token, x.logprob)
-                            for x in response.choices[0].logprobs.content
-                        ],
+                response_dict = {
+                    "response_text": response.choices[0].message.content,
+                    "response_logprobs": [],
+                }
+                for logprob in response.choices[0].logprobs.content:
+                    token_top_logprobs = [
+                        {
+                            "token": token_logprob.token,
+                            "logprob": token_logprob.logprob,
+                        }
+                        for token_logprob in logprob.top_logprobs
+                    ]
+                    response_dict["response_logprobs"].append(
+                        {
+                            "token": logprob.token,
+                            "logprob": logprob.logprob,
+                            "token_top_logprobs": token_top_logprobs,
+                        }
                     )
-                )
+                response_texts_with_log_likelihood.append(response_dict)
 
         return response_texts_with_log_likelihood
 

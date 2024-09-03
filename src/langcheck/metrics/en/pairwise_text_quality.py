@@ -4,7 +4,7 @@ import json
 import math
 import random
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from langcheck.metrics._pairwise_text_quality_utils import (
     enforce_pairwise_comparison_consistency,
@@ -16,6 +16,7 @@ from langcheck.metrics._validation import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
+from ..eval_clients._base import LogProbInfo, ResponseDict, TokenLogProb
 from ..prompts._utils import get_template
 
 
@@ -70,21 +71,40 @@ def simulated_annotators(
                 "[Verdict]\n{example['winner']}\n"
                 for example in few_shot_examples
             )
-            prompts.append(
-                prompt_template.render(prompt_param)
-            )
+            prompts.append(prompt_template.render(prompt_param))
 
-        # Get the response and log likelihoods
-        responses = eval_model.get_text_responses_with_log_likelihood(prompts)
-        scores = []
+        # Get the response and top five logprobs of the first token
+        responses: List[Optional[ResponseDict]] = (
+            eval_model.get_text_responses_with_log_likelihood(
+                prompts, top_logprobs=5
+            )
+        )
+        scores_a, scores_b = [], []
         for response in responses:
             if response:
-                first_token, log_likelihoods = response[1][0]
-                if first_token in ["A", "B"]:
-                    scores.append(math.exp(log_likelihoods))
+                response = cast(ResponseDict, response)
+                response_first_token = cast(
+                    LogProbInfo, response["response_logprobs"][0]
+                )
+                top_five_logprobs = cast(
+                    List[TokenLogProb],
+                    response_first_token["token_top_logprobs"],
+                )
+                first_tokens = {
+                    logprob["token"] for logprob in top_five_logprobs
+                }
+                if "A" in first_tokens and "B" in first_tokens:
+                    for logprob in top_five_logprobs:
+                        if logprob["token"] == "A":
+                            scores_a.append(math.exp(float(logprob["logprob"])))
+                        elif logprob["token"] == "B":
+                            scores_b.append(math.exp(float(logprob["logprob"])))
 
-        if len(scores) != 0:
-            confidence_scores.append(sum(scores) / len(scores))
+        if len(scores_a) != 0 and len(scores_a) == len(scores_b):
+            if sum(scores_a) > sum(scores_b):
+                confidence_scores.append((sum(scores_a) / len(scores_a)))
+            else:
+                confidence_scores.append((sum(scores_b) / len(scores_b)))
         else:
             confidence_scores.append(None)
 
