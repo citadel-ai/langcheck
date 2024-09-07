@@ -8,8 +8,8 @@ from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 
 TokenLogProb = Dict[str, Union[str, float]]
-LogProbInfo = Dict[str, Union[str, float, List[TokenLogProb]]]
-ResponseDict = Dict[str, Union[str, List[LogProbInfo]]]
+TopKLogProbs = List[List[TokenLogProb]]
+ResponseDict = Dict[str, Union[str, List[TopKLogProbs]]]
 
 
 class EvalClient:

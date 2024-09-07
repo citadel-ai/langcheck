@@ -16,7 +16,7 @@ from langcheck.metrics._validation import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
-from ..eval_clients._base import LogProbInfo, ResponseDict, TokenLogProb
+from ..eval_clients._base import ResponseDict, TokenLogProb
 from ..prompts._utils import get_template
 
 
@@ -83,17 +83,13 @@ def simulated_annotators(
         for response in responses:
             if response:
                 response = cast(ResponseDict, response)
-                response_first_token = cast(
-                    LogProbInfo, response["response_logprobs"][0]
-                )
-                top_five_logprobs = cast(
-                    List[TokenLogProb],
-                    response_first_token["token_top_logprobs"],
+                top_five_first_token_logprobs = cast(
+                    List[TokenLogProb], response["response_logprobs"][0]
                 )
                 # Extract logprobs for tokens 'A' and 'B'
                 logprobs_dict = {
                     logprob["token"]: math.exp(float(logprob["logprob"]))
-                    for logprob in top_five_logprobs
+                    for logprob in top_five_first_token_logprobs
                 }
                 if "A" in logprobs_dict and "B" in logprobs_dict:
                     scores_a.append(logprobs_dict["A"])

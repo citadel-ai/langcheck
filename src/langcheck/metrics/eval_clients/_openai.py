@@ -177,12 +177,9 @@ class OpenAIEvalClient(EvalClient):
                         for token_logprob in logprob.top_logprobs
                     ]
                     response_dict["response_logprobs"].append(
-                        {
-                            "token": logprob.token,
-                            "logprob": logprob.logprob,
-                            "token_top_logprobs": token_top_logprobs,
-                        }
+                        token_top_logprobs
                     )
+
                 response_texts_with_log_likelihood.append(response_dict)
 
         return response_texts_with_log_likelihood
