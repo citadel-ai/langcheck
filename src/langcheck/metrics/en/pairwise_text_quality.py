@@ -80,7 +80,7 @@ def simulated_annotators(
             )
         )
         scores_a, scores_b = [], []
-        for response in responses:
+        for i, response in enumerate(responses):
             if response:
                 response = cast(ResponseDict, response)
                 top_five_first_token_logprobs = cast(
@@ -94,6 +94,10 @@ def simulated_annotators(
                 if "A" in logprobs_dict and "B" in logprobs_dict:
                     scores_a.append(logprobs_dict["A"])
                     scores_b.append(logprobs_dict["B"])
+                else:
+                    print(
+                        f"Token 'A' or 'B' was not found for the {i}th simulated annotator"
+                    )
 
         if len(scores_a) != 0 and len(scores_a) == len(scores_b):
             if sum(scores_a) > sum(scores_b):
