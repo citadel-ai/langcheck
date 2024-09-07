@@ -90,15 +90,14 @@ def simulated_annotators(
                     List[TokenLogProb],
                     response_first_token["token_top_logprobs"],
                 )
-                first_tokens = {
-                    logprob["token"] for logprob in top_five_logprobs
+                # Extract logprobs for tokens 'A' and 'B'
+                logprobs_dict = {
+                    logprob["token"]: math.exp(float(logprob["logprob"]))
+                    for logprob in top_five_logprobs
                 }
-                if "A" in first_tokens and "B" in first_tokens:
-                    for logprob in top_five_logprobs:
-                        if logprob["token"] == "A":
-                            scores_a.append(math.exp(float(logprob["logprob"])))
-                        elif logprob["token"] == "B":
-                            scores_b.append(math.exp(float(logprob["logprob"])))
+                if "A" in logprobs_dict and "B" in logprobs_dict:
+                    scores_a.append(logprobs_dict["A"])
+                    scores_b.append(logprobs_dict["B"])
 
         if len(scores_a) != 0 and len(scores_a) == len(scores_b):
             if sum(scores_a) > sum(scores_b):
