@@ -17,7 +17,7 @@ from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
 from ..eval_clients._base import TextResponseWithLogProbs, TokenLogProb
-from ..prompts._utils import get_template
+from ..prompts._utils import get_template, load_few_shot_examples
 
 
 def simulated_annotators(
@@ -42,9 +42,9 @@ def simulated_annotators(
         A confidence score for the pairwise comparison metric
     """
     # Load preprocessed chatarena data
-    cwd = Path(__file__).parent
-    with open(cwd / "processed_chatarena_examples.jsonl") as f:
-        chatarena_data = [json.loads(line) for line in f]
+    chatarena_data = load_few_shot_examples(
+        "en/confidence_estimating/processed_chatarena_examples.jsonl"
+    )
     assert len(chatarena_data) >= k, "Not enough examples in the chatarena data"
 
     if seed is not None:
