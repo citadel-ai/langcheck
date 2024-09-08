@@ -9,7 +9,7 @@ from ..scorer._base import BaseSimilarityScorer
 
 TokenLogProb = Dict[str, Union[str, float]]
 TopKLogProbs = List[List[TokenLogProb]]
-ResponseDict = Dict[str, Union[str, List[TopKLogProbs]]]
+TextResponseWithLogProbs = Dict[str, Union[str, List[TopKLogProbs]]]
 
 
 class EvalClient:
@@ -65,7 +65,7 @@ class EvalClient:
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> List[Optional[ResponseDict]]:
+    ) -> List[Optional[TextResponseWithLogProbs]]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.

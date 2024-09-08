@@ -16,7 +16,7 @@ from langcheck.metrics._validation import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_value import MetricValue
 
-from ..eval_clients._base import ResponseDict, TokenLogProb
+from ..eval_clients._base import TextResponseWithLogProbs, TokenLogProb
 from ..prompts._utils import get_template
 
 
@@ -74,7 +74,7 @@ def simulated_annotators(
             prompts.append(prompt_template.render(prompt_param))
 
         # Get the response and top five logprobs of the first token
-        responses: List[Optional[ResponseDict]] = (
+        responses: List[Optional[TextResponseWithLogProbs]] = (
             eval_model.get_text_responses_with_log_likelihood(
                 prompts, top_logprobs=5
             )
@@ -82,7 +82,7 @@ def simulated_annotators(
         scores_a, scores_b = [], []
         for i, response in enumerate(responses):
             if response:
-                response = cast(ResponseDict, response)
+                response = cast(TextResponseWithLogProbs, response)
                 top_five_first_token_logprobs = cast(
                     List[TokenLogProb], response["response_logprobs"][0]
                 )

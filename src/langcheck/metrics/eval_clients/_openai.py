@@ -12,7 +12,7 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
-from ._base import EvalClient, ResponseDict
+from ._base import EvalClient, TextResponseWithLogProbs
 
 
 class OpenAIEvalClient(EvalClient):
@@ -133,7 +133,7 @@ class OpenAIEvalClient(EvalClient):
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> List[Optional[ResponseDict]]:
+    ) -> List[Optional[TextResponseWithLogProbs]]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
