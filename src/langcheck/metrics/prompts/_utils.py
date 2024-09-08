@@ -20,7 +20,7 @@ def get_template(relative_path: str) -> Template:
     return Template((cwd / relative_path).read_text(encoding="utf-8"))
 
 
-def load_few_shot_examples(relative_path: str) -> list[str]:
+def load_few_shot_examples(relative_path: str) -> list[dict[str, str]]:
     """
     Loads few-shot examples from a JSONL file.
 
