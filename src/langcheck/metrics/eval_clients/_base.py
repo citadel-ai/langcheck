@@ -66,9 +66,9 @@ class EvalClient:
         *,
         tqdm_description: str | None = None,
     ) -> List[Optional[ResponseDict]]:
-        """The function that gets responses with log likelihood to the given prompt
-        texts. Each concrete subclass needs to define the concrete implementation
-        of this function to enable text scoring.
+        """The function that gets responses with log likelihood to the given
+        prompt texts. Each concrete subclass needs to define the concrete
+        implementation of this function to enable text scoring.
 
         Args:
             prompts: The prompts you want to get the responses for.

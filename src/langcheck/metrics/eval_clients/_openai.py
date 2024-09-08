@@ -134,9 +134,9 @@ class OpenAIEvalClient(EvalClient):
         *,
         tqdm_description: str | None = None,
     ) -> List[Optional[ResponseDict]]:
-        """The function that gets responses with log likelihood to the given prompt
-        texts. Each concrete subclass needs to define the concrete implementation
-        of this function to enable text scoring.
+        """The function that gets responses with log likelihood to the given
+        prompt texts. Each concrete subclass needs to define the concrete
+        implementation of this function to enable text scoring.
 
         NOTE: Please make sure that the model you use supports logprobs. In
         Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
