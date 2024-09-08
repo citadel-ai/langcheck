@@ -252,6 +252,7 @@ def pairwise_comparison(
             prompt_params, eval_model, k, n, seed
         )
         # Append the confidence scores to the explanations
+        # TODO: Consider adding the confidence scores to the MetricValue object
         explanations = [
             f"{explanation}\n\nConfidence score: {confidence_score}"
             if explanation and confidence_score
