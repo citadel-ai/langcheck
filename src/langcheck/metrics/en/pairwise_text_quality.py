@@ -34,7 +34,7 @@ def simulated_annotators(
     Args:
         prompt_params: The parameters used to populate the prompt template.
         eval_model: The EvalClient instance used for the evaluation.
-        preference_data_path: The relative path to preference data labeld by
+        preference_data_path: The relative path to preference data labeled by
             human annotators. Users should prepare a pool of preference
             annotations (e.g., 1000 examples) in advance to use this metric.
         k: The number of examples of preference annotations
