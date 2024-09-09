@@ -21,6 +21,7 @@ from ..prompts._utils import get_template, load_few_shot_examples
 def simulated_annotators(
     prompt_params: List[dict[str, str | None]],
     eval_model: EvalClient,
+    preference_data_path: str = "en/confidence_estimating/preference_data_examples.jsonl",
     k: int = 5,
     n: int = 5,
     seed: int | None = None,
@@ -33,17 +34,20 @@ def simulated_annotators(
     Args:
         prompt_params: The parameters used to populate the prompt template.
         eval_model: The EvalClient instance used for the evaluation.
-        k: the number of examples of preference annotations
-        n: the numbre of simulated annotators
-        seed: the random seed for selecting the few-shot examples
+        preference_data_path: The relative path to preference data labeld by
+            human annotators. Users should prepare a pool of preference
+            annotations (e.g., 1000 examples) in advance to use this metric.
+        k: The number of examples of preference annotations
+        n: The numbre of simulated annotators
+        seed: The random seed for selecting the few-shot examples
     Returns:
         A confidence score for the pairwise comparison metric
     """
-    # Load preprocessed chatarena data
-    chatarena_data = load_few_shot_examples(
-        "en/confidence_estimating/processed_chatarena_examples.jsonl"
-    )
-    assert len(chatarena_data) >= k, "Not enough examples in the chatarena data"
+    # Load preprocessed preference data
+    preference_data = load_few_shot_examples(preference_data_path)
+    assert (
+        len(preference_data) >= k
+    ), "Not enough examples in the preference data"
 
     if seed is not None:
         random.seed(seed)
@@ -59,7 +63,7 @@ def simulated_annotators(
         prompts = []
         for _ in range(n):
             # Generate few-shot examples
-            few_shot_examples = random.sample(chatarena_data, k)
+            few_shot_examples = random.sample(preference_data, k)
 
             # Construct the full prompt using k few-shot examples
             prompt_param["few_shot_examples"] = "\n".join(
@@ -117,6 +121,7 @@ def pairwise_comparison(
     reference_outputs: Optional[List[str] | str] = None,
     enforce_consistency: bool = True,
     calculated_confidence: bool = False,
+    preference_data_path: str = "en/confidence_estimating/preference_data_examples.jsonl",
     k: int = 5,
     n: int = 5,
     seed: int | None = None,
@@ -143,9 +148,12 @@ def pairwise_comparison(
             impacting the scores. Default True.
         calculated_confidence: When this is True, we will calculate a confidence
             score for the pairwise comparison metric. Default False.
-        k: the number of examples of preference annotations
-        n: the number of simulated annotators
-        seed: the random seed for the simulated annotators
+        preference_data_path: The relative path to preference data labeld by
+            human annotators. Users should prepare a pool of preference
+            annotations (e.g., 1000 examples) in advance to use this metric.
+        k: The number of examples of preference annotations
+        n: The number of simulated annotators
+        seed: The random seed for the simulated annotators
         eval_model: The EvalClient instance used for the evaluation. This is
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
@@ -247,7 +255,7 @@ def pairwise_comparison(
             "calculate the confidence score."
         )
         confidence_scores = simulated_annotators(
-            prompt_params, eval_model, k, n, seed
+            prompt_params, eval_model, preference_data_path, k, n, seed
         )
         # Append the confidence scores to the explanations
         # TODO: Consider adding the confidence scores to the MetricValue object
