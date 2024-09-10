@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Dict, Iterable, List, Optional, Union
 
 from jinja2 import Template
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
+
+TokenLogProb = Dict[str, Union[str, float]]
+TopKLogProbs = List[List[TokenLogProb]]
+TextResponseWithLogProbs = Dict[str, Union[str, List[TopKLogProbs]]]
 
 
 class EvalClient:
@@ -52,6 +56,28 @@ class EvalClient:
         Returns:
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
+        """
+        raise NotImplementedError
+
+    def get_text_responses_with_log_likelihood(
+        self,
+        prompts: Iterable[str],
+        top_logprobs: int | None = None,
+        *,
+        tqdm_description: str | None = None,
+    ) -> List[Optional[TextResponseWithLogProbs]]:
+        """The function that gets responses with log likelihood to the given
+        prompt texts. Each concrete subclass needs to define the concrete
+        implementation of this function to enable text scoring.
+
+        Args:
+            prompts: The prompts you want to get the responses for.
+            top_logprobs: The number of logprobs to return for each token.
+
+        Returns:
+            A list of responses to the prompts. Each response is a tuple of the
+            output text and the list of tuples of the output tokens and the log
+            probabilities. The responses can be None if the evaluation fails.
         """
         raise NotImplementedError
 
