@@ -39,7 +39,7 @@ class MetricInputs:
         ] = {},
         required_params: list[str] = [],
         optional_params: list[str] = [],
-        input_record_mapping: dict[str, str] = {},
+        input_name_to_prompt_var_mapping: dict[str, str] = {},
     ):
         """Initialize the MetricInputs object.
 
@@ -50,10 +50,10 @@ class MetricInputs:
                 parameter names and the values are tuples of two input lists.
             required_params: A list of required parameters.
             optional_params: A list of optional parameters.
-            input_record_mapping: A dictionary that maps the input keys to the
-                record attributes of the return values from `get_input_records`.
-                The keys are the input keys and the values are the record
-                attributes.
+            input_name_to_prompt_var_mapping: A dictionary that maps the input
+                names to the variable names in the prompt template. The values
+                should therefore correspond with the keys returned from the
+                `get_inputs_for_prompt_template` method.
         """
         self.individual_inputs = {
             key: _map_individual_input_to_list(value)
@@ -68,7 +68,7 @@ class MetricInputs:
         self.required_params = required_params
         self.optional_params = optional_params
 
-        self.input_record_mapping = input_record_mapping
+        self.input_name_to_prompt_var_mapping = input_name_to_prompt_var_mapping
 
         all_input_keys = list(self.individual_inputs.keys()) + list(
             self.pairwise_inputs.keys()
@@ -83,9 +83,9 @@ class MetricInputs:
             )
 
         for input_key in all_input_keys:
-            if input_key not in self.input_record_mapping:
+            if input_key not in self.input_name_to_prompt_var_mapping:
                 # Add mapping for the input key itself
-                self.input_record_mapping[input_key] = input_key
+                self.input_name_to_prompt_var_mapping[input_key] = input_key
 
         # Do the validation of parameters
         # Validate that individual_inputs and pairwise_inputs are disjoint
@@ -173,60 +173,71 @@ class MetricInputs:
             raise ValueError("All inputs should have at least one element.")
 
         # Validate the mapping to prompt variables
-        self.input_record_to_arg = {}
+        self.prompt_var_to_input_name_mapping = {}
 
         for individual_input_key in individual_input_keys:
-            input_record_name = self.input_record_mapping[individual_input_key]
-            if input_record_name in self.input_record_to_arg:
+            prompt_var = self.input_name_to_prompt_var_mapping[
+                individual_input_key
+            ]
+            if prompt_var in self.prompt_var_to_input_name_mapping:
                 raise ValueError(
-                    f"Input record attribute '{input_record_name}' is mapped from multiple arguments: "
-                    f"{self.input_record_to_arg[input_record_name]} and {individual_input_key}"
+                    f"Prompt variable '{prompt_var}' is mapped from multiple arguments: "
+                    f"{self.prompt_var_to_input_name_mapping[prompt_var]} and {individual_input_key}"
                 )
 
-            self.input_record_to_arg[input_record_name] = individual_input_key
+            self.prompt_var_to_input_name_mapping[prompt_var] = (
+                individual_input_key
+            )
 
         for pairwise_input_key in pairwise_input_keys:
-            input_record_name_individual = self.input_record_mapping[
+            prompt_var_individual = self.input_name_to_prompt_var_mapping[
                 pairwise_input_key
             ]
-            input_record_names = [
-                input_record_name_individual + "_a",
-                input_record_name_individual + "_b",
+            prompt_vars = [
+                prompt_var_individual + "_a",
+                prompt_var_individual + "_b",
             ]
 
-            for input_record_name in input_record_names:
-                if input_record_name in self.input_record_to_arg:
+            for prompt_var in prompt_vars:
+                if prompt_var in self.prompt_var_to_input_name_mapping:
                     raise ValueError(
-                        f"Input record attribute '{input_record_name}' is mapped from multiple arguments: "
-                        f"{self.input_record_to_arg[input_record_name]} and {pairwise_input_key}"
+                        f"Prompt variable '{prompt_var}' is mapped from multiple arguments: "
+                        f"{self.prompt_var_to_input_name_mapping[prompt_var]} and {pairwise_input_key}"
                     )
 
-                self.input_record_to_arg[input_record_name] = pairwise_input_key
+                self.prompt_var_to_input_name_mapping[prompt_var] = (
+                    pairwise_input_key
+                )
 
-    def get_input_records(
+    def get_inputs_for_prompt_template(
         self, swap_pairwise: bool = False
     ) -> list[dict[str, str | None]]:
-        """Get 'input records' that can be used as arguments for the prompt
+        """Get the inputs that can be used as arguments for the prompt
         template.
-        Each record is a dictionary where the keys are the record attributes
-        specified in the `input_record_mapping` and the values are the input
-        values, which are corresponding elements from the input lists.
+        Each item is a dictionary where the keys are the prompt variables
+        specified in the `input_name_to_prompt_var_mapping` and the values are
+        the input values, which are corresponding elements from the input lists.
         For pairwise inputs, the values for the first list and the second list
         are stored in the attributes with the suffixes "_a" and "_b".
 
         Args:
             swap_pairwise: If True, swap the pairwise inputs.
         """
-        input_records: list[dict[str, str | None]] = []
+        inputs_for_prompt_template: list[dict[str, str | None]] = []
         for i in range(self.input_length):
-            input_record = {}
+            # Create the inputs for the prompt template for the i-th input
+            single_instance_inputs = {}
             for individual_key in self.individual_inputs:
                 individual_input = self.individual_inputs[individual_key]
-                individual_var_key = self.input_record_mapping[individual_key]
+                individual_prompt_var = self.input_name_to_prompt_var_mapping[
+                    individual_key
+                ]
                 if individual_input is None:
-                    input_record[individual_var_key] = None
+                    single_instance_inputs[individual_prompt_var] = None
                 else:
-                    input_record[individual_var_key] = individual_input[i]
+                    single_instance_inputs[individual_prompt_var] = (
+                        individual_input[i]
+                    )
 
             for pairwise_key in self.pairwise_inputs:
                 pairwise_input_a, pairwise_input_b = self.pairwise_inputs[
@@ -237,23 +248,27 @@ class MetricInputs:
                         pairwise_input_b,
                         pairwise_input_a,
                     )
-                input_record_key_a = (
-                    self.input_record_mapping[pairwise_key] + "_a"
+                pairwise_prompt_var_a = (
+                    self.input_name_to_prompt_var_mapping[pairwise_key] + "_a"
                 )
                 if pairwise_input_a is None:
-                    input_record[input_record_key_a] = None
+                    single_instance_inputs[pairwise_prompt_var_a] = None
                 else:
-                    input_record[input_record_key_a] = pairwise_input_a[i]
-                input_record_key_b = (
-                    self.input_record_mapping[pairwise_key] + "_b"
+                    single_instance_inputs[pairwise_prompt_var_a] = (
+                        pairwise_input_a[i]
+                    )
+                pairwise_prompt_var_b = (
+                    self.input_name_to_prompt_var_mapping[pairwise_key] + "_b"
                 )
                 if pairwise_input_b is None:
-                    input_record[input_record_key_b] = None
+                    single_instance_inputs[pairwise_prompt_var_b] = None
                 else:
-                    input_record[input_record_key_b] = pairwise_input_b[i]
-            input_records.append(input_record)
+                    single_instance_inputs[pairwise_prompt_var_b] = (
+                        pairwise_input_b[i]
+                    )
+            inputs_for_prompt_template.append(single_instance_inputs)
 
-        return input_records
+        return inputs_for_prompt_template
 
     def to_df(self) -> pd.DataFrame:
         """Convert the inputs to a DataFrame."""
@@ -309,13 +324,13 @@ class MetricInputs:
             env.parse(template_src)
         )
 
-        allowed_params = self.input_record_to_arg.keys()
+        allowed_params = self.prompt_var_to_input_name_mapping.keys()
         assert all(
             param in allowed_params for param in expected_params
         ), f"The prompt template contains invalid parameters. The allowed parameters are {allowed_params} but the prompt template expects the parameters {expected_params}"
 
         for param in expected_params:
-            arg_key = self.input_record_to_arg[param]
+            arg_key = self.prompt_var_to_input_name_mapping[param]
             if arg_key in self.individual_inputs:
                 assert (
                     self.individual_inputs[arg_key] is not None
@@ -404,7 +419,7 @@ def get_standard_metric_inputs(
         pairwise_inputs=pairwise_inputs,
         required_params=required_params,
         optional_params=optional_params,
-        input_record_mapping={
+        input_name_to_prompt_var_mapping={
             "generated_outputs": "gen_output",
             "prompts": "user_query",
             "sources": "src",

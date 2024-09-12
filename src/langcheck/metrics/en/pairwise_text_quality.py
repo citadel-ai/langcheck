@@ -208,9 +208,9 @@ def pairwise_comparison(
             "Warning: The source texts and reference outputs are not used to"
             "calculate the confidence score."
         )
-        input_records = metric_inputs.get_input_records()
+        prompt_template_inputs = metric_inputs.get_inputs_for_prompt_template()
         confidence_scores = simulated_annotators(
-            input_records, eval_model, preference_data_path, k, n, seed
+            prompt_template_inputs, eval_model, preference_data_path, k, n, seed
         )
         # Append the confidence scores to the explanations
         # TODO: Consider adding the confidence scores to the MetricValue object

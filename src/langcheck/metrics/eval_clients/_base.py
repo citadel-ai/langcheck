@@ -202,9 +202,10 @@ class EvalClient:
         Returns:
             MetricValue: The metric values computed from the template.
         """
-        input_records = metric_inputs.get_input_records()
+        prompt_template_inputs = metric_inputs.get_inputs_for_prompt_template()
         populated_prompts = [
-            template.render(input_record) for input_record in input_records
+            template.render(prompt_template_input)
+            for prompt_template_input in prompt_template_inputs
         ]
 
         scores, explanations = self.get_score(

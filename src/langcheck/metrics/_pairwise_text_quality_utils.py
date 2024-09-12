@@ -88,9 +88,10 @@ def compute_pairwise_comparison_metric_values_with_consistency(
     Returns:
         MetricValue: The metric values computed from the template.
     """
-    input_records = metric_inputs.get_input_records()
+    prompt_template_inputs = metric_inputs.get_inputs_for_prompt_template()
     populated_prompts = [
-        template.render(input_record) for input_record in input_records
+        template.render(prompt_template_input)
+        for prompt_template_input in prompt_template_inputs
     ]
 
     for prompt in populated_prompts:
@@ -104,9 +105,12 @@ def compute_pairwise_comparison_metric_values_with_consistency(
     )
 
     # Swap the generated outputs and sources to enforce consistency
-    swapped_records = metric_inputs.get_input_records(swap_pairwise=True)
+    swapped_prompt_template_inputs = (
+        metric_inputs.get_inputs_for_prompt_template(swap_pairwise=True)
+    )
     swapped_prompts = [
-        template.render(swapped_record) for swapped_record in swapped_records
+        template.render(swapped_prompt_template_input)
+        for swapped_prompt_template_input in swapped_prompt_template_inputs
     ]
 
     for prompt in swapped_prompts:
