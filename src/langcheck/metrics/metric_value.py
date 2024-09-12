@@ -150,7 +150,7 @@ class MetricValue(Generic[NumericType]):
         ]
         return len(self.metric_inputs.pairwise_inputs) == 0 and all(
             input_name in allowed_inputs
-            for input_name in self.metric_inputs.single_inputs
+            for input_name in self.metric_inputs.individual_inputs
         )
 
     def scatter(self, jupyter_mode: str = "inline") -> None:

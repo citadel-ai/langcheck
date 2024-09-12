@@ -64,7 +64,7 @@ def test_optional_metric_values():
     score_list = [1.0, None]
     dummy_generated_outputs = ["foo", "bar"]
     metric_inputs = MetricInputs(
-        single_inputs={
+        individual_inputs={
             "generated_outputs": dummy_generated_outputs,
         },
         required_params=["generated_outputs"],
@@ -87,7 +87,7 @@ def test_pairwise_metric_value():
     dummy_generated_outputs_a = ["foo", "bar"]
     dummy_generated_outputs_b = ["baz", "bat"]
     metric_inputs = MetricInputs(
-        single_inputs={},
+        individual_inputs={},
         pairwise_inputs={
             "generated_outputs": (
                 dummy_generated_outputs_a,

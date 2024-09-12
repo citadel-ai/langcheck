@@ -5,20 +5,20 @@ from typing import List, Union
 import pandas as pd
 from jinja2 import Environment, meta
 
-SingleInputType = Union[str, List[str], None]
+IndividualInputType = Union[str, List[str], None]
 
 
 def _map_pairwise_input_to_list(
-    input: tuple[SingleInputType, SingleInputType],
+    input: tuple[IndividualInputType, IndividualInputType],
 ) -> tuple[list[str] | None, list[str] | None]:
     return (
-        _map_single_input_to_list(input[0]),
-        _map_single_input_to_list(input[1]),
+        _map_individual_input_to_list(input[0]),
+        _map_individual_input_to_list(input[1]),
     )
 
 
-def _map_single_input_to_list(
-    input: SingleInputType,
+def _map_individual_input_to_list(
+    input: IndividualInputType,
 ) -> list[str] | None:
     if input is None:
         return None
@@ -33,8 +33,10 @@ class MetricInputs:
 
     def __init__(
         self,
-        single_inputs: dict[str, SingleInputType],
-        pairwise_inputs: dict[str, tuple[SingleInputType, SingleInputType]]
+        individual_inputs: dict[str, IndividualInputType],
+        pairwise_inputs: dict[
+            str, tuple[IndividualInputType, IndividualInputType]
+        ]
         | None = None,
         required_params: list[str] | None = None,
         optional_params: list[str] | None = None,
@@ -43,8 +45,8 @@ class MetricInputs:
         """Initialize the MetricInputs object.
 
         Args:
-            single_inputs: A dictionary of single inputs. The keys are the
-                parameter names and the values are the input lists.
+            individual_inputs: A dictionary of individual inputs. The keys are
+                the parameter names and the values are the input lists.
             pairwise_inputs: A dictionary of pairwise inputs. The keys are the
                 parameter names and the values are tuples of two input lists.
             required_params: A list of required parameters.
@@ -58,9 +60,9 @@ class MetricInputs:
         self.required_params = required_params or []
         self.optional_params = optional_params or []
 
-        self.single_inputs = {
-            key: _map_single_input_to_list(value)
-            for key, value in single_inputs.items()
+        self.individual_inputs = {
+            key: _map_individual_input_to_list(value)
+            for key, value in individual_inputs.items()
         }
 
         if pairwise_inputs is None:
@@ -73,7 +75,7 @@ class MetricInputs:
 
         self.input_record_mapping = input_record_mapping or {}
 
-        all_input_keys = list(self.single_inputs.keys()) + list(
+        all_input_keys = list(self.individual_inputs.keys()) + list(
             self.pairwise_inputs.keys()
         )
         for input_key in all_input_keys:
@@ -82,17 +84,19 @@ class MetricInputs:
                 self.input_record_mapping[input_key] = input_key
 
         # Do the validation of parameters
-        # Validate that single_inputs and pairwise_inputs are disjoint
-        single_input_keys = set(self.single_inputs.keys())
+        # Validate that individual_inputs and pairwise_inputs are disjoint
+        individual_input_keys = set(self.individual_inputs.keys())
         pairwise_input_keys = set(self.pairwise_inputs.keys())
-        if not single_input_keys.isdisjoint(pairwise_input_keys):
-            overlap_keys = single_input_keys.intersection(pairwise_input_keys)
+        if not individual_input_keys.isdisjoint(pairwise_input_keys):
+            overlap_keys = individual_input_keys.intersection(
+                pairwise_input_keys
+            )
             raise ValueError(
-                "Single input keys and pairwise input keys should be disjoint."
+                "Individual input keys and pairwise input keys should be disjoint."
                 f" Overlapping keys: {overlap_keys}"
             )
 
-        all_input_keys = list(self.single_inputs.keys()) + list(
+        all_input_keys = list(self.individual_inputs.keys()) + list(
             self.pairwise_inputs.keys()
         )
 
@@ -105,16 +109,16 @@ class MetricInputs:
                 f"Missing required parameters: {missing_required_params}"
             )
 
-        # Validate the single inputs
-        for single_input_key in single_input_keys:
-            single_input = self.single_inputs[single_input_key]
-            if single_input_key in self.required_params:
-                if single_input is None:
+        # Validate the individual inputs
+        for individual_input_key in individual_input_keys:
+            individual_input = self.individual_inputs[individual_input_key]
+            if individual_input_key in self.required_params:
+                if individual_input is None:
                     raise ValueError(
-                        f"Required parameter '{single_input_key}' is None."
+                        f"Required parameter '{individual_input_key}' is None."
                     )
-            elif single_input_key not in self.optional_params:
-                raise ValueError(f"Unknown parameter '{single_input_key}'")
+            elif individual_input_key not in self.optional_params:
+                raise ValueError(f"Unknown parameter '{individual_input_key}'")
 
         # Validate the pairwise inputs
         for pairwise_input_key in pairwise_input_keys:
@@ -144,10 +148,10 @@ class MetricInputs:
 
         # Validate the lengths of the inputs
         input_lengths: set[int] = set()
-        for key in self.single_inputs:
-            single_input = self.single_inputs[key]
-            if single_input is not None:
-                input_lengths.add(len(single_input))
+        for key in self.individual_inputs:
+            individual_input = self.individual_inputs[key]
+            if individual_input is not None:
+                input_lengths.add(len(individual_input))
 
         for key in self.pairwise_inputs:
             pairwise_input_a, pairwise_input_b = self.pairwise_inputs[key]
@@ -157,9 +161,9 @@ class MetricInputs:
                 input_lengths.add(len(pairwise_input_b))
 
         if len(input_lengths) > 1:
-            single_input_lengths = "\n".join(
+            individual_input_lengths = "\n".join(
                 f"{key}: {len(value)}"
-                for key, value in self.single_inputs.items()
+                for key, value in self.individual_inputs.items()
                 if value is not None
             )
 
@@ -170,7 +174,7 @@ class MetricInputs:
             )
 
             raise ValueError(
-                f"All inputs should have the same length.\n{single_input_lengths}\n{pairwise_input_lengths}"
+                f"All inputs should have the same length.\n{individual_input_lengths}\n{pairwise_input_lengths}"
             )
 
         self.input_length = input_lengths.pop()
@@ -180,23 +184,23 @@ class MetricInputs:
         # Validate the mapping to prompt variables
         self.input_record_to_arg = {}
 
-        for single_input_key in single_input_keys:
-            input_record_name = self.input_record_mapping[single_input_key]
+        for individual_input_key in individual_input_keys:
+            input_record_name = self.input_record_mapping[individual_input_key]
             if input_record_name in self.input_record_to_arg:
                 raise ValueError(
                     f"Input record attribute '{input_record_name}' is mapped from multiple arguments: "
-                    f"{self.input_record_to_arg[input_record_name]} and {single_input_key}"
+                    f"{self.input_record_to_arg[input_record_name]} and {individual_input_key}"
                 )
 
-            self.input_record_to_arg[input_record_name] = single_input_key
+            self.input_record_to_arg[input_record_name] = individual_input_key
 
         for pairwise_input_key in pairwise_input_keys:
-            input_record_name_single = self.input_record_mapping[
+            input_record_name_individual = self.input_record_mapping[
                 pairwise_input_key
             ]
             input_record_names = [
-                input_record_name_single + "_a",
-                input_record_name_single + "_b",
+                input_record_name_individual + "_a",
+                input_record_name_individual + "_b",
             ]
 
             for input_record_name in input_record_names:
@@ -225,13 +229,13 @@ class MetricInputs:
         input_records: list[dict[str, str | None]] = []
         for i in range(self.input_length):
             input_record = {}
-            for single_key in self.single_inputs:
-                single_input = self.single_inputs[single_key]
-                single_var_key = self.input_record_mapping[single_key]
-                if single_input is None:
-                    input_record[single_var_key] = None
+            for individual_key in self.individual_inputs:
+                individual_input = self.individual_inputs[individual_key]
+                individual_var_key = self.input_record_mapping[individual_key]
+                if individual_input is None:
+                    input_record[individual_var_key] = None
                 else:
-                    input_record[single_var_key] = single_input[i]
+                    input_record[individual_var_key] = individual_input[i]
 
             for pairwise_key in self.pairwise_inputs:
                 pairwise_input_a, pairwise_input_b = self.pairwise_inputs[
@@ -267,12 +271,12 @@ class MetricInputs:
                 "Please run `validate` before calling this method."
             )
         input_lists = {}
-        for single_key in self.single_inputs:
-            single_input = self.single_inputs[single_key]
-            if single_input is None:
-                input_lists[single_key] = [None] * self.input_length
+        for individual_key in self.individual_inputs:
+            individual_input = self.individual_inputs[individual_key]
+            if individual_input is None:
+                input_lists[individual_key] = [None] * self.input_length
             else:
-                input_lists[single_key] = single_input
+                input_lists[individual_key] = individual_input
 
         for pairwise_key in self.pairwise_inputs:
             pairwise_input_a, pairwise_input_b = self.pairwise_inputs[
@@ -294,8 +298,8 @@ class MetricInputs:
         self, key: str
     ) -> tuple[list[str] | None, list[str] | None] | list[str] | None:
         """Get the input list for the key."""
-        if key in self.single_inputs:
-            return self.single_inputs[key]
+        if key in self.individual_inputs:
+            return self.individual_inputs[key]
         elif key in self.pairwise_inputs:
             return self.pairwise_inputs[key]
         else:
@@ -321,9 +325,9 @@ class MetricInputs:
 
         for param in expected_params:
             arg_key = self.input_record_to_arg[param]
-            if arg_key in self.single_inputs:
+            if arg_key in self.individual_inputs:
                 assert (
-                    self.single_inputs[arg_key] is not None
+                    self.individual_inputs[arg_key] is not None
                 ), f'The prompt template expects the parameter "{param}" but it is not provided.'
             else:
                 pairwise_inputs_a, pairwise_inputs_b = self.pairwise_inputs[
@@ -336,29 +340,33 @@ class MetricInputs:
                     pairwise_inputs_b is not None
                 ), f'The prompt template expects the parameter "{param}_b" but it is not provided.'
 
-    def get_required_single_input(self, key: str) -> list[str]:
-        """Get the list of a required parameter in single_inputs. Mainly used
-        for metrics without eval clients.
+    def get_required_individual_input(self, key: str) -> list[str]:
+        """Get the list of a required parameter in individual_inputs.
+        Mainly used for metrics without eval clients.
         """
-        if (key not in self.single_inputs) or (key not in self.required_params):
+        if (key not in self.individual_inputs) or (
+            key not in self.required_params
+        ):
             raise ValueError(f"Unknown key: {key}")
 
-        single_input = self.single_inputs[key]
+        individual_input = self.individual_inputs[key]
 
         # It is already validated that the input is not None
-        assert isinstance(single_input, list)
+        assert isinstance(individual_input, list)
 
-        return single_input
+        return individual_input
 
 
 def get_standard_metric_inputs(
     *,
-    generated_outputs: SingleInputType
-    | tuple[SingleInputType, SingleInputType] = None,
-    prompts: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
-    sources: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
-    reference_outputs: SingleInputType
-    | tuple[SingleInputType, SingleInputType] = None,
+    generated_outputs: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
+    prompts: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
+    sources: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
+    reference_outputs: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
     required_params: list[str],
 ) -> MetricInputs:
     """Create a metric inputs object with the standard parameters
@@ -389,8 +397,8 @@ def get_standard_metric_inputs(
         "sources": sources,
         "reference_outputs": reference_outputs,
     }
-    # Split single and pairwise inputs
-    single_inputs = {
+    # Split individual and pairwise inputs
+    individual_inputs = {
         key: value
         for key, value in all_inputs.items()
         if not isinstance(value, tuple)
@@ -401,7 +409,7 @@ def get_standard_metric_inputs(
         if isinstance(value, tuple)
     }
     return MetricInputs(
-        single_inputs=single_inputs,
+        individual_inputs=individual_inputs,
         pairwise_inputs=pairwise_inputs,
         required_params=required_params,
         optional_params=optional_params,
@@ -416,12 +424,14 @@ def get_standard_metric_inputs(
 
 def get_standard_metric_inputs_with_required_lists(
     *,
-    generated_outputs: SingleInputType
-    | tuple[SingleInputType, SingleInputType] = None,
-    prompts: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
-    sources: SingleInputType | tuple[SingleInputType, SingleInputType] = None,
-    reference_outputs: SingleInputType
-    | tuple[SingleInputType, SingleInputType] = None,
+    generated_outputs: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
+    prompts: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
+    sources: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
+    reference_outputs: IndividualInputType
+    | tuple[IndividualInputType, IndividualInputType] = None,
     required_params: list[str],
 ) -> tuple[MetricInputs, list[list[str]]]:
     """Create a metric inputs object with the standard parameters
@@ -448,7 +458,7 @@ def get_standard_metric_inputs_with_required_lists(
     )
 
     required_lists = [
-        metric_inputs.get_required_single_input(param)
+        metric_inputs.get_required_individual_input(param)
         for param in required_params
     ]
     return metric_inputs, required_lists
