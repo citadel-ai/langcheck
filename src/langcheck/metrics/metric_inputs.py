@@ -36,8 +36,7 @@ class MetricInputs:
         individual_inputs: dict[str, IndividualInputType],
         pairwise_inputs: dict[
             str, tuple[IndividualInputType, IndividualInputType]
-        ]
-        | None = None,
+        ] = {},
         required_params: list[str] = [],
         optional_params: list[str] = [],
         input_record_mapping: dict[str, str] = {},
@@ -56,21 +55,18 @@ class MetricInputs:
                 The keys are the input keys and the values are the record
                 attributes.
         """
-        self.required_params = required_params
-        self.optional_params = optional_params
-
         self.individual_inputs = {
             key: _map_individual_input_to_list(value)
             for key, value in individual_inputs.items()
         }
 
-        if pairwise_inputs is None:
-            self.pairwise_inputs = {}
-        else:
-            self.pairwise_inputs = {
-                key: _map_pairwise_input_to_list(value)
-                for key, value in pairwise_inputs.items()
-            }
+        self.pairwise_inputs = {
+            key: _map_pairwise_input_to_list(value)
+            for key, value in pairwise_inputs.items()
+        }
+
+        self.required_params = required_params
+        self.optional_params = optional_params
 
         self.input_record_mapping = input_record_mapping
 
