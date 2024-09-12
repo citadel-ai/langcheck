@@ -264,10 +264,6 @@ class MetricInputs:
 
     def to_df(self) -> pd.DataFrame:
         """Convert the inputs to a DataFrame."""
-        if self.input_length is None:
-            raise ValueError(
-                "Please run `validate` before calling this method."
-            )
         input_lists = {}
         for individual_key in self.individual_inputs:
             individual_input = self.individual_inputs[individual_key]
