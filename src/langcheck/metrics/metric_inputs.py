@@ -173,6 +173,8 @@ class MetricInputs:
                 f"All inputs should have the same length.\n{individual_input_lengths}\n{pairwise_input_lengths}"
             )
 
+        if not input_lengths:
+            raise ValueError("No inputs provided.")
         self.input_length = input_lengths.pop()
         if self.input_length == 0:
             raise ValueError("All inputs should have at least one element.")
