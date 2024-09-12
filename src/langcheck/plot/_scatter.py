@@ -32,9 +32,9 @@ def scatter(
             Dash documentation for more info:
             https://dash.plotly.com/workspaces/using-dash-in-jupyter-and-workspaces#display-modes
     """
-    if metric_value.is_scatter_compatible or (
+    if not metric_value.is_scatter_compatible or (
         other_metric_value is not None
-        and other_metric_value.is_scatter_compatible
+        and not other_metric_value.is_scatter_compatible
     ):
         raise NotImplementedError(
             "Scatter plots for pairwise MetricValues are not supported yet"
