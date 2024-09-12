@@ -184,19 +184,45 @@ def pairwise_comparison(
     )
 
     if enforce_consistency:
-        return compute_pairwise_comparison_metric_values_with_consistency(
-            eval_client=eval_model,
-            metric_inputs=metric_inputs,
-            template=pairwise_comparison_template,
-            metric_name=metric_name,
-            language=language,
-            score_map=pairwise_comparison_assessment_to_score,
+        metric_value = (
+            compute_pairwise_comparison_metric_values_with_consistency(
+                eval_client=eval_model,
+                metric_inputs=metric_inputs,
+                template=pairwise_comparison_template,
+                metric_name=metric_name,
+                language=language,
+                score_map=pairwise_comparison_assessment_to_score,
+            )
         )
     else:
-        return eval_model.compute_metric_values_from_template(
+        metric_value = eval_model.compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=pairwise_comparison_template,
             metric_name=metric_name,
             language=language,
             score_map=pairwise_comparison_assessment_to_score,
         )
+
+    if calculated_confidence:
+        print(
+            "Warning: The source texts and reference outputs are not used to"
+            "calculate the confidence score."
+        )
+        input_records = metric_inputs.get_input_records()
+        confidence_scores = simulated_annotators(
+            input_records, eval_model, preference_data_path, k, n, seed
+        )
+        # Append the confidence scores to the explanations
+        # TODO: Consider adding the confidence scores to the MetricValue object
+        assert metric_value.explanations is not None
+        explanations = [
+            f"{explanation}\n\nConfidence score: {confidence_score}"
+            if explanation and confidence_score
+            else explanation
+            for explanation, confidence_score in zip(
+                metric_value.explanations, confidence_scores
+            )
+        ]
+        metric_value.explanations = explanations
+
+    return metric_value
