@@ -38,8 +38,8 @@ class MetricInputs:
             str, tuple[IndividualInputType, IndividualInputType]
         ]
         | None = None,
-        required_params: list[str] | None = None,
-        optional_params: list[str] | None = None,
+        required_params: list[str] = [],
+        optional_params: list[str] = [],
         input_record_mapping: dict[str, str] | None = None,
     ):
         """Initialize the MetricInputs object.
@@ -56,9 +56,8 @@ class MetricInputs:
                 The keys are the input keys and the values are the record
                 attributes.
         """
-        # Instantiate the paramater lists if None
-        self.required_params = required_params or []
-        self.optional_params = optional_params or []
+        self.required_params = required_params
+        self.optional_params = optional_params
 
         self.individual_inputs = {
             key: _map_individual_input_to_list(value)
