@@ -40,7 +40,7 @@ class MetricInputs:
         | None = None,
         required_params: list[str] = [],
         optional_params: list[str] = [],
-        input_record_mapping: dict[str, str] | None = None,
+        input_record_mapping: dict[str, str] = {},
     ):
         """Initialize the MetricInputs object.
 
@@ -72,7 +72,7 @@ class MetricInputs:
                 for key, value in pairwise_inputs.items()
             }
 
-        self.input_record_mapping = input_record_mapping or {}
+        self.input_record_mapping = input_record_mapping
 
         all_input_keys = list(self.individual_inputs.keys()) + list(
             self.pairwise_inputs.keys()
