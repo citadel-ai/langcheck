@@ -78,6 +78,15 @@ class MetricInputs:
         all_input_keys = list(self.individual_inputs.keys()) + list(
             self.pairwise_inputs.keys()
         )
+        # Check that all the required parameters are present
+        missing_required_params = set(self.required_params) - set(
+            all_input_keys
+        )
+        if missing_required_params:
+            raise ValueError(
+                f"Missing required parameters: {missing_required_params}"
+            )
+
         for input_key in all_input_keys:
             if input_key not in self.input_record_mapping:
                 # Add mapping for the input key itself
@@ -94,19 +103,6 @@ class MetricInputs:
             raise ValueError(
                 "Individual input keys and pairwise input keys should be disjoint."
                 f" Overlapping keys: {overlap_keys}"
-            )
-
-        all_input_keys = list(self.individual_inputs.keys()) + list(
-            self.pairwise_inputs.keys()
-        )
-
-        # Check that all the required parameters are present
-        missing_required_params = set(self.required_params) - set(
-            all_input_keys
-        )
-        if missing_required_params:
-            raise ValueError(
-                f"Missing required parameters: {missing_required_params}"
             )
 
         # Validate the individual inputs
