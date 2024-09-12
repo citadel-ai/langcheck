@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from typing import Any, Iterable
+from typing import Any, Iterable, List, Optional
 
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
@@ -12,7 +12,7 @@ from langcheck.utils.progess_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
-from ._base import EvalClient
+from ._base import EvalClient, TextResponseWithLogProbs
 
 
 class OpenAIEvalClient(EvalClient):
@@ -126,6 +126,63 @@ class OpenAIEvalClient(EvalClient):
         ]
 
         return response_texts
+
+    def get_text_responses_with_log_likelihood(
+        self,
+        prompts: Iterable[str],
+        top_logprobs: int | None = None,
+        *,
+        tqdm_description: str | None = None,
+    ) -> List[Optional[TextResponseWithLogProbs]]:
+        """The function that gets responses with log likelihood to the given
+        prompt texts. Each concrete subclass needs to define the concrete
+        implementation of this function to enable text scoring.
+
+        NOTE: Please make sure that the model you use supports logprobs. In
+        Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
+        supports logprobs (https://learn.microsoft.com/en-us/azure/ai-services/openai/whats-new#new-ga-api-release).
+
+        Args:
+            prompts: The prompts you want to get the responses for.
+            top_logprobs: The number of logprobs to return for each token.
+
+        Returns:
+            A list of responses to the prompts. Each response is a tuple of the
+            output text and the list of tuples of the output tokens and the log
+            probabilities. The responses can be None if the evaluation fails.
+        """
+        config = {"model": "gpt-3.5-turbo", "seed": 123, "logprobs": True}
+        if top_logprobs:
+            config["top_logprobs"] = top_logprobs
+        config.update(self._openai_args or {})
+        tqdm_description = tqdm_description or "Getting log likelihoods"
+        responses = self._call_api(
+            prompts=prompts, config=config, tqdm_description=tqdm_description
+        )
+        response_texts_with_log_likelihood = []
+        for response in responses:
+            if response is None:
+                response_texts_with_log_likelihood.append(None)
+            else:
+                response_dict = {
+                    "response_text": response.choices[0].message.content,
+                    "response_logprobs": [],
+                }
+                for logprob in response.choices[0].logprobs.content:
+                    token_top_logprobs = [
+                        {
+                            "token": token_logprob.token,
+                            "logprob": token_logprob.logprob,
+                        }
+                        for token_logprob in logprob.top_logprobs
+                    ]
+                    response_dict["response_logprobs"].append(
+                        token_top_logprobs
+                    )
+
+                response_texts_with_log_likelihood.append(response_dict)
+
+        return response_texts_with_log_likelihood
 
     def get_float_score(
         self,
