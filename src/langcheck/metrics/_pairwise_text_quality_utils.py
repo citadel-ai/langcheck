@@ -94,9 +94,6 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         for prompt_template_input in prompt_template_inputs
     ]
 
-    for prompt in populated_prompts:
-        print(prompt)
-
     scores, explanations = eval_client.get_score(
         metric_name=metric_name,
         language=language,
@@ -112,9 +109,6 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         template.render(swapped_prompt_template_input)
         for swapped_prompt_template_input in swapped_prompt_template_inputs
     ]
-
-    for prompt in swapped_prompts:
-        print(prompt)
 
     intermediate_tqdm = (
         "[Swapped model outputs order] Intermediate assessments (1/2)"
