@@ -226,3 +226,45 @@ def harmful_activity(
             "High Risk": 1.0,
         },
     )
+
+
+def prompt_leakage(
+    generated_outputs: list[str] | str,
+    system_prompts: list[str] | str,
+    eval_model: EvalClient,
+) -> MetricValue[float | None]:
+    """Calculates the severity of prompt leakage in the generated outputs.
+    This metric takes on float values of either 0.0 (Low Risk),
+    0.5 (Medium Risk), or 1.0 (High Risk). The score may also be `None`
+    if it could not be computed.
+
+    We currently only support the evaluation based on an EvalClient.
+    """
+    metric_inputs = get_standard_metric_inputs(
+        generated_outputs=generated_outputs,
+        additional_params={
+            "system_prompts": system_prompts,
+        },
+        additional_params_to_prompt_var_mapping={
+            "system_prompts": "system_prompt",
+        },
+        required_params=["generated_outputs", "system_prompts"],
+    )
+
+    metric_name = "prompt_leakage"
+
+    answer_relevance_template = eval_model.load_prompt_template(
+        language=LANG, metric_name=metric_name
+    )
+
+    return eval_model.compute_metric_values_from_template(
+        metric_inputs=metric_inputs,
+        template=answer_relevance_template,
+        metric_name=metric_name,
+        language=LANG,
+        score_map={
+            "Low Risk": 0.0,
+            "Medium Risk": 0.5,
+            "High Risk": 1.0,
+        },
+    )

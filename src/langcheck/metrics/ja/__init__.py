@@ -7,6 +7,7 @@ from langcheck.metrics.ja.query_based_text_quality import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
+    prompt_leakage,
 )
 from langcheck.metrics.ja.reference_based_text_quality import (
     answer_correctness,
@@ -41,6 +42,7 @@ __all__ = [
     "MeCabTokenizer",
     "pairwise_comparison",
     "personal_data_leakage",
+    "prompt_leakage",
     "rouge1",
     "rouge2",
     "rougeL",

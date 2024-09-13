@@ -6,6 +6,7 @@ from langcheck.metrics.en.query_based_text_quality import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
+    prompt_leakage,
 )
 from langcheck.metrics.en.reference_based_text_quality import (
     answer_correctness,
@@ -44,6 +45,7 @@ __all__ = [
     "jailbreak_prompt",
     "pairwise_comparison",
     "personal_data_leakage",
+    "prompt_leakage",
     "rouge1",
     "rouge2",
     "rougeL",
