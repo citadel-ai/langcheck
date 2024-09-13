@@ -378,6 +378,8 @@ def get_standard_metric_inputs(
     | tuple[IndividualInputType, IndividualInputType] = None,
     reference_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
+    additional_params: dict[str, IndividualInputType] | None = None,
+    additional_params_to_prompt_var_mapping: dict[str, str] | None = None,
     required_params: list[str],
 ) -> MetricInputs:
     """Create a metric inputs object with the standard parameters
@@ -388,25 +390,35 @@ def get_standard_metric_inputs(
         prompts: The prompts.
         sources: The sources.
         reference_outputs: The reference outputs.
+        additional_params: Additional parameters other than the standard ones.
+        additional_params_to_prompt_var_mapping: A dictionary that maps the
+            additional parameters to the variable names in the prompt template.
         required_params: A list of required parameters.
     Returns:
         A MetricInputs object.
     """
+    if additional_params is None:
+        additional_params = {}
+    if additional_params_to_prompt_var_mapping is None:
+        additional_params_to_prompt_var_mapping = {}
+
     allowed_params = [
         "generated_outputs",
         "prompts",
         "sources",
         "reference_outputs",
-    ]
+    ] + list(additional_params.keys())
     for param in required_params:
         if param not in allowed_params:
             raise ValueError(f"Unknown parameter: {param}")
+
     optional_params = list(set(allowed_params) - set(required_params))
     all_inputs = {
         "generated_outputs": generated_outputs,
         "prompts": prompts,
         "sources": sources,
         "reference_outputs": reference_outputs,
+        **additional_params,
     }
     # Split individual and pairwise inputs
     individual_inputs = {
@@ -429,6 +441,7 @@ def get_standard_metric_inputs(
             "prompts": "user_query",
             "sources": "src",
             "reference_outputs": "ref_output",
+            **additional_params_to_prompt_var_mapping,
         },
     )
 

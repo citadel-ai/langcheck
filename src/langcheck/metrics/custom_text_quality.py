@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import List, Union
 
 from jinja2 import Template
 
@@ -10,6 +11,8 @@ from langcheck.metrics._pairwise_text_quality_utils import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_standard_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
+
+IndividualInputType = Union[str, List[str], None]
 
 
 def custom_evaluator(
@@ -22,6 +25,9 @@ def custom_evaluator(
     score_map: dict[str, float],
     template_path: str,
     language: str,
+    *,
+    additional_params: dict[str, IndividualInputType] | None = None,
+    additional_params_to_prompt_var_mapping: dict[str, str] | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the scores of a custom evaluator. The EvalClient will first
     assess the provided inputs using the prompt template, and then convert those
@@ -35,6 +41,13 @@ def custom_evaluator(
     - `user_query`: The prompt
     - `src`: The source text
     - `ref_output`: The reference output
+
+    By specifying additional parameters, the prompt template can be more
+    flexible. The additional parameters should be passed as a dictionary, where
+    the keys are the parameter names and the values are the corresponding
+    values. The additional parameters can be mapped to variable names in the
+    prompt template using the `additional_params_to_prompt_var_mapping`
+    dictionary.
 
     The prompt template should also specify the final available assessments for
     the LLM evaluator, e.g. "Good", "Bad", "Neutral", etc. The score map should
@@ -60,6 +73,9 @@ def custom_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
+        additional_params: Additional parameters other than the standard ones.
+        additional_params_to_prompt_var_mapping: A dictionary that maps the
+            additional parameters to the variable names in the prompt template.
 
     Returns:
         A MetricValue object
@@ -72,6 +88,8 @@ def custom_evaluator(
         prompts=prompts,
         sources=sources,
         reference_outputs=reference_outputs,
+        additional_params=additional_params,
+        additional_params_to_prompt_var_mapping=additional_params_to_prompt_var_mapping,
         required_params=[],
     )
 
