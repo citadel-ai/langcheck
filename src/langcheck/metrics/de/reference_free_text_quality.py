@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from langcheck.metrics._validation import (
-    validate_parameters_reference_free,
-)
 from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.de.reference_based_text_quality import (
     semantic_similarity,
@@ -16,6 +13,9 @@ from langcheck.metrics.en.reference_free_text_quality import (
     fluency as en_fluency,
 )
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import (
+    get_standard_metric_inputs_with_required_lists,
+)
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import (
@@ -70,32 +70,47 @@ def sentiment(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = (
+        get_standard_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs"],
+        )
     )
 
+    metric_name = "sentiment"
     if eval_model == "local":
         scores = _sentiment_local(generated_outputs, local_overflow_strategy)
         explanations = None
+        return MetricValue(
+            metric_name=metric_name,
+            metric_inputs=metric_inputs,
+            explanations=explanations,
+            metric_values=scores,
+            language=LANG,
+        )
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
 
-        scores, explanations = _sentiment_eval_client(
-            generated_outputs, eval_model
+        sentiment_template = eval_model.load_prompt_template(
+            language=LANG, metric_name=metric_name
         )
 
-    return MetricValue(
-        metric_name="sentiment",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language=LANG,
-    )
+        sentiment_assessment_to_score = {
+            "Positive": 1.0,
+            "Neutral": 0.5,
+            "Negative": 0.0,
+        }
+
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=sentiment_template,
+            metric_name=metric_name,
+            language=LANG,
+            score_map=sentiment_assessment_to_score,
+        )
 
 
 def _sentiment_local(
@@ -126,48 +141,6 @@ def _sentiment_local(
         max_input_length=512,
     )
     return scorer.score(generated_outputs)
-
-
-def _sentiment_eval_client(
-    generated_outputs: List[str],
-    eval_client: EvalClient,
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    """Calculates the sentiment scores and their associated explanations of
-    generated outputs using the provided EvalClient. This metric takes on float
-    values that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is
-    neutral sentiment, and 1 is positive sentiment. If a score could not be
-    computed, `None` is inserted to the score and explanation lists.
-
-    Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        eval_client: EvalClient instance used to evaluate the generated outputs
-
-    Returns:
-        score_list: a list of scores
-        explanation_list: a list of explanations for the scores
-    """
-    sentiment_template = eval_client.load_prompt_template(
-        language="de", metric_name="sentiment"
-    )
-
-    sentiment_assessment_to_score = {
-        "Positive": 1.0,
-        "Neutral": 0.5,
-        "Negative": 0.0,
-    }
-    populated_prompts = [
-        sentiment_template.render({"gen_output": gen_output})
-        for gen_output in generated_outputs
-    ]
-
-    scores, explanations = eval_client.get_score(
-        metric_name="sentiment",
-        language=LANG,
-        prompts=populated_prompts,
-        score_map=sentiment_assessment_to_score,
-    )
-
-    return scores, explanations
 
 
 def fluency(
@@ -202,14 +175,15 @@ def fluency(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = (
+        get_standard_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs"],
+        )
     )
 
-    if isinstance(generated_outputs, str):
-        generated_outputs = [generated_outputs]
-
+    metric_name = "fluency"
     if eval_model == "local":
         # Translate to English
         translation = Translate(_translation_model_path)
@@ -218,66 +192,35 @@ def fluency(
         _metric_value = en_fluency(generated_outputs_en, prompts, eval_model)
         scores = _metric_value.metric_values
         explanations = None
+        return MetricValue(
+            metric_name=metric_name,
+            metric_inputs=metric_inputs,
+            explanations=explanations,
+            metric_values=scores,
+            language=LANG,
+        )
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
-        scores, explanations = _fluency_eval_client(
-            generated_outputs, eval_model
+
+        fluency_template = eval_model.load_prompt_template(
+            language=LANG, metric_name=metric_name
         )
 
-    return MetricValue(
-        metric_name="fluency",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language=LANG,
-    )
+        fluency_assessment_to_score = {
+            "Poor": 0,
+            "Fair": 0.5,
+            "Good": 1.0,
+        }
 
-
-def _fluency_eval_client(
-    generated_outputs: List[str], eval_client: EvalClient
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    """Calculates the fluency scores and their associated explanations of
-    generated outputs using the provided EvalClient. This metric takes on float
-    values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
-    "fair" fluency, and 1 is "good" fluency.  If a score could not be computed,
-    `None` is inserted to the score and explanation lists.
-
-    Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        eval_client: EvalClient instance used to evaluate the generated outputs
-
-    Returns:
-        score_list: a list of scores
-        explanation_list: a list of explanations for the scores
-    """
-    fluency_template = eval_client.load_prompt_template(
-        language="de", metric_name="fluency"
-    )
-
-    fluency_assessment_to_score = {
-        "Poor": 0,
-        "Fair": 0.5,
-        "Good": 1.0,
-    }
-
-    populated_prompts = [
-        fluency_template.render({"gen_output": gen_output})
-        for gen_output in generated_outputs
-    ]
-
-    scores, explanations = eval_client.get_score(
-        metric_name="fluency",
-        language=LANG,
-        prompts=populated_prompts,
-        score_map=fluency_assessment_to_score,
-    )
-
-    return scores, explanations
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=fluency_template,
+            metric_name=metric_name,
+            language=LANG,
+            score_map=fluency_assessment_to_score,
+        )
 
 
 def toxicity(
@@ -317,32 +260,50 @@ def toxicity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = (
+        get_standard_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs"],
+        )
     )
 
+    metric_name = "toxicity"
     if eval_model == "local":
         scores = _toxicity_local(generated_outputs, local_overflow_strategy)
         explanations = None
+        return MetricValue(
+            metric_name=metric_name,
+            metric_inputs=metric_inputs,
+            explanations=explanations,
+            metric_values=scores,
+            language=LANG,
+        )
+
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
 
-        scores, explanations = _toxicity_eval_client(
-            generated_outputs, eval_model
+        toxicity_template = eval_model.load_prompt_template(
+            language=LANG, metric_name=metric_name
         )
 
-    return MetricValue(
-        metric_name="toxicity",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language=LANG,
-    )
+        toxicity_assessment_to_score = {
+            "1": 0,
+            "2": 0.25,
+            "3": 0.5,
+            "4": 0.75,
+            "5": 1.0,
+        }
+
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=toxicity_template,
+            metric_name=metric_name,
+            language=LANG,
+            score_map=toxicity_assessment_to_score,
+        )
 
 
 def _toxicity_local(
@@ -366,49 +327,6 @@ def _toxicity_local(
     return DetoxifyScorer(lang=LANG, overflow_strategy=overflow_strategy).score(
         generated_outputs
     )
-
-
-def _toxicity_eval_client(
-    generated_outputs: List[str], eval_client: EvalClient
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    """Calculates the toxicity scores and their associated explanations of
-    generated outputs using the provided EvalClient. This metric takes on float
-    values between [0, 1] (in steps of 0.25), where 0 is low toxicity and 1 is
-    high toxicity. If a score could not be computed, `None` is inserted to the
-    score and explanation lists.
-
-    Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        eval_client: EvalClient instance used to evaluate the generated outputs
-
-    Returns:
-        score_list: a list of scores
-        explanation_list: a list of explanations for the scores
-    """
-    toxicity_template = eval_client.load_prompt_template(
-        language="de", metric_name="toxicity"
-    )
-
-    toxicity_assessment_to_score = {
-        "1": 0,
-        "2": 0.25,
-        "3": 0.5,
-        "4": 0.75,
-        "5": 1.0,
-    }
-    populated_prompts = [
-        toxicity_template.render({"gen_output": gen_output})
-        for gen_output in generated_outputs
-    ]
-
-    scores, explanations = eval_client.get_score(
-        metric_name="toxicity",
-        language=LANG,
-        prompts=populated_prompts,
-        score_map=toxicity_assessment_to_score,
-    )
-
-    return scores, explanations
 
 
 def flesch_kincaid_grade(
@@ -449,8 +367,12 @@ def flesch_reading_ease(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = (
+        get_standard_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs"],
+        )
     )
 
     output_stats = [
@@ -465,10 +387,7 @@ def flesch_reading_ease(
     ]
     return MetricValue(
         metric_name="flesch_reading_ease",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=scores,
         language=LANG,
@@ -505,8 +424,12 @@ def ai_disclaimer_similarity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = (
+        get_standard_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs"],
+        )
     )
 
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
@@ -515,10 +438,7 @@ def ai_disclaimer_similarity(
     )
     return MetricValue(
         metric_name="ai_disclaimer_similarity",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=semantic_similarity_values.metric_values,
         language=LANG,

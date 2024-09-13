@@ -26,7 +26,7 @@ def histogram(metric_value: MetricValue, jupyter_mode: str = "inline") -> None:
     """
     # Rename some MetricValue fields for display
     df = metric_value.to_df()
-    df.rename(columns={"metric_value": metric_value.metric_name}, inplace=True)
+    df.rename(columns={"metric_values": metric_value.metric_name}, inplace=True)
 
     # Define layout of the Dash app (histogram + input for number of bins)
     app = Dash(__name__)
