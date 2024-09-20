@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import nltk
 from nlpaug.augmenter.word import SynonymAug
 
 
@@ -40,6 +41,11 @@ def synonym(
 
     kwargs["aug_p"] = kwargs.get("aug_p", 0.1)
     kwargs["aug_max"] = kwargs.get("aug_max")
+
+    try:
+        nltk.data.find("taggers/averaged_perceptron_tagger_eng")
+    except LookupError:
+        nltk.download("averaged_perceptron_tagger_eng")
 
     instances = [instances] if isinstance(instances, str) else instances
     perturbed_instances = []
