@@ -7,8 +7,8 @@ from langcheck.metrics.en.reference_based_text_quality import (
 )
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs,
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
@@ -59,12 +59,10 @@ def sentiment(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     metric_name = "sentiment"
@@ -170,12 +168,10 @@ def fluency(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     metric_name = "fluency"
@@ -282,12 +278,10 @@ def toxicity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     metric_name = "toxicity"
@@ -382,12 +376,10 @@ def flesch_reading_ease(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     output_stats = [
@@ -433,12 +425,10 @@ def flesch_kincaid_grade(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     output_stats = [
@@ -489,12 +479,10 @@ def ai_disclaimer_similarity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     ai_disclaimer_phrase_list = [ai_disclaimer_phrase] * len(generated_outputs)
@@ -521,7 +509,7 @@ def jailbreak_prompt(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         prompts=prompts,
         required_params=["prompts"],
     )

@@ -11,7 +11,7 @@ from langcheck.metrics._pairwise_text_quality_utils import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
     IndividualInputType,
-    get_standard_metric_inputs,
+    get_metric_inputs,
 )
 from langcheck.metrics.metric_value import MetricValue
 
@@ -84,7 +84,7 @@ def custom_evaluator(
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
 
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         sources=sources,
@@ -188,7 +188,7 @@ def custom_pairwise_evaluator(
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
 
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=(generated_outputs_a, generated_outputs_b),
         prompts=prompts,
         sources=(sources_a, sources_b),

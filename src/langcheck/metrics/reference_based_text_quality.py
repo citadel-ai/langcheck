@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import (
     MetricValue,
@@ -29,7 +29,7 @@ def exact_match(
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
     metric_inputs, [generated_outputs, reference_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
+        get_metric_inputs_with_required_lists(
             generated_outputs=generated_outputs,
             reference_outputs=reference_outputs,
             prompts=prompts,

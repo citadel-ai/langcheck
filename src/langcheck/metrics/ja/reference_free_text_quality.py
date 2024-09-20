@@ -6,8 +6,8 @@ import regex as re
 
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs,
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import (
@@ -59,12 +59,10 @@ def sentiment(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     metric_name = "sentiment"
@@ -181,12 +179,10 @@ def toxicity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     metric_name = "toxicity"
@@ -312,12 +308,10 @@ def fluency(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     metric_name = "fluency"
@@ -414,12 +408,10 @@ def tateishi_ono_yamada_reading_ease(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # Regular expressions used to compute the reading ease score
@@ -488,7 +480,7 @@ def jailbreak_prompt(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         prompts=prompts,
         required_params=["prompts"],
     )

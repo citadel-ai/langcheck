@@ -368,7 +368,7 @@ class MetricInputs:
         return individual_input
 
 
-def get_standard_metric_inputs(
+def get_metric_inputs(
     *,
     generated_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
@@ -446,7 +446,7 @@ def get_standard_metric_inputs(
     )
 
 
-def get_standard_metric_inputs_with_required_lists(
+def get_metric_inputs_with_required_lists(
     *,
     generated_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
@@ -478,7 +478,7 @@ def get_standard_metric_inputs_with_required_lists(
     Returns:
         A MetricInputs object and the required lists.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         sources=sources,
