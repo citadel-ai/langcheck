@@ -26,8 +26,8 @@ def custom_evaluator(
     template_path: str,
     language: str,
     *,
-    additional_params: dict[str, IndividualInputType] | None = None,
-    additional_params_to_prompt_var_mapping: dict[str, str] | None = None,
+    additional_inputs: dict[str, IndividualInputType] | None = None,
+    additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the scores of a custom evaluator. The EvalClient will first
     assess the provided inputs using the prompt template, and then convert those
@@ -46,7 +46,7 @@ def custom_evaluator(
     flexible. The additional parameters should be passed as a dictionary, where
     the keys are the parameter names and the values are the corresponding
     values. The additional parameters can be mapped to variable names in the
-    prompt template using the `additional_params_to_prompt_var_mapping`
+    prompt template using the `additional_input_name_to_prompt_var_mapping`
     dictionary.
 
     The prompt template should also specify the final available assessments for
@@ -73,9 +73,9 @@ def custom_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
-        additional_params: Additional parameters other than the standard ones.
-        additional_params_to_prompt_var_mapping: A dictionary that maps the
-            additional parameters to the variable names in the prompt template.
+        additional_inputs: Additional inputs other than the standard ones.
+        additional_input_name_to_prompt_var_mapping: A dictionary that maps the
+            additional input names to the variable names in the prompt template.
 
     Returns:
         A MetricValue object
@@ -88,8 +88,8 @@ def custom_evaluator(
         prompts=prompts,
         sources=sources,
         reference_outputs=reference_outputs,
-        additional_params=additional_params,
-        additional_params_to_prompt_var_mapping=additional_params_to_prompt_var_mapping,
+        additional_inputs=additional_inputs,
+        additional_input_name_to_prompt_var_mapping=additional_input_name_to_prompt_var_mapping,
         required_params=[],
     )
 

@@ -242,10 +242,10 @@ def prompt_leakage(
     """
     metric_inputs = get_standard_metric_inputs(
         generated_outputs=generated_outputs,
-        additional_params={
+        additional_inputs={
             "system_prompts": system_prompts,
         },
-        additional_params_to_prompt_var_mapping={
+        additional_input_name_to_prompt_var_mapping={
             "system_prompts": "system_prompt",
         },
         required_params=["generated_outputs", "system_prompts"],
