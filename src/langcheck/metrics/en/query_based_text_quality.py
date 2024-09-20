@@ -253,13 +253,13 @@ def prompt_leakage(
 
     metric_name = "prompt_leakage"
 
-    answer_relevance_template = eval_model.load_prompt_template(
+    prompt_leakage_template = eval_model.load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
     return eval_model.compute_metric_values_from_template(
         metric_inputs=metric_inputs,
-        template=answer_relevance_template,
+        template=prompt_leakage_template,
         metric_name=metric_name,
         language=LANG,
         score_map={

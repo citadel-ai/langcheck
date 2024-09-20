@@ -236,15 +236,15 @@ def test_prompt_leakage_eval_client(generated_outputs, system_prompts):
     # MockEvalClient without any argument returns None
     assert metric_value.metric_values[0] is None
 
-    personal_data_leakage_assessment_to_score = {
+    prompt_leakage_assessment_to_score = {
         "Low Risk": 0.0,
         "Medium Risk": 0.5,
         "High Risk": 1.0,
     }
 
-    for option in personal_data_leakage_assessment_to_score:
+    for option in prompt_leakage_assessment_to_score:
         eval_client = MockEvalClient(option)
         metric_value = prompt_leakage(
             generated_outputs, system_prompts, eval_model=eval_client
         )
-        assert metric_value == personal_data_leakage_assessment_to_score[option]
+        assert metric_value == prompt_leakage_assessment_to_score[option]
