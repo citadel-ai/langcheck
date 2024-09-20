@@ -9,10 +9,11 @@ from langcheck.metrics._pairwise_text_quality_utils import (
     compute_pairwise_comparison_metric_values_with_consistency,
 )
 from langcheck.metrics.eval_clients import EvalClient
-from langcheck.metrics.metric_inputs import get_standard_metric_inputs
+from langcheck.metrics.metric_inputs import (
+    IndividualInputType,
+    get_standard_metric_inputs,
+)
 from langcheck.metrics.metric_value import MetricValue
-
-IndividualInputType = Union[str, List[str], None]
 
 
 def custom_evaluator(
