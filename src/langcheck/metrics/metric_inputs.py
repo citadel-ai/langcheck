@@ -456,6 +456,8 @@ def get_standard_metric_inputs_with_required_lists(
     | tuple[IndividualInputType, IndividualInputType] = None,
     reference_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
+    additional_inputs: dict[str, IndividualInputType] | None = None,
+    additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
     required_params: list[str],
 ) -> tuple[MetricInputs, list[list[str]]]:
     """Create a metric inputs object with the standard parameters
@@ -468,6 +470,9 @@ def get_standard_metric_inputs_with_required_lists(
         prompts: The prompts.
         sources: The sources.
         reference_outputs: The reference outputs.
+        additional_inputs: Additional inputs other than the standard ones.
+        additional_input_name_to_prompt_var_mapping: A dictionary that maps the
+            additional input names to the variable names in the prompt template.
         required_params: A list of required parameters.
 
     Returns:
@@ -478,6 +483,8 @@ def get_standard_metric_inputs_with_required_lists(
         prompts=prompts,
         sources=sources,
         reference_outputs=reference_outputs,
+        additional_inputs=additional_inputs,
+        additional_input_name_to_prompt_var_mapping=additional_input_name_to_prompt_var_mapping,
         required_params=required_params,
     )
 
