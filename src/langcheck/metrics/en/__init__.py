@@ -6,7 +6,6 @@ from langcheck.metrics.en.query_based_text_quality import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
-    prompt_leakage,
 )
 from langcheck.metrics.en.reference_based_text_quality import (
     answer_correctness,
@@ -21,6 +20,7 @@ from langcheck.metrics.en.reference_free_text_quality import (
     flesch_reading_ease,
     fluency,
     jailbreak_prompt,
+    prompt_leakage,
     sentiment,
     toxicity,
 )

@@ -7,7 +7,6 @@ from langcheck.metrics.ja.query_based_text_quality import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
-    prompt_leakage,
 )
 from langcheck.metrics.ja.reference_based_text_quality import (
     answer_correctness,
@@ -19,6 +18,7 @@ from langcheck.metrics.ja.reference_based_text_quality import (
 from langcheck.metrics.ja.reference_free_text_quality import (
     fluency,
     jailbreak_prompt,
+    prompt_leakage,
     sentiment,
     tateishi_ono_yamada_reading_ease,
     toxicity,
