@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Union
 
 from jinja2 import Template
 
