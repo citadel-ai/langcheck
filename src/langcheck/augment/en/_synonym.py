@@ -43,7 +43,7 @@ def synonym(
     kwargs["aug_max"] = kwargs.get("aug_max")
 
     try:
-        nltk.data.find("averaged_perceptron_tagger_eng")
+        nltk.data.find("taggers/averaged_perceptron_tagger_eng")
     except LookupError:
         nltk.download("averaged_perceptron_tagger_eng")
 
