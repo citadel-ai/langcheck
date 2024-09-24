@@ -27,7 +27,7 @@ def load_sentence_transformers(
         tokenizer_name: The name of the tokenizer to use. Currently not
             supported.
         model_revision: The model revision to load. Currently not supported.
-        tokenizerl_revision: The tokenizedr revision to load. Currently not
+        tokenizer_revision: The tokenizer revision to load. Currently not
         supported.
 
     Returns:
