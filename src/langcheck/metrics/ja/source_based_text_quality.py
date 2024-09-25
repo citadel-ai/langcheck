@@ -14,7 +14,7 @@ from langcheck.metrics.metric_inputs import (
     get_standard_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 _factual_consistency_translation_model_path = "Helsinki-NLP/opus-mt-ja-en"
 _factual_consistency_translation_pipeline: Pipeline | None = None

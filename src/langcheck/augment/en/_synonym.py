@@ -26,7 +26,7 @@ def synonym(
         `nlpaug.augmenter.word.SynonymAug
         <https://nlpaug.readthedocs.io/en/latest/_modules/nlpaug/augmenter/word/synonym.html>`_
         is acceptable. Some of the more useful ones from the `nlpaug`
-        documention are listed below:
+        documentation are listed below:
 
           - ``aug_p`` (float): Percentage of words which will be augmented.
           - ``aug_min`` (int): Minimum number of words that will be augmented.

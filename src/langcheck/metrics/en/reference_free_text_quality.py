@@ -16,7 +16,7 @@ from langcheck.metrics.scorer.hf_models import (
     AutoModelForSequenceClassificationScorer,
 )
 from langcheck.stats import compute_stats
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 LANG = "en"
 

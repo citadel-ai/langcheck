@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Optional
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
@@ -26,7 +26,7 @@ class OpenAIEvalClient(EvalClient):
         use_async: bool = False,
     ):
         """
-        Intialize the OpenAI evaluation client.
+        Initialize the OpenAI evaluation client.
 
         Args:
             openai_client: (Optional) The OpenAI client to use.
@@ -103,7 +103,7 @@ class OpenAIEvalClient(EvalClient):
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
     ) -> list[str | None]:
-        """The function that gets resonses to the given prompt texts.
+        """The function that gets responses to the given prompt texts.
         We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
         it by passing the 'model' parameter in the openai_args.
 

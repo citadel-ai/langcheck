@@ -35,15 +35,15 @@ def test_factual_consistency_eval_client(generated_outputs, sources):
     # MockEvalClient without any argument returns None
     assert metric_value.metric_values[0] is None
 
-    fatcual_consistency_assessment_to_score = {
+    factual_consistency_assessment_to_score = {
         "Fully Consistent": 1.0,
         "Partially Consistent": 0.5,
         "Not Consistent": 0.0
     }
 
-    for option in fatcual_consistency_assessment_to_score:
+    for option in factual_consistency_assessment_to_score:
         eval_client = MockEvalClient(option)
         metric_value = factual_consistency(generated_outputs,
                                            sources,
                                            eval_model=eval_client)
-        assert metric_value == fatcual_consistency_assessment_to_score[option]
+        assert metric_value == factual_consistency_assessment_to_score[option]

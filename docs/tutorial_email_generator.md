@@ -45,7 +45,7 @@ print(email)
 
 recipient_name = "Kenny"
 content_description = """
-- will be 10 minues late for the 10am meeting
+- will be 10 minutes late for the 10am meeting
 - messed up a train transfer
 - apologies for the inconvenience
 """

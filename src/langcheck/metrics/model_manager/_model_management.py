@@ -102,12 +102,12 @@ class ModelManager:
             metric_type: The metric name
 
         Returns:
-            A (tokenizer, modle) tuple, or just the model depending on the
+            A (tokenizer, model) tuple, or just the model depending on the
             loader function.
         """
         if language in self.config:
             if metric in self.config[language]:
-                # Deep copy the confguration so that changes to `config` would
+                # Deep copy the configuration so that changes to `config` would
                 # not affect the original `self.config`.
                 config = deepcopy(self.config[language][metric])
                 # Get model loader function
@@ -133,7 +133,7 @@ class ModelManager:
             language: The name of the language. Defaults to 'all'.
             metric: The name of the metric. Defaults to 'all'.
             run_check_model_availability: Whether to check the model
-                availability on Huggingface Hub. Defaults to False.
+                availability on Hugging Face Hub. Defaults to False.
         """
         config = deepcopy(config)
         for lang, lang_setting in config.items():
@@ -163,7 +163,7 @@ class ModelManager:
                     model_revision = model_setting.get("model_revision")
                     if not check_model_availability(model_name, model_revision):
                         raise ValueError(
-                            f"Cannot find {model_name} with {model_revision} at Huggingface Hub"  # NOQA:E501
+                            f"Cannot find {model_name} with {model_revision} at Hugging Face Hub"  # NOQA:E501
                         )
 
                     tokenizer_name = model_setting.get("tokenizer_name")
@@ -178,7 +178,7 @@ class ModelManager:
                             tokenizer_name, tokenizer_revision
                         ):
                             raise ValueError(
-                                f"Cannot find {tokenizer_name} with {tokenizer_revision} ay Huggingface Hub"  # NOQA:E501
+                                f"Cannot find {tokenizer_name} with {tokenizer_revision} ay Hugging Face Hub"  # NOQA:E501
                             )
 
     def __set_model_for_metric(
@@ -254,7 +254,7 @@ class ModelManager:
         List the models currently in use.
 
         Args:
-            language: The abbrevation name of language
+            language: The abbreviation name of language
             metric: The evaluation metric name
         """
         df = pd.DataFrame.from_records(
