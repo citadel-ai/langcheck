@@ -75,6 +75,16 @@ all = [
     'langcheck[local-llm]'
 ]
 
+no-local-llm = [
+    'langcheck[de]',
+    'langcheck[en]',
+    'langcheck[ja]',
+    'langcheck[ja-optional]',
+    'langcheck[zh]',
+    'langcheck[anthropic]',
+    'langcheck[gemini]',
+]
+
 dev = [
     "ruff >= 0.6",
     "pyright",
