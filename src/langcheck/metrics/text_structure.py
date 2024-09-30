@@ -8,7 +8,7 @@ from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 
 def is_int(

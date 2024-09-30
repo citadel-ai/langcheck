@@ -23,6 +23,6 @@ def test_janome_tokenizer(text: str, expected_tokens: List[str],
 
 @pytest.mark.skipif(pkgutil.find_loader("MeCab") is not None,
                     reason="MeCab has already been installed.")
-def test_handle_mecab_not_founud() -> None:
+def test_handle_mecab_not_found() -> None:
     with pytest.raises(ModuleNotFoundError):
         MeCabTokenizer()

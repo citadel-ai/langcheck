@@ -18,7 +18,7 @@ from langcheck.metrics.model_manager._model_loader import (
 MockTokenizer = MagicMock(spec=AutoTokenizer)
 MockSeq2SeqModel = MagicMock(spec=AutoModelForSeq2SeqLM)
 MockSentenceTransModel = MagicMock(spec=SentenceTransformer)
-MockSeqClassifcationModel = MagicMock(spec=AutoModelForSequenceClassification)
+MockSeqClassificationModel = MagicMock(spec=AutoModelForSequenceClassification)
 
 
 @pytest.mark.parametrize("model_name,tokenizer_name,revision",
@@ -54,7 +54,7 @@ def test_load_auto_model_for_text_classification(model_name, tokenizer_name,
     with patch("transformers.AutoTokenizer.from_pretrained",
                return_value=MockTokenizer) as mock_tokenizer, \
          patch("transformers.AutoModelForSequenceClassification.from_pretrained",  # NOQA:E501
-               return_value=MockSeqClassifcationModel) as mock_model:
+               return_value=MockSeqClassificationModel) as mock_model:
         tokenizer, model = load_auto_model_for_text_classification(
             model_name=model_name,
             tokenizer_name=tokenizer_name,
@@ -68,7 +68,7 @@ def test_load_auto_model_for_text_classification(model_name, tokenizer_name,
         # Assert that the returned objects are instances of the mocked objects
         assert tokenizer == MockTokenizer, \
             "The returned tokenizer is not the expected mock object"
-        assert model == MockSeqClassifcationModel, \
+        assert model == MockSeqClassificationModel, \
             "The returned model is not the expected mock object"
 
 

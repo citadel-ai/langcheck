@@ -56,7 +56,7 @@ class MetricInputs:
                 should therefore correspond with the keys returned from the
                 `get_inputs_for_prompt_template` method.
         """
-        # Instantiate the paramater lists if None
+        # Instantiate the parameter lists if None
         self.required_params = required_params or []
         self.optional_params = optional_params or []
 

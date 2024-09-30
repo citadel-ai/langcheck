@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import nltk
 from nlpaug.augmenter.word import SynonymAug
 
 
@@ -25,7 +26,7 @@ def synonym(
         `nlpaug.augmenter.word.SynonymAug
         <https://nlpaug.readthedocs.io/en/latest/_modules/nlpaug/augmenter/word/synonym.html>`_
         is acceptable. Some of the more useful ones from the `nlpaug`
-        documention are listed below:
+        documentation are listed below:
 
           - ``aug_p`` (float): Percentage of words which will be augmented.
           - ``aug_min`` (int): Minimum number of words that will be augmented.
@@ -40,6 +41,11 @@ def synonym(
 
     kwargs["aug_p"] = kwargs.get("aug_p", 0.1)
     kwargs["aug_max"] = kwargs.get("aug_max")
+
+    try:
+        nltk.data.find("taggers/averaged_perceptron_tagger_eng")
+    except LookupError:
+        nltk.download("averaged_perceptron_tagger_eng")
 
     instances = [instances] if isinstance(instances, str) else instances
     perturbed_instances = []

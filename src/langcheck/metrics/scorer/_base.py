@@ -6,7 +6,7 @@ import torch
 from sentence_transformers import util
 from torch import Tensor
 
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 # Define a type variable for token type.
 # This type is used to represent the list of tokens returned by the
