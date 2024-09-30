@@ -5,7 +5,7 @@ import re
 from typing import Callable, Container, Iterable, List, Optional
 
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progress_bar import tqdm_wrapper
@@ -29,12 +29,10 @@ def is_int(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # The values are binary: 1 for success and 0 for failure
@@ -79,12 +77,10 @@ def is_float(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # The values are binary: 1 for success and 0 for failure
@@ -127,12 +123,10 @@ def is_json_object(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # The values are binary: 1 for success and 0 for failure
@@ -171,12 +165,10 @@ def is_json_array(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # The values are binary: 1 for success and 0 for failure
@@ -217,12 +209,10 @@ def matches_regex(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # The values are binary: 1 for success and 0 for failure
@@ -259,12 +249,10 @@ def contains_regex(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # The values are binary: 1 for success and 0 for failure
@@ -303,12 +291,10 @@ def contains_all_strings(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # Convert everything to lowercase if case insensitive
@@ -356,12 +342,10 @@ def contains_any_strings(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # Convert everything to lowercase if case insensitive
@@ -408,12 +392,10 @@ def validation_fn(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # The values are binary: 1 for success and 0 for failure

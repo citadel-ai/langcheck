@@ -368,7 +368,7 @@ class MetricInputs:
         return individual_input
 
 
-def get_standard_metric_inputs(
+def get_metric_inputs(
     *,
     generated_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
@@ -378,35 +378,48 @@ def get_standard_metric_inputs(
     | tuple[IndividualInputType, IndividualInputType] = None,
     reference_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
+    additional_inputs: dict[str, IndividualInputType] | None = None,
+    additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
     required_params: list[str],
 ) -> MetricInputs:
     """Create a metric inputs object with the standard parameters
-    (i.e. generated_outputs, prompts, sources, reference_outputs).
+    (i.e. generated_outputs, prompts, sources, reference_outputs) and the
+    specified additional parameters.
 
     Args:
         generated_outputs: The generated outputs.
         prompts: The prompts.
         sources: The sources.
         reference_outputs: The reference outputs.
+        additional_inputs: Additional inputs other than the standard ones.
+        additional_input_name_to_prompt_var_mapping: A dictionary that maps the
+            additional input names to the variable names in the prompt template.
         required_params: A list of required parameters.
     Returns:
         A MetricInputs object.
     """
+    if additional_inputs is None:
+        additional_inputs = {}
+    if additional_input_name_to_prompt_var_mapping is None:
+        additional_input_name_to_prompt_var_mapping = {}
+
     allowed_params = [
         "generated_outputs",
         "prompts",
         "sources",
         "reference_outputs",
-    ]
+    ] + list(additional_inputs.keys())
     for param in required_params:
         if param not in allowed_params:
             raise ValueError(f"Unknown parameter: {param}")
+
     optional_params = list(set(allowed_params) - set(required_params))
     all_inputs = {
         "generated_outputs": generated_outputs,
         "prompts": prompts,
         "sources": sources,
         "reference_outputs": reference_outputs,
+        **additional_inputs,
     }
     # Split individual and pairwise inputs
     individual_inputs = {
@@ -429,11 +442,12 @@ def get_standard_metric_inputs(
             "prompts": "user_query",
             "sources": "src",
             "reference_outputs": "ref_output",
+            **additional_input_name_to_prompt_var_mapping,
         },
     )
 
 
-def get_standard_metric_inputs_with_required_lists(
+def get_metric_inputs_with_required_lists(
     *,
     generated_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
@@ -443,28 +457,36 @@ def get_standard_metric_inputs_with_required_lists(
     | tuple[IndividualInputType, IndividualInputType] = None,
     reference_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
+    additional_inputs: dict[str, IndividualInputType] | None = None,
+    additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
     required_params: list[str],
 ) -> tuple[MetricInputs, list[list[str]]]:
     """Create a metric inputs object with the standard parameters
-    (i.e. generated_outputs, prompts, sources, reference_outputs). This function
-    also returns the list of required parameters as raw lists, which is useful
-    for metrics without eval clients.
+    (i.e. generated_outputs, prompts, sources, reference_outputs) and the
+    specified additional parameters. This function also returns the list of
+    required parameters as raw lists, which is useful for metrics without eval
+    clients.
 
     Args:
         generated_outputs: The generated outputs.
         prompts: The prompts.
         sources: The sources.
         reference_outputs: The reference outputs.
+        additional_inputs: Additional inputs other than the standard ones.
+        additional_input_name_to_prompt_var_mapping: A dictionary that maps the
+            additional input names to the variable names in the prompt template.
         required_params: A list of required parameters.
 
     Returns:
         A MetricInputs object and the required lists.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         sources=sources,
         reference_outputs=reference_outputs,
+        additional_inputs=additional_inputs,
+        additional_input_name_to_prompt_var_mapping=additional_input_name_to_prompt_var_mapping,
         required_params=required_params,
     )
 

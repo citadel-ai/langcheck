@@ -13,7 +13,7 @@ from langcheck.metrics.en.reference_free_text_quality import (
 )
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
 
@@ -54,12 +54,10 @@ def sentiment(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     if eval_model != "local":  # EvalClient
@@ -139,12 +137,10 @@ def toxicity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     if eval_model != "local":  # EvalClient
@@ -241,12 +237,10 @@ def xuyaochen_report_readability(
         A list of scores
     """
     # split generated_outputs into sentence
-    metric_inputs, [generated_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
-            generated_outputs=generated_outputs,
-            prompts=prompts,
-            required_params=["generated_outputs"],
-        )
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
     # yapf: disable
     tokenizer = hanlp.load(

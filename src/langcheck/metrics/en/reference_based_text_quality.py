@@ -6,8 +6,8 @@ from rouge_score import rouge_scorer
 
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs,
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import (
@@ -39,7 +39,7 @@ def answer_correctness(
     Returns:
         A :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         reference_outputs=reference_outputs,
         prompts=prompts,
@@ -99,7 +99,7 @@ def semantic_similarity(
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
     metric_inputs, [generated_outputs, reference_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
+        get_metric_inputs_with_required_lists(
             generated_outputs=generated_outputs,
             reference_outputs=reference_outputs,
             prompts=prompts,
@@ -149,7 +149,7 @@ def rouge1(
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
     metric_inputs, [generated_outputs, reference_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
+        get_metric_inputs_with_required_lists(
             generated_outputs=generated_outputs,
             reference_outputs=reference_outputs,
             prompts=prompts,
@@ -191,7 +191,7 @@ def rouge2(
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
     metric_inputs, [generated_outputs, reference_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
+        get_metric_inputs_with_required_lists(
             generated_outputs=generated_outputs,
             reference_outputs=reference_outputs,
             prompts=prompts,
@@ -233,7 +233,7 @@ def rougeL(
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
     metric_inputs, [generated_outputs, reference_outputs] = (
-        get_standard_metric_inputs_with_required_lists(
+        get_metric_inputs_with_required_lists(
             generated_outputs=generated_outputs,
             reference_outputs=reference_outputs,
             prompts=prompts,

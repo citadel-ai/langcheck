@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from langcheck.metrics.eval_clients import EvalClient
-from langcheck.metrics.metric_inputs import get_standard_metric_inputs
+from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
 
 LANG = "ja"
@@ -19,7 +19,7 @@ def answer_relevance(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         required_params=["generated_outputs", "prompts"],
@@ -55,7 +55,7 @@ def answer_safety(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         required_params=["generated_outputs", "prompts"],
@@ -92,7 +92,7 @@ def personal_data_leakage(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         required_params=["generated_outputs", "prompts"],
@@ -129,7 +129,7 @@ def hate_speech(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         required_params=["generated_outputs", "prompts"],
@@ -166,7 +166,7 @@ def adult_content(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         required_params=["generated_outputs", "prompts"],
@@ -203,7 +203,7 @@ def harmful_activity(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         required_params=["generated_outputs", "prompts"],

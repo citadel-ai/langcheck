@@ -18,6 +18,7 @@ from langcheck.metrics.ja.reference_based_text_quality import (
 from langcheck.metrics.ja.reference_free_text_quality import (
     fluency,
     jailbreak_prompt,
+    prompt_leakage,
     sentiment,
     tateishi_ono_yamada_reading_ease,
     toxicity,
@@ -41,6 +42,7 @@ __all__ = [
     "MeCabTokenizer",
     "pairwise_comparison",
     "personal_data_leakage",
+    "prompt_leakage",
     "rouge1",
     "rouge2",
     "rougeL",

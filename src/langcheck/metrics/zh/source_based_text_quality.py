@@ -9,7 +9,7 @@ from langcheck.metrics.en.source_based_text_quality import (
 )
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
 
@@ -56,7 +56,7 @@ def factual_consistency(
         An MetricValue object
     """
     metric_inputs, [generated_outputs, sources] = (
-        get_standard_metric_inputs_with_required_lists(
+        get_metric_inputs_with_required_lists(
             generated_outputs=generated_outputs,
             sources=sources,
             prompts=prompts,

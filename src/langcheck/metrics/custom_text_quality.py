@@ -8,7 +8,10 @@ from langcheck.metrics._pairwise_text_quality_utils import (
     compute_pairwise_comparison_metric_values_with_consistency,
 )
 from langcheck.metrics.eval_clients import EvalClient
-from langcheck.metrics.metric_inputs import get_standard_metric_inputs
+from langcheck.metrics.metric_inputs import (
+    IndividualInputType,
+    get_metric_inputs,
+)
 from langcheck.metrics.metric_value import MetricValue
 
 
@@ -22,6 +25,9 @@ def custom_evaluator(
     score_map: dict[str, float],
     template_path: str,
     language: str,
+    *,
+    additional_inputs: dict[str, IndividualInputType] | None = None,
+    additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the scores of a custom evaluator. The EvalClient will first
     assess the provided inputs using the prompt template, and then convert those
@@ -35,6 +41,12 @@ def custom_evaluator(
     - `user_query`: The prompt
     - `src`: The source text
     - `ref_output`: The reference output
+
+    By specifying additional inputs, the prompt template can be more flexible.
+    The additional inputs should be passed as a dictionary, where the keys are
+    the input names and the values are the corresponding values. The additional
+    inputs can be mapped to variable names in the prompt template using the
+    `additional_input_name_to_prompt_var_mapping` dictionary.
 
     The prompt template should also specify the final available assessments for
     the LLM evaluator, e.g. "Good", "Bad", "Neutral", etc. The score map should
@@ -60,6 +72,9 @@ def custom_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
+        additional_inputs: Additional inputs other than the standard ones.
+        additional_input_name_to_prompt_var_mapping: A dictionary that maps the
+            additional input names to the variable names in the prompt template.
 
     Returns:
         A MetricValue object
@@ -67,11 +82,13 @@ def custom_evaluator(
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
 
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         prompts=prompts,
         sources=sources,
         reference_outputs=reference_outputs,
+        additional_inputs=additional_inputs,
+        additional_input_name_to_prompt_var_mapping=additional_input_name_to_prompt_var_mapping,
         required_params=[],
     )
 
@@ -169,7 +186,7 @@ def custom_pairwise_evaluator(
     if language not in ["en", "ja", "de"]:
         raise ValueError(f"Unsupported language: {language}")
 
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         generated_outputs=(generated_outputs_a, generated_outputs_b),
         prompts=prompts,
         sources=(sources_a, sources_b),

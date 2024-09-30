@@ -10,8 +10,8 @@ from langcheck.metrics.en.source_based_text_quality import (
 )
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
-    get_standard_metric_inputs,
-    get_standard_metric_inputs_with_required_lists,
+    get_metric_inputs,
+    get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progress_bar import tqdm_wrapper
@@ -62,7 +62,7 @@ def factual_consistency(
         An MetricValue object
     """
     metric_inputs, [generated_outputs, sources] = (
-        get_standard_metric_inputs_with_required_lists(
+        get_metric_inputs_with_required_lists(
             generated_outputs=generated_outputs,
             sources=sources,
             prompts=prompts,
@@ -196,7 +196,7 @@ def context_relevance(
         prompts: The prompt(s)
         eval_model: The EvalClient instance used for the evaluation
     """
-    metric_inputs = get_standard_metric_inputs(
+    metric_inputs = get_metric_inputs(
         prompts=prompts,
         sources=sources,
         required_params=["prompts", "sources"],
