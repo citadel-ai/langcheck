@@ -42,12 +42,11 @@ def custom_evaluator(
     - `src`: The source text
     - `ref_output`: The reference output
 
-    By specifying additional parameters, the prompt template can be more
-    flexible. The additional parameters should be passed as a dictionary, where
-    the keys are the parameter names and the values are the corresponding
-    values. The additional parameters can be mapped to variable names in the
-    prompt template using the `additional_input_name_to_prompt_var_mapping`
-    dictionary.
+    By specifying additional inputs, the prompt template can be more flexible.
+    The additional inputs should be passed as a dictionary, where the keys are
+    the input names and the values are the corresponding values. The additional
+    inputs can be mapped to variable names in the prompt template using the
+    `additional_input_name_to_prompt_var_mapping` dictionary.
 
     The prompt template should also specify the final available assessments for
     the LLM evaluator, e.g. "Good", "Bad", "Neutral", etc. The score map should

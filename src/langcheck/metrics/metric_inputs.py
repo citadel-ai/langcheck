@@ -383,7 +383,8 @@ def get_metric_inputs(
     required_params: list[str],
 ) -> MetricInputs:
     """Create a metric inputs object with the standard parameters
-    (i.e. generated_outputs, prompts, sources, reference_outputs).
+    (i.e. generated_outputs, prompts, sources, reference_outputs) and the
+    specified additional parameters.
 
     Args:
         generated_outputs: The generated outputs.
@@ -461,9 +462,10 @@ def get_metric_inputs_with_required_lists(
     required_params: list[str],
 ) -> tuple[MetricInputs, list[list[str]]]:
     """Create a metric inputs object with the standard parameters
-    (i.e. generated_outputs, prompts, sources, reference_outputs). This function
-    also returns the list of required parameters as raw lists, which is useful
-    for metrics without eval clients.
+    (i.e. generated_outputs, prompts, sources, reference_outputs) and the
+    specified additional parameters. This function also returns the list of
+    required parameters as raw lists, which is useful for metrics without eval
+    clients.
 
     Args:
         generated_outputs: The generated outputs.
