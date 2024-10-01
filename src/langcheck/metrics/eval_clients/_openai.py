@@ -429,17 +429,16 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         """Embed the inputs using the OpenAI API."""
 
         if self._use_async:
-            assert isinstance(self.openai_client, AsyncOpenAI) or isinstance(
-                self.openai_client, AsyncAzureOpenAI
-            )
+            assert isinstance(self.openai_client, AsyncOpenAI)
 
             async def _call_async_api() -> Any:
+                # Ignoring the type because the return value is not Future.
                 if self.openai_args:
-                    responses = await self.openai_client.embeddings.create(
+                    responses = await self.openai_client.embeddings.create(  # type: ignore
                         input=inputs, **self.openai_args
                     )
                 else:
-                    responses = await self.openai_client.embeddings.create(
+                    responses = await self.openai_client.embeddings.create(  # type: ignore
                         input=inputs, model="text-embedding-3-small"
                     )
                 return responses
@@ -448,9 +447,7 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
             embeddings = [item.embedding for item in embed_response.data]
 
         else:
-            assert isinstance(self.openai_client, OpenAI) or isinstance(
-                self.openai_client, AzureOpenAI
-            )
+            assert isinstance(self.openai_client, OpenAI)
 
             if self.openai_args:
                 embed_response = self.openai_client.embeddings.create(
