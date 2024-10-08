@@ -30,6 +30,10 @@ There are several different types of metrics:
 |                                             |                                                                            |                |
 |                                             | ``rouge2(generated_outputs, reference_outputs)``                           |                |
 +---------------------------------------------+----------------------------------------------------------------------------+----------------+
+| :ref:`query-based-text-quality-metrics`     | ``answer_relevance(generated_outputs, prompts)``                           | EN, JA         |
+|                                             |                                                                            |                |
+|                                             | ``answer_safety(generated_outputs, prompts)``                              |                |
++---------------------------------------------+----------------------------------------------------------------------------+----------------+
 | :ref:`source-based-text-quality-metrics`    | ``factual_consistency(generated_outputs, sources)``                        | EN, JA, DE, ZH |
 +---------------------------------------------+----------------------------------------------------------------------------+----------------+
 | :ref:`text-structure-metrics`               | ``is_float(generated_outputs, min=0, max=None)``                           | All Languages  |
