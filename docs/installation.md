@@ -71,14 +71,19 @@ If you do not need the `[ja-optional]` dependencies, you can also install each l
 pip install langcheck[en,ja,de,zh]
 ```
 
+### 4. The error message `Failed to build vllm`
 
-### 4. The error `AttributeError: module 'langcheck.metrics' has no attribute 'ja'`
+The `vllm` package, which is installed with `langcheck[all]`, does not have a pre-built wheel for ARM devices, so ARM users would see the errors while building `vllm`.
+
+You should try `pip install langcheck[no-local-llm]`, that will install all the dependencies other than `vllm`.
+
+### 5. The error `AttributeError: module 'langcheck.metrics' has no attribute 'ja'`
 
 If you see this error when calling a LangCheck function, such as `langcheck.metrics.ja.toxicity()`, you probably need to install the Japanese LangCheck package.
 
 Run `pip install langcheck[ja]` (or for your required language) and try again.
 
-### 5. The error `ModuleNotFoundError`
+### 6. The error `ModuleNotFoundError`
 
 If you see this error when importing a LangCheck package, such as `import langcheck.metrics.ja`, you probably need to install the Japanese LangCheck package.
 

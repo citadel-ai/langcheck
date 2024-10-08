@@ -5,7 +5,7 @@ from typing import Any, Iterable
 
 from anthropic import Anthropic, AsyncAnthropic
 
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ._base import EvalClient

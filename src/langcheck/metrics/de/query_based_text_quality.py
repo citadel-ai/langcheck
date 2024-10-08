@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from langcheck.metrics._validation import validate_parameters_query_based
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
 
 LANG = "de"
@@ -19,20 +19,17 @@ def answer_relevance(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    generated_outputs, prompts = validate_parameters_query_based(
-        generated_outputs, prompts
+    metric_inputs = get_metric_inputs(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs", "prompts"],
     )
+
+    metric_name = "answer_relevance"
 
     answer_relevance_template = eval_model.load_prompt_template(
-        language="de", metric_name="answer_relevance"
+        language=LANG, metric_name=metric_name
     )
-
-    populated_prompts = [
-        answer_relevance_template.render(
-            {"gen_output": gen_output, "user_query": prompt}
-        )
-        for gen_output, prompt in zip(generated_outputs, prompts)
-    ]
 
     answer_relevance_assessment_to_score = {
         "Fully Relevant": 1.0,
@@ -40,20 +37,10 @@ def answer_relevance(
         "Not Relevant": 0.0,
     }
 
-    scores, explanations = eval_model.get_score(
-        metric_name="answer relevance",
-        language="de",
-        prompts=populated_prompts,
-        score_map=answer_relevance_assessment_to_score,
-    )
-
-    return MetricValue(
-        metric_name="answer_relevance",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
+    return eval_model.compute_metric_values_from_template(
+        metric_inputs=metric_inputs,
+        template=answer_relevance_template,
+        metric_name=metric_name,
         language=LANG,
+        score_map=answer_relevance_assessment_to_score,
     )

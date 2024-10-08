@@ -5,15 +5,19 @@ from typing import List, Optional
 import hanlp
 from transformers.pipelines import pipeline
 
-from langcheck.metrics._validation import validate_parameters_reference_free
-from langcheck.metrics.en.reference_free_text_quality import (
-    _toxicity_eval_client,
-)
 from langcheck.metrics.en.reference_free_text_quality import (
     sentiment as en_sentiment,
 )
+from langcheck.metrics.en.reference_free_text_quality import (
+    toxicity as en_toxicity,
+)
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import (
+    get_metric_inputs_with_required_lists,
+)
 from langcheck.metrics.metric_value import MetricValue
+
+LANG = "zh"
 
 
 def sentiment(
@@ -50,8 +54,10 @@ def sentiment(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     if eval_model != "local":  # EvalClient
@@ -86,10 +92,7 @@ def sentiment(
     # yapf: enable
     return MetricValue(
         metric_name="sentiment",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=scores,  # type: ignore[reportGeneralTypeIssues]
         language="zh",
@@ -134,34 +137,34 @@ def toxicity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
-    if eval_model == "local":
-        scores = _toxicity_local(generated_outputs)
-        explanations = None
-    else:
+    if eval_model != "local":  # EvalClient
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
 
         # This reuses the English prompt.
         # TODO: Update this to use a Chinese prompt.
-        scores, explanations = _toxicity_eval_client(
-            generated_outputs, eval_model, eval_prompt_version
-        )
+        metric_value = en_toxicity(generated_outputs, prompts, eval_model)
+        metric_value.language = "zh"
+        return metric_value
+    else:
+        scores = _toxicity_local(generated_outputs)
+        explanations = None
 
-    return MetricValue(
-        metric_name="toxicity",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language="zh",
-    )
+        return MetricValue(
+            metric_name="toxicity",
+            metric_inputs=metric_inputs,
+            explanations=explanations,
+            # type: ignore (pyright doesn't understand that a list of floats is a list of optional floats)
+            metric_values=scores,
+            language="zh",
+        )
 
 
 def _toxicity_local(generated_outputs: List[str]) -> List[float]:
@@ -234,8 +237,10 @@ def xuyaochen_report_readability(
         A list of scores
     """
     # split generated_outputs into sentence
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts=prompts
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
     # yapf: disable
     tokenizer = hanlp.load(
@@ -290,10 +295,7 @@ def xuyaochen_report_readability(
     # yapf: enable
     return MetricValue(
         metric_name="readability",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        sources=None,
-        reference_outputs=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=r3,
         language="zh",

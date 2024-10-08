@@ -7,7 +7,7 @@ import google.ai.generativelanguage as glm
 import google.generativeai as genai
 import torch
 
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer

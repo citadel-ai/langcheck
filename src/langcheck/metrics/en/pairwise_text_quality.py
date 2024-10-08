@@ -1,16 +1,112 @@
 from __future__ import annotations
 
-from typing import List, Optional
+import math
+import random
+from typing import List, Optional, cast
 
 from langcheck.metrics._pairwise_text_quality_utils import (
-    enforce_pairwise_comparison_consistency,
-    generate_pairwise_comparison_prompt_params,
-)
-from langcheck.metrics._validation import (
-    validate_parameters_pairwise_comparison,
+    compute_pairwise_comparison_metric_values_with_consistency,
 )
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
+
+from ..eval_clients._base import TextResponseWithLogProbs, TokenLogProb
+from ..prompts._utils import get_template, load_few_shot_examples
+
+
+def simulated_annotators(
+    prompt_params: List[dict[str, str | None]],
+    eval_model: EvalClient,
+    preference_data_path: str = "en/confidence_estimating/preference_data_examples.jsonl",
+    k: int = 5,
+    n: int = 5,
+    seed: int | None = None,
+) -> List[float | None]:
+    """Compute a confidence score for the pairwise comparison metric based on
+    the method Simulated Annotators proposed in the paper "Trust or Escalate:
+    LLM Judges with Provable Guarantees for Human Agreement"
+    (https://arxiv.org/abs/2407.18370)
+
+    Args:
+        prompt_params: The parameters used to populate the prompt template.
+        eval_model: The EvalClient instance used for the evaluation.
+        preference_data_path: The relative path to preference data labeled by
+            human annotators. Users should prepare a pool of preference
+            annotations (e.g., 1000 examples) in advance to use this metric.
+        k: The number of examples of preference annotations
+        n: The numbre of simulated annotators
+        seed: The random seed for selecting the few-shot examples
+    Returns:
+        A confidence score for the pairwise comparison metric
+    """
+    # Load preprocessed preference data
+    preference_data = load_few_shot_examples(preference_data_path)
+    assert (
+        len(preference_data) >= k
+    ), "Not enough examples in the preference data"
+
+    if seed is not None:
+        random.seed(seed)
+
+    # Load the prompt template
+    prompt_template = get_template(
+        "en/confidence_estimating/simulated_annotators.j2"
+    )
+
+    confidence_scores = []
+    for prompt_param in prompt_params:
+        # Simulate n annotators
+        prompts = []
+        for _ in range(n):
+            # Generate few-shot examples
+            few_shot_examples = random.sample(preference_data, k)
+
+            # Construct the full prompt using k few-shot examples
+            prompt_param["few_shot_examples"] = "\n".join(
+                f"[Question]\n{example['prompt']}\n\n"
+                "[Assistant A's response]\n{example['model_a']}\n\n"
+                "[Assistant B's response]\n{example['model_b']}\n\n"
+                "[Verdict]\n{example['winner']}\n"
+                for example in few_shot_examples
+            )
+            prompts.append(prompt_template.render(prompt_param))
+
+        # Get the response and top five logprobs of the first token
+        responses: List[Optional[TextResponseWithLogProbs]] = (
+            eval_model.get_text_responses_with_log_likelihood(
+                prompts, top_logprobs=5
+            )
+        )
+        scores_a, scores_b = [], []
+        for i, response in enumerate(responses):
+            if response:
+                response = cast(TextResponseWithLogProbs, response)
+                top_five_first_token_logprobs = cast(
+                    List[TokenLogProb], response["response_logprobs"][0]
+                )
+                # Extract logprobs for tokens 'A' and 'B'
+                logprobs_dict = {
+                    logprob["token"]: math.exp(float(logprob["logprob"]))
+                    for logprob in top_five_first_token_logprobs
+                }
+                if "A" in logprobs_dict and "B" in logprobs_dict:
+                    scores_a.append(logprobs_dict["A"])
+                    scores_b.append(logprobs_dict["B"])
+                else:
+                    print(
+                        f"Token 'A' or 'B' was not found for the {i}th simulated annotator"
+                    )
+
+        if len(scores_a) != 0 and len(scores_a) == len(scores_b):
+            if sum(scores_a) > sum(scores_b):
+                confidence_scores.append((sum(scores_a) / len(scores_a)))
+            else:
+                confidence_scores.append((sum(scores_b) / len(scores_b)))
+        else:
+            confidence_scores.append(None)
+
+    return confidence_scores
 
 
 def pairwise_comparison(
@@ -21,6 +117,11 @@ def pairwise_comparison(
     sources_b: Optional[List[str] | str] = None,
     reference_outputs: Optional[List[str] | str] = None,
     enforce_consistency: bool = True,
+    calculated_confidence: bool = False,
+    preference_data_path: str = "en/confidence_estimating/preference_data_examples.jsonl",
+    k: int = 5,
+    n: int = 5,
+    seed: int | None = None,
     eval_model: EvalClient | None = None,
 ) -> MetricValue[Optional[float]]:
     """Calculates the pairwise comparison metric. This metric takes on float
@@ -42,6 +143,14 @@ def pairwise_comparison(
             the score is the same when Model A and Model B are swapped. This is
             useful for ensuring that the evaluator's position bias is not
             impacting the scores. Default True.
+        calculated_confidence: When this is True, we will calculate a confidence
+            score for the pairwise comparison metric. Default False.
+        preference_data_path: The relative path to preference data labeld by
+            human annotators. Users should prepare a pool of preference
+            annotations (e.g., 1000 examples) in advance to use this metric.
+        k: The number of examples of preference annotations
+        n: The number of simulated annotators
+        seed: The random seed for the simulated annotators
         eval_model: The EvalClient instance used for the evaluation. This is
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
@@ -50,20 +159,12 @@ def pairwise_comparison(
     Returns:
         An MetricValue object
     """
-    (
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
-    ) = validate_parameters_pairwise_comparison(
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
+    metric_inputs = get_metric_inputs(
+        generated_outputs=(generated_outputs_a, generated_outputs_b),
+        prompts=prompts,
+        sources=(sources_a, sources_b),
+        reference_outputs=reference_outputs,
+        required_params=[],
     )
 
     assert (
@@ -76,74 +177,52 @@ def pairwise_comparison(
         "Response A": 0.0,
     }
 
+    metric_name = "pairwise_comparison"
+    language = "en"
     pairwise_comparison_template = eval_model.load_prompt_template(
-        language="en", metric_name="pairwise_comparison"
-    )
-    prompt_params = generate_pairwise_comparison_prompt_params(
-        generated_outputs_a,
-        generated_outputs_b,
-        prompts,
-        sources_a,
-        sources_b,
-        reference_outputs,
-    )
-
-    populated_prompts = [
-        pairwise_comparison_template.render(prompt_param)
-        for prompt_param in prompt_params
-    ]
-
-    scores, explanations = eval_model.get_score(
-        metric_name="comparison of two responses",
-        language="en",
-        prompts=populated_prompts,
-        score_map=pairwise_comparison_assessment_to_score,
+        language=language, metric_name=metric_name
     )
 
     if enforce_consistency:
-        # Swap the generated outputs and enforce consistency
-        swapped_prompt_params = generate_pairwise_comparison_prompt_params(
-            generated_outputs_b,
-            generated_outputs_a,
-            prompts,
-            sources_b,
-            sources_a,
-            reference_outputs,
+        metric_value = (
+            compute_pairwise_comparison_metric_values_with_consistency(
+                eval_client=eval_model,
+                metric_inputs=metric_inputs,
+                template=pairwise_comparison_template,
+                metric_name=metric_name,
+                language=language,
+                score_map=pairwise_comparison_assessment_to_score,
+            )
         )
-
-        populated_swapped_prompts = [
-            pairwise_comparison_template.render(prompt_param)
-            for prompt_param in swapped_prompt_params
-        ]
-
-        intermediate_tqdm = (
-            "[Swapped model outputs order] Intermediate assessments (1/2)"
-        )
-        score_tqdm = "[Swapped model outputs order] Calculating scores (2/2)"
-        swapped_scores, swapped_explanations = eval_model.get_score(
-            metric_name="comparison of two responses",
-            language="en",
-            prompts=populated_swapped_prompts,
+    else:
+        metric_value = eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=pairwise_comparison_template,
+            metric_name=metric_name,
+            language=language,
             score_map=pairwise_comparison_assessment_to_score,
-            intermediate_tqdm_description=intermediate_tqdm,
-            score_tqdm_description=score_tqdm,
         )
 
-        scores, explanations = enforce_pairwise_comparison_consistency(
-            scores,
-            explanations,
-            swapped_scores,
-            swapped_explanations,
-            pairwise_comparison_assessment_to_score,
+    if calculated_confidence:
+        print(
+            "Warning: The source texts and reference outputs are not used to"
+            "calculate the confidence score."
         )
+        prompt_template_inputs = metric_inputs.get_inputs_for_prompt_template()
+        confidence_scores = simulated_annotators(
+            prompt_template_inputs, eval_model, preference_data_path, k, n, seed
+        )
+        # Append the confidence scores to the explanations
+        # TODO: Consider adding the confidence scores to the MetricValue object
+        assert metric_value.explanations is not None
+        explanations = [
+            f"{explanation}\n\nConfidence score: {confidence_score}"
+            if explanation and confidence_score
+            else explanation
+            for explanation, confidence_score in zip(
+                metric_value.explanations, confidence_scores
+            )
+        ]
+        metric_value.explanations = explanations
 
-    return MetricValue(
-        metric_name="pairwise_comparison",
-        prompts=prompts,
-        generated_outputs=(generated_outputs_a, generated_outputs_b),
-        reference_outputs=reference_outputs,
-        sources=(sources_a, sources_b),
-        explanations=explanations,
-        metric_values=scores,
-        language="en",
-    )
+    return metric_value

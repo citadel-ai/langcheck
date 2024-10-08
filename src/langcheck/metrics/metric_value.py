@@ -8,6 +8,8 @@ from typing import Generic, List, Optional, TypeVar
 
 import pandas as pd
 
+from langcheck.metrics.metric_inputs import MetricInputs
+
 # Metrics take on float or integer values
 # Some metrics may return `None` values when the score fails to be computed
 NumericType = TypeVar("NumericType", float, int, Optional[float], Optional[int])
@@ -19,50 +21,26 @@ class MetricValue(Generic[NumericType]):
 
     metric_name: str
     metric_values: List[NumericType]
-    prompts: Optional[List[str]]
-    # Generated outputs are a tuple for pairwise metrics
-    generated_outputs: Optional[
-        List[str] | tuple[Optional[List[str]], Optional[List[str]]]
-    ]
-    reference_outputs: Optional[List[str]]
-    # Sources are a tuple for pairwise metrics (if available)
-    sources: Optional[
-        List[str] | tuple[Optional[List[str]], Optional[List[str]]]
-    ]
+
+    # Input of the metrics such as prompts, generated outputs... etc
+    metric_inputs: MetricInputs
+
     # An explanation can be None if the metric could not be computed
     explanations: Optional[List[Optional[str]]]
     language: Optional[str]
 
     def to_df(self) -> pd.DataFrame:
         """Returns a DataFrame of metric values for each data point."""
-        if self.is_pairwise:
-            # For type checking
-            assert self.generated_outputs is not None
-            generated_outputs_a, generated_outputs_b = self.generated_outputs
-            sources_a, sources_b = (
-                self.sources if self.sources else (None, None)
-            )
-            dataframe_cols = {
-                "prompt": self.prompts,
-                "source_a": sources_a,
-                "source_b": sources_b,
-                "generated_output_a": generated_outputs_a,
-                "generated_output_b": generated_outputs_b,
-                "reference_output": self.reference_outputs,
-                "explanation": self.explanations,
-                "metric_value": self.metric_values,
+        input_df = self.metric_inputs.to_df()
+        output_df = pd.DataFrame(
+            {
+                "explanations": self.explanations,
+                "metric_values": self.metric_values,
             }
-        else:
-            dataframe_cols = {
-                "prompt": self.prompts,
-                "source": self.sources,
-                "generated_output": self.generated_outputs,
-                "reference_output": self.reference_outputs,
-                "explanation": self.explanations,
-                "metric_value": self.metric_values,
-            }
+        )
 
-        return pd.DataFrame(dataframe_cols)
+        # Return the concatenation of the input and output DataFrames
+        return pd.concat([input_df, output_df], axis=1)
 
     def __str__(self) -> str:
         """Returns a string representation of an
@@ -146,6 +124,35 @@ class MetricValue(Generic[NumericType]):
             "`metric_value.all()`, or `metric_value.any()` instead."
         )
 
+    def __getattr__(self, name: str):
+        """If the attribute is not found in the MetricValue object, we try to
+        proxy the attribute to the MetricInputs object.
+        """
+        try:
+            return self.metric_inputs.get_input_list(name)
+        except ValueError:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
+            )
+
+    @property
+    def is_scatter_compatible(self) -> bool:
+        """Checks if the metric value is compatible with the scatter plot
+        method. It is only available for metric values with only non-pairwise
+        metric values used from initial release (generated_outputs, prompts,
+        reference_outputs and sources)
+        """
+        allowed_inputs = [
+            "generated_outputs",
+            "prompts",
+            "reference_outputs",
+            "sources",
+        ]
+        return len(self.metric_inputs.pairwise_inputs) == 0 and all(
+            input_name in allowed_inputs
+            for input_name in self.metric_inputs.individual_inputs
+        )
+
     def scatter(self, jupyter_mode: str = "inline") -> None:
         """Shows an interactive scatter plot of all data points in MetricValue.
         Intended to be used in a Jupyter notebook.
@@ -175,10 +182,6 @@ class MetricValue(Generic[NumericType]):
             self,  # type: ignore[reportGeneralTypeIssues]
             jupyter_mode=jupyter_mode,
         )
-
-    @property
-    def is_pairwise(self) -> bool:
-        return isinstance(self.generated_outputs, tuple)
 
 
 @dataclass

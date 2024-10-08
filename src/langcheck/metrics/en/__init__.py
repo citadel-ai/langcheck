@@ -20,6 +20,7 @@ from langcheck.metrics.en.reference_free_text_quality import (
     flesch_reading_ease,
     fluency,
     jailbreak_prompt,
+    prompt_leakage,
     sentiment,
     toxicity,
 )
@@ -44,6 +45,7 @@ __all__ = [
     "jailbreak_prompt",
     "pairwise_comparison",
     "personal_data_leakage",
+    "prompt_leakage",
     "rouge1",
     "rouge2",
     "rougeL",

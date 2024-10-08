@@ -16,7 +16,7 @@ def remove_punctuation(
 
     Args:
         instances: A single string or a list of strings to be augmented.
-        aug_char_p: Percentage of puncutation characters that will be removed.
+        aug_char_p: Percentage of punctuation characters that will be removed.
         num_perturbations: The number of perturbed instances to generate for
             each string in instances.
         seed: The seed for the random number generator. You can fix the seed to

@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import regex as re
 
-from langcheck.metrics._validation import (
-    validate_parameters_reference_free,
-)
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import (
+    get_metric_inputs,
+    get_metric_inputs_with_required_lists,
+)
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import (
     AutoModelForSequenceClassificationScorer,
 )
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
+
+LANG = "ja"
 
 
 def sentiment(
@@ -56,31 +59,45 @@ def sentiment(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
+    metric_name = "sentiment"
     if eval_model == "local":
         scores = _sentiment_local(generated_outputs, local_overflow_strategy)
         explanations = None
+        return MetricValue(
+            metric_name=metric_name,
+            metric_inputs=metric_inputs,
+            explanations=explanations,
+            metric_values=scores,
+            language=LANG,
+        )
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
-        scores, explanations = _sentiment_eval_client(
-            generated_outputs, eval_model
+
+        sentiment_template = eval_model.load_prompt_template(
+            language=LANG, metric_name=metric_name
         )
 
-    return MetricValue(
-        metric_name="sentiment",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language="ja",
-    )
+        sentiment_assessment_to_score = {
+            "Positive": 1.0,
+            "Neutral": 0.5,
+            "Negative": 0.0,
+        }
+
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=sentiment_template,
+            metric_name=metric_name,
+            language=LANG,
+            score_map=sentiment_assessment_to_score,
+        )
 
 
 def _sentiment_local(
@@ -112,47 +129,6 @@ def _sentiment_local(
         max_input_length=512,
     )
     return scorer.score(generated_outputs)
-
-
-def _sentiment_eval_client(
-    generated_outputs: List[str], eval_client: EvalClient
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    """Calculates the sentiment scores and their associated explanations of
-    generated outputs using the provided EvalClient. This metric takes on float
-    values that are either 0, 0.5, or 1, where 0 is negative sentiment, 0.5 is
-    neutral sentiment, and 1 is positive sentiment. If a score could not be
-    computed, `None` is inserted to the score and explanation lists.
-
-    Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        eval_client: EvalClient instance used to evaluate the generated outputs
-
-    Returns:
-        score_list: a list of scores
-        explanation_list: a list of explanations for the scores
-    """
-    sentiment_template = eval_client.load_prompt_template(
-        language="ja", metric_name="sentiment"
-    )
-
-    sentiment_assessment_to_score = {
-        "Positive": 1.0,
-        "Neutral": 0.5,
-        "Negative": 0.0,
-    }
-    populated_prompts = [
-        sentiment_template.render({"gen_output": gen_output})
-        for gen_output in generated_outputs
-    ]
-
-    scores, explanations = eval_client.get_score(
-        metric_name="sentiment",
-        language="ja",
-        prompts=populated_prompts,
-        score_map=sentiment_assessment_to_score,
-    )
-
-    return scores, explanations
 
 
 def toxicity(
@@ -203,31 +179,59 @@ def toxicity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
+    metric_name = "toxicity"
     if eval_model == "local":
         scores = _toxicity_local(generated_outputs, local_overflow_strategy)
         explanations = None
+        return MetricValue(
+            metric_name=metric_name,
+            metric_inputs=metric_inputs,
+            explanations=explanations,
+            metric_values=scores,
+            language=LANG,
+        )
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
-        scores, explanations = _toxicity_eval_client(
-            generated_outputs, eval_model, eval_prompt_version
+        toxicity_assessment_to_score = {
+            # The v1 prompt returns the toxicity on a scale of 1 to 5
+            "v1": {
+                "1": 0,
+                "2": 0.25,
+                "3": 0.5,
+                "4": 0.75,
+                "5": 1.0,
+            },
+            # The v2 prompt returns either "Toxic" or "Nontoxic"
+            "v2": {
+                "Toxic": 1.0,
+                "Nontoxic": 0,
+            },
+        }
+        assert (
+            eval_prompt_version in toxicity_assessment_to_score
+        ), f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are {list(toxicity_assessment_to_score.keys())}."
+
+        toxicity_template = eval_model.load_prompt_template(
+            language=LANG,
+            metric_name=metric_name,
+            eval_prompt_version=eval_prompt_version,
         )
 
-    return MetricValue(
-        metric_name="toxicity",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language="ja",
-    )
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=toxicity_template,
+            metric_name=metric_name,
+            language=LANG,
+            score_map=toxicity_assessment_to_score[eval_prompt_version],
+        )
 
 
 def _toxicity_local(
@@ -258,66 +262,6 @@ def _toxicity_local(
         overflow_strategy=overflow_strategy,
     )
     return scorer.score(generated_outputs)
-
-
-def _toxicity_eval_client(
-    generated_outputs: List[str],
-    eval_client: EvalClient,
-    eval_prompt_version: str,
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    """Calculates the toxicity scores and their associated explanations of
-    generated outputs using the provided EvalClient. This metric takes on float
-    values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
-    If a score could not be computed, `None` is inserted to the score and
-    explanation lists.
-
-    Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        eval_client: EvalClient instance used to evaluate the generated outputs
-        eval_prompt_version: The version of the eval prompt to use
-
-    Returns:
-        score_list: a list of scores
-        explanation_list: a list of explanations for the scores
-    """
-    toxicity_assessment_to_score = {
-        # The v1 prompt returns the toxicity on a scale of 1 to 5
-        "v1": {
-            "1": 0,
-            "2": 0.25,
-            "3": 0.5,
-            "4": 0.75,
-            "5": 1.0,
-        },
-        # The v2 prompt returns either "Toxic" or "Nontoxic"
-        "v2": {
-            "Toxic": 1.0,
-            "Nontoxic": 0,
-        },
-    }
-    assert (
-        eval_prompt_version in toxicity_assessment_to_score
-    ), f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are {list(toxicity_assessment_to_score.keys())}."
-
-    toxicity_template = eval_client.load_prompt_template(
-        language="ja",
-        metric_name="toxicity",
-        eval_prompt_version=eval_prompt_version,
-    )
-
-    populated_prompts = [
-        toxicity_template.render({"gen_output": gen_output})
-        for gen_output in generated_outputs
-    ]
-
-    scores, explanations = eval_client.get_score(
-        metric_name="toxicity",
-        language="ja",
-        prompts=populated_prompts,
-        score_map=toxicity_assessment_to_score[eval_prompt_version],
-    )
-
-    return scores, explanations
 
 
 def fluency(
@@ -364,31 +308,45 @@ def fluency(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
+    metric_name = "fluency"
     if eval_model == "local":
         scores = _fluency_local(generated_outputs, local_overflow_strategy)
         explanations = None
+        return MetricValue(
+            metric_name=metric_name,
+            metric_inputs=metric_inputs,
+            explanations=explanations,
+            metric_values=scores,
+            language=LANG,
+        )
     else:  # EvalClient
         assert isinstance(
             eval_model, EvalClient
         ), "An EvalClient must be provided for non-local model types."
-        scores, explanations = _fluency_eval_client(
-            generated_outputs, eval_model
+
+        fluency_template = eval_model.load_prompt_template(
+            language=LANG, metric_name=metric_name
         )
 
-    return MetricValue(
-        metric_name="fluency",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language="ja",
-    )
+        fluency_assessment_to_score = {
+            "Poor": 0,
+            "Fair": 0.5,
+            "Good": 1.0,
+        }
+
+        return eval_model.compute_metric_values_from_template(
+            metric_inputs=metric_inputs,
+            template=fluency_template,
+            metric_name=metric_name,
+            language=LANG,
+            score_map=fluency_assessment_to_score,
+        )
 
 
 def _fluency_local(
@@ -421,46 +379,6 @@ def _fluency_local(
     return scorer.score(generated_outputs)
 
 
-def _fluency_eval_client(
-    generated_outputs: List[str], eval_client: EvalClient
-) -> Tuple[List[Optional[float]], List[Optional[str]]]:
-    """Calculates the fluency scores and their associated explanations of
-    generated outputs using the provided EvalClient. This metric takes on float
-    values that are either 0, 0.5, or 1, where 0 is "poor" fluency, 0.5 is
-    "fair" fluency, and 1 is "good" fluency.  If a score could not be computed,
-    `None` is inserted to the score and explanation lists.
-
-    Args:
-        generated_outputs: A list of model generated outputs to evaluate
-        eval_client: EvalClient instance used to evaluate the generated outputs
-
-    Returns:
-        score_list: a list of scores
-        explanation_list: a list of explanations for the scores
-    """
-    fluency_template = eval_client.load_prompt_template(
-        language="ja", metric_name="fluency"
-    )
-
-    fluency_assessment_to_score = {
-        "Poor": 0,
-        "Fair": 0.5,
-        "Good": 1.0,
-    }
-    populated_prompts = [
-        fluency_template.render({"gen_output": gen_output})
-        for gen_output in generated_outputs
-    ]
-    scores, explanations = eval_client.get_score(
-        metric_name="fluency",
-        language="ja",
-        prompts=populated_prompts,
-        score_map=fluency_assessment_to_score,
-    )
-
-    return scores, explanations
-
-
 def tateishi_ono_yamada_reading_ease(
     generated_outputs: List[str] | str,
     prompts: Optional[List[str] | str] = None,
@@ -490,8 +408,10 @@ def tateishi_ono_yamada_reading_ease(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, prompts = validate_parameters_reference_free(
-        generated_outputs, prompts
+    metric_inputs, [generated_outputs] = get_metric_inputs_with_required_lists(
+        generated_outputs=generated_outputs,
+        prompts=prompts,
+        required_params=["generated_outputs"],
     )
 
     # Regular expressions used to compute the reading ease score
@@ -542,10 +462,7 @@ def tateishi_ono_yamada_reading_ease(
     ]
     return MetricValue(
         metric_name="tateishi_ono_yamada_reading_ease",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=None,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=scores,
         language="ja",
@@ -563,21 +480,21 @@ def jailbreak_prompt(
 
     We currently only support the evaluation based on an EvalClient.
     """
-    prompts, _ = validate_parameters_reference_free(prompts, None)
-
-    jailbreak_prompt_template = eval_model.load_prompt_template(
-        language="ja", metric_name="jailbreak_prompt"
+    metric_inputs = get_metric_inputs(
+        prompts=prompts,
+        required_params=["prompts"],
     )
 
-    populated_prompts = [
-        jailbreak_prompt_template.render({"user_query": prompt})
-        for prompt in prompts
-    ]
+    metric_name = "jailbreak_prompt"
+    jailbreak_prompt_template = eval_model.load_prompt_template(
+        language=LANG, metric_name=metric_name
+    )
 
-    scores, explanations = eval_model.get_score(
-        metric_name="jailbreak prompt",
-        language="ja",
-        prompts=populated_prompts,
+    return eval_model.compute_metric_values_from_template(
+        metric_inputs=metric_inputs,
+        template=jailbreak_prompt_template,
+        metric_name=metric_name,
+        language=LANG,
         score_map={
             "Low Risk": 0.0,
             "Medium Risk": 0.5,
@@ -585,13 +502,44 @@ def jailbreak_prompt(
         },
     )
 
-    return MetricValue(
-        metric_name="jailbreak_prompt",
-        prompts=prompts,
-        generated_outputs=None,
-        reference_outputs=None,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language="ja",
+
+def prompt_leakage(
+    generated_outputs: list[str] | str,
+    system_prompts: list[str] | str,
+    eval_model: EvalClient,
+) -> MetricValue[float | None]:
+    """Calculates the severity of prompt leakage in the generated outputs.
+    This metric takes on float values of either 0.0 (Low Risk),
+    0.5 (Medium Risk), or 1.0 (High Risk). The score may also be `None`
+    if it could not be computed.
+
+    We currently only support the evaluation based on an EvalClient.
+    """
+    metric_inputs = get_metric_inputs(
+        generated_outputs=generated_outputs,
+        additional_inputs={
+            "system_prompts": system_prompts,
+        },
+        additional_input_name_to_prompt_var_mapping={
+            "system_prompts": "system_prompt",
+        },
+        required_params=["generated_outputs", "system_prompts"],
+    )
+
+    metric_name = "prompt_leakage"
+
+    prompt_leakage_template = eval_model.load_prompt_template(
+        language=LANG, metric_name=metric_name
+    )
+
+    return eval_model.compute_metric_values_from_template(
+        metric_inputs=metric_inputs,
+        template=prompt_leakage_template,
+        metric_name=metric_name,
+        language=LANG,
+        score_map={
+            "Low Risk": 0.0,
+            "Medium Risk": 0.5,
+            "High Risk": 1.0,
+        },
     )

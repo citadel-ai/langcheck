@@ -4,16 +4,18 @@ from typing import List, Optional
 
 from rouge_score import rouge_scorer
 
-from langcheck.metrics._validation import (
-    validate_parameters_answer_correctness,
-    validate_parameters_reference_based,
-)
 from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.metric_inputs import (
+    get_metric_inputs,
+    get_metric_inputs_with_required_lists,
+)
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.metrics.scorer.hf_models import (
     SentenceTransformerSimilarityScorer,
 )
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
+
+LANG = "en"
 
 
 def answer_correctness(
@@ -37,41 +39,24 @@ def answer_correctness(
     Returns:
         A :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, reference_outputs, prompts = (
-        validate_parameters_answer_correctness(
-            generated_outputs, reference_outputs, prompts
-        )
-    )
-
-    answer_correctness_template = eval_model.load_prompt_template(
-        language="en", metric_name="answer_correctness"
-    )
-
-    populated_prompts = [
-        answer_correctness_template.render(
-            {"gen_output": gen_output, "ref_output": ref, "user_query": prompt}
-        )
-        for gen_output, ref, prompt in zip(
-            generated_outputs, reference_outputs, prompts
-        )
-    ]
-
-    scores, explanations = eval_model.get_score(
-        metric_name="answer correctness",
-        language="en",
-        prompts=populated_prompts,
-        score_map={"Correct": 1.0, "Partially Correct": 0.5, "Incorrect": 0.0},
-    )
-
-    return MetricValue(
-        metric_name="answer_correctness",
-        prompts=prompts,
+    metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         reference_outputs=reference_outputs,
-        sources=None,
-        explanations=explanations,
-        metric_values=scores,
-        language="en",
+        prompts=prompts,
+        required_params=["generated_outputs", "reference_outputs", "prompts"],
+    )
+    metric_name = "answer_correctness"
+
+    answer_correctness_template = eval_model.load_prompt_template(
+        language=LANG, metric_name=metric_name
+    )
+
+    return eval_model.compute_metric_values_from_template(
+        metric_inputs=metric_inputs,
+        template=answer_correctness_template,
+        metric_name=metric_name,
+        language=LANG,
+        score_map={"Correct": 1.0, "Partially Correct": 0.5, "Incorrect": 0.0},
     )
 
 
@@ -113,11 +98,15 @@ def semantic_similarity(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, reference_outputs, prompts = (
-        validate_parameters_reference_based(
-            generated_outputs, reference_outputs, prompts
+    metric_inputs, [generated_outputs, reference_outputs] = (
+        get_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            reference_outputs=reference_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs", "reference_outputs"],
         )
     )
+
     if eval_model == "local":
         scorer = SentenceTransformerSimilarityScorer(language="en")
     else:  # EvalClient
@@ -129,10 +118,7 @@ def semantic_similarity(
     scores = scorer.score(generated_outputs, reference_outputs)
     return MetricValue(
         metric_name="semantic_similarity",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=reference_outputs,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=scores,
         language="en",
@@ -162,19 +148,19 @@ def rouge1(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, reference_outputs, prompts = (
-        validate_parameters_reference_based(
-            generated_outputs, reference_outputs, prompts
+    metric_inputs, [generated_outputs, reference_outputs] = (
+        get_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            reference_outputs=reference_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs", "reference_outputs"],
         )
     )
 
     scores = _rouge(generated_outputs, reference_outputs, "rouge1")
     return MetricValue(
         metric_name="rouge1",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=reference_outputs,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=scores,
         language="en",
@@ -204,19 +190,19 @@ def rouge2(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, reference_outputs, prompts = (
-        validate_parameters_reference_based(
-            generated_outputs, reference_outputs, prompts
+    metric_inputs, [generated_outputs, reference_outputs] = (
+        get_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            reference_outputs=reference_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs", "reference_outputs"],
         )
     )
 
     scores = _rouge(generated_outputs, reference_outputs, "rouge2")
     return MetricValue(
         metric_name="rouge2",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=reference_outputs,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=scores,
         language="en",
@@ -246,9 +232,12 @@ def rougeL(
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
     """
-    generated_outputs, reference_outputs, prompts = (
-        validate_parameters_reference_based(
-            generated_outputs, reference_outputs, prompts
+    metric_inputs, [generated_outputs, reference_outputs] = (
+        get_metric_inputs_with_required_lists(
+            generated_outputs=generated_outputs,
+            reference_outputs=reference_outputs,
+            prompts=prompts,
+            required_params=["generated_outputs", "reference_outputs"],
         )
     )
 
@@ -265,10 +254,7 @@ def rougeL(
     scores = _rouge(generated_outputs, reference_outputs, "rougeLsum")
     return MetricValue(
         metric_name="rougeL",
-        prompts=prompts,
-        generated_outputs=generated_outputs,
-        reference_outputs=reference_outputs,
-        sources=None,
+        metric_inputs=metric_inputs,
         explanations=None,
         metric_values=scores,
         language="en",

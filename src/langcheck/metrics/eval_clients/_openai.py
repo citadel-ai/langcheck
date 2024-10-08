@@ -3,16 +3,16 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from typing import Any, Iterable
+from typing import Any, Iterable, List, Optional
 
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
-from langcheck.utils.progess_bar import tqdm_wrapper
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
-from ._base import EvalClient
+from ._base import EvalClient, TextResponseWithLogProbs
 
 
 class OpenAIEvalClient(EvalClient):
@@ -26,7 +26,7 @@ class OpenAIEvalClient(EvalClient):
         use_async: bool = False,
     ):
         """
-        Intialize the OpenAI evaluation client.
+        Initialize the OpenAI evaluation client.
 
         Args:
             openai_client: (Optional) The OpenAI client to use.
@@ -103,7 +103,7 @@ class OpenAIEvalClient(EvalClient):
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
     ) -> list[str | None]:
-        """The function that gets resonses to the given prompt texts.
+        """The function that gets responses to the given prompt texts.
         We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
         it by passing the 'model' parameter in the openai_args.
 
@@ -126,6 +126,63 @@ class OpenAIEvalClient(EvalClient):
         ]
 
         return response_texts
+
+    def get_text_responses_with_log_likelihood(
+        self,
+        prompts: Iterable[str],
+        top_logprobs: int | None = None,
+        *,
+        tqdm_description: str | None = None,
+    ) -> List[Optional[TextResponseWithLogProbs]]:
+        """The function that gets responses with log likelihood to the given
+        prompt texts. Each concrete subclass needs to define the concrete
+        implementation of this function to enable text scoring.
+
+        NOTE: Please make sure that the model you use supports logprobs. In
+        Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
+        supports logprobs (https://learn.microsoft.com/en-us/azure/ai-services/openai/whats-new#new-ga-api-release).
+
+        Args:
+            prompts: The prompts you want to get the responses for.
+            top_logprobs: The number of logprobs to return for each token.
+
+        Returns:
+            A list of responses to the prompts. Each response is a tuple of the
+            output text and the list of tuples of the output tokens and the log
+            probabilities. The responses can be None if the evaluation fails.
+        """
+        config = {"model": "gpt-3.5-turbo", "seed": 123, "logprobs": True}
+        if top_logprobs:
+            config["top_logprobs"] = top_logprobs
+        config.update(self._openai_args or {})
+        tqdm_description = tqdm_description or "Getting log likelihoods"
+        responses = self._call_api(
+            prompts=prompts, config=config, tqdm_description=tqdm_description
+        )
+        response_texts_with_log_likelihood = []
+        for response in responses:
+            if response is None:
+                response_texts_with_log_likelihood.append(None)
+            else:
+                response_dict = {
+                    "response_text": response.choices[0].message.content,
+                    "response_logprobs": [],
+                }
+                for logprob in response.choices[0].logprobs.content:
+                    token_top_logprobs = [
+                        {
+                            "token": token_logprob.token,
+                            "logprob": token_logprob.logprob,
+                        }
+                        for token_logprob in logprob.top_logprobs
+                    ]
+                    response_dict["response_logprobs"].append(
+                        token_top_logprobs
+                    )
+
+                response_texts_with_log_likelihood.append(response_dict)
+
+        return response_texts_with_log_likelihood
 
     def get_float_score(
         self,
@@ -244,11 +301,10 @@ class OpenAIEvalClient(EvalClient):
         """
         https://openai.com/blog/new-embedding-models-and-api-updates
         """
-        assert isinstance(
-            self._client, OpenAI
-        ), "Only sync clients are supported for similarity scoring."
         return OpenAISimilarityScorer(
-            openai_client=self._client, openai_args=self._openai_args
+            openai_client=self._client,
+            openai_args=self._openai_args,
+            use_async=self._use_async,
         )
 
 
@@ -339,16 +395,15 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         additional "model" parameter. See the parent class for the detailed
         documentation.
         """
-        assert isinstance(
-            self._client, AzureOpenAI
-        ), "Only sync clients are supported for similarity scoring."
         assert self._embedding_model_name is not None, (
             "You need to specify the embedding_model_name to get the score for "
             "this metric."
         )
         openai_args = {**self._openai_args, "model": self._embedding_model_name}
         return OpenAISimilarityScorer(
-            openai_client=self._client, openai_args=openai_args
+            openai_client=self._client,
+            openai_args=openai_args,
+            use_async=self._use_async,
         )
 
 
@@ -360,24 +415,48 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
 
     def __init__(
         self,
-        openai_client: OpenAI | AzureOpenAI,
+        openai_client: OpenAI | AzureOpenAI | AsyncOpenAI | AsyncAzureOpenAI,
         openai_args: dict[str, Any] | None = None,
+        use_async: bool = False,
     ):
         super().__init__()
 
         self.openai_client = openai_client
         self.openai_args = openai_args
+        self._use_async = use_async
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the OpenAI API."""
-        # Embed the inputs
-        if self.openai_args:
-            embed_response = self.openai_client.embeddings.create(
-                input=inputs, **self.openai_args
-            )
-        else:
-            embed_response = self.openai_client.embeddings.create(
-                input=inputs, model="text-embedding-3-small"
-            )
 
-        return torch.Tensor([item.embedding for item in embed_response.data])
+        # TODO: Fix that this async call could be much slower than the sync
+        # version. https://github.com/citadel-ai/langcheck/issues/160
+        if self._use_async:
+            async def _call_async_api() -> Any:
+                assert isinstance(self.openai_client, AsyncOpenAI)
+                if self.openai_args:
+                    responses = await self.openai_client.embeddings.create(
+                        input=inputs, **self.openai_args
+                    )
+                else:
+                    responses = await self.openai_client.embeddings.create(
+                        input=inputs, model="text-embedding-3-small"
+                    )
+                return responses
+
+            embed_response = asyncio.run(_call_async_api())
+            embeddings = [item.embedding for item in embed_response.data]
+
+        else:
+            assert isinstance(self.openai_client, OpenAI)
+
+            if self.openai_args:
+                embed_response = self.openai_client.embeddings.create(
+                    input=inputs, **self.openai_args
+                )
+            else:
+                embed_response = self.openai_client.embeddings.create(
+                    input=inputs, model="text-embedding-3-small"
+                )
+            embeddings = [item.embedding for item in embed_response.data]
+
+        return torch.Tensor(embeddings)

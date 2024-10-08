@@ -1,0 +1,22 @@
+{#
+This prompt is similar to the "Prompt for Chat Assistant Evaluation" in
+https://arxiv.org/pdf/2407.18370
+#}
+You are a helpful assistant.
+
+Given a question and two assistant's answers to the question, an annotator chose which assistant's answer is preferred.
+Given examples of the annotator's decision, predict the annotator's verdict on the given example.
+If Assistant A's response is preferred to Assistant B's, the annotator chose “A”.
+If Assistant B's response is preferred to Assistant A's, the annotator chose “B”.
+
+{{ few_shot_examples}}
+[Question]
+{{ user_query }}
+
+[Assistant A's response]
+{{ gen_output_a }}
+
+[Assistant B's response]
+{{ gen_output_b }}
+
+Verdict (either "A" or "B"):
