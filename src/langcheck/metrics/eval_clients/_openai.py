@@ -301,11 +301,10 @@ class OpenAIEvalClient(EvalClient):
         """
         https://openai.com/blog/new-embedding-models-and-api-updates
         """
-        assert isinstance(
-            self._client, OpenAI
-        ), "Only sync clients are supported for similarity scoring."
         return OpenAISimilarityScorer(
-            openai_client=self._client, openai_args=self._openai_args
+            openai_client=self._client,
+            openai_args=self._openai_args,
+            use_async=self._use_async,
         )
 
 
@@ -396,16 +395,15 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         additional "model" parameter. See the parent class for the detailed
         documentation.
         """
-        assert isinstance(
-            self._client, AzureOpenAI
-        ), "Only sync clients are supported for similarity scoring."
         assert self._embedding_model_name is not None, (
             "You need to specify the embedding_model_name to get the score for "
             "this metric."
         )
         openai_args = {**self._openai_args, "model": self._embedding_model_name}
         return OpenAISimilarityScorer(
-            openai_client=self._client, openai_args=openai_args
+            openai_client=self._client,
+            openai_args=openai_args,
+            use_async=self._use_async,
         )
 
 
@@ -417,24 +415,48 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
 
     def __init__(
         self,
-        openai_client: OpenAI | AzureOpenAI,
+        openai_client: OpenAI | AzureOpenAI | AsyncOpenAI | AsyncAzureOpenAI,
         openai_args: dict[str, Any] | None = None,
+        use_async: bool = False,
     ):
         super().__init__()
 
         self.openai_client = openai_client
         self.openai_args = openai_args
+        self._use_async = use_async
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the OpenAI API."""
-        # Embed the inputs
-        if self.openai_args:
-            embed_response = self.openai_client.embeddings.create(
-                input=inputs, **self.openai_args
-            )
-        else:
-            embed_response = self.openai_client.embeddings.create(
-                input=inputs, model="text-embedding-3-small"
-            )
 
-        return torch.Tensor([item.embedding for item in embed_response.data])
+        # TODO: Fix that this async call could be much slower than the sync
+        # version. https://github.com/citadel-ai/langcheck/issues/160
+        if self._use_async:
+            async def _call_async_api() -> Any:
+                assert isinstance(self.openai_client, AsyncOpenAI)
+                if self.openai_args:
+                    responses = await self.openai_client.embeddings.create(
+                        input=inputs, **self.openai_args
+                    )
+                else:
+                    responses = await self.openai_client.embeddings.create(
+                        input=inputs, model="text-embedding-3-small"
+                    )
+                return responses
+
+            embed_response = asyncio.run(_call_async_api())
+            embeddings = [item.embedding for item in embed_response.data]
+
+        else:
+            assert isinstance(self.openai_client, OpenAI)
+
+            if self.openai_args:
+                embed_response = self.openai_client.embeddings.create(
+                    input=inputs, **self.openai_args
+                )
+            else:
+                embed_response = self.openai_client.embeddings.create(
+                    input=inputs, model="text-embedding-3-small"
+                )
+            embeddings = [item.embedding for item in embed_response.data]
+
+        return torch.Tensor(embeddings)
