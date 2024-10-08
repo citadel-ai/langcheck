@@ -6,11 +6,12 @@ from langcheck.metrics.eval_clients import (
 
 
 def rephrase(
-        instances: list[str] | str,
-        *,
-        num_perturbations: int = 1,
-        eval_client: EvalClient) -> list[str | None]:
-    '''Rephrases each string in instances (usually a list of prompts) without
+    instances: list[str] | str,
+    *,
+    num_perturbations: int = 1,
+    eval_client: EvalClient,
+) -> list[str | None]:
+    """Rephrases each string in instances (usually a list of prompts) without
     changing their meaning. We use a modified version of the prompt presented
     in `"Rethinking Benchmark and Contamination for Language Models with
     Rephrased Samples" <https://arxiv.org/abs/2311.04850>`__ to make an LLM
@@ -24,7 +25,7 @@ def rephrase(
 
     Returns:
         A list of rephrased instances.
-    '''
+    """
 
     prompt_template = eval_client.load_prompt_template(
         language="en", metric_name="rephrase"

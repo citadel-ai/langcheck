@@ -431,6 +431,7 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         # TODO: Fix that this async call could be much slower than the sync
         # version. https://github.com/citadel-ai/langcheck/issues/160
         if self._use_async:
+
             async def _call_async_api() -> Any:
                 assert isinstance(self.openai_client, AsyncOpenAI)
                 if self.openai_args:
