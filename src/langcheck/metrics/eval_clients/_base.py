@@ -222,3 +222,23 @@ class EvalClient:
             metric_values=scores,
             language=language,
         )
+
+    def augment_from_template(
+        self,
+        instances: list[str] | str,
+        template: Template,
+        num_perturbations: int = 1,
+    ) -> list[str | None]:
+        """Augments the given instances."""
+
+        instances = [instances] if isinstance(instances, str) else instances
+
+        populated_prompts = [
+            template.render(instance=instance)
+            for instance in instances
+            for _ in range(num_perturbations)
+        ]
+
+        augmented_instances = self.get_text_responses(populated_prompts)
+
+        return augmented_instances

@@ -7,6 +7,7 @@ import pytest
 from openai.types.chat import ChatCompletion
 
 from langcheck.augment.en import rephrase
+from langcheck.metrics.eval_clients import OpenAIEvalClient, AzureOpenAIEvalClient
 
 
 @pytest.mark.parametrize(
@@ -33,15 +34,16 @@ def test_rephrase(instances: list[str] | str, num_perturbations: int,
                return_value=mock_chat_completion):
         # Set the necessary env vars for the 'openai' model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
-        actual = rephrase(instances, num_perturbations=num_perturbations)
+        openai_client = OpenAIEvalClient()
+        actual = rephrase(instances, num_perturbations=num_perturbations, eval_client=openai_client)
         assert actual == expected
 
         # Set the necessary env vars for the 'azure_openai' model type
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
+        azure_openai_client = AzureOpenAIEvalClient(embedding_model_name="foo bar")
         actual = rephrase(instances,
                           num_perturbations=num_perturbations,
-                          model_type="azure_openai",
-                          openai_args={"model": "foo bar"})
+                          eval_client=azure_openai_client)
         assert actual == expected
