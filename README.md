@@ -66,13 +66,14 @@ assert langcheck.metrics.fluency(generated_outputs) > 0.5
 
 LangCheck includes several types of metrics to evaluate LLM applications. Some examples:
 
-|                                                            Type of Metric                                                            |                                                     Examples                                                     |   Languages   |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------- |
-| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA, ZH, DE        |
-| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, ZH, DE        |
-| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, ZH, DE        |
-| [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages |
-| [Pairwise Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#pairwise-text-quality-metrics) | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)` | EN, JA |
+|                                                            Type of Metric                                                            |                                                     Examples                                                     |   Languages    |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | -------------- |
+| [Reference-Free Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA, ZH, DE |
+| [Reference-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, ZH, DE |
+| [Source-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, ZH, DE |
+| [Query-Based Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#query-based-text-quality-metrics)         | `answer_relevance(generated_outputs, prompts)`                                                                   | EN, JA         |
+| [Text Structure Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages  |
+| [Pairwise Text Quality Metrics](https://langcheck.readthedocs.io/en/latest/metrics.html#pairwise-text-quality-metrics)               | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)`                                         | EN, JA         |
 
 ### Visualize Metrics
 

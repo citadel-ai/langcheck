@@ -46,6 +46,7 @@ LangCheck metrics are categorized by metric type, which correspond to the kind o
 | [Reference-Free Text Quality Metrics](#reference-free-text-quality-metrics)   | `toxicity(generated_outputs)`<br>`sentiment(generated_outputs)`<br>`ai_disclaimer_similarity(generated_outputs)` | EN, JA, DE, ZH |
 | [Reference-Based Text Quality Metrics](#reference-based-text-quality-metrics) | `semantic_similarity(generated_outputs, reference_outputs)`<br>`rouge2(generated_outputs, reference_outputs)`    | EN, JA, DE, ZH |
 | [Source-Based Text Quality Metrics](#source-based-text-quality-metrics)       | `factual_consistency(generated_outputs, sources)`                                                                | EN, JA, DE, ZH |
+| [Query-Based Text Quality Metrics](#query-based-text-quality-metrics)         | `answer_relevance(generated_outputs, prompts)`                                                                   | EN, JA         |
 | [Text Structure Metrics](#text-structure-metrics)                             | `is_float(generated_outputs, min=0, max=None)`<br>`is_json_object(generated_outputs)`                            | All Languages  |
 | [Pairwise Text Quality Metrics](#pairwise-text-quality-metrics)               | `pairwise_comparison(generated_outputs_a, generated_outputs_b, prompts)`                                         | EN, JA         |
 
@@ -69,6 +70,13 @@ An example metric is {func}`~langcheck.metrics.en.reference_based_text_quality.s
 Source-based metrics require a "source" text. Sources are inputs, but references are outputs. For example, in a Q&A application, the source might be relevant documents that are concatenated to the question and passed into the LLM's context window (this is called Retrieval Augmented Generation or RAG).
 
 An example metric is {func}`~langcheck.metrics.en.source_based_text_quality.factual_consistency`, which compares the factual consistency between the LLM's generated text and the source text as a score between 0 and 1.
+
+(query-based-text-quality-metrics)=
+### Query-Based Text Quality Metrics
+
+Query-based metrics require the input query. For example, in a Q&A application, the query would be the user's question.
+
+An example metric is {func}`~langcheck.metrics.en.query_based_text_quality.answer_relevance`, which computes how relevant the LLM's generated text is with respect to the input query as a score between 0 and 1.
 
 (text-structure-metrics)=
 ### Text Structure Metrics
