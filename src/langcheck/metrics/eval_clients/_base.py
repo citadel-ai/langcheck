@@ -229,7 +229,19 @@ class EvalClient:
         template: Template,
         num_perturbations: int = 1,
     ) -> list[str | None]:
-        """Augments the given instances."""
+        """Augments the instances using the given Jinja template for
+        `num_perturbations` times.
+
+        Args:
+            instances: A single string or a list of strings to be augmented.
+            template: The Jinja template ready to be rendered.
+            num_perturbations: The number of perturbed instances to generate
+                for each string in instances.
+
+        Returns:
+            A list of augmented instances. Note that the augmentations for the
+            same instance are generated consecutively
+        """
 
         instances = [instances] if isinstance(instances, str) else instances
 

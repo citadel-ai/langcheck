@@ -16,8 +16,6 @@ def rephrase(
     Rephrased Samples" <https://arxiv.org/abs/2311.04850>`__ to make an LLM
     rephrase the given text.
 
-    We currently support two model types:
-
     Args:
         instances: A single string or a list of strings to be augmented.
         num_perturbations: The number of perturbed instances to generate for
