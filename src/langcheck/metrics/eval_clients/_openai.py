@@ -429,16 +429,14 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         """Embed the inputs using the OpenAI API."""
 
         if self._use_async:
-            assert isinstance(self.openai_client, AsyncOpenAI)
-
             async def _call_async_api() -> Any:
-                # Ignoring the type because the return value is not Future.
+                assert isinstance(self.openai_client, AsyncOpenAI)
                 if self.openai_args:
-                    responses = await self.openai_client.embeddings.create(  # type: ignore
+                    responses = await self.openai_client.embeddings.create(
                         input=inputs, **self.openai_args
                     )
                 else:
-                    responses = await self.openai_client.embeddings.create(  # type: ignore
+                    responses = await self.openai_client.embeddings.create(
                         input=inputs, model="text-embedding-3-small"
                     )
                 return responses
