@@ -1,8 +1,10 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
-  },
-  "editor.formatOnSaveMode": "file",
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "charliermarsh.ruff"
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "editor.formatOnSaveMode": "file",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  }
 }
