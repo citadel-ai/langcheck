@@ -90,7 +90,7 @@ class PrometheusEvalClient(EvalClient):
                 )
 
     def get_text_responses(self, prompts: Iterable[str]) -> list[str | None]:
-        """The function that generates resonses to the given prompt texts.
+        """The function that generates responses to the given prompt texts.
 
         Args:
             prompts: The prompts you want to get the responses for.

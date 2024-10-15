@@ -101,7 +101,11 @@ class OpenAIEvalClient(EvalClient):
         return responses
 
     def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+        self,
+        prompts: Iterable[str],
+        *,
+        tqdm_description: str | None = None,
+        seeds: Iterable[int] | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
         We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
@@ -431,6 +435,7 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         # TODO: Fix that this async call could be much slower than the sync
         # version. https://github.com/citadel-ai/langcheck/issues/160
         if self._use_async:
+
             async def _call_async_api() -> Any:
                 assert isinstance(self.openai_client, AsyncOpenAI)
                 if self.openai_args:

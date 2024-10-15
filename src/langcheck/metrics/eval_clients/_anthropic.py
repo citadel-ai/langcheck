@@ -101,7 +101,7 @@ class AnthropicEvalClient(EvalClient):
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
     ) -> list[str | None]:
-        """The function that gets resonses to the given prompt texts.
+        """The function that gets responses to the given prompt texts.
         We use Anthropic's 'claude-3-haiku-20240307' model by default, but you
         can configure it by passing the 'model' parameter in the anthropic_args.
 

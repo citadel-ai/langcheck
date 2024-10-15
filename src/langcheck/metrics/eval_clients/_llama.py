@@ -68,7 +68,7 @@ class LlamaEvalClient(EvalClient):
         prompts: Iterable[str],
         language: str,
     ) -> list[str | None]:
-        """The function that generates resonses to the given prompt texts.
+        """The function that generates responses to the given prompt texts.
 
         Args:
             prompts: The prompts you want to get the responses for.

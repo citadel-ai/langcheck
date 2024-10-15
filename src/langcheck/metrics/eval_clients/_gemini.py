@@ -94,7 +94,7 @@ class GeminiEvalClient(EvalClient):
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
     ) -> list[str | None]:
-        """The function that gets resonses to the given prompt texts.
+        """The function that gets responses to the given prompt texts.
 
         Args:
             prompts: The prompts you want to get the responses for.
