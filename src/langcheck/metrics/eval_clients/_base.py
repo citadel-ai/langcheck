@@ -47,7 +47,10 @@ class EvalClient:
         )
 
     def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+        self,
+        prompts: Iterable[str],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts. Each
         concrete subclass needs to define the concrete implementation of this

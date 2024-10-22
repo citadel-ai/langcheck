@@ -19,14 +19,14 @@ from langcheck.metrics.eval_clients import (
         (
             "List three representative testing methods for LLMs.",
             1,
-            ["Identify three typical methods used for evaluating LLMs."],
+            ["Illuminate three representative methods for testing LLMs."],
         ),
         (
             ["List three representative testing methods for LLMs."],
             2,
             [
-                "Identify three typical methods used for evaluating LLMs.",
-                "Identify three typical methods used for evaluating LLMs.",
+                "Illuminate three representative methods for testing LLMs.",
+                "Identify three typical techniques for testing LLMs.",
             ],
         ),
     ],

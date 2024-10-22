@@ -31,7 +31,7 @@ class OpenAIEvalClient(EvalClient):
         Args:
             openai_client: (Optional) The OpenAI client to use.
             openai_args: (Optional) dict of additional args to pass in to the
-            ``client.chat.completions.create`` function
+            ``client.chat.completions.create`` function.
             use_async: (Optional) If True, the async client will be used.
         """
         if openai_client:
@@ -62,8 +62,12 @@ class OpenAIEvalClient(EvalClient):
                 return e
 
         model_inputs = [
-            {"messages": [{"role": "user", "content": prompt}], **config}
-            for prompt in prompts
+            {
+                "messages": [{"role": "user", "content": prompt}],
+                "seed": i,
+                **config,
+            }
+            for i, prompt in enumerate(prompts)
         ]
 
         if self._use_async:
@@ -105,7 +109,6 @@ class OpenAIEvalClient(EvalClient):
         prompts: Iterable[str],
         *,
         tqdm_description: str | None = None,
-        seeds: Iterable[int] | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
         We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
@@ -118,11 +121,13 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo", "seed": 123}
+        config = {"model": "gpt-3.5-turbo"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
-            prompts=prompts, config=config, tqdm_description=tqdm_description
+            prompts=prompts,
+            config=config,
+            tqdm_description=tqdm_description,
         )
         response_texts = [
             response.choices[0].message.content if response else None
@@ -260,7 +265,6 @@ class OpenAIEvalClient(EvalClient):
         ]
 
         config_structured_assessments = {
-            "seed": 123,
             "functions": functions,
             "function_call": {
                 "name": "save_assessment",
