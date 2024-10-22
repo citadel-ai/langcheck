@@ -34,19 +34,30 @@ from langcheck.metrics.eval_clients import (
 def test_rephrase(
     instances: list[str] | str, num_perturbations: int, expected: list[str]
 ):
-    mock_chat_completion = Mock(spec=ChatCompletion)
-    mock_chat_completion.choices = [
+    mock_chat_completion1 = Mock(spec=ChatCompletion)
+    mock_chat_completion1.choices = [
         Mock(
             message=Mock(
-                content="Identify three typical methods used for evaluating LLMs."
+                content="Illuminate three representative methods for testing LLMs."
             )
         )
     ]
+    mock_chat_completion2 = Mock(spec=ChatCompletion)
+    mock_chat_completion2.choices = [
+        Mock(
+            message=Mock(
+                content="Identify three typical techniques for testing LLMs."
+            )
+        )
+    ]
+
+    side_effect = [mock_chat_completion1, mock_chat_completion2]
+
     # Calling the openai.ChatCompletion.create method requires an OpenAI API
     # key, so we mock the return value instead
     with patch(
         "openai.resources.chat.Completions.create",
-        return_value=mock_chat_completion,
+        side_effect=side_effect,
     ):
         # Set the necessary env vars for the 'openai' model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
@@ -58,6 +69,10 @@ def test_rephrase(
         )
         assert actual == expected
 
+    with patch(
+        "openai.resources.chat.Completions.create",
+        side_effect=side_effect,
+    ):
         # Set the necessary env vars for the 'azure_openai' model type
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
