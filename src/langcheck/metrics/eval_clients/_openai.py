@@ -160,7 +160,7 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo", "seed": 123, "logprobs": True}
+        config = {"model": "gpt-3.5-turbo", "logprobs": True}
         if top_logprobs:
             config["top_logprobs"] = top_logprobs
         config.update(self._openai_args or {})
