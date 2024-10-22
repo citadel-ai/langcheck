@@ -27,6 +27,7 @@ langcheck.metrics.en
    :maxdepth: 4
 
    langcheck.metrics.en.pairwise_text_quality
+   langcheck.metrics.en.query_based_text_quality
    langcheck.metrics.en.reference_based_text_quality
    langcheck.metrics.en.reference_free_text_quality
    langcheck.metrics.en.source_based_text_quality
