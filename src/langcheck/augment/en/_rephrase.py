@@ -31,8 +31,11 @@ def rephrase(
         language="en", metric_name="rephrase"
     )
 
-    return eval_client.augment_from_template(
-        instances=instances,
+    instances = [instances] if isinstance(instances, str) else instances
+    prompt_template_inputs = [{"instance": instance} for instance in instances]
+
+    return eval_client.repeat_requests_from_template(
+        prompt_template_inputs=prompt_template_inputs,
         template=prompt_template,
         num_perturbations=num_perturbations,
     )

@@ -226,14 +226,16 @@ class EvalClient:
             language=language,
         )
 
-    def augment_from_template(
+    def repeat_requests_from_template(
         self,
-        instances: list[str] | str,
+        prompt_template_inputs: list[dict[str, str]],
         template: Template,
         num_perturbations: int = 1,
     ) -> list[str | None]:
         """Augments the instances using the given Jinja template for
-        `num_perturbations` times.
+        `num_perturbations` times. Note that every EvalClient subclass is
+        expected to implement `get_text_responses` method to get different
+        responses for the same input.
 
         Args:
             instances: A single string or a list of strings to be augmented.
@@ -242,18 +244,16 @@ class EvalClient:
                 for each string in instances.
 
         Returns:
-            A list of augmented instances. Note that the augmentations for the
-            same instance are generated consecutively
+            A list of responses for each input. If `num_pertuations` is > 1, the
+            multiple responses for the same input are included consecutively.
         """
 
-        instances = [instances] if isinstance(instances, str) else instances
-
         populated_prompts = [
-            template.render(instance=instance)
-            for instance in instances
+            template.render(prompt_template_input)
+            for prompt_template_input in prompt_template_inputs
             for _ in range(num_perturbations)
         ]
 
-        augmented_instances = self.get_text_responses(populated_prompts)
+        responses = self.get_text_responses(populated_prompts)
 
-        return augmented_instances
+        return responses
