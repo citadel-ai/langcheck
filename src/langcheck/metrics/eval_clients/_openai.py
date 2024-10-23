@@ -61,6 +61,7 @@ class OpenAIEvalClient(EvalClient):
             except Exception as e:
                 return e
 
+        # Call API with different seed values for each prompt.
         model_inputs = [
             {
                 "messages": [{"role": "user", "content": prompt}],
@@ -121,7 +122,7 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo"}
+        config = {"model": "gpt-35-turbo"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
