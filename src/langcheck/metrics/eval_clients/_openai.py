@@ -362,40 +362,14 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         else:
             self._client = AzureOpenAI(**kargs)  # type: ignore
 
-        self._openai_args = openai_args or {}
-
         self._text_model_name = text_model_name
         self._embedding_model_name = embedding_model_name
+        self._openai_args = openai_args or {}
+
+        if self._text_model_name is not None:
+            self._openai_args["model"] = self._text_model_name
 
         self._use_async = use_async
-
-    def get_score(
-        self,
-        metric_name: str,
-        language: str,
-        prompts: str | Iterable[str],
-        score_map: dict[str, float],
-        *,
-        intermediate_tqdm_description: str | None = None,
-        score_tqdm_description: str | None = None,
-    ) -> tuple[list[float | None], list[str | None]]:
-        """This method does the sanity check for the text_model_name and then
-        calls the parent class's get_score method with the additional "model"
-        parameter. See the parent class for the detailed documentation.
-        """
-        assert self._text_model_name is not None, (
-            "You need to specify the text_model_name to get the score for this "
-            "metric."
-        )
-        self._openai_args["model"] = self._text_model_name
-        return super().get_score(
-            metric_name,
-            language,
-            prompts,
-            score_map,
-            intermediate_tqdm_description=intermediate_tqdm_description,
-            score_tqdm_description=score_tqdm_description,
-        )
 
     def similarity_scorer(self) -> OpenAISimilarityScorer:
         """This method does the sanity check for the embedding_model_name and
