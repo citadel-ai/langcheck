@@ -232,7 +232,7 @@ class EvalClient:
         template: Template,
         num_perturbations: int = 1,
     ) -> list[str | None]:
-        """Augments the instances using the given Jinja template for
+        """Repeats the request using the given Jinja template for
         `num_perturbations` times. Note that every EvalClient subclass is
         expected to implement `get_text_responses` method to get different
         responses for the same input.

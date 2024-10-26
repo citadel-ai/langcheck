@@ -122,7 +122,7 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        config = {"model": "gpt-35-turbo"}
+        config = {"model": "gpt-3.5-turbo"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
