@@ -31,7 +31,7 @@ class OpenAIEvalClient(EvalClient):
         Args:
             openai_client: (Optional) The OpenAI client to use.
             openai_args: (Optional) dict of additional args to pass in to the
-            ``client.chat.completions.create`` function
+            ``client.chat.completions.create`` function.
             use_async: (Optional) If True, the async client will be used.
         """
         if openai_client:
@@ -61,9 +61,14 @@ class OpenAIEvalClient(EvalClient):
             except Exception as e:
                 return e
 
+        # Call API with different seed values for each prompt.
         model_inputs = [
-            {"messages": [{"role": "user", "content": prompt}], **config}
-            for prompt in prompts
+            {
+                "messages": [{"role": "user", "content": prompt}],
+                "seed": i,
+                **config,
+            }
+            for i, prompt in enumerate(prompts)
         ]
 
         if self._use_async:
@@ -101,7 +106,10 @@ class OpenAIEvalClient(EvalClient):
         return responses
 
     def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+        self,
+        prompts: Iterable[str],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
         We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
@@ -114,11 +122,13 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo", "seed": 123}
+        config = {"model": "gpt-3.5-turbo"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
-            prompts=prompts, config=config, tqdm_description=tqdm_description
+            prompts=prompts,
+            config=config,
+            tqdm_description=tqdm_description,
         )
         response_texts = [
             response.choices[0].message.content if response else None
@@ -151,7 +161,7 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo", "seed": 123, "logprobs": True}
+        config = {"model": "gpt-3.5-turbo", "logprobs": True}
         if top_logprobs:
             config["top_logprobs"] = top_logprobs
         config.update(self._openai_args or {})
@@ -256,7 +266,6 @@ class OpenAIEvalClient(EvalClient):
         ]
 
         config_structured_assessments = {
-            "seed": 123,
             "functions": functions,
             "function_call": {
                 "name": "save_assessment",
@@ -354,40 +363,14 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         else:
             self._client = AzureOpenAI(**kargs)  # type: ignore
 
-        self._openai_args = openai_args or {}
-
         self._text_model_name = text_model_name
         self._embedding_model_name = embedding_model_name
+        self._openai_args = openai_args or {}
+
+        if self._text_model_name is not None:
+            self._openai_args["model"] = self._text_model_name
 
         self._use_async = use_async
-
-    def get_score(
-        self,
-        metric_name: str,
-        language: str,
-        prompts: str | Iterable[str],
-        score_map: dict[str, float],
-        *,
-        intermediate_tqdm_description: str | None = None,
-        score_tqdm_description: str | None = None,
-    ) -> tuple[list[float | None], list[str | None]]:
-        """This method does the sanity check for the text_model_name and then
-        calls the parent class's get_score method with the additional "model"
-        parameter. See the parent class for the detailed documentation.
-        """
-        assert self._text_model_name is not None, (
-            "You need to specify the text_model_name to get the score for this "
-            "metric."
-        )
-        self._openai_args["model"] = self._text_model_name
-        return super().get_score(
-            metric_name,
-            language,
-            prompts,
-            score_map,
-            intermediate_tqdm_description=intermediate_tqdm_description,
-            score_tqdm_description=score_tqdm_description,
-        )
 
     def similarity_scorer(self) -> OpenAISimilarityScorer:
         """This method does the sanity check for the embedding_model_name and
@@ -431,6 +414,7 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         # TODO: Fix that this async call could be much slower than the sync
         # version. https://github.com/citadel-ai/langcheck/issues/160
         if self._use_async:
+
             async def _call_async_api() -> Any:
                 assert isinstance(self.openai_client, AsyncOpenAI)
                 if self.openai_args:

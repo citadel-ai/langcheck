@@ -47,7 +47,10 @@ class EvalClient:
         )
 
     def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+        self,
+        prompts: Iterable[str],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts. Each
         concrete subclass needs to define the concrete implementation of this
@@ -222,3 +225,35 @@ class EvalClient:
             metric_values=scores,
             language=language,
         )
+
+    def repeat_requests_from_template(
+        self,
+        prompt_template_inputs: list[dict[str, str]],
+        template: Template,
+        num_perturbations: int = 1,
+    ) -> list[str | None]:
+        """Repeats the request using the given Jinja template for
+        `num_perturbations` times. Note that every EvalClient subclass is
+        expected to implement `get_text_responses` method to get different
+        responses for the same input.
+
+        Args:
+            instances: A single string or a list of strings to be augmented.
+            template: The Jinja template ready to be rendered.
+            num_perturbations: The number of perturbed instances to generate
+                for each string in instances.
+
+        Returns:
+            A list of responses for each input. If `num_pertuations` is > 1, the
+            multiple responses for the same input are included consecutively.
+        """
+
+        populated_prompts = [
+            template.render(prompt_template_input)
+            for prompt_template_input in prompt_template_inputs
+            for _ in range(num_perturbations)
+        ]
+
+        responses = self.get_text_responses(populated_prompts)
+
+        return responses
