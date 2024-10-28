@@ -4,7 +4,7 @@ import operator
 import warnings
 from dataclasses import dataclass, fields
 from statistics import mean
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Union
 
 import pandas as pd
 
@@ -12,7 +12,9 @@ from langcheck.metrics.metric_inputs import MetricInputs
 
 # Metrics take on float or integer values
 # Some metrics may return `None` values when the score fails to be computed
-NumericType = TypeVar("NumericType", float, int, float | None, int | None)
+NumericType = TypeVar(
+    "NumericType", float, int, Union[float, None], Union[int, None]
+)
 
 
 @dataclass

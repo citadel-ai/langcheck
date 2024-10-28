@@ -90,8 +90,8 @@ class ModelManager:
     def fetch_model(
         self, language: str, metric: str
     ) -> (
-        tuple[AutoTokenizer | AutoModelForSequenceClassification]
-        | tuple[AutoTokenizer | AutoModelForSeq2SeqLM]
+        tuple[AutoTokenizer, AutoModelForSequenceClassification]
+        | tuple[AutoTokenizer, AutoModelForSeq2SeqLM]
         | SentenceTransformer
     ):
         """
