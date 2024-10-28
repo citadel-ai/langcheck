@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, Iterable, List, Optional, Union
+from collections.abc import Iterable
+from typing import Union
 
 from jinja2 import Template
 
@@ -10,9 +11,9 @@ from langcheck.metrics.metric_value import MetricValue
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 
-TokenLogProb = Dict[str, Union[str, float]]
-TopKLogProbs = List[List[TokenLogProb]]
-TextResponseWithLogProbs = Dict[str, Union[str, List[TopKLogProbs]]]
+TokenLogProb = dict[str, Union[str, float]]
+TopKLogProbs = list[list[TokenLogProb]]
+TextResponseWithLogProbs = dict[str, Union[str, list[TopKLogProbs]]]
 
 
 class EvalClient:
@@ -71,7 +72,7 @@ class EvalClient:
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> List[Optional[TextResponseWithLogProbs]]:
+    ) -> list[TextResponseWithLogProbs | None]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.

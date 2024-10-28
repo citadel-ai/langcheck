@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from rouge_score import rouge_scorer
 from rouge_score.tokenizers import Tokenizer
 
@@ -19,9 +17,9 @@ LANG = "zh"
 
 
 def semantic_similarity(
-    generated_outputs: List[str] | str,
-    reference_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    reference_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
 ) -> MetricValue[float]:
     """
@@ -91,11 +89,11 @@ def semantic_similarity(
 
 
 def rouge1(
-    generated_outputs: List[str] | str,
-    reference_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    reference_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     *,
-    tokenizer: Optional[Tokenizer] = None,
+    tokenizer: Tokenizer | None = None,
 ) -> MetricValue[float]:
     """Calculates the F1 metrics of the ROUGE-1 scores between the generated
     (single tokens) between the generated outputs and the reference outputs.
@@ -136,11 +134,11 @@ def rouge1(
 
 
 def rouge2(
-    generated_outputs: List[str] | str,
-    reference_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    reference_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     *,
-    tokenizer: Optional[Tokenizer] = None,
+    tokenizer: Tokenizer | None = None,
 ) -> MetricValue[float]:
     """Calculates the F1 metrics of the ROUGE-2 scores between the generated
     outputs and the reference outputs. It evaluates the overlap of bigrams
@@ -182,11 +180,11 @@ def rouge2(
 
 
 def rougeL(
-    generated_outputs: List[str] | str,
-    reference_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    reference_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     *,
-    tokenizer: Optional[Tokenizer] = None,
+    tokenizer: Tokenizer | None = None,
 ) -> MetricValue[float]:
     """Calculates the F1 metrics of the ROUGE-L scores between the generated
     outputs and the reference outputs. It evaluates the longest common
@@ -238,12 +236,12 @@ def rougeL(
 
 
 def _rouge(
-    generated_outputs: List[str],
-    reference_outputs: List[str],
+    generated_outputs: list[str],
+    reference_outputs: list[str],
     rouge_type: str,
     *,
-    tokenizer: Optional[Tokenizer] = None,
-) -> List[float]:
+    tokenizer: Tokenizer | None = None,
+) -> list[float]:
     """Helper function for computing the rouge1, rouge2, and rougeL metrics.
     This uses Google Research's implementation of ROUGE:
     https://github.com/google-research/google-research/tree/master/rouge

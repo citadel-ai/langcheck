@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Union
+from typing import Union
 
 import pandas as pd
 from jinja2 import Environment, meta
 
-IndividualInputType = Union[str, List[str], None]
+# You need "Union" to declare a type in Python < 3.10
+IndividualInputType = Union[str, list[str], None]
 
 
 def _map_pairwise_input_to_list(

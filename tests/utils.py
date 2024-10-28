@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Iterable, List
+from collections.abc import Iterable
 
 from langcheck.metrics.eval_clients import EvalClient
 
@@ -20,20 +20,19 @@ class MockEvalClient(EvalClient):
         self.evaluation_result = evaluation_result
 
     def get_text_responses(
-            self,
-            prompts: Iterable[str],
-            *,
-            tqdm_description: str | None = None) -> list[str | None]:
+        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+    ) -> list[str | None]:
         return [self.evaluation_result] * len(list(prompts))
 
     def get_float_score(
-            self,
-            metric_name: str,
-            language: str,
-            unstructured_assessment_result: list[str | None],
-            score_map: dict[str, float],
-            *,
-            tqdm_description: str | None = None) -> list[float | None]:
+        self,
+        metric_name: str,
+        language: str,
+        unstructured_assessment_result: list[str | None],
+        score_map: dict[str, float],
+        *,
+        tqdm_description: str | None = None,
+    ) -> list[float | None]:
         eval_results = []
         # Assume that the evaluation result is actually structured and it can be
         # put into the score_map directly
@@ -51,13 +50,13 @@ class MockEvalClient(EvalClient):
 ################################################################################
 
 
-def is_close(a: List, b: List) -> bool:
+def is_close(a: list, b: list) -> bool:
     """Returns True if two lists of numbers are element-wise close."""
     assert len(a) == len(b)
     return all(math.isclose(x, y) for x, y in zip(a, b))
 
 
-def lists_are_equal(a: List[str] | str, b: List[str] | str) -> bool:
+def lists_are_equal(a: list[str] | str, b: list[str] | str) -> bool:
     """Returns True if two lists of strings are equal. If either argument is a
     single string, it's automatically converted to a list.
     """

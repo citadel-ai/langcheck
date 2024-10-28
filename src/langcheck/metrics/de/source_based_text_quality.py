@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.en.source_based_text_quality import (
     factual_consistency as en_factual_consistency,
@@ -20,11 +18,11 @@ LANG = "de"
 
 
 def factual_consistency(
-    generated_outputs: List[str] | str,
-    sources: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    sources: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
@@ -123,8 +121,8 @@ def factual_consistency(
 
 
 def context_relevance(
-    sources: List[str] | str, prompts: List[str] | str, eval_model: EvalClient
-) -> MetricValue[Optional[float]]:
+    sources: list[str] | str, prompts: list[str] | str, eval_model: EvalClient
+) -> MetricValue[float | None]:
     """Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully

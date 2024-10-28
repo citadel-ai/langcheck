@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import os
 from copy import deepcopy
 from functools import lru_cache
-from typing import Optional, Tuple, Union
 
 import pandas as pd
 import requests
@@ -36,7 +37,7 @@ VALID_METRICS = [
 VALID_LANGUAGE = ["zh", "en", "ja", "de"]
 
 
-def check_model_availability(model_name: str, revision: Optional[str]) -> bool:
+def check_model_availability(model_name: str, revision: str | None) -> bool:
     # TODO: add local cached model availability check for offline environment
     if revision is None or revision == "":
         url = f"https://huggingface.co/api/models/{model_name}"
@@ -88,11 +89,11 @@ class ModelManager:
     @lru_cache
     def fetch_model(
         self, language: str, metric: str
-    ) -> Union[
-        Tuple[AutoTokenizer, AutoModelForSequenceClassification],
-        Tuple[AutoTokenizer, AutoModelForSeq2SeqLM],
-        SentenceTransformer,
-    ]:
+    ) -> (
+        tuple[AutoTokenizer | AutoModelForSequenceClassification]
+        | tuple[AutoTokenizer | AutoModelForSeq2SeqLM]
+        | SentenceTransformer
+    ):
         """
         Return the model (and if applicable, the tokenizer) used for the given
         metric and language.

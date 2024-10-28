@@ -4,7 +4,7 @@ import operator
 import warnings
 from dataclasses import dataclass, fields
 from statistics import mean
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, TypeVar
 
 import pandas as pd
 
@@ -12,7 +12,7 @@ from langcheck.metrics.metric_inputs import MetricInputs
 
 # Metrics take on float or integer values
 # Some metrics may return `None` values when the score fails to be computed
-NumericType = TypeVar("NumericType", float, int, Optional[float], Optional[int])
+NumericType = TypeVar("NumericType", float, int, float | None, int | None)
 
 
 @dataclass
@@ -20,14 +20,14 @@ class MetricValue(Generic[NumericType]):
     """A rich object that is the output of any langcheck.metrics function."""
 
     metric_name: str
-    metric_values: List[NumericType]
+    metric_values: list[NumericType]
 
     # Input of the metrics such as prompts, generated outputs... etc
     metric_inputs: MetricInputs
 
     # An explanation can be None if the metric could not be computed
-    explanations: Optional[List[Optional[str]]]
-    language: Optional[str]
+    explanations: list[str | None] | None
+    language: str | None
 
     def to_df(self) -> pd.DataFrame:
         """Returns a DataFrame of metric values for each data point."""
@@ -235,7 +235,7 @@ class MetricValueWithThreshold(MetricValue):
         return self._pass_rate
 
     @property
-    def threshold_results(self) -> List[bool]:
+    def threshold_results(self) -> list[bool]:
         """Returns a list of booleans indicating whether each data point passes
         the threshold.
         """

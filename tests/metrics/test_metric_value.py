@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 import pandas as pd
 import pytest
@@ -69,7 +69,7 @@ def test_optional_metric_values():
         },
         required_params=["generated_outputs"],
     )
-    metric_value: MetricValue[Optional[float]] = MetricValue(
+    metric_value: MetricValue[float | None] = MetricValue(
         metric_name="test",
         metric_inputs=metric_inputs,
         explanations=None,

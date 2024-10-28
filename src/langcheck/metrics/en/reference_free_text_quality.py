@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from langcheck.metrics.en.reference_based_text_quality import (
     semantic_similarity,
 )
@@ -22,11 +20,11 @@ LANG = "en"
 
 
 def sentiment(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using an EvalClient, the sentiment scores
@@ -101,8 +99,8 @@ def sentiment(
 
 
 def _sentiment_local(
-    generated_outputs: List[str], overflow_strategy: str
-) -> List[Optional[float]]:
+    generated_outputs: list[str], overflow_strategy: str
+) -> list[float | None]:
     """Calculates the sentiment scores of generated outputs using the
     Twitter-roBERTa-base model. This metric takes on float values between
     [0, 1], where 0 is negative sentiment and 1 is positive sentiment.
@@ -131,11 +129,11 @@ def _sentiment_local(
 
 
 def fluency(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
     (NOTE: when using an EvalClient, the fluency scores are either 0.0
@@ -210,8 +208,8 @@ def fluency(
 
 
 def _fluency_local(
-    generated_outputs: List[str], overflow_strategy: str
-) -> List[Optional[float]]:
+    generated_outputs: list[str], overflow_strategy: str
+) -> list[float | None]:
     """Calculates the fluency scores of generated outputs using the Parrot
     fluency model. This metric takes on float values between [0, 1], where 0 is
     low fluency and 1 is high fluency.
@@ -238,12 +236,12 @@ def _fluency_local(
 
 
 def toxicity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
     eval_prompt_version: str = "v2",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using an EvalClient, the toxicity scores are either 0.0
@@ -335,8 +333,8 @@ def toxicity(
 
 
 def _toxicity_local(
-    generated_outputs: List[str], overflow_strategy: str
-) -> List[Optional[float]]:
+    generated_outputs: list[str], overflow_strategy: str
+) -> list[float | None]:
     """Calculates the toxicity scores of generated outputs using the Detoxify
     model. This metric takes on float values between [0, 1], where 0 is low
     toxicity and 1 is high toxicity.
@@ -356,8 +354,8 @@ def _toxicity_local(
 
 
 def flesch_reading_ease(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[float]:
     """Calculates the readability of generated outputs using the Flesch Reading
     Ease Score. This metric takes on float values between (-∞, 121.22], but
@@ -403,8 +401,8 @@ def flesch_reading_ease(
 
 
 def flesch_kincaid_grade(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[float]:
     """Calculates the readability of generated outputs using the Flesch-Kincaid
     Grade Level metric. This metric takes on float values between [-3.40, ∞),
@@ -451,8 +449,8 @@ def flesch_kincaid_grade(
 
 
 def ai_disclaimer_similarity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     ai_disclaimer_phrase: str = (
         "I don't have personal opinions, emotions, or consciousness."
     ),

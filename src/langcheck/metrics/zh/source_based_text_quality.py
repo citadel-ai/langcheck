@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, cast
+from typing import cast
 
 from transformers.pipelines import pipeline
 
@@ -17,11 +17,11 @@ LANG = "zh"
 
 
 def factual_consistency(
-    generated_outputs: List[str] | str,
-    sources: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    sources: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1

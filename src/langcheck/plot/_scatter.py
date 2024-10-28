@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import math
 import textwrap
 from copy import deepcopy
-from typing import Optional, Union
 
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
@@ -14,7 +15,7 @@ from langcheck.plot._utils import Axis, _plot_threshold
 
 def scatter(
     metric_value: MetricValue,
-    other_metric_value: Optional[MetricValue] = None,
+    other_metric_value: MetricValue | None = None,
     jupyter_mode: str = "inline",
 ) -> None:
     """Shows an interactive scatter plot of all data points in an
@@ -422,7 +423,7 @@ def _scatter_two_metric_values(
         # Unfortunately it's not possible to make "index" show up at the top of
         # the tooltip like _scatter_one_metric_value() since Plotly always
         # displays the x and y values at the top.)
-        hover_data: dict[str, Union[bool, Index]] = {
+        hover_data: dict[str, bool | Index] = {
             col: True for col in filtered_df.columns
         }
         hover_data["index"] = filtered_df.index

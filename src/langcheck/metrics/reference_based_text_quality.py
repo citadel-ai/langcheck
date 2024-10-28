@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
@@ -12,9 +10,9 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 
 
 def exact_match(
-    generated_outputs: List[str] | str,
-    reference_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    reference_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if the generated outputs exact matches with the reference outputs.
     This metric takes on binary 0 or 1 values.

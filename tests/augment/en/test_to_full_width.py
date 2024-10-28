@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from typing import List
 
 import pytest
 
@@ -82,10 +81,10 @@ from langcheck.augment.en import to_full_width
     ],
 )
 def test_to_ful_width(
-    instances: List[str] | str,
+    instances: list[str] | str,
     num_perturbations: int,
     aug_char_p: float,
-    expected: List[str],
+    expected: list[str],
 ):
     seed = 42
     random.seed(seed)

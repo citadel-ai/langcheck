@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Callable, Container, Iterable, List, Optional
+from collections.abc import Callable, Container, Iterable
 
 from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
@@ -12,9 +12,9 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 
 
 def is_int(
-    generated_outputs: List[str] | str,
+    generated_outputs: list[str] | str,
     domain: Iterable[int] | Container[int] | None = None,
-    prompts: Optional[List[str] | str] = None,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs can be parsed as integers, optionally within
     a domain of integers like `range(1, 11)` or `{1, 3, 5}`. This metric takes
@@ -57,10 +57,10 @@ def is_int(
 
 
 def is_float(
-    generated_outputs: List[str] | str,
-    min: Optional[float] = None,
-    max: Optional[float] = None,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    min: float | None = None,
+    max: float | None = None,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs can be parsed as floating point numbers,
     optionally within a min/max range. This metric takes on binary 0 or 1
@@ -109,8 +109,8 @@ def is_float(
 
 
 def is_json_object(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs can be parsed as JSON objects. This metric
     takes on binary 0 or 1 values.
@@ -151,8 +151,8 @@ def is_json_object(
 
 
 def is_json_array(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs can be parsed as JSON arrays. This metric
     takes on binary 0 or 1 values.
@@ -193,9 +193,9 @@ def is_json_array(
 
 
 def matches_regex(
-    generated_outputs: List[str] | str,
+    generated_outputs: list[str] | str,
     regex: str,
-    prompts: Optional[List[str] | str] = None,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs fully match a given regular expression. This
     metric takes on binary 0 or 1 values.
@@ -233,9 +233,9 @@ def matches_regex(
 
 
 def contains_regex(
-    generated_outputs: List[str] | str,
+    generated_outputs: list[str] | str,
     regex: str,
-    prompts: Optional[List[str] | str] = None,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs partially contain a given regular expression.
     This metric takes on binary 0 or 1 values.
@@ -273,10 +273,10 @@ def contains_regex(
 
 
 def contains_all_strings(
-    generated_outputs: List[str] | str,
-    strings: List[str],
+    generated_outputs: list[str] | str,
+    strings: list[str],
     case_sensitive: bool = False,
-    prompts: Optional[List[str] | str] = None,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs contain all strings in of a given list. This
     metric takes on binary 0 or 1 values.
@@ -323,10 +323,10 @@ def contains_all_strings(
 
 
 def contains_any_strings(
-    generated_outputs: List[str] | str,
-    strings: List[str],
+    generated_outputs: list[str] | str,
+    strings: list[str],
     case_sensitive: bool = False,
-    prompts: Optional[List[str] | str] = None,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs contain any strings in a given list. This
     metric takes on binary 0 or 1 values.
@@ -374,9 +374,9 @@ def contains_any_strings(
 
 
 def validation_fn(
-    generated_outputs: List[str] | str,
+    generated_outputs: list[str] | str,
     valid_fn: Callable[[str], bool],
-    prompts: Optional[List[str] | str] = None,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[int]:
     """Checks if generated outputs are valid according to an arbitrary function.
     This metric takes on binary 0 or 1 values.

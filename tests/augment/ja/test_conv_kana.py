@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from typing import List
 
 import pytest
 
@@ -226,11 +225,11 @@ from langcheck.augment.ja import conv_hiragana
     ],
 )
 def test_change_case(
-    instances: List[str] | str,
+    instances: list[str] | str,
     num_perturbations: int,
     aug_char_p: float,
     convert_to: str,
-    expected: List[str],
+    expected: list[str],
 ):
     seed = 42
     random.seed(seed)

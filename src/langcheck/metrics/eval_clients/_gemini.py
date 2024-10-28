@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import google.ai.generativelanguage as glm
 import google.generativeai as genai

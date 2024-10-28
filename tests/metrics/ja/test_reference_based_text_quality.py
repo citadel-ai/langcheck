@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import os
-from typing import Callable, Optional
+from collections.abc import Callable
 from unittest.mock import Mock, patch
 
 import pytest
@@ -95,9 +97,9 @@ def test_rouge_identical(
     generated_outputs: str,
     reference_outputs: str,
     rouge_function: Callable[
-        [str, str, Optional[_JapaneseTokenizer]], MetricValue[float]
+        [str, str, _JapaneseTokenizer | None], MetricValue[float]
     ],
-    tokenizer: Optional[_JapaneseTokenizer],
+    tokenizer: _JapaneseTokenizer | None,
 ) -> None:
     # All ROUGE scores are 1 if the generated and reference outputs are
     # identical
@@ -125,7 +127,7 @@ def test_rouge_no_overlap(
     generated_outputs: str,
     reference_outputs: str,
     rouge_function: Callable[[str, str], MetricValue[float]],
-    tokenizer: Optional[_JapaneseTokenizer],
+    tokenizer: _JapaneseTokenizer | None,
 ) -> None:
     # All ROUGE scores are 0 if the generated and reference outputs have no
     # overlapping words
@@ -153,7 +155,7 @@ def test_rouge_some_overlap(
     generated_outputs: str,
     reference_outputs: str,
     rouge_function: Callable[[str, str], MetricValue[float]],
-    tokenizer: Optional[_JapaneseTokenizer],
+    tokenizer: _JapaneseTokenizer | None,
 ) -> None:
     expected_value = {
         "rouge1": [0.823529411764706],
