@@ -1,5 +1,5 @@
 
-langcheck.utils.progess\_bar
+langcheck.utils.progress\_bar
 ============================
 
 .. automodule:: langcheck.utils.progress_bar
