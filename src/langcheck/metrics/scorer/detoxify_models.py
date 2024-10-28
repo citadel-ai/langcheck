@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Union
-
 import torch
 from transformers import (
     BatchEncoding,
@@ -28,10 +26,10 @@ _model_types = {
 
 def load_checkpoint(
     device: str, lang: str
-) -> Tuple[
-    Union[BertForSequenceClassification, XLMRobertaForSequenceClassification],
-    Union[BertTokenizer, XLMRobertaTokenizer],
-    List[str],
+) -> tuple[
+    BertForSequenceClassification | XLMRobertaForSequenceClassification,
+    BertTokenizer | XLMRobertaTokenizer,
+    list[str],
 ]:
     checkpoint_url = _checkpoints[lang]
     class_model_type, tokenizer_type = _model_types[lang]
@@ -72,7 +70,7 @@ class DetoxifyScorer(BaseSingleScorer):
         device: str = "cpu",
         lang: str = "en",
         overflow_strategy: str = "truncate",
-        max_input_length: Optional[int] = None,
+        max_input_length: int | None = None,
     ):
         """
         Initialize the scorer with the provided configs.
@@ -96,7 +94,7 @@ class DetoxifyScorer(BaseSingleScorer):
             max_input_length or self.tokenizer.model_max_length
         )
 
-    def _tokenize(self, inputs: list[str]) -> Tuple[BatchEncoding, list[bool]]:
+    def _tokenize(self, inputs: list[str]) -> tuple[BatchEncoding, list[bool]]:
         """Tokenize the inputs. It also does the validation on the token length,
         and return the results as a list of boolean values. If the validation
         mode is 'raise', it raises an error when the token length is invalid.
@@ -143,10 +141,10 @@ class DetoxifyScorer(BaseSingleScorer):
 
     def _slice_tokens(
         self,
-        tokens: Tuple[BatchEncoding, list[bool]],
+        tokens: tuple[BatchEncoding, list[bool]],
         start_idx: int,
         end_idx: int,
-    ) -> Tuple[BatchEncoding, list[bool]]:
+    ) -> tuple[BatchEncoding, list[bool]]:
         input_tokens, validation_results = tokens
 
         return (
@@ -158,8 +156,8 @@ class DetoxifyScorer(BaseSingleScorer):
         )
 
     def _score_tokens(
-        self, tokens: Tuple[BatchEncoding, list[bool]]
-    ) -> list[Optional[float]]:
+        self, tokens: tuple[BatchEncoding, list[bool]]
+    ) -> list[float | None]:
         input_tokens, validation_results = tokens
         out = self.model(**input_tokens)[0]
         scores = torch.sigmoid(out).cpu().detach().numpy()

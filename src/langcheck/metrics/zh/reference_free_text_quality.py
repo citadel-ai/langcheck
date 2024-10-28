@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 import hanlp
 from transformers.pipelines import pipeline
 
@@ -21,10 +19,10 @@ LANG = "zh"
 
 
 def sentiment(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using an EvalClient, the sentiment scores
@@ -100,11 +98,11 @@ def sentiment(
 
 
 def toxicity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     eval_prompt_version: str = "v2",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using an EvalClient, the toxicity scores are in steps of
@@ -167,7 +165,7 @@ def toxicity(
         )
 
 
-def _toxicity_local(generated_outputs: List[str]) -> List[float]:
+def _toxicity_local(generated_outputs: list[str]) -> list[float]:
     """Calculates the toxicity scores of generated outputs using a fine-tuned
     model from `alibaba-pai/pai-bert-base-zh-llm-risk-detection`. This metric
     takes on float values between [0, 1], where 0 is low toxicity and 1 is high
@@ -183,7 +181,7 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
         A list of scores
     """
     # this pipeline output predict probability for each text on each label.
-    # the output format is List[List[Dict(str)]]
+    # the output format is list[list[dict(str)]]
     from langcheck.metrics.model_manager import manager
 
     tokenizer, model = manager.fetch_model(language="zh", metric="toxicity")
@@ -210,8 +208,8 @@ def _toxicity_local(generated_outputs: List[str]) -> List[float]:
 
 
 def xuyaochen_report_readability(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[float]:
     """Calculates the readability scores of generated outputs introduced in
     "中文年报可读性"(Chinese annual report readability). This metric calculates
@@ -262,27 +260,27 @@ def xuyaochen_report_readability(
     # List[List[List[POS]]]
     output_pos = list(map(pos_pipeline, generated_outputs))
 
-    def count_tokens(sent_tokens: List[str]) -> int:
+    def count_tokens(sent_tokens: list[str]) -> int:
         count = sum([
             not hanlp.utils.string_util.ispunct(token) for token in   # type: ignore[reportGeneralTypeIssues]
             sent_tokens
         ])
         return count
 
-    def count_postags(sent_poses: List[str]) -> int:
+    def count_postags(sent_poses: list[str]) -> int:
         # AD: adverb, CC: coordinating conjunction,
         # CS: subordinating conjunction
         count = sum([pos in ["AD", "CC", "CS"] for pos in sent_poses])
         return count
 
-    def calc_r1(content: List[List[str]]) -> float:
+    def calc_r1(content: list[list[str]]) -> float:
         token_count_by_sentence = list(map(count_tokens, content))
         if len(token_count_by_sentence) == 0:
             return 0
         else:
             return sum(token_count_by_sentence) / len(token_count_by_sentence)
 
-    def calc_r2(content: List[List[str]]) -> float:
+    def calc_r2(content: list[list[str]]) -> float:
         pos_count_by_sentence = list(map(count_postags, content))
         if len(pos_count_by_sentence) == 0:
             return 0

@@ -3,7 +3,8 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from typing import Any, Iterable, List, Optional
+from collections.abc import Iterable
+from typing import Any
 
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
@@ -143,7 +144,7 @@ class OpenAIEvalClient(EvalClient):
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> List[Optional[TextResponseWithLogProbs]]:
+    ) -> list[TextResponseWithLogProbs | None]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.

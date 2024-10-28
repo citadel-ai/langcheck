@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import random
-from typing import List, Optional, cast
+from typing import cast
 
 from langcheck.metrics._pairwise_text_quality_utils import (
     compute_pairwise_comparison_metric_values_with_consistency,
@@ -16,13 +16,13 @@ from ..prompts._utils import get_template, load_few_shot_examples
 
 
 def simulated_annotators(
-    prompt_params: List[dict[str, str | None]],
+    prompt_params: list[dict[str, str | None]],
     eval_model: EvalClient,
     preference_data_path: str = "en/confidence_estimating/preference_data_examples.jsonl",
     k: int = 5,
     n: int = 5,
     seed: int | None = None,
-) -> List[float | None]:
+) -> list[float | None]:
     """Compute a confidence score for the pairwise comparison metric based on
     the method Simulated Annotators proposed in the paper "Trust or Escalate:
     LLM Judges with Provable Guarantees for Human Agreement"
@@ -73,7 +73,7 @@ def simulated_annotators(
             prompts.append(prompt_template.render(prompt_param))
 
         # Get the response and top five logprobs of the first token
-        responses: List[Optional[TextResponseWithLogProbs]] = (
+        responses: list[TextResponseWithLogProbs | None] = (
             eval_model.get_text_responses_with_log_likelihood(
                 prompts, top_logprobs=5
             )
@@ -83,7 +83,7 @@ def simulated_annotators(
             if response:
                 response = cast(TextResponseWithLogProbs, response)
                 top_five_first_token_logprobs = cast(
-                    List[TokenLogProb], response["response_logprobs"][0]
+                    list[TokenLogProb], response["response_logprobs"][0]
                 )
                 # Extract logprobs for tokens 'A' and 'B'
                 logprobs_dict = {
@@ -110,12 +110,12 @@ def simulated_annotators(
 
 
 def pairwise_comparison(
-    generated_outputs_a: List[str] | str,
-    generated_outputs_b: List[str] | str,
-    prompts: List[str] | str,
-    sources_a: Optional[List[str] | str] = None,
-    sources_b: Optional[List[str] | str] = None,
-    reference_outputs: Optional[List[str] | str] = None,
+    generated_outputs_a: list[str] | str,
+    generated_outputs_b: list[str] | str,
+    prompts: list[str] | str,
+    sources_a: list[str] | str | None = None,
+    sources_b: list[str] | str | None = None,
+    reference_outputs: list[str] | str | None = None,
     enforce_consistency: bool = True,
     calculated_confidence: bool = False,
     preference_data_path: str = "en/confidence_estimating/preference_data_examples.jsonl",
@@ -123,7 +123,7 @@ def pairwise_comparison(
     n: int = 5,
     seed: int | None = None,
     eval_model: EvalClient | None = None,
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the pairwise comparison metric. This metric takes on float
     values of either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B
     is better). The score may also be `None` if it could not be computed.

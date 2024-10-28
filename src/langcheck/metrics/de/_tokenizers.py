@@ -1,5 +1,3 @@
-from typing import List
-
 from nltk.stem.cistem import Cistem
 from nltk.tokenize import word_tokenize
 from rouge_score.tokenizers import Tokenizer as BaseTokenizer
@@ -16,7 +14,7 @@ class DeTokenizer(BaseTokenizer):
         if stemmer:
             self.stemmer = Cistem()
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, text: str) -> list[str]:
         if self.stemmer:
             # use only the stem part of the word
             text, _ = self.stemmer.segment(text)

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 import regex as re
 
 from langcheck.metrics.eval_clients import EvalClient
@@ -19,11 +17,11 @@ LANG = "ja"
 
 
 def sentiment(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
     positive sentiment. (NOTE: when using an EvalClient, the sentiment scores
@@ -101,8 +99,8 @@ def sentiment(
 
 
 def _sentiment_local(
-    generated_outputs: List[str], overflow_strategy: str
-) -> List[Optional[float]]:
+    generated_outputs: list[str], overflow_strategy: str
+) -> list[float | None]:
     """Calculates the sentiment scores of generated outputs using the
     Twitter-roBERTa-base-sentiment-multilingual model. This metric takes on
     float values between [0, 1], where 0 is negative sentiment and 1 is positive
@@ -132,12 +130,12 @@ def _sentiment_local(
 
 
 def toxicity(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
     eval_prompt_version: str = "v2",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
     (NOTE: when using an EvalClient, the toxicity scores are either 0.0
@@ -235,8 +233,8 @@ def toxicity(
 
 
 def _toxicity_local(
-    generated_outputs: List[str], overflow_strategy: str
-) -> List[Optional[float]]:
+    generated_outputs: list[str], overflow_strategy: str
+) -> list[float | None]:
     """Calculates the toxicity scores of generated outputs using a fine-tuned
     model from `line-corporation/line-distilbert-base-japanese`. This metric
     takes on float values between [0, 1], where 0 is low toxicity and 1 is high
@@ -265,11 +263,11 @@ def _toxicity_local(
 
 
 def fluency(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
     (NOTE: when using an EvalClient, the fluency scores are either 0.0
@@ -350,8 +348,8 @@ def fluency(
 
 
 def _fluency_local(
-    generated_outputs: List[str], overflow_strategy: str
-) -> List[Optional[float]]:
+    generated_outputs: list[str], overflow_strategy: str
+) -> list[float | None]:
     """Calculates the fluency scores of generated outputs using a fine-tuned
     model from `line-corporation/line-distilbert-base-japanese`. This metric
     takes on float values between [0, 1], where 0 is low fluency and 1 is high
@@ -380,8 +378,8 @@ def _fluency_local(
 
 
 def tateishi_ono_yamada_reading_ease(
-    generated_outputs: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    prompts: list[str] | str | None = None,
 ) -> MetricValue[float]:
     """Calculates the readability of generated Japanese outputs using the
     reading ease score introduced in "日本文の読みやすさの評価式 (A Computer
@@ -423,7 +421,7 @@ def tateishi_ono_yamada_reading_ease(
     delimiters_re = r"[、|。|!|？|!|?|「|」|,|，|.|．|…|『|』]"
 
     # Aux function to compute the average length of strings in the list
-    def _mean_str_length(ls: List[str]) -> float:
+    def _mean_str_length(ls: list[str]) -> float:
         if len(ls) == 0:
             return 0
         lens = [len(el) for el in ls]

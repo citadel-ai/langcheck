@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, cast
+from typing import cast
 
 from transformers.pipelines import pipeline
 from transformers.pipelines.base import Pipeline
@@ -23,11 +23,11 @@ LANG = "ja"
 
 
 def factual_consistency(
-    generated_outputs: List[str] | str,
-    sources: List[str] | str,
-    prompts: Optional[List[str] | str] = None,
+    generated_outputs: list[str] | str,
+    sources: list[str] | str,
+    prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
     means that the output is not at all consistent with the source text, and 1
@@ -106,8 +106,8 @@ def factual_consistency(
 
 
 def _factual_consistency_local(
-    generated_outputs: List[str], sources: List[str]
-) -> List[float]:
+    generated_outputs: list[str], sources: list[str]
+) -> list[float]:
     """Calculates the factual consistency between each generated sentence and
     its corresponding source text. The factual consistency score for one
     generated output is computed as the average of the per-sentence
@@ -177,13 +177,13 @@ def _factual_consistency_local(
         generated_outputs=en_generated_outputs, sources=en_source
     ).metric_values
 
-    # Local factual consistency scores are of type List[float]
+    # Local factual consistency scores are of type list[float]
     return factual_consistency_scores  # type: ignore
 
 
 def context_relevance(
-    sources: List[str] | str, prompts: List[str] | str, eval_model: EvalClient
-) -> MetricValue[Optional[float]]:
+    sources: list[str] | str, prompts: list[str] | str, eval_model: EvalClient
+) -> MetricValue[float | None]:
     """Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
     all relevant to the prompt, and 1 means that the source text is fully

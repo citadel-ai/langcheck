@@ -28,7 +28,7 @@ def load_few_shot_examples(relative_path: str) -> list[dict[str, str]]:
         relative_path (str): The relative path of the JSONL file.
 
     Returns:
-        List[str]: The few-shot examples.
+        list[str]: The few-shot examples.
     """
     cwd = Path(__file__).parent
     with open(cwd / relative_path) as f:

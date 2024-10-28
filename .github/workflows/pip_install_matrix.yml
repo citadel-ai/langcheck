@@ -17,17 +17,15 @@ jobs:
       fail-fast: false  # Continue running jobs even if another fails
       matrix:
         # We specify Python versions as strings so 3.10 doesn't become 3.1
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-14]
         # "en", "de", and "" are equivalent
         # "all" is tested by pytest.yml
         language: ["en", "ja", "zh"]
 
         exclude:
-          # GitHub Actions doesn't support Python 3.8 and 3.9 on M1 macOS yet:
+          # GitHub Actions doesn't support Python 3.9 on M1 macOS yet:
           # https://github.com/actions/setup-python/issues/696
-          - python-version: "3.8"
-            os: macos-14
           - python-version: "3.9"
             os: macos-14
           # TODO: Figure out how to install MeCab on Windows to install

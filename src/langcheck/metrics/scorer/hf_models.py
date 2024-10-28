@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple
-
 import torch
 from transformers import BatchEncoding
 
@@ -19,7 +17,7 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
         metric,
         class_weights,
         overflow_strategy: str = "truncate",
-        max_input_length: Optional[int] = None,
+        max_input_length: int | None = None,
     ):
         """
         Initialize the scorer with the provided configs.
@@ -49,7 +47,7 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
         else:
             self.max_input_length = self.model.config.max_position_embeddings  # type: ignore
 
-    def _tokenize(self, inputs: list[str]) -> Tuple[BatchEncoding, list[bool]]:
+    def _tokenize(self, inputs: list[str]) -> tuple[BatchEncoding, list[bool]]:
         """Tokenize the inputs. It also does the validation on the token length,
         and return the results as a list of boolean values. If the validation
         mode is 'raise', it raises an error when the token length is invalid.
@@ -95,13 +93,13 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
         return validation_results
 
     def _score_tokens(
-        self, tokens: Tuple[BatchEncoding, list[bool]]
-    ) -> list[Optional[float]]:
+        self, tokens: tuple[BatchEncoding, list[bool]]
+    ) -> list[float | None]:
         """Return the prediction results as scores."""
         input_tokens, validation_results = tokens
         with torch.no_grad():
             logits: torch.Tensor = self.model(**input_tokens).logits  # type: ignore
-            scores: list[Optional[float]] = self._logits_to_scores(logits)  # type: ignore
+            scores: list[float | None] = self._logits_to_scores(logits)  # type: ignore
 
         for i, validation_result in enumerate(validation_results):
             if not validation_result:
@@ -111,10 +109,10 @@ class AutoModelForSequenceClassificationScorer(BaseSingleScorer):
 
     def _slice_tokens(
         self,
-        tokens: Tuple[BatchEncoding, list[bool]],
+        tokens: tuple[BatchEncoding, list[bool]],
         start_idx: int,
         end_idx: int,
-    ) -> Tuple[BatchEncoding, list[bool]]:
+    ) -> tuple[BatchEncoding, list[bool]]:
         input_tokens, validation_results = tokens
 
         return (

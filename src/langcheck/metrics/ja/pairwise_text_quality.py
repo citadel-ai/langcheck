@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from langcheck.metrics._pairwise_text_quality_utils import (
     compute_pairwise_comparison_metric_values_with_consistency,
 )
@@ -11,15 +9,15 @@ from langcheck.metrics.metric_value import MetricValue
 
 
 def pairwise_comparison(
-    generated_outputs_a: List[str] | str,
-    generated_outputs_b: List[str] | str,
-    prompts: List[str] | str,
-    sources_a: Optional[List[str] | str] = None,
-    sources_b: Optional[List[str] | str] = None,
-    reference_outputs: Optional[List[str] | str] = None,
+    generated_outputs_a: list[str] | str,
+    generated_outputs_b: list[str] | str,
+    prompts: list[str] | str,
+    sources_a: list[str] | str | None = None,
+    sources_b: list[str] | str | None = None,
+    reference_outputs: list[str] | str | None = None,
     enforce_consistency: bool = True,
     eval_model: EvalClient | None = None,
-) -> MetricValue[Optional[float]]:
+) -> MetricValue[float | None]:
     """Calculates the pairwise comparison metric. This metric takes on float
     values of either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B
     is better). The score may also be `None` if it could not be computed.

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 import torch
 from sentence_transformers import util
@@ -27,7 +27,7 @@ class BaseSingleScorer(Generic[_TokensType]):
         """
         raise NotImplementedError
 
-    def _score_tokens(self, tokens: _TokensType) -> list[Optional[float]]:
+    def _score_tokens(self, tokens: _TokensType) -> list[float | None]:
         """Score the tokens. The returned list should have the same length as
         the tokens. Each element in the list should be the score of the token.
         """
@@ -42,14 +42,14 @@ class BaseSingleScorer(Generic[_TokensType]):
         """
         raise NotImplementedError
 
-    def score(self, inputs: list[str]) -> list[Optional[float]]:
+    def score(self, inputs: list[str]) -> list[float | None]:
         """Score the inputs. Basically subclasses should not override this."""
 
         tokens = self._tokenize(inputs)
 
         input_length = len(inputs)
 
-        scores: list[Optional[float]] = []
+        scores: list[float | None] = []
         for i in tqdm_wrapper(
             range(0, input_length, self.batch_size),
             total=(input_length + self.batch_size - 1) // self.batch_size,
