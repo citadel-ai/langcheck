@@ -82,12 +82,10 @@ def sentiment(
     _predict_result = _sentiment_pipeline(generated_outputs)  # type: ignore[reportGeneralTypeIssues]
     # if predicted result is 'Positive', use the score directly
     # else, use 1 - score as the sentiment score
-    # yapf: disable
     scores = [
         1 - x["score"] if x["label"] == _model_id2label[0] else x["score"]  # type: ignore[reportGeneralTypeIssues]
-        for x in _predict_result   # type: ignore[reportGeneralTypeIssues]
+        for x in _predict_result  # type: ignore[reportGeneralTypeIssues]
     ]
-    # yapf: enable
     return MetricValue(
         metric_name="sentiment",
         metric_inputs=metric_inputs,
@@ -200,10 +198,8 @@ def _toxicity_local(generated_outputs: list[str]) -> list[float]:
     toxicity_scores = []
     for item_predict_proba in _predict_results:  # type: ignore[reportOptionalIterable]
         for label_proba in item_predict_proba:  # type: ignore[reportGeneralTypeIssues]
-            # yapf: disable
             if label_proba["label"] == _model_id2label[0]:  # type: ignore[reportGeneralTypeIssues]
                 toxicity_scores.append(1 - label_proba["score"])  # type: ignore[reportGeneralTypeIssues]
-            # yapf: enable
     return toxicity_scores  # type: ignore[reportGeneralTypeIssues]
 
 
@@ -240,20 +236,19 @@ def xuyaochen_report_readability(
         prompts=prompts,
         required_params=["generated_outputs"],
     )
-    # yapf: disable
     tokenizer = hanlp.load(
         hanlp.pretrained.tok.FINE_ELECTRA_SMALL_ZH  # type: ignore[reportGeneralTypeIssues]
     )
     postagger = hanlp.load(
-        hanlp.pretrained.pos.CTB9_POS_RADICAL_ELECTRA_SMALL   # type: ignore[reportGeneralTypeIssues]
+        hanlp.pretrained.pos.CTB9_POS_RADICAL_ELECTRA_SMALL  # type: ignore[reportGeneralTypeIssues]
     )
 
-    pos_pipeline = hanlp.pipeline().\
-        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues]
+    pos_pipeline = hanlp.pipeline().append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues]
     pos_pipeline = pos_pipeline.append(tokenizer).append(postagger)
 
-    tokenize_pipeline = hanlp.pipeline().\
-        append(hanlp.utils.rules.split_sentence)  # type: ignore[reportGeneralTypeIssues]
+    tokenize_pipeline = hanlp.pipeline().append(
+        hanlp.utils.rules.split_sentence
+    )  # type: ignore[reportGeneralTypeIssues]
     tokenize_pipeline = tokenize_pipeline.append(tokenizer)
     # OUTPUT: List[List[List[TOKEN]]]
     output_tokens = list(map(tokenize_pipeline, generated_outputs))
@@ -261,10 +256,12 @@ def xuyaochen_report_readability(
     output_pos = list(map(pos_pipeline, generated_outputs))
 
     def count_tokens(sent_tokens: list[str]) -> int:
-        count = sum([
-            not hanlp.utils.string_util.ispunct(token) for token in   # type: ignore[reportGeneralTypeIssues]
-            sent_tokens
-        ])
+        count = sum(
+            [
+                not hanlp.utils.string_util.ispunct(token)
+                for token in sent_tokens  # type: ignore[reportGeneralTypeIssues]
+            ]
+        )
         return count
 
     def count_postags(sent_poses: list[str]) -> int:
@@ -287,10 +284,9 @@ def xuyaochen_report_readability(
         else:
             return sum(pos_count_by_sentence) / len(pos_count_by_sentence)
 
-    r1 = list(map(calc_r1, output_tokens))   # type: ignore[reportGeneralTypeIssues]
-    r2 = list(map(calc_r2, output_pos))   # type: ignore[reportGeneralTypeIssues]
+    r1 = list(map(calc_r1, output_tokens))  # type: ignore[reportGeneralTypeIssues]
+    r2 = list(map(calc_r2, output_pos))  # type: ignore[reportGeneralTypeIssues]
     r3 = [(r1_score + r2_score) * 0.5 for r1_score, r2_score in zip(r1, r2)]
-    # yapf: enable
     return MetricValue(
         metric_name="readability",
         metric_inputs=metric_inputs,
