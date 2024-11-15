@@ -247,8 +247,8 @@ def xuyaochen_report_readability(
     pos_pipeline = pos_pipeline.append(tokenizer).append(postagger)
 
     tokenize_pipeline = hanlp.pipeline().append(
-        hanlp.utils.rules.split_sentence
-    )  # type: ignore[reportGeneralTypeIssues]
+        hanlp.utils.rules.split_sentence  # type: ignore[reportGeneralTypeIssues]
+    )
     tokenize_pipeline = tokenize_pipeline.append(tokenizer)
     # OUTPUT: List[List[List[TOKEN]]]
     output_tokens = list(map(tokenize_pipeline, generated_outputs))
@@ -258,8 +258,8 @@ def xuyaochen_report_readability(
     def count_tokens(sent_tokens: list[str]) -> int:
         count = sum(
             [
-                not hanlp.utils.string_util.ispunct(token)
-                for token in sent_tokens  # type: ignore[reportGeneralTypeIssues]
+                not hanlp.utils.string_util.ispunct(token)  # type: ignore[reportGeneralTypeIssues]
+                for token in sent_tokens
             ]
         )
         return count
