@@ -14,7 +14,7 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient, TextResponseWithLogProbs
-
+from openai.types.create_embedding_response import CreateEmbeddingResponse
 
 class OpenAIEvalClient(EvalClient):
     """EvalClient defined for OpenAI API."""
@@ -409,7 +409,9 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         self.openai_args = openai_args
         self._use_async = use_async
 
-    async def _async_embed(self, inputs: list[str]) -> torch.Tensor:
+    async def _async_embed(self, inputs: list[str]) -> CreateEmbeddingResponse:
+      """Embed the inputs using the OpenAI API in async mode."""
+      assert isinstance(self.openai_client, AsyncOpenAI)
       if self.openai_args:
           responses = await self.openai_client.embeddings.create(
               input=inputs, **self.openai_args
@@ -426,10 +428,13 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         # TODO: Fix that this async call could be much slower than the sync
         # version. https://github.com/citadel-ai/langcheck/issues/160
         if self._use_async:
-            assert isinstance(self.openai_client, AsyncOpenAI)
-            embed_response = asyncio.get_event_loop().run_until_complete(self._async_embed(inputs))
-            embeddings = [item.embedding for item in embed_response.data]
-
+          try:
+            loop = asyncio.get_event_loop()
+          except RuntimeError:  # pragma: py-lt-310
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+          embed_response = loop.run_until_complete(self._async_embed(inputs))
+          embeddings = [item.embedding for item in embed_response.data]
         else:
             assert isinstance(self.openai_client, OpenAI)
 
