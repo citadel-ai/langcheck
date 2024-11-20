@@ -8,13 +8,14 @@ from typing import Any
 
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
+from openai.types.create_embedding_response import CreateEmbeddingResponse
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient, TextResponseWithLogProbs
-from openai.types.create_embedding_response import CreateEmbeddingResponse
+
 
 class OpenAIEvalClient(EvalClient):
     """EvalClient defined for OpenAI API."""
