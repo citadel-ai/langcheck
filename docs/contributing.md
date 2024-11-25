@@ -24,6 +24,15 @@ prompt generated_output reference_output  metric_value
 2   None                a             None             0
 ```
 
+## Running Static Checks
+We have static checks with [ruff](https://github.com/astral-sh/ruff) and [pyright](https://github.com/microsoft/pyright).
+Please make sure that your code passes those two commands before you submit a pull request.
+
+```bash
+ruff check src/ tests/
+pyright .
+```
+
 ## Running Tests
 
 To run tests:
