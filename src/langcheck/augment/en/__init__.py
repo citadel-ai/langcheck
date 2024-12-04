@@ -6,6 +6,7 @@ from langcheck.augment.en._ocr_typo import ocr_typo
 from langcheck.augment.en._payload_splitting import payload_splitting
 from langcheck.augment.en._remove_punctuation import remove_punctuation
 from langcheck.augment.en._rephrase import rephrase
+from langcheck.augment.en._roleplay import roleplay
 from langcheck.augment.en._synonym import synonym
 from langcheck.augment.en._to_full_width import to_full_width
 
@@ -18,6 +19,7 @@ __all__ = [
     "payload_splitting",
     "remove_punctuation",
     "rephrase",
+    "roleplay",
     "synonym",
     "to_full_width",
 ]
