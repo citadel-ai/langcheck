@@ -255,6 +255,8 @@ class EvalClient:
             for _ in range(num_perturbations)
         ]
 
-        responses = self.get_text_responses(populated_prompts)
+        responses = self.get_text_responses(
+            populated_prompts, tqdm_description="Getting responses"
+        )
 
         return responses
