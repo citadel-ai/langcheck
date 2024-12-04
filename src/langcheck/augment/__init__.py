@@ -3,12 +3,12 @@ from langcheck.augment.en import (
     change_case,
     gender,
     jailbreak_template,
+    justify_request,
     keyboard_typo,
     ocr_typo,
     payload_splitting,
     remove_punctuation,
     rephrase,
-    roleplay,
     synonym,
     to_full_width,
 )
@@ -23,7 +23,7 @@ __all__ = [
     "payload_splitting",
     "remove_punctuation",
     "rephrase",
-    "roleplay",
+    "justify_request",
     "synonym",
     "to_full_width",
 ]

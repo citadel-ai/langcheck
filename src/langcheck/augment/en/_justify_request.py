@@ -5,7 +5,7 @@ from langcheck.metrics.eval_clients import (
 )
 
 
-def roleplay(
+def justify_request(
     instances: list[str] | str,
     user_role: str,
     *,
@@ -30,7 +30,7 @@ def roleplay(
     """
 
     prompt_template = eval_client.load_prompt_template(
-        language="en", metric_name="roleplay"
+        language="en", metric_name="justify_request"
     )
 
     instances = [instances] if isinstance(instances, str) else instances
