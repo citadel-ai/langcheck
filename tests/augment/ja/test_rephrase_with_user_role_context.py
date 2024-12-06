@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 from openai.types.chat import ChatCompletion
 
-from langcheck.augment.ja import justify_request
+from langcheck.augment.ja import rephrase_with_user_role_context
 from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
@@ -33,7 +33,7 @@ RESPONSE_2 = "私は学生で、フランスの地理について学んでいま
         ),
     ],
 )
-def test_justify_request(
+def test_rephrase_with_user_role_context(
     instances: list[str] | str,
     user_role: str,
     num_perturbations: int,
@@ -55,7 +55,7 @@ def test_justify_request(
         # Set the necessary env vars for the 'openai' model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         openai_client = OpenAIEvalClient()
-        actual = justify_request(
+        actual = rephrase_with_user_role_context(
             instances,
             user_role,
             num_perturbations=num_perturbations,
@@ -74,7 +74,7 @@ def test_justify_request(
         azure_openai_client = AzureOpenAIEvalClient(
             embedding_model_name="foo bar"
         )
-        actual = justify_request(
+        actual = rephrase_with_user_role_context(
             instances,
             user_role,
             num_perturbations=num_perturbations,

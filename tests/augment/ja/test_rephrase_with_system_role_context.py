@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 from openai.types.chat import ChatCompletion
 
-from langcheck.augment.ja import roleplay
+from langcheck.augment.ja import rephrase_with_system_role_context
 from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
@@ -33,7 +33,7 @@ RESPONSE_2 = "あなたは先生で、学生に地理の知識を教える責任
         ),
     ],
 )
-def test_roleplay(
+def test_rephrase_with_system_role_context(
     instances: list[str] | str,
     system_role: str,
     num_perturbations: int,
@@ -55,7 +55,7 @@ def test_roleplay(
         # Set the necessary env vars for the 'openai' model type
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         openai_client = OpenAIEvalClient()
-        actual = roleplay(
+        actual = rephrase_with_system_role_context(
             instances,
             system_role,
             num_perturbations=num_perturbations,
@@ -74,7 +74,7 @@ def test_roleplay(
         azure_openai_client = AzureOpenAIEvalClient(
             embedding_model_name="foo bar"
         )
-        actual = roleplay(
+        actual = rephrase_with_system_role_context(
             instances,
             system_role,
             num_perturbations=num_perturbations,
