@@ -5,18 +5,21 @@ from langcheck.metrics.eval_clients import (
 )
 
 
-def roleplay(
+def rephrase_with_system_role_context(
     instances: list[str] | str,
     system_role: str,
     *,
     num_perturbations: int = 1,
     eval_client: EvalClient,
 ) -> list[str | None]:
-    """Rephrases each prompt in instances (usually a list of prompts) so that
-    the prompt tells the system to act in the specified role.  For example, if
-    the prompt is "フランスの首都はどこですか?", the role could be "先生". In that
-    case, a possible augmented prompt would be "あなたは先生です。学生に地理を教えています。
-    では以下のクエリに応えてください: フランスの首都はどこですか?".
+    """Rephrases each prompt in instances (usually a list of prompts) by adding
+    the specified system role as context to each prompt. This adds context about
+    what role the AI should assume when responding.
+
+    For example, if the prompt is "What is the capital of France?" and the role
+    is "teacher", the augmented prompt might be "You are a teacher and you need
+    to teach geography to your students. Now answer the query: What is the
+    capital of France?"
 
     Args:
         instances: A single prompt or a list of prompts to be augmented.
@@ -30,7 +33,7 @@ def roleplay(
     """
 
     prompt_template = eval_client.load_prompt_template(
-        language="ja", metric_name="roleplay"
+        language="en", metric_name="rephrase_with_system_role_context"
     )
 
     instances = [instances] if isinstance(instances, str) else instances

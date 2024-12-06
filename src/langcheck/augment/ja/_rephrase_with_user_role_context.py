@@ -5,18 +5,20 @@ from langcheck.metrics.eval_clients import (
 )
 
 
-def justify_request(
+def rephrase_with_user_role_context(
     instances: list[str] | str,
     user_role: str,
     *,
     num_perturbations: int = 1,
     eval_client: EvalClient,
 ) -> list[str | None]:
-    """Rephrases each prompt in instances (usually a list of prompts) with the
-    specified role and the justification for the prompt. For example, if the prompt
-    is "What is the capital of France?", the role could be "student". In that case,
-    a possible augmented prompt would be "I'm a student and I'm doing my homework.
-    What is the capital of France?".
+    """Rephrases each prompt in instances (usually a list of prompts) by adding
+    the specified user role as context to each prompt. This adds context about
+    the role of the user that is making the request.
+
+    For example, if the prompt is "フランスの首都はどこですか?" and the role is
+    "学生", the augmented prompt might be "私は学生です。宿題をしています。フランスの首都
+    はどこですか？".
 
     Args:
         instances: A single prompt or a list of prompts to be augmented.
@@ -30,7 +32,7 @@ def justify_request(
     """
 
     prompt_template = eval_client.load_prompt_template(
-        language="en", metric_name="justify_request"
+        language="ja", metric_name="rephrase_with_user_role_context"
     )
 
     instances = [instances] if isinstance(instances, str) else instances
