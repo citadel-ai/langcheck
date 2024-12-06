@@ -505,6 +505,7 @@ def prompt_leakage(
     generated_outputs: list[str] | str,
     system_prompts: list[str] | str,
     eval_model: EvalClient,
+    eval_prompt_version: str = "v2",
 ) -> MetricValue[float | None]:
     """Calculates the severity of prompt leakage in the generated outputs.
     This metric takes on float values of either 0.0 (Low Risk),
@@ -513,6 +514,10 @@ def prompt_leakage(
 
     We currently only support the evaluation based on an EvalClient.
     """
+    if eval_prompt_version not in ["v1", "v2"]:
+        raise ValueError(
+            f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are 'v1' and 'v2'."
+        )
     metric_inputs = get_metric_inputs(
         generated_outputs=generated_outputs,
         additional_inputs={
@@ -527,7 +532,9 @@ def prompt_leakage(
     metric_name = "prompt_leakage"
 
     prompt_leakage_template = eval_model.load_prompt_template(
-        language=LANG, metric_name=metric_name
+        language=LANG,
+        metric_name=metric_name,
+        eval_prompt_version=eval_prompt_version,
     )
 
     return eval_model.compute_metric_values_from_template(

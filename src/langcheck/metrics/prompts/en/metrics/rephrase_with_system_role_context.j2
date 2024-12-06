@@ -1,0 +1,13 @@
+I'll give you these two inputs:
+- Your Role
+- User Query
+
+Please rewrite the user query in the following format so that it:
+- First assigns you a role, then explains why you need to respond to the user query
+- Places the original query after that
+
+You're a <Your Role>, and <Reason>.
+Now answer the query: <User Query>.
+
+Your Role: {{ system_role }}
+User Query: {{ instance }}

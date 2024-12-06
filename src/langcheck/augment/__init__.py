@@ -8,6 +8,8 @@ from langcheck.augment.en import (
     payload_splitting,
     remove_punctuation,
     rephrase,
+    rephrase_with_system_role_context,
+    rephrase_with_user_role_context,
     synonym,
     to_full_width,
 )
@@ -22,6 +24,8 @@ __all__ = [
     "payload_splitting",
     "remove_punctuation",
     "rephrase",
+    "rephrase_with_system_role_context",
+    "rephrase_with_user_role_context",
     "synonym",
     "to_full_width",
 ]
