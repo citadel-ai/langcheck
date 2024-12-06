@@ -14,7 +14,7 @@ def justify_request(
 ) -> list[str | None]:
     """Rephrases each prompt in instances (usually a list of prompts) with the
     specified role and the justification for the prompt. For example, if the prompt
-    is "フランスの首都はどこですか?", the role could be "学生" In that,
+    is "フランスの首都はどこですか?", the role could be "学生". In that case,
     a possible augmented prompt would be "私は学生です。宿題をしています。
     フランスの首都はどこですか?".
 
@@ -23,7 +23,7 @@ def justify_request(
         user_role: The role of the user in the prompt.
         num_perturbations: The number of perturbed instances to generate for
             each string in instances
-        eval_model: The type of model to use.
+        eval_client: The type of model to use.
 
     Returns:
         A list of rephrased instances.
