@@ -73,7 +73,7 @@ To make documentation:
 
 To publish a new version of LangCheck:
 
-1. Increment the version in `pyproject.toml`
+1. Increment the version in `pyproject.toml` and `src/langcheck/__init__.py`
 
 2. Cut a new release on GitHub with release notes
 
