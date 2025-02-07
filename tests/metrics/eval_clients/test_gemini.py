@@ -17,9 +17,10 @@ def test_get_text_response_gemini():
     mock_response.candidates = [Mock(finish_reason=1)]
     # Calling the google.generativeai.GenerativeModel.generate_content method
     # requires a Google API key, so we mock the return value instead
-    with patch("google.generativeai.GenerativeModel.generate_content",
-               return_value=mock_response):
-
+    with patch(
+        "google.generativeai.GenerativeModel.generate_content",
+        return_value=mock_response,
+    ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
         client = GeminiEvalClient()
@@ -41,28 +42,30 @@ def test_get_float_score_gemini(language):
     mock_response.text = short_assessment_result
 
     class FunctionCallMock(Mock):
-
         @classmethod
         def to_dict(cls, instance):
             return {"args": {"assessment": short_assessment_result}}
 
     mock_response.candidates = [
-        Mock(finish_reason=1,
-             content=Mock(parts=[Mock(function_call=FunctionCallMock())]))
+        Mock(
+            finish_reason=1,
+            content=Mock(parts=[Mock(function_call=FunctionCallMock())]),
+        )
     ]
 
     # Calling the google.generativeai.GenerativeModel.generate_content method
     # requires a Google API key, so we mock the return value instead
-    with patch("google.generativeai.GenerativeModel.generate_content",
-               return_value=mock_response):
-
+    with patch(
+        "google.generativeai.GenerativeModel.generate_content",
+        return_value=mock_response,
+    ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
         client = GeminiEvalClient()
 
-        scores = client.get_float_score("dummy_metric", language,
-                                        unstructured_assessment_result,
-                                        score_map)
+        scores = client.get_float_score(
+            "dummy_metric", language, unstructured_assessment_result, score_map
+        )
         assert len(scores) == len(unstructured_assessment_result)
         for score in scores:
             assert score == 1.0
@@ -73,14 +76,17 @@ def test_similarity_scorer_gemini():
 
     # Calling the google.generativeai.embed_content method requires a Google
     # API key, so we mock the return value instead
-    with patch("google.generativeai.embed_content",
-               Mock(return_value=mock_embedding_response)):
+    with patch(
+        "langcheck.metrics.eval_clients._gemini.embed_content",
+        Mock(return_value=mock_embedding_response),
+    ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
         gemini_client = GeminiEvalClient()
         scorer = gemini_client.similarity_scorer()
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the similarity score should be 1.
-        score = scorer.score(["The cat sat on the mat."],
-                             ["The cat sat on the mat."])
+        score = scorer.score(
+            ["The cat sat on the mat."], ["The cat sat on the mat."]
+        )
         assert 0.99 <= score[0] <= 1

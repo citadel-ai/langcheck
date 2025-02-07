@@ -5,8 +5,10 @@ from collections.abc import Iterable
 from typing import Any
 
 import google.ai.generativelanguage as glm
-import google.generativeai as genai
 import torch
+from google.generativeai.client import configure
+from google.generativeai.embedding import embed_content
+from google.generativeai.generative_models import GenerativeModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -20,7 +22,7 @@ class GeminiEvalClient(EvalClient):
 
     def __init__(
         self,
-        model: genai.GenerativeModel | None = None,
+        model: GenerativeModel | None = None,
         model_args: dict[str, Any] | None = None,
         generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
@@ -49,9 +51,9 @@ class GeminiEvalClient(EvalClient):
         if model:
             self._model = model
         else:
-            genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+            configure(api_key=os.getenv("GOOGLE_API_KEY"))
             model_args = model_args or {}
-            self._model = genai.GenerativeModel(**model_args)
+            self._model = GenerativeModel(**model_args)
 
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
@@ -234,7 +236,7 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the Gemini API."""
         # Embed the inputs
-        embed_response = genai.embed_content(
+        embed_response = embed_content(
             model=self.embed_model_name, content=inputs
         )
 
