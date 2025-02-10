@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+from pathlib import Path
 
 from langcheck.metrics.prompts._utils import get_template
 
@@ -14,6 +15,7 @@ def jailbreak_template_common(
     num_perturbations: int = 1,
     randomize_order: bool = True,
     seed: int | None = None,
+    custom_templates: list[tuple[str, str]] | None = None,
 ) -> list[str]:
     """Applies jailbreak templates to each string in instances.
 
@@ -31,6 +33,7 @@ def jailbreak_template_common(
             of templates.
         seed: The seed for the random number generator. You can fix the seed to
             deterministically select the same templates.
+        custom_templates: A list of tuples of names and paths to custom Jinja2 templates.
 
     Returns:
         A list of perturbed instances.
@@ -43,6 +46,18 @@ def jailbreak_template_common(
 
     if templates is None:
         templates = available_templates
+
+    if custom_templates is not None:
+        for template_name, path_to_template in custom_templates:
+            # validation
+            if template_name in available_templates:
+                raise ValueError(f"A template with the name {template_name} already exists!")
+            template_file = Path(path_to_template)
+            if not template_file.exists():
+                raise ValueError(f"Custom template file {path_to_template} does not exist!")
+            if not path_to_template.endswith(".j2"):
+                raise ValueError("The custom template file must be a Jinja2 template file with the extension '.j2'!")
+            available_templates.append(template_name)
 
     # Validation on the length of templates and num_perturbations
     if num_perturbations > len(templates):
@@ -69,9 +84,13 @@ def jailbreak_template_common(
             selected_templates = templates
 
         for template_name in selected_templates:
-            template = get_template(
-                f"{language}/jailbreak_templates/{template_name}.j2"
-            )
+            # if the template is from custom_templates, fetch the path from there
+            if custom_templates is not None and any(name == template_name for name, _ in custom_templates):
+                template = get_template(next(path for name, path in custom_templates if name == template_name))
+            else:
+                template = get_template(
+                    f"{language}/jailbreak_templates/{template_name}.j2"
+                )
             perturbed_instances.append(
                 template.render({"input_query": instance})
             )

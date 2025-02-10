@@ -28,6 +28,7 @@ def jailbreak_template(
     num_perturbations: int = 1,
     randomize_order: bool = True,
     seed: int | None = None,
+    custom_templates: list[tuple[str, str]] | None = None,
 ) -> list[str]:
     """Applies jailbreak templates to each string in instances.
 
@@ -60,4 +61,5 @@ def jailbreak_template(
         num_perturbations=num_perturbations,
         randomize_order=randomize_order,
         seed=seed,
+        custom_templates=custom_templates,
     )
