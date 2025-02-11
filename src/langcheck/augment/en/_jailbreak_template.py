@@ -49,6 +49,9 @@ def jailbreak_template(
             of templates.
         seed: The seed for the random number generator. You can fix the seed to
             deterministically select the same templates.
+        custom_templates: A list of tuples of names and paths to custom Jinja2
+            templates. The template should contain an `{{input_query}}` placeholder,
+            which will be replaced by the input query.
 
     Returns:
         A list of perturbed instances.

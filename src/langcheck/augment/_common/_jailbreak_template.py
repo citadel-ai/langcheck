@@ -37,7 +37,7 @@ def jailbreak_template_common(
             deterministically select the same templates.
         custom_templates: A list of tuples of names and paths to custom Jinja2
             templates. The template should contain an `{{input_query}}` placeholder,
-            Which will be replaced by the input query. The path should be absolute.
+            which will be replaced by the input query.
 
     Returns:
         A list of perturbed instances.
