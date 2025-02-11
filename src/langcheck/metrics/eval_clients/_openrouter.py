@@ -26,6 +26,9 @@ class OpenRouterEvalClient(EvalClient):
             ``client.chat.completions.create`` function.
         """
 
+        if os.getenv("OPENROUTER_API_KEY") is None:
+            raise ValueError("OPENROUTER_API_KEY not set!")
+
         self._openrouter_args = openrouter_args
 
     def _call_api(
@@ -47,7 +50,7 @@ class OpenRouterEvalClient(EvalClient):
                 response = requests.post(
                     url="https://openrouter.ai/api/v1/chat/completions",
                     headers={
-                        "Authorization": f"Bearer {os.getenv("OPENROUTER_API_KEY")}",
+                        "Authorization": "Bearer " + (os.getenv("OPENROUTER_API_KEY") or ""),
                        },
                     data=json.dumps(generate_json_dumps(prompt)))
                 responses.append(response.json())
