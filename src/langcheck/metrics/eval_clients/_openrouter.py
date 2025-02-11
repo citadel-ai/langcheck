@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import os
-import requests
 from collections.abc import Iterable
 from typing import Any
 
+import requests
+
 from ..prompts._utils import get_template
 from ._base import EvalClient
+
 
 class OpenRouterEvalClient(EvalClient):
     """EvalClient defined for the OpenRouter API."""
@@ -32,23 +33,24 @@ class OpenRouterEvalClient(EvalClient):
         prompts: Iterable[str | None],
         config: dict[str, str],
     ) -> list[Any]:
-        def generate_json_dumps(prompt: str) -> dict[str, str]:
+        def generate_json_dumps(prompt: str):
             msg_dict = {
                 "messages": [{
                     "role": "user",
                     "content": prompt,
                 }]
             }
-            return config | msg_dict
+            return msg_dict | config
         responses = []
         for prompt in prompts:
-            response = requests.post(
-                url="https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {os.getenv("OPENROUTER_API_KEY")}",
-                   },
-                data=json.dumps(generate_json_dumps(prompt)))
-            responses.append(response.json())
+            if prompt is not None:
+                response = requests.post(
+                    url="https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {os.getenv("OPENROUTER_API_KEY")}",
+                       },
+                    data=json.dumps(generate_json_dumps(prompt)))
+                responses.append(response.json())
 
         return responses
 
@@ -73,7 +75,7 @@ class OpenRouterEvalClient(EvalClient):
             config=config,
         )
         response_texts = [
-            response['choices'][0]['message']['content'] if response else None
+            response["choices"][0]["message"]["content"] if response else None
             for response in responses
         ]
 
@@ -128,7 +130,7 @@ class OpenRouterEvalClient(EvalClient):
         config.update(self._openrouter_args or {})
         responses = self._call_api(prompts, config)
         raw_response_texts = [
-            response['choices'][0]['message']['content'] if response else None
+            response["choices"][0]["message"]["content"] if response else None
             for response in responses
         ]
 
