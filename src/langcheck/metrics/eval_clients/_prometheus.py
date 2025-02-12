@@ -25,6 +25,8 @@ class PrometheusEvalClient(EvalClient):
         torch_dtype: str = "bfloat16",
         tensor_parallel_size: int = 1,
         device: str = "cuda",
+        *,
+        system_prompt: str | None = None,
     ):
         """
         Initilize the Prometheus evaluation client.
@@ -35,6 +37,8 @@ class PrometheusEvalClient(EvalClient):
             tensor_parallel_size: The number of GPUs to use for distributed
             execution with tensor parallelism.
             device: The device to load the model on.
+            system_prompt: The system prompt to use. If not provided, no
+                system prompt will be used.
         """
         self._model = LLM(
             model=model_name,
@@ -50,6 +54,7 @@ class PrometheusEvalClient(EvalClient):
             max_tokens=1000,
             skip_special_tokens=True,
         )
+        self._system_prompt = system_prompt
 
     def load_prompt_template(
         self,
@@ -98,7 +103,19 @@ class PrometheusEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        messages = [[{"role": "user", "content": prompt}] for prompt in prompts]
+        if self._system_prompt is None:
+            messages = [
+                [{"role": "user", "content": prompt}] for prompt in prompts
+            ]
+        else:
+            messages = [
+                [
+                    {"role": "system", "content": self._system_prompt},
+                    {"role": "user", "content": prompt},
+                ]
+                for prompt in prompts
+            ]
+
         processed_prompts = self._tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
