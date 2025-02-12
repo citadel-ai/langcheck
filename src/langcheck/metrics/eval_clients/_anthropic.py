@@ -33,6 +33,8 @@ class AnthropicEvalClient(EvalClient):
             anthropic_args: (Optional) dict of additional args to pass in to
                 the ``client.messages.create`` function
             use_async: (Optional) If True, the async client will be used.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                no system prompt will be used.
         """
         if anthropic_client:
             self._client = anthropic_client
