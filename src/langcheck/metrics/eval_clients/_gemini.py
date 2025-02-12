@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import warnings
 from collections.abc import Iterable
 from typing import Any
 
@@ -61,6 +62,11 @@ class GeminiEvalClient(EvalClient):
             self._structured_assessment_model = GenerativeModel(**model_args)
             # Only add system prompt to the text response model if it is provided
             if system_prompt:
+                if "system_instruction" in model_args:
+                    warnings.warn(
+                        '"system_instruction" of model_args will be ignored because '
+                        "system_prompt is provided."
+                    )
                 model_args["system_instruction"] = system_prompt
             self._text_response_model = GenerativeModel(**model_args)
 
