@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from collections.abc import Iterable
 from typing import Any
 
@@ -46,6 +47,12 @@ class AnthropicEvalClient(EvalClient):
         self._anthropic_args = anthropic_args or {}
         self._use_async = use_async
         self._system_prompt = system_prompt
+
+        if system_prompt and "system" in self._anthropic_args:
+            warnings.warn(
+                '"system" of anthropic_args will be ignored because '
+                "system_prompt is provided."
+            )
 
     def _call_api(
         self,
