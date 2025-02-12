@@ -3,11 +3,13 @@ from langcheck.metrics.eval_clients._openai import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
 )
+from langcheck.metrics.eval_clients._openrouter import OpenRouterEvalClient
 
 __all__ = [
     "AzureOpenAIEvalClient",
     "EvalClient",
     "OpenAIEvalClient",
+    "OpenRouterEvalClient",
 ]
 
 try:
@@ -40,13 +42,3 @@ except ModuleNotFoundError:
 else:
     __all__.append("PrometheusEvalClient")
     __all__.append("LlamaEvalClient")
-
-try:
-    from langcheck.metrics.eval_clients._openrouter import (
-        OpenRouterEvalClient,  # NOQA: F401
-    )
-except ModuleNotFoundError:
-    pass
-else:
-    __all__.append("OpenRouterEvalClient")
-
