@@ -63,7 +63,7 @@ class LlamaEvalClient(EvalClient):
             skip_special_tokens=True,
         )
         self._system_prompt = system_prompt
-        self._system_prompts = {
+        self._default_system_prompts = {
             "en": "You are a helpful and competent assistant.",
             "ja": "あなたは誠実で優秀な日本人のアシスタントです。以下は、タスクを説明する指示です。要求を適切に満たす応答を日本語で書きなさい。",
         }
@@ -86,7 +86,7 @@ class LlamaEvalClient(EvalClient):
             raise ValueError(f"Unsupported language: {language}")
 
         if self._system_prompt is None:
-            system_prompt = self._system_prompts[language]
+            system_prompt = self._default_system_prompts[language]
         else:
             system_prompt = self._system_prompt
 
@@ -167,7 +167,7 @@ class LlamaEvalClient(EvalClient):
             [
                 {
                     "role": "system",
-                    "content": self._system_prompts[language],
+                    "content": self._default_system_prompts[language],
                 },
                 {
                     "role": "user",

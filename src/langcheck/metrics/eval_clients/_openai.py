@@ -68,14 +68,14 @@ class OpenAIEvalClient(EvalClient):
             except Exception as e:
                 return e
 
-        common_messages = []
+        system_message = []
         if system_prompt:
-            common_messages.append({"role": "system", "content": system_prompt})
+            system_message.append({"role": "system", "content": system_prompt})
 
         # Call API with different seed values for each prompt.
         model_inputs = [
             {
-                "messages": common_messages
+                "messages": system_message
                 + [{"role": "user", "content": prompt}],
                 "seed": i,
                 **config,
