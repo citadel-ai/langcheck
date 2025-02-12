@@ -7,6 +7,8 @@ from typing import Any
 
 import requests
 
+from langcheck.utils.progress_bar import tqdm_wrapper
+
 from ..prompts._utils import get_template
 from ._base import EvalClient
 
@@ -35,6 +37,8 @@ class OpenRouterEvalClient(EvalClient):
         self,
         prompts: Iterable[str | None],
         config: dict[str, str],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[Any]:
         def generate_json_dumps(prompt: str):
             msg_dict = {
@@ -45,12 +49,12 @@ class OpenRouterEvalClient(EvalClient):
             }
             return msg_dict | config
         responses = []
-        for prompt in prompts:
+        for prompt in tqdm_wrapper(prompts, desc=tqdm_description):
             if prompt is not None:
                 response = requests.post(
                     url="https://openrouter.ai/api/v1/chat/completions",
                     headers={
-                        "Authorization": "Bearer " + (os.getenv("OPENROUTER_API_KEY") or ""),
+                        "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
                        },
                     data=json.dumps(generate_json_dumps(prompt)))
                 responses.append(response.json())
@@ -60,6 +64,8 @@ class OpenRouterEvalClient(EvalClient):
     def get_text_responses(
         self,
         prompts: Iterable[str],
+        *,
+        tqdm_description: str | None = None
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
         The user's default OpenRouter model is used by default, but you can
@@ -73,9 +79,11 @@ class OpenRouterEvalClient(EvalClient):
             evaluation fails.
         """
         config = self._openrouter_args or {}
+        tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
             prompts=prompts,
             config=config,
+            tqdm_description=tqdm_description,
         )
         response_texts = [
             response["choices"][0]["message"]["content"] if response else None
@@ -90,6 +98,8 @@ class OpenRouterEvalClient(EvalClient):
         language: str,
         unstructured_assessment_result: list[str | None],
         score_map: dict[str, float],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores.
@@ -101,6 +111,7 @@ class OpenRouterEvalClient(EvalClient):
                 for the given assessment prompts.
             score_map: The mapping from the short assessment results
                 (e.g. "Good") to the scores.
+            tqdm_description: The description to be shown in the tqdm bar.
         Returns:
             A list of scores for the given prompts. The scores can be None if
             the evaluation fails.
@@ -131,7 +142,8 @@ class OpenRouterEvalClient(EvalClient):
             prompts = [prompt for prompt in get_score_prompts if prompt is not None]
         config = {}
         config.update(self._openrouter_args or {})
-        responses = self._call_api(prompts, config)
+        tqdm_description = tqdm_description or "Scores (2/2)"
+        responses = self._call_api(prompts, config, tqdm_description=tqdm_description)
         raw_response_texts = [
             response["choices"][0]["message"]["content"] if response else None
             for response in responses
