@@ -26,6 +26,8 @@ class GeminiEvalClient(EvalClient):
         model_args: dict[str, Any] | None = None,
         generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
+        *,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the Gemini evaluation client. The authentication
@@ -47,12 +49,16 @@ class GeminiEvalClient(EvalClient):
                 ``generate_content`` function.
             embed_model_name: (Optional) The name of the embedding model to use.
                 If not provided, the models/embedding-001 model will be used.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                no system prompt will be used.
         """
         if model:
             self._model = model
         else:
             configure(api_key=os.getenv("GOOGLE_API_KEY"))
             model_args = model_args or {}
+            if system_prompt:
+                model_args["system_instruction"] = system_prompt
             self._model = GenerativeModel(**model_args)
 
         self._generate_content_args = generate_content_args or {}

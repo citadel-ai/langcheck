@@ -26,6 +26,7 @@ class OpenAIEvalClient(EvalClient):
         openai_args: dict[str, str] | None = None,
         *,
         use_async: bool = False,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the OpenAI evaluation client.
@@ -35,6 +36,8 @@ class OpenAIEvalClient(EvalClient):
             openai_args: (Optional) dict of additional args to pass in to the
             ``client.chat.completions.create`` function.
             use_async: (Optional) If True, the async client will be used.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                no system prompt will be used.
         """
         if openai_client:
             self._client = openai_client
@@ -45,6 +48,7 @@ class OpenAIEvalClient(EvalClient):
 
         self._openai_args = openai_args
         self._use_async = use_async
+        self._system_prompt = system_prompt
 
     def _call_api(
         self,
@@ -52,6 +56,7 @@ class OpenAIEvalClient(EvalClient):
         config: dict[str, str],
         *,
         tqdm_description: str | None = None,
+        system_prompt: str | None = None,
     ) -> list[Any]:
         # A helper function to call the API with exception filter for alignment
         # of exception handling with the async version.
@@ -63,10 +68,15 @@ class OpenAIEvalClient(EvalClient):
             except Exception as e:
                 return e
 
+        common_messages = []
+        if system_prompt:
+            common_messages.append({"role": "system", "content": system_prompt})
+
         # Call API with different seed values for each prompt.
         model_inputs = [
             {
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": common_messages
+                + [{"role": "user", "content": prompt}],
                 "seed": i,
                 **config,
             }
@@ -131,6 +141,7 @@ class OpenAIEvalClient(EvalClient):
             prompts=prompts,
             config=config,
             tqdm_description=tqdm_description,
+            system_prompt=self._system_prompt,
         )
         response_texts = [
             response.choices[0].message.content if response else None
@@ -169,7 +180,10 @@ class OpenAIEvalClient(EvalClient):
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Getting log likelihoods"
         responses = self._call_api(
-            prompts=prompts, config=config, tqdm_description=tqdm_description
+            prompts=prompts,
+            config=config,
+            tqdm_description=tqdm_description,
+            system_prompt=self._system_prompt,
         )
         response_texts_with_log_likelihood = []
         for response in responses:
@@ -328,6 +342,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         openai_args: dict[str, str] | None = None,
         *,
         use_async: bool = False,
+        system_prompt: str | None = None,
     ):
         """
         Intialize the Azure OpenAI evaluation client.
@@ -345,6 +360,8 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             openai_args: (Optional) dict of additional args to pass in to the
             ``client.chat.completions.create`` function
             use_async: (Optional) If True, the async client will be used.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                no system prompt will be used.
         """
         assert (
             text_model_name is not None or embedding_model_name is not None
@@ -368,6 +385,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         self._text_model_name = text_model_name
         self._embedding_model_name = embedding_model_name
         self._openai_args = openai_args or {}
+        self._system_prompt = system_prompt
 
         if self._text_model_name is not None:
             self._openai_args["model"] = self._text_model_name
@@ -411,31 +429,31 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         self._use_async = use_async
 
     async def _async_embed(self, inputs: list[str]) -> CreateEmbeddingResponse:
-      """Embed the inputs using the OpenAI API in async mode."""
-      assert isinstance(self.openai_client, AsyncOpenAI)
-      if self.openai_args:
-          responses = await self.openai_client.embeddings.create(
-              input=inputs, **self.openai_args
-          )
-      else:
-          responses = await self.openai_client.embeddings.create(
-              input=inputs, model="text-embedding-3-small"
-          )
-      return responses
-      
+        """Embed the inputs using the OpenAI API in async mode."""
+        assert isinstance(self.openai_client, AsyncOpenAI)
+        if self.openai_args:
+            responses = await self.openai_client.embeddings.create(
+                input=inputs, **self.openai_args
+            )
+        else:
+            responses = await self.openai_client.embeddings.create(
+                input=inputs, model="text-embedding-3-small"
+            )
+        return responses
+
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the OpenAI API."""
 
         # TODO: Fix that this async call could be much slower than the sync
         # version. https://github.com/citadel-ai/langcheck/issues/160
         if self._use_async:
-          try:
-            loop = asyncio.get_event_loop()
-          except RuntimeError:  # pragma: py-lt-310
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-          embed_response = loop.run_until_complete(self._async_embed(inputs))
-          embeddings = [item.embedding for item in embed_response.data]
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:  # pragma: py-lt-310
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            embed_response = loop.run_until_complete(self._async_embed(inputs))
+            embeddings = [item.embedding for item in embed_response.data]
         else:
             assert isinstance(self.openai_client, OpenAI)
 

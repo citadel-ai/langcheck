@@ -21,6 +21,7 @@ class AnthropicEvalClient(EvalClient):
         anthropic_args: dict[str, Any] | None = None,
         *,
         use_async: bool = False,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the Anthropic evaluation client. The authentication
@@ -42,12 +43,14 @@ class AnthropicEvalClient(EvalClient):
 
         self._anthropic_args = anthropic_args or {}
         self._use_async = use_async
+        self._system_prompt = system_prompt
 
     def _call_api(
         self,
         prompts: Iterable[str | None],
         config: dict[str, Any],
         *,
+        system_prompt: str | None = None,
         tqdm_description: str | None = None,
     ) -> list[Any]:
         # A helper function to call the API with exception filter for alignment
@@ -60,8 +63,14 @@ class AnthropicEvalClient(EvalClient):
             except Exception as e:
                 return e
 
+        if system_prompt:
+            config["system"] = system_prompt
+
         model_inputs = [
-            {"messages": [{"role": "user", "content": prompt}], **config}
+            {
+                "messages": [{"role": "user", "content": prompt}],
+                **config,
+            }
             for prompt in prompts
         ]
 
@@ -121,7 +130,10 @@ class AnthropicEvalClient(EvalClient):
         config.update(self._anthropic_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
-            prompts=prompts, config=config, tqdm_description=tqdm_description
+            prompts=prompts,
+            config=config,
+            tqdm_description=tqdm_description,
+            system_prompt=self._system_prompt,
         )
         response_texts = [
             response.content[0].text if response else None
