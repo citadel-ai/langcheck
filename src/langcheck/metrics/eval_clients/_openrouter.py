@@ -19,6 +19,8 @@ class OpenRouterEvalClient(EvalClient):
     def __init__(
         self,
         openrouter_args: dict[str, str] | None = None,
+        *,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the OpenRouter evaluation client.
@@ -26,13 +28,16 @@ class OpenRouterEvalClient(EvalClient):
         Args:
             openrouter_args: (Optional) dict of additional args to pass in to the
             ``client.chat.completions.create`` function.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                no system prompt will be used.
         """
 
         if os.getenv("OPENROUTER_API_KEY") is None:
             raise ValueError("OPENROUTER_API_KEY not set!")
 
         self._openrouter_args = openrouter_args
-
+        self._system_prompt = system_prompt
+       
     def _call_api(
         self,
         prompts: Iterable[str | None],
@@ -41,8 +46,14 @@ class OpenRouterEvalClient(EvalClient):
         tqdm_description: str | None = None,
     ) -> list[Any]:
         def generate_json_dumps(prompt: str):
+            system_message = [] if not self._system_prompt else [
+                {
+                    "role": "system",
+                    "content": self._system_prompt,
+                }
+            ]
             msg_dict = {
-                "messages": [{
+                "messages": system_message + [{
                     "role": "user",
                     "content": prompt,
                 }]
