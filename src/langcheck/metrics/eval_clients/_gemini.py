@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import warnings
 from collections.abc import Iterable
 from typing import Any
 
@@ -26,6 +27,8 @@ class GeminiEvalClient(EvalClient):
         model_args: dict[str, Any] | None = None,
         generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
+        *,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the Gemini evaluation client. The authentication
@@ -47,19 +50,32 @@ class GeminiEvalClient(EvalClient):
                 ``generate_content`` function.
             embed_model_name: (Optional) The name of the embedding model to use.
                 If not provided, the models/embedding-001 model will be used.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                no system prompt will be used.
         """
         if model:
-            self._model = model
+            self._text_response_model = model
+            self._structured_assessment_model = model
         else:
             configure(api_key=os.getenv("GOOGLE_API_KEY"))
             model_args = model_args or {}
-            self._model = GenerativeModel(**model_args)
+            self._structured_assessment_model = GenerativeModel(**model_args)
+            # Only add system prompt to the text response model if it is provided
+            if system_prompt:
+                if "system_instruction" in model_args:
+                    warnings.warn(
+                        '"system_instruction" of model_args will be ignored because '
+                        "system_prompt is provided."
+                    )
+                model_args["system_instruction"] = system_prompt
+            self._text_response_model = GenerativeModel(**model_args)
 
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
 
     def _call_api(
         self,
+        model: GenerativeModel,
         prompts: Iterable[str | None],
         config: dict[str, Any],
         *,
@@ -69,7 +85,7 @@ class GeminiEvalClient(EvalClient):
         # of exception handling with the async version.
         def _call_api_with_exception_filter(prompt: str) -> Any:
             try:
-                return self._model.generate_content(prompt, **config)
+                return model.generate_content(prompt, **config)
             except Exception as e:
                 return e
 
@@ -109,7 +125,10 @@ class GeminiEvalClient(EvalClient):
         config.update(self._generate_content_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
-            prompts=prompts, config=config, tqdm_description=tqdm_description
+            model=self._text_response_model,
+            prompts=prompts,
+            config=config,
+            tqdm_description=tqdm_description,
         )
         response_texts = [
             response.text if response else None for response in responses
@@ -189,6 +208,7 @@ class GeminiEvalClient(EvalClient):
 
         tqdm_description = tqdm_description or "Scores (2/2)"
         responses = self._call_api(
+            model=self._structured_assessment_model,
             prompts=fn_call_messages,
             config=config_structured_assessments,
             tqdm_description=tqdm_description,

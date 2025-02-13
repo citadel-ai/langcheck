@@ -32,6 +32,8 @@ class LlamaEvalClient(EvalClient):
         torch_dtype: str = "bfloat16",
         tensor_parallel_size: int = 1,
         device: str = "cuda",
+        *,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the Llama evaluation client.
@@ -42,6 +44,8 @@ class LlamaEvalClient(EvalClient):
             tensor_parallel_size: The number of GPUs to use for distributed
             execution with tensor parallelism.
             device: The device to load the model on.
+            system_prompt: The system prompt to use. If not provided, default
+                system prompts based on the language will be used.
         """
         self._model = LLM(
             model=model_name,
@@ -58,7 +62,8 @@ class LlamaEvalClient(EvalClient):
             stop="<|eot_id|>",
             skip_special_tokens=True,
         )
-        self._system_prompts = {
+        self._system_prompt = system_prompt
+        self._default_system_prompts = {
             "en": "You are a helpful and competent assistant.",
             "ja": "あなたは誠実で優秀な日本人のアシスタントです。以下は、タスクを説明する指示です。要求を適切に満たす応答を日本語で書きなさい。",
         }
@@ -80,11 +85,16 @@ class LlamaEvalClient(EvalClient):
         if language not in ["en", "ja"]:
             raise ValueError(f"Unsupported language: {language}")
 
+        if self._system_prompt is None:
+            system_prompt = self._default_system_prompts[language]
+        else:
+            system_prompt = self._system_prompt
+
         messages = [
             [
                 {
                     "role": "system",
-                    "content": self._system_prompts[language],
+                    "content": system_prompt,
                 },
                 {
                     "role": "user",
@@ -157,7 +167,7 @@ class LlamaEvalClient(EvalClient):
             [
                 {
                     "role": "system",
-                    "content": self._system_prompts[language],
+                    "content": self._default_system_prompts[language],
                 },
                 {
                     "role": "user",
