@@ -23,6 +23,7 @@ dependencies = [
     'openai >= 1',
     'pandas >= 1',
     'plotly >= 5',
+    'requests',
     'rouge-score >= 0.1.2',
     'sentence-transformers >= 2',
     'sentencepiece>=0.1.95',

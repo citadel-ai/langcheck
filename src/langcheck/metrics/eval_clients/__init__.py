@@ -3,11 +3,13 @@ from langcheck.metrics.eval_clients._openai import (
     AzureOpenAIEvalClient,
     OpenAIEvalClient,
 )
+from langcheck.metrics.eval_clients._openrouter import OpenRouterEvalClient
 
 __all__ = [
     "AzureOpenAIEvalClient",
     "EvalClient",
     "OpenAIEvalClient",
+    "OpenRouterEvalClient",
 ]
 
 try:
