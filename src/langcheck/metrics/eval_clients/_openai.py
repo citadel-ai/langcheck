@@ -221,15 +221,15 @@ class OpenAIEvalClient(EvalClient):
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We leverage the
-        Structured Outputs API to extract the short assessment results from the
+        structured outputs API to extract the short assessment results from the
         unstructured assessments, so please make sure that the model you use
-        supports structured outputs.
-        (https://platform.openai.com/docs/guides/structured-outputs).
-        Also note that Structured Outputs API is available on OpenAI API version
-        of 2024-08-01-preview or later.
+        supports structured outputs (only available in OpenAI's latest LLMs
+        starting with GPT-4o). Also note that structured outputs API is only
+        available in OpenAI API version of 2024-08-01-preview or later (See the
+        References for more details).
 
-        Ref:
-            https://platform.openai.com/docs/guides/structured-outputs
+        References:
+            https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat
 
         Args:
             metric_name: The name of the metric to be used. (e.g. "toxicity")
