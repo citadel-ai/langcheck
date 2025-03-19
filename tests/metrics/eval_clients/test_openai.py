@@ -13,7 +13,8 @@ from langcheck.metrics.eval_clients import (
 )
 
 
-def test_get_text_response_openai():
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
+def test_get_text_response_openai(system_prompt):
     prompts = ["Assess the factual consistency of the generated output..."] * 2
     answer = "The output is fully factually consistent."
     mock_chat_completion = Mock(spec=ChatCompletion)
@@ -26,15 +27,16 @@ def test_get_text_response_openai():
     ):
         # Set the necessary env vars for the OpenAIEValClient
         os.environ["OPENAI_API_KEY"] = "dummy_key"
-        client = OpenAIEvalClient()
+        client = OpenAIEvalClient(system_prompt=system_prompt)
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == answer
 
 
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_openai(language):
+def test_get_float_score_openai(system_prompt, language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -61,7 +63,7 @@ def test_get_float_score_openai(language):
     ):
         # Set the necessary env vars for the OpenAIEValClient
         os.environ["OPENAI_API_KEY"] = "dummy_key"
-        client = OpenAIEvalClient()
+        client = OpenAIEvalClient(system_prompt=system_prompt)
 
         scores = client.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
@@ -71,7 +73,8 @@ def test_get_float_score_openai(language):
             assert score == 1.0
 
 
-def test_get_text_response_azure_openai():
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
+def test_get_text_response_azure_openai(system_prompt):
     prompts = ["Assess the factual consistency of the generated output..."] * 2
     answer = "The output is fully factually consistent."
     mock_chat_completion = Mock(spec=ChatCompletion)
@@ -87,14 +90,17 @@ def test_get_text_response_azure_openai():
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
 
-        client = AzureOpenAIEvalClient(text_model_name="foo bar")
+        client = AzureOpenAIEvalClient(
+            text_model_name="foo bar", system_prompt=system_prompt
+        )
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == answer
 
 
-def test_get_float_score_azure_openai():
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
+def test_get_float_score_azure_openai(system_prompt):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -123,7 +129,9 @@ def test_get_float_score_azure_openai():
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
-        client = AzureOpenAIEvalClient(text_model_name="foo bar")
+        client = AzureOpenAIEvalClient(
+            text_model_name="foo bar", system_prompt=system_prompt
+        )
 
         scores = client.get_float_score(
             "dummy_metric", "en", unstructured_assessment_result, score_map

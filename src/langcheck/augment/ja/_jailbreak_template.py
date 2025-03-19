@@ -22,6 +22,7 @@ def jailbreak_template(
     num_perturbations: int = 1,
     randomize_order: bool = True,
     seed: int | None = None,
+    custom_templates: list[tuple[str, str]] | None = None,
 ) -> list[str]:
     """Applies jailbreak templates to each string in instances.
 
@@ -40,6 +41,9 @@ def jailbreak_template(
             of templates.
         seed: The seed for the random number generator. You can fix the seed to
             deterministically select the same templates.
+        custom_templates: A list of tuples of names and paths to custom Jinja2
+            templates. The template should contain an `{{input_query}}` placeholder,
+            which will be replaced by the input query.
 
     Returns:
         A list of perturbed instances.
@@ -52,4 +56,5 @@ def jailbreak_template(
         num_perturbations=num_perturbations,
         randomize_order=randomize_order,
         seed=seed,
+        custom_templates=custom_templates,
     )

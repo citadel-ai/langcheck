@@ -9,7 +9,8 @@ from anthropic.types.message import Message
 from langcheck.metrics.eval_clients import AnthropicEvalClient
 
 
-def test_get_text_response_anthropic():
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
+def test_get_text_response_anthropic(system_prompt):
     prompts = ["Assess the factual consistency of the generated output..."] * 2
     answer = "The output is fully factually consistent."
     mock_chat_completion = Mock(spec=Message)
@@ -21,15 +22,16 @@ def test_get_text_response_anthropic():
     ):
         # Set the necessary env vars for the AnthropicEvalClient
         os.environ["ANTHROPIC_API_KEY"] = "dummy_key"
-        client = AnthropicEvalClient()
+        client = AnthropicEvalClient(system_prompt=system_prompt)
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == answer
 
 
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_anthropic(language):
+def test_get_float_score_anthropic(system_prompt, language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -46,7 +48,7 @@ def test_get_float_score_anthropic(language):
     ):
         # Set the necessary env vars for the AnthropicEvalClient
         os.environ["ANTHROPIC_API_KEY"] = "dummy_key"
-        client = AnthropicEvalClient()
+        client = AnthropicEvalClient(system_prompt=system_prompt)
 
         scores = client.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map

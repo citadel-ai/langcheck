@@ -1,122 +1,103 @@
-# Built with Meta Llama 3
-
 from __future__ import annotations
 
+import json
+import os
 from collections.abc import Iterable
+from typing import Any
 
-from transformers import AutoTokenizer
-from vllm import LLM, SamplingParams
+import requests
+
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ._base import EvalClient
 
 
-class LlamaEvalClient(EvalClient):
-    """EvalClient defined for the Llama-based models.
-    It currently only supports English and Japanese.
-    The default model is set to "tokyotech-llm/Llama-3-Swallow-8B-Instruct-v0.1".
-    The following models are also available:
-    - `tokyotech-llm/Llama-3-Swallow-70B-Instruct-v0.1`
-    - `elyza/Llama-3-ELYZA-JP-8B`
-    - `rinna/llama-3-youko-8b-instruct`
-    - `rinna/llama-3-youko-70b-instruct`
-    - `meta-llama/Meta-Llama-3.1-8B-Instruct`
-    - `meta-llama/Meta-Llama-3.1-70B-Instruct`
-    To use the 70B models, set tensor_parallel_size to 8 or more.
-    To use the Llama 3.1 models, you need to agree to the terms of service and login with your huggingface account.
-    """
+class OpenRouterEvalClient(EvalClient):
+    """EvalClient defined for the OpenRouter API."""
 
     def __init__(
         self,
-        model_name: str = "tokyotech-llm/Llama-3-Swallow-8B-Instruct-v0.1",
-        torch_dtype: str = "bfloat16",
-        tensor_parallel_size: int = 1,
-        device: str = "cuda",
+        openrouter_args: dict[str, str] | None = None,
         *,
         system_prompt: str | None = None,
     ):
         """
-        Initialize the Llama evaluation client.
-
+        Initialize the OpenRouter evaluation client.
+        
         Args:
-            model_name: The name of the model to use.
-            torch_dtype: The torch dtype to use. torch.bfloat16 is recommended.
-            tensor_parallel_size: The number of GPUs to use for distributed
-            execution with tensor parallelism.
-            device: The device to load the model on.
-            system_prompt: The system prompt to use. If not provided, default
-                system prompts based on the language will be used.
+            openrouter_args: (Optional) dict of additional args to pass in to the
+            ``client.chat.completions.create`` function.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                no system prompt will be used.
         """
-        self._model = LLM(
-            model=model_name,
-            max_model_len=8192,
-            dtype=torch_dtype,
-            tensor_parallel_size=tensor_parallel_size,
-            device=device,
-        )
-        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self._sampling_params = SamplingParams(
-            temperature=0.6,
-            top_p=0.9,
-            max_tokens=1000,
-            stop="<|eot_id|>",
-            skip_special_tokens=True,
-        )
+
+        if os.getenv("OPENROUTER_API_KEY") is None:
+            raise ValueError("OPENROUTER_API_KEY not set!")
+
+        self._openrouter_args = openrouter_args
         self._system_prompt = system_prompt
-        self._default_system_prompts = {
-            "en": "You are a helpful and competent assistant.",
-            "ja": "あなたは誠実で優秀な日本人のアシスタントです。以下は、タスクを説明する指示です。要求を適切に満たす応答を日本語で書きなさい。",
-        }
+       
+    def _call_api(
+        self,
+        prompts: Iterable[str | None],
+        config: dict[str, str],
+        *,
+        tqdm_description: str | None = None,
+    ) -> list[Any]:
+        def generate_json_dumps(prompt: str):
+            system_message = [] if not self._system_prompt else [
+                {
+                    "role": "system",
+                    "content": self._system_prompt,
+                }
+            ]
+            msg_dict = {
+                "messages": system_message + [{
+                    "role": "user",
+                    "content": prompt,
+                }]
+            }
+            return msg_dict | config
+        responses = []
+        for prompt in tqdm_wrapper(prompts, desc=tqdm_description):
+            if prompt is not None:
+                response = requests.post(
+                    url="https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                       },
+                    data=json.dumps(generate_json_dumps(prompt)))
+                responses.append(response.json())
+
+        return responses
 
     def get_text_responses(
         self,
         prompts: Iterable[str],
-        language: str,
+        *,
+        tqdm_description: str | None = None
     ) -> list[str | None]:
-        """The function that generates responses to the given prompt texts.
+        """The function that gets responses to the given prompt texts.
+        The user's default OpenRouter model is used by default, but you can
+        configure it by passing the 'model' parameter in the openrouter_args.
 
         Args:
             prompts: The prompts you want to get the responses for.
-            language: The language of the prompts. (e.g. "en")
+
         Returns:
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        if language not in ["en", "ja"]:
-            raise ValueError(f"Unsupported language: {language}")
-
-        if self._system_prompt is None:
-            system_prompt = self._default_system_prompts[language]
-        else:
-            system_prompt = self._system_prompt
-
-        messages = [
-            [
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ]
-            for prompt in prompts
-        ]
-        processed_prompts = self._tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-        if isinstance(processed_prompts, str):
-            processed_prompts = [processed_prompts]
-        else:
-            processed_prompts = [str(p) for p in processed_prompts]
-        responses = self._model.generate(
-            processed_prompts, self._sampling_params
+        config = self._openrouter_args or {}
+        tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
+        responses = self._call_api(
+            prompts=prompts,
+            config=config,
+            tqdm_description=tqdm_description,
         )
         response_texts = [
-            response.outputs[0].text
-            if response and response.outputs[0].text != ""
-            else None
+            response["choices"][0]["message"]["content"] if response else None
             for response in responses
         ]
 
@@ -128,6 +109,8 @@ class LlamaEvalClient(EvalClient):
         language: str,
         unstructured_assessment_result: list[str | None],
         score_map: dict[str, float],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores.
@@ -139,6 +122,7 @@ class LlamaEvalClient(EvalClient):
                 for the given assessment prompts.
             score_map: The mapping from the short assessment results
                 (e.g. "Good") to the scores.
+            tqdm_description: The description to be shown in the tqdm bar.
         Returns:
             A list of scores for the given prompts. The scores can be None if
             the evaluation fails.
@@ -163,35 +147,18 @@ class LlamaEvalClient(EvalClient):
 
         # If there are any Nones in get_score_prompts,
         # they are excluded from messages to prevent passing those to the model.
-        messages = [
-            [
-                {
-                    "role": "system",
-                    "content": self._default_system_prompts[language],
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ]
-            for prompt in get_score_prompts
-            if prompt
-        ]
-        if len(messages):
-            prompts = self._tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
-            if isinstance(prompts, str):
-                prompts = [prompts]
-            else:
-                prompts = [str(p) for p in prompts]
-            responses = self._model.generate(prompts, self._sampling_params)
-            raw_response_texts = [
-                response.outputs[0].text if response else None
-                for response in responses
-            ]
+        if isinstance(get_score_prompts, str):
+            prompts = [get_score_prompts]
         else:
-            raw_response_texts = []
+            prompts = [prompt for prompt in get_score_prompts if prompt is not None]
+        config = {}
+        config.update(self._openrouter_args or {})
+        tqdm_description = tqdm_description or "Scores (2/2)"
+        responses = self._call_api(prompts, config, tqdm_description=tqdm_description)
+        raw_response_texts = [
+            response["choices"][0]["message"]["content"] if response else None
+            for response in responses
+        ]
 
         responses_for_scoring = []
         idx_raw_response_texts = 0
@@ -244,9 +211,7 @@ class LlamaEvalClient(EvalClient):
         """
         if isinstance(prompts, str):
             prompts = [prompts]
-        unstructured_assessment_result = self.get_text_responses(
-            prompts, language
-        )
+        unstructured_assessment_result = self.get_text_responses(prompts)
         scores = self.get_float_score(
             metric_name,
             language,
@@ -257,6 +222,6 @@ class LlamaEvalClient(EvalClient):
 
     def similarity_scorer(self):
         raise NotImplementedError(
-            "Embedding-based metrics are not supported in LlamaEvalClient."
+            "Embedding-based metrics are not supported in OpenRouterEvalClient."
             "Use other EvalClients to get these metrics."
         )

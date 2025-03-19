@@ -9,7 +9,8 @@ from google.generativeai.types import generation_types
 from langcheck.metrics.eval_clients import GeminiEvalClient
 
 
-def test_get_text_response_gemini():
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
+def test_get_text_response_gemini(system_prompt):
     prompts = ["Assess the factual consistency of the generated output..."] * 2
     answer = "The output is fully factually consistent."
     mock_response = Mock(spec=generation_types.GenerateContentResponse)
@@ -23,15 +24,16 @@ def test_get_text_response_gemini():
     ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
-        client = GeminiEvalClient()
+        client = GeminiEvalClient(system_prompt=system_prompt)
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == answer
 
 
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_gemini(language):
+def test_get_float_score_gemini(system_prompt, language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -61,7 +63,7 @@ def test_get_float_score_gemini(language):
     ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
-        client = GeminiEvalClient()
+        client = GeminiEvalClient(system_prompt=system_prompt)
 
         scores = client.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
