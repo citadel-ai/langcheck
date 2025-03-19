@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
+from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient, TextResponseWithLogProbs
 
@@ -224,6 +225,8 @@ class OpenAIEvalClient(EvalClient):
         unstructured assessments, so please make sure that the model you use
         supports structured outputs.
         (https://platform.openai.com/docs/guides/structured-outputs).
+        Also note that Structured Outputs API is available on OpenAI API version
+        of 2024-08-01-preview or later.
 
         Ref:
             https://platform.openai.com/docs/guides/structured-outputs
@@ -249,13 +252,20 @@ class OpenAIEvalClient(EvalClient):
         class Response(BaseModel):
             score: Literal[tuple(options)]  # type: ignore
 
+        structured_output_template = get_template(
+            f"{language}/get_score/function_calling.j2"
+        )
         model_inputs = [
             {
                 "model": "gpt-4o-mini",
                 "messages": [
                     {
                         "role": "user",
-                        "content": f"Extract the score from the following assessment: {unstructured_assessment}",
+                        "content": structured_output_template.render(
+                            metric_name=metric_name,
+                            unstructured_assessment=unstructured_assessment,
+                            options=options,
+                        ),
                     }
                 ],
                 "response_format": Response,
