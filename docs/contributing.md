@@ -29,7 +29,7 @@ We auto-format the code with [ruff](https://github.com/astral-sh/ruff).
 Please format your code with following command before you submit a pull request.
 
 ```bash
-ruff format src/ tests/
+ruff format  # Format all files in the current directory (and any subdirectories)
 ```
 
 ## Running Static Checks
@@ -37,8 +37,8 @@ We have static checks with [ruff](https://github.com/astral-sh/ruff) and [pyrigh
 Please make sure that your code passes those two commands as well.
 
 ```bash
-ruff check src/ tests/
-pyright .
+ruff check  # Ruff lint all files in the current directory (and any subdirectories)
+pyright  # Pyright lint all files in the current directory (and any subdirectories)
 ```
 
 ## Running Tests
