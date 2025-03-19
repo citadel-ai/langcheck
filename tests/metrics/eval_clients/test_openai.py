@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import json
 import os
+from typing import Literal
 from unittest.mock import Mock, patch
 
 import pytest
 from openai.types.chat import ChatCompletion
+from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
@@ -43,22 +44,17 @@ def test_get_float_score_openai(system_prompt, language):
     short_assessment_result = "Fully Consistent"
     score_map = {short_assessment_result: 1.0}
 
+    class Response(BaseModel):
+        score: Literal[tuple(score_map.keys())]  # type: ignore
+
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
-        Mock(
-            message=Mock(
-                function_call=Mock(
-                    arguments=json.dumps(
-                        {"assessment": short_assessment_result}
-                    )
-                )
-            )
-        )
+        Mock(message=Mock(parsed=Response(score=short_assessment_result)))
     ]
-    # Calling the openai.resources.chat.Completions.create method requires an
-    # OpenAI API key, so we mock the return value instead
+    # Calling the openai.resources.beta.chat.Completions.parse method requires
+    # an OpenAI API key, so we mock the return value instead
     with patch(
-        "openai.resources.chat.Completions.create",
+        "openai.resources.beta.chat.Completions.parse",
         return_value=mock_chat_completion,
     ):
         # Set the necessary env vars for the OpenAIEValClient
@@ -107,22 +103,17 @@ def test_get_float_score_azure_openai(system_prompt):
     short_assessment_result = "Fully Consistent"
     score_map = {short_assessment_result: 1.0}
 
+    class Response(BaseModel):
+        score: Literal[tuple(score_map.keys())]  # type: ignore
+
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
-        Mock(
-            message=Mock(
-                function_call=Mock(
-                    arguments=json.dumps(
-                        {"assessment": short_assessment_result}
-                    )
-                )
-            )
-        )
+        Mock(message=Mock(parsed=Response(score=short_assessment_result)))
     ]
-    # Calling the openai.resources.chat.Completions.create method requires an
-    # OpenAI API key, so we mock the return value instead
+    # Calling the openai.resources.beta.chat.Completions.parse method requires
+    # an OpenAI API key, so we mock the return value instead
     with patch(
-        "openai.resources.chat.Completions.create",
+        "openai.resources.beta.chat.Completions.parse",
         return_value=mock_chat_completion,
     ):
         # Set the necessary env vars for the 'azure_openai' model type
