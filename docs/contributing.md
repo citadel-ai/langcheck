@@ -24,9 +24,17 @@ prompt generated_output reference_output  metric_value
 2   None                a             None             0
 ```
 
+## Running Formatter
+We auto-format the code with [ruff](https://github.com/astral-sh/ruff).
+Please format your code with following command before you submit a pull request.
+
+```bash
+ruff format src/ tests/
+```
+
 ## Running Static Checks
 We have static checks with [ruff](https://github.com/astral-sh/ruff) and [pyright](https://github.com/microsoft/pyright).
-Please make sure that your code passes those two commands before you submit a pull request.
+Please make sure that your code passes those two commands as well.
 
 ```bash
 ruff check src/ tests/
