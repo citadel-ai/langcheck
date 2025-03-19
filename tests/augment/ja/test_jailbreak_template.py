@@ -49,10 +49,13 @@ def test_jailbreak_template(
             # assert that `idx`th template includes the original instance
             assert instances[i] in results[idx]
 
+
 def test_custom_jailbreak_template(tmp_path):
     template_file = tmp_path / "custom_template.j2"
     template_file.write_text("Custom jailbreak: {{input_query}}")
     custom_templates = [("custom", str(template_file))]
-    results = jailbreak_template("Hello, world", templates=["custom"], custom_templates=custom_templates)
+    results = jailbreak_template(
+        "Hello, world", templates=["custom"], custom_templates=custom_templates
+    )
     assert len(results) == 1
     assert results[0] == "Custom jailbreak: Hello, world"

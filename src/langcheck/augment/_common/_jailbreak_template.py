@@ -55,12 +55,18 @@ def jailbreak_template_common(
         for template_name, path_to_template in custom_templates:
             # validation
             if template_name in available_templates:
-                raise ValueError(f"A template with the name {template_name} already exists!")
+                raise ValueError(
+                    f"A template with the name {template_name} already exists!"
+                )
             template_file = Path(path_to_template)
             if not template_file.exists():
-                raise ValueError(f"Custom template file {path_to_template} does not exist!")
+                raise ValueError(
+                    f"Custom template file {path_to_template} does not exist!"
+                )
             if not path_to_template.endswith(".j2"):
-                raise ValueError("The custom template file must be a Jinja2 template file with the extension '.j2'!")
+                raise ValueError(
+                    "The custom template file must be a Jinja2 template file with the extension '.j2'!"
+                )
             available_templates = [*available_templates, template_name]
 
     # Validation on the length of templates and num_perturbations
@@ -89,9 +95,17 @@ def jailbreak_template_common(
 
         for template_name in selected_templates:
             # if the template is from custom_templates, fetch the path from there
-            if custom_templates is not None and any(name == template_name for name, _ in custom_templates):
-                template_path = next(path for name, path in custom_templates if name == template_name)
-                template = Template(Path(template_path).read_text(encoding="utf-8"))
+            if custom_templates is not None and any(
+                name == template_name for name, _ in custom_templates
+            ):
+                template_path = next(
+                    path
+                    for name, path in custom_templates
+                    if name == template_name
+                )
+                template = Template(
+                    Path(template_path).read_text(encoding="utf-8")
+                )
             else:
                 template = get_template(
                     f"{language}/jailbreak_templates/{template_name}.j2"
