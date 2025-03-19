@@ -20,9 +20,10 @@ def test_get_text_response_openai():
     mock_chat_completion.choices = [Mock(message=Mock(content=answer))]
     # Calling the openai.resources.chat.Completions.create method requires an
     # OpenAI API key, so we mock the return value instead
-    with patch("openai.resources.chat.Completions.create",
-               return_value=mock_chat_completion):
-
+    with patch(
+        "openai.resources.chat.Completions.create",
+        return_value=mock_chat_completion,
+    ):
         # Set the necessary env vars for the OpenAIEValClient
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         client = OpenAIEvalClient()
@@ -42,21 +43,29 @@ def test_get_float_score_openai(language):
 
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
-        Mock(message=Mock(function_call=Mock(
-            arguments=json.dumps({"assessment": short_assessment_result}))))
+        Mock(
+            message=Mock(
+                function_call=Mock(
+                    arguments=json.dumps(
+                        {"assessment": short_assessment_result}
+                    )
+                )
+            )
+        )
     ]
     # Calling the openai.resources.chat.Completions.create method requires an
     # OpenAI API key, so we mock the return value instead
-    with patch("openai.resources.chat.Completions.create",
-               return_value=mock_chat_completion):
-
+    with patch(
+        "openai.resources.chat.Completions.create",
+        return_value=mock_chat_completion,
+    ):
         # Set the necessary env vars for the OpenAIEValClient
         os.environ["OPENAI_API_KEY"] = "dummy_key"
         client = OpenAIEvalClient()
 
-        scores = client.get_float_score("dummy_metric", language,
-                                        unstructured_assessment_result,
-                                        score_map)
+        scores = client.get_float_score(
+            "dummy_metric", language, unstructured_assessment_result, score_map
+        )
         assert len(scores) == len(unstructured_assessment_result)
         for score in scores:
             assert score == 1.0
@@ -69,9 +78,10 @@ def test_get_text_response_azure_openai():
     mock_chat_completion.choices = [Mock(message=Mock(content=answer))]
     # Calling the openai.resources.chat.Completions.create method requires an
     # OpenAI API key, so we mock the return value instead
-    with patch("openai.resources.chat.Completions.create",
-               return_value=mock_chat_completion):
-
+    with patch(
+        "openai.resources.chat.Completions.create",
+        return_value=mock_chat_completion,
+    ):
         # Set the necessary env vars for the 'azure_openai' model type
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
@@ -93,23 +103,31 @@ def test_get_float_score_azure_openai():
 
     mock_chat_completion = Mock(spec=ChatCompletion)
     mock_chat_completion.choices = [
-        Mock(message=Mock(function_call=Mock(
-            arguments=json.dumps({"assessment": short_assessment_result}))))
+        Mock(
+            message=Mock(
+                function_call=Mock(
+                    arguments=json.dumps(
+                        {"assessment": short_assessment_result}
+                    )
+                )
+            )
+        )
     ]
     # Calling the openai.resources.chat.Completions.create method requires an
     # OpenAI API key, so we mock the return value instead
-    with patch("openai.resources.chat.Completions.create",
-               return_value=mock_chat_completion):
-
+    with patch(
+        "openai.resources.chat.Completions.create",
+        return_value=mock_chat_completion,
+    ):
         # Set the necessary env vars for the 'azure_openai' model type
         os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         client = AzureOpenAIEvalClient(text_model_name="foo bar")
 
-        scores = client.get_float_score("dummy_metric", "en",
-                                        unstructured_assessment_result,
-                                        score_map)
+        scores = client.get_float_score(
+            "dummy_metric", "en", unstructured_assessment_result, score_map
+        )
         assert len(scores) == len(unstructured_assessment_result)
         for score in scores:
             assert score == 1.0

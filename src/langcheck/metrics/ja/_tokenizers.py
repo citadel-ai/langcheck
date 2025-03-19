@@ -11,11 +11,11 @@ _PUNCTUATIONS = ["、", "。", "，", "．", ",", ".", "?", "!", "？", "！"]
 
 
 class _JapaneseTokenizer(BaseTokenizer):
-
     @abc.abstractmethod
     def _tokenize(self, text: str) -> Iterator[str]:
         raise NotImplementedError(
-            "Tokenizer for Japanese must override `_tokenize()` method")
+            "Tokenizer for Japanese must override `_tokenize()` method"
+        )
 
     def tokenize(self, text: str) -> list[str]:
         tokens = self._tokenize(text)
@@ -40,7 +40,6 @@ class MeCabTokenizer(_JapaneseTokenizer):
     """
 
     class _MeCabNodeSurfaceIterator(Iterator):
-
         def __init__(self, node) -> None:
             self._node = node
             # Skip BOS.
@@ -65,13 +64,15 @@ class MeCabTokenizer(_JapaneseTokenizer):
                 "No module named 'MeCab'.\n"
                 "Since 'MeCabTokenizer' is an optional feature, 'MeCab' "
                 "is not installed by default along with langcheck. Please "
-                "set up 'MeCab' on your own.")
+                "set up 'MeCab' on your own."
+            )
 
         self.tokenizer = MeCab.Tagger()
 
     def _tokenize(self, text):
         return MeCabTokenizer._MeCabNodeSurfaceIterator(
-            self.tokenizer.parseToNode(text))
+            self.tokenizer.parseToNode(text)
+        )
 
 
 class JanomeTokenizer(_JapaneseTokenizer):

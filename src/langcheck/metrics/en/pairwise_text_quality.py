@@ -42,9 +42,9 @@ def simulated_annotators(
     """
     # Load preprocessed preference data
     preference_data = load_few_shot_examples(preference_data_path)
-    assert (
-        len(preference_data) >= k
-    ), "Not enough examples in the preference data"
+    assert len(preference_data) >= k, (
+        "Not enough examples in the preference data"
+    )
 
     if seed is not None:
         random.seed(seed)
@@ -167,9 +167,9 @@ def pairwise_comparison(
         required_params=[],
     )
 
-    assert (
-        eval_model is not None
-    ), "You must pass an EvalClient instance to the pairwise_comparison function."
+    assert eval_model is not None, (
+        "You must pass an EvalClient instance to the pairwise_comparison function."
+    )
 
     pairwise_comparison_assessment_to_score = {
         "Response B": 1.0,

@@ -411,31 +411,31 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         self._use_async = use_async
 
     async def _async_embed(self, inputs: list[str]) -> CreateEmbeddingResponse:
-      """Embed the inputs using the OpenAI API in async mode."""
-      assert isinstance(self.openai_client, AsyncOpenAI)
-      if self.openai_args:
-          responses = await self.openai_client.embeddings.create(
-              input=inputs, **self.openai_args
-          )
-      else:
-          responses = await self.openai_client.embeddings.create(
-              input=inputs, model="text-embedding-3-small"
-          )
-      return responses
-      
+        """Embed the inputs using the OpenAI API in async mode."""
+        assert isinstance(self.openai_client, AsyncOpenAI)
+        if self.openai_args:
+            responses = await self.openai_client.embeddings.create(
+                input=inputs, **self.openai_args
+            )
+        else:
+            responses = await self.openai_client.embeddings.create(
+                input=inputs, model="text-embedding-3-small"
+            )
+        return responses
+
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the OpenAI API."""
 
         # TODO: Fix that this async call could be much slower than the sync
         # version. https://github.com/citadel-ai/langcheck/issues/160
         if self._use_async:
-          try:
-            loop = asyncio.get_event_loop()
-          except RuntimeError:  # pragma: py-lt-310
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-          embed_response = loop.run_until_complete(self._async_embed(inputs))
-          embeddings = [item.embedding for item in embed_response.data]
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:  # pragma: py-lt-310
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            embed_response = loop.run_until_complete(self._async_embed(inputs))
+            embeddings = [item.embedding for item in embed_response.data]
         else:
             assert isinstance(self.openai_client, OpenAI)
 

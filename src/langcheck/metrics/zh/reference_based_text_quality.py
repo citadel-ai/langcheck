@@ -73,9 +73,9 @@ def semantic_similarity(
     if eval_model == "local":
         scorer = SentenceTransformerSimilarityScorer(language="zh")
     else:  # EvalClient
-        assert isinstance(
-            eval_model, EvalClient
-        ), "An EvalClient must be provided for non-local model types."
+        assert isinstance(eval_model, EvalClient), (
+            "An EvalClient must be provided for non-local model types."
+        )
         scorer = eval_model.similarity_scorer()
     scores = scorer.score(generated_outputs, reference_outputs)
 

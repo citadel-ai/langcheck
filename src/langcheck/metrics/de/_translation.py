@@ -14,10 +14,12 @@ class Translate:
         Args:
             model_name: The name of the model to use for translation
         """
-        self._translation_pipeline = pipeline("translation",
-                                              model=model_name,
-                                              tokenizer=model_name,
-                                              truncation=True)
+        self._translation_pipeline = pipeline(
+            "translation",
+            model=model_name,
+            tokenizer=model_name,
+            truncation=True,
+        )
         self._max_length = self._translation_pipeline.model.config.max_length
 
     def _translate(self, texts: str) -> str:
@@ -30,20 +32,23 @@ class Translate:
             The translated texts
         """
         tokenization = self._translation_pipeline.tokenizer(
-            texts, return_tensors="pt")  # type: ignore
+            texts, return_tensors="pt"
+        )  # type: ignore
         if tokenization.input_ids.shape[1] > (self._max_length / 2):
             # Split the text into blocks, if it is too long
             # starting from 2 * num_tokens / max_length to be sure
             # NB: this comes from a few 100 tests, but it is not a science
-            blocks = floor(2 * tokenization.input_ids.shape[1] /
-                           self._max_length)
+            blocks = floor(
+                2 * tokenization.input_ids.shape[1] / self._max_length
+            )
             sentences = sent_tokenize(texts)
             # Split sentences into a number of blocks, e.g., 2 blocks = 2 groups
             len_block = floor(len(sentences) / blocks) + 1
             sentences_list = []
             for i in range(blocks):
-                sentences_list.append(sentences[i * len_block:(i + 1) *
-                                                len_block])
+                sentences_list.append(
+                    sentences[i * len_block : (i + 1) * len_block]
+                )
             text_list = [" ".join(sent) for sent in sentences_list]
         else:
             text_list = [texts]

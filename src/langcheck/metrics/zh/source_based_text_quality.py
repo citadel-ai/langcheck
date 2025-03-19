@@ -65,9 +65,9 @@ def factual_consistency(
     )
 
     if eval_model != "local":  # EvalClient
-        assert isinstance(
-            eval_model, EvalClient
-        ), "An EvalClient must be provided for non-local model types."
+        assert isinstance(eval_model, EvalClient), (
+            "An EvalClient must be provided for non-local model types."
+        )
         metric_value = en_factual_consistency(
             generated_outputs, sources, prompts, eval_model
         )

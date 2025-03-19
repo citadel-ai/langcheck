@@ -59,9 +59,9 @@ def sentiment(
     )
 
     if eval_model != "local":  # EvalClient
-        assert isinstance(
-            eval_model, EvalClient
-        ), "An EvalClient must be provided for non-local model types."
+        assert isinstance(eval_model, EvalClient), (
+            "An EvalClient must be provided for non-local model types."
+        )
 
         # This reuses the English prompt.
         # TODO: Update this to use a Chinese prompt.
@@ -140,9 +140,9 @@ def toxicity(
     )
 
     if eval_model != "local":  # EvalClient
-        assert isinstance(
-            eval_model, EvalClient
-        ), "An EvalClient must be provided for non-local model types."
+        assert isinstance(eval_model, EvalClient), (
+            "An EvalClient must be provided for non-local model types."
+        )
 
         # This reuses the English prompt.
         # TODO: Update this to use a Chinese prompt.
