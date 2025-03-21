@@ -31,9 +31,14 @@ jobs:
           pip install -U --upgrade pip
           pip install -U .[all,dev]
 
-      # Run the ruff format test
-      - name: Ruff
-        run: ruff check src/ tests/
+      # Run the ruff lint
+      - name: Ruff check
+        run: ruff check --output-format=github src/ tests/
 
+      # Run the ruff format
+      - name: Ruff format
+        run: ruff format --check src/ tests/
+
+      # Run the pyright test
       - name: Pyright
         run: pyright .

@@ -53,9 +53,9 @@ def pairwise_comparison(
         required_params=[],
     )
 
-    assert (
-        eval_model is not None
-    ), "You must pass an EvalClient instance to the pairwise_comparison function."
+    assert eval_model is not None, (
+        "You must pass an EvalClient instance to the pairwise_comparison function."
+    )
 
     pairwise_comparison_assessment_to_score = {
         "Response B": 1.0,

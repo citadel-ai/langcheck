@@ -5,18 +5,18 @@ GLOBAL_CSS = {
     "font-family": "sans-serif",
     "font-size": "14px",
     "padding": "10px",
-    "background-color": "#fff"
+    "background-color": "#fff",
 }
 
 INPUT_CSS = {
     "padding": "5px 8px",
     "border": "1px solid #D1D1D1",
     "border-radius": "4px",
-    "margin-bottom": "6px"
+    "margin-bottom": "6px",
 }
 
 NUM_RESULTS_CSS = {
     "background-color": "white",
     "font-style": "italic",
-    "color": "grey"
+    "color": "grey",
 }

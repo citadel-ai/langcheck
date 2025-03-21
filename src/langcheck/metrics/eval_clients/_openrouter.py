@@ -24,7 +24,7 @@ class OpenRouterEvalClient(EvalClient):
     ):
         """
         Initialize the OpenRouter evaluation client.
-        
+
         Args:
             openrouter_args: (Optional) dict of additional args to pass in to the
             ``client.chat.completions.create`` function.
@@ -37,7 +37,7 @@ class OpenRouterEvalClient(EvalClient):
 
         self._openrouter_args = openrouter_args
         self._system_prompt = system_prompt
-       
+
     def _call_api(
         self,
         prompts: Iterable[str | None],
@@ -46,19 +46,27 @@ class OpenRouterEvalClient(EvalClient):
         tqdm_description: str | None = None,
     ) -> list[Any]:
         def generate_json_dumps(prompt: str):
-            system_message = [] if not self._system_prompt else [
-                {
-                    "role": "system",
-                    "content": self._system_prompt,
-                }
-            ]
+            system_message = (
+                []
+                if not self._system_prompt
+                else [
+                    {
+                        "role": "system",
+                        "content": self._system_prompt,
+                    }
+                ]
+            )
             msg_dict = {
-                "messages": system_message + [{
-                    "role": "user",
-                    "content": prompt,
-                }]
+                "messages": system_message
+                + [
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ]
             }
             return msg_dict | config
+
         responses = []
         for prompt in tqdm_wrapper(prompts, desc=tqdm_description):
             if prompt is not None:
@@ -66,17 +74,15 @@ class OpenRouterEvalClient(EvalClient):
                     url="https://openrouter.ai/api/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-                       },
-                    data=json.dumps(generate_json_dumps(prompt)))
+                    },
+                    data=json.dumps(generate_json_dumps(prompt)),
+                )
                 responses.append(response.json())
 
         return responses
 
     def get_text_responses(
-        self,
-        prompts: Iterable[str],
-        *,
-        tqdm_description: str | None = None
+        self, prompts: Iterable[str], *, tqdm_description: str | None = None
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
         The user's default OpenRouter model is used by default, but you can
@@ -150,11 +156,15 @@ class OpenRouterEvalClient(EvalClient):
         if isinstance(get_score_prompts, str):
             prompts = [get_score_prompts]
         else:
-            prompts = [prompt for prompt in get_score_prompts if prompt is not None]
+            prompts = [
+                prompt for prompt in get_score_prompts if prompt is not None
+            ]
         config = {}
         config.update(self._openrouter_args or {})
         tqdm_description = tqdm_description or "Scores (2/2)"
-        responses = self._call_api(prompts, config, tqdm_description=tqdm_description)
+        responses = self._call_api(
+            prompts, config, tqdm_description=tqdm_description
+        )
         raw_response_texts = [
             response["choices"][0]["message"]["content"] if response else None
             for response in responses

@@ -11,17 +11,21 @@ class _BaseGenderPronouns:
     reflexive: str
 
 
-_FEMALE_PRONOUNS = _BaseGenderPronouns(subject="she",
-                                       dependent_possessive="her",
-                                       object="her",
-                                       independent_possessive="hers",
-                                       reflexive="herself")
+_FEMALE_PRONOUNS = _BaseGenderPronouns(
+    subject="she",
+    dependent_possessive="her",
+    object="her",
+    independent_possessive="hers",
+    reflexive="herself",
+)
 
-_MALE_PRONOUNS = _BaseGenderPronouns(subject="he",
-                                     dependent_possessive="his",
-                                     object="him",
-                                     independent_possessive="his",
-                                     reflexive="himself")
+_MALE_PRONOUNS = _BaseGenderPronouns(
+    subject="he",
+    dependent_possessive="his",
+    object="him",
+    independent_possessive="his",
+    reflexive="himself",
+)
 
 _PLURAL_PRONOUNS = _BaseGenderPronouns(
     subject="they",
@@ -126,12 +130,14 @@ _NEO_PRONOUNS_LIST = [
         object="aer",
         independent_possessive="aers",
         reflexive="aerself",
-    )
+    ),
 ]
 
-_PRONOUNS_DICT = MappingProxyType({
-    "plural": [_PLURAL_PRONOUNS],
-    "male": [_MALE_PRONOUNS],
-    "female": [_FEMALE_PRONOUNS],
-    "neutral": _NEO_PRONOUNS_LIST + [_PLURAL_PRONOUNS],
-})
+_PRONOUNS_DICT = MappingProxyType(
+    {
+        "plural": [_PLURAL_PRONOUNS],
+        "male": [_MALE_PRONOUNS],
+        "female": [_FEMALE_PRONOUNS],
+        "neutral": _NEO_PRONOUNS_LIST + [_PLURAL_PRONOUNS],
+    }
+)

@@ -48,7 +48,7 @@ class MetricValue(Generic[NumericType]):
         """Returns a string representation of an
         :class:`~langcheck.metrics.metric_value.MetricValue` object.
         """
-        return f"Metric: {self.metric_name}\n" f"{self.to_df()}"
+        return f"Metric: {self.metric_name}\n{self.to_df()}"
 
     def __repr__(self) -> str:
         """Returns a string representation of an
@@ -61,9 +61,7 @@ class MetricValue(Generic[NumericType]):
         :class:`~langcheck.metrics.metric_value.MetricValue`, which is
         automatically called by Jupyter notebooks.
         """
-        return (
-            f"Metric: {self.metric_name}<br>" f"{self.to_df()._repr_html_()}"  # type: ignore
-        )
+        return f"Metric: {self.metric_name}<br>{self.to_df()._repr_html_()}"  # type: ignore
 
     def __lt__(self, threshold: float | int) -> MetricValueWithThreshold:
         """Allows the user to write a `metric_value < 0.5` expression."""
@@ -260,7 +258,7 @@ class MetricValueWithThreshold(MetricValue):
         """
         return (
             f"Metric: {self.metric_name}\n"
-            f"Pass Rate: {round(self.pass_rate*100, 2)}%\n"
+            f"Pass Rate: {round(self.pass_rate * 100, 2)}%\n"
             f"{self.to_df()}"
         )
 
@@ -277,7 +275,7 @@ class MetricValueWithThreshold(MetricValue):
         """
         return (
             f"Metric: {self.metric_name}<br>"
-            f"Pass Rate: {round(self.pass_rate*100, 2)}%<br>"
+            f"Pass Rate: {round(self.pass_rate * 100, 2)}%<br>"
             f"{self.to_df()._repr_html_()}"  # type: ignore
         )
 

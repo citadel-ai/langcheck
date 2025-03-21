@@ -75,9 +75,9 @@ def sentiment(
             language=LANG,
         )
     else:  # EvalClient
-        assert isinstance(
-            eval_model, EvalClient
-        ), "An EvalClient must be provided for non-local model types."
+        assert isinstance(eval_model, EvalClient), (
+            "An EvalClient must be provided for non-local model types."
+        )
 
         sentiment_template = eval_model.load_prompt_template(
             language=LANG, metric_name=metric_name
@@ -184,9 +184,9 @@ def fluency(
             language=LANG,
         )
     else:  # EvalClient
-        assert isinstance(
-            eval_model, EvalClient
-        ), "An EvalClient must be provided for non-local model types."
+        assert isinstance(eval_model, EvalClient), (
+            "An EvalClient must be provided for non-local model types."
+        )
 
         fluency_template = eval_model.load_prompt_template(
             language=LANG, metric_name=metric_name
@@ -294,9 +294,9 @@ def toxicity(
             language=LANG,
         )
     else:  # EvalClient
-        assert isinstance(
-            eval_model, EvalClient
-        ), "An EvalClient must be provided for non-local model types."
+        assert isinstance(eval_model, EvalClient), (
+            "An EvalClient must be provided for non-local model types."
+        )
 
         toxicity_assessment_to_score = {
             # The v1 prompt returns the toxicity on a scale of 1 to 5
@@ -313,9 +313,9 @@ def toxicity(
                 "Nontoxic": 0,
             },
         }
-        assert (
-            eval_prompt_version in toxicity_assessment_to_score
-        ), f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are {list(toxicity_assessment_to_score.keys())}."
+        assert eval_prompt_version in toxicity_assessment_to_score, (
+            f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are {list(toxicity_assessment_to_score.keys())}."
+        )
 
         toxicity_template = eval_model.load_prompt_template(
             language=LANG,

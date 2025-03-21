@@ -92,12 +92,12 @@ def custom_evaluator(
         required_params=[],
     )
 
-    assert Path(
-        template_path
-    ).exists(), f"Prompt template file {template_path} does not exist."
-    assert template_path.endswith(
-        ".j2"
-    ), 'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+    assert Path(template_path).exists(), (
+        f"Prompt template file {template_path} does not exist."
+    )
+    assert template_path.endswith(".j2"), (
+        'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+    )
 
     prompt_template_source = Path(template_path).read_text(encoding="utf-8")
     metric_inputs.validate_template(prompt_template_source)
@@ -194,12 +194,12 @@ def custom_pairwise_evaluator(
         required_params=[],
     )
 
-    assert Path(
-        template_path
-    ).exists(), f"Prompt template file {template_path} does not exist."
-    assert template_path.endswith(
-        ".j2"
-    ), 'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+    assert Path(template_path).exists(), (
+        f"Prompt template file {template_path} does not exist."
+    )
+    assert template_path.endswith(".j2"), (
+        'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+    )
 
     prompt_template_source = Path(template_path).read_text(encoding="utf-8")
     metric_inputs.validate_template(prompt_template_source)
