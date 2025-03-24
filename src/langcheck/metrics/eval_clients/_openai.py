@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import warnings
 from collections.abc import Iterable
 from typing import Any, Literal
 
@@ -134,6 +135,11 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
+        warnings.warn(
+            "The default model is changed to gpt-4o-mini from gpt-3.5-turbo. "
+            "If you want to use other models, please set the model "
+            "parameter to the desired model name in the `openai_args`."
+        )
         config = {"model": "gpt-4o-mini"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
