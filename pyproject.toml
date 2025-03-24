@@ -59,7 +59,7 @@ anthropic = [
     'anthropic'
 ]
 gemini = [
-    'google-generativeai'
+    'google-genai'
 ]
 local-llm = [
     'vllm'
