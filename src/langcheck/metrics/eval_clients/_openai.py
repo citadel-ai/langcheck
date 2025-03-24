@@ -276,7 +276,7 @@ class OpenAIEvalClient(EvalClient):
         if self._use_async:
             # A helper function to call the async API.
             async def _call_async_api() -> list[Any]:
-                responses = await asyncio.gather(  # type: ignore
+                responses = await asyncio.gather(
                     *[
                         self._client.beta.chat.completions.parse(**input)
                         for input in model_inputs
