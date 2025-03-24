@@ -261,9 +261,12 @@ class OpenAIEvalClient(EvalClient):
         structured_output_template = get_template(
             f"{language}/get_score/function_calling.j2"
         )
+
+        config = {"model": "gpt-4o-mini"}
+        config.update(self._openai_args or {})
         model_inputs = [
             {
-                "model": "gpt-4o-mini",
+                **config,
                 "messages": [
                     {
                         "role": "user",
