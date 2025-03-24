@@ -124,7 +124,7 @@ class OpenAIEvalClient(EvalClient):
         tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
-        We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
+        We use OpenAI's 'gpt-4o-mini' model by default, but you can configure
         it by passing the 'model' parameter in the openai_args.
 
         Args:
@@ -134,7 +134,7 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo"}
+        config = {"model": "gpt-4o-mini"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
@@ -174,7 +174,7 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo", "logprobs": True}
+        config = {"model": "gpt-4o-mini", "logprobs": True}
         if top_logprobs:
             config["top_logprobs"] = top_logprobs
         config.update(self._openai_args or {})
