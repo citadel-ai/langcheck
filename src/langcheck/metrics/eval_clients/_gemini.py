@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal
 
-import google.ai.generativelanguage as glm
 import torch
 from google import genai
 from google.genai import types
+from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -151,13 +151,12 @@ class GeminiEvalClient(EvalClient):
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We leverage the
-        function calling API to extract the short assessment results from the
+        structured output API to extract the short assessment results from the
         unstructured assessments, so please make sure that the model you use
-        supports function calling
-        (https://ai.google.dev/gemini-api/docs/function-calling#supported-models).
+        supports structured output (See the References for more details).
 
-        Ref:
-            https://ai.google.dev/gemini-api/docs/function-calling
+        References:
+            https://ai.google.dev/gemini-api/docs/structured-output
 
         Args:
             metric_name: The name of the metric to be used. (e.g. "toxicity")
@@ -175,13 +174,24 @@ class GeminiEvalClient(EvalClient):
         if language not in ["en", "ja", "de"]:
             raise ValueError(f"Unsupported language: {language}")
 
-        fn_call_template = get_template(
-            f"{language}/get_score/function_calling.j2"
+        structured_output_template = get_template(
+            f"{language}/get_score/structured_output.j2"
         )
 
         options = list(score_map.keys())
-        fn_call_messages = [
-            fn_call_template.render(
+
+        class Response(BaseModel):
+            score: Literal[tuple(options)]  # type: ignore
+
+        config = {
+            "temperature": 0.0,
+            "response_mime_type": "application/json",
+            "response_schema": Response,
+        }
+        config.update(self._generate_content_args or {})
+
+        prompts = [
+            structured_output_template.render(
                 {
                     "metric": metric_name,
                     "unstructured_assessment": unstructured_assessment,
@@ -193,47 +203,18 @@ class GeminiEvalClient(EvalClient):
             for unstructured_assessment in unstructured_assessment_result
         ]
 
-        assessment_schema = glm.Schema(type=glm.Type.STRING, enum=options)
-
-        save_assessment = glm.FunctionDeclaration(
-            name="save_assessment",
-            description=f"Save the assessment of {metric_name}.",
-            parameters=glm.Schema(
-                type=glm.Type.OBJECT,
-                properties={"assessment": assessment_schema},
-            ),
-        )
-        config_structured_assessments = {
-            "tools": [save_assessment],
-            "tool_config": {"function_calling_config": "ANY"},
-            "generation_config": {"temperature": 0.0},
-        }
-        config_structured_assessments.update(self._generate_content_args or {})
-
         tqdm_description = tqdm_description or "Scores (2/2)"
         responses = self._call_api(
             model=self._model_name,
-            prompts=fn_call_messages,
-            config=config_structured_assessments,
+            prompts=prompts,
+            config=config,
             tqdm_description=tqdm_description,
         )
-        assessments = []
-        for response in responses:
-            if response is None:
-                assessments.append(None)
-                continue
-            function_call = (
-                response.candidates[0].content.parts[0].function_call
-            )
-            fc_dict = type(function_call).to_dict(function_call)
-            assessments.append(fc_dict.get("args", {}).get("assessment"))
-        # Check if any of the assessments are not recognized.
-        for assessment in assessments:
-            if (assessment is None) or (assessment in options):
-                continue
-            # By leveraging the function calling API, this should be pretty
-            # rare, but we're dealing with LLMs here so nothing is absolute!
-            print(f'Gemini returned an unrecognized assessment: "{assessment}"')
+
+        assessments = [
+            response.parsed.score if response else None
+            for response in responses
+        ]
 
         return [
             score_map[assessment]
