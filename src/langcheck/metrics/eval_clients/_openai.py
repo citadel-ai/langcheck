@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import os
+import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal
 
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 from openai.types.create_embedding_response import CreateEmbeddingResponse
+from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -124,7 +125,7 @@ class OpenAIEvalClient(EvalClient):
         tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
-        We use OpenAI's 'gpt-turbo-3.5' model by default, but you can configure
+        We use OpenAI's 'gpt-4o-mini' model by default, but you can configure
         it by passing the 'model' parameter in the openai_args.
 
         Args:
@@ -134,7 +135,12 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo"}
+        warnings.warn(
+            "The default model is changed to gpt-4o-mini from gpt-3.5-turbo. "
+            "If you want to use other models, please set the model "
+            "parameter to the desired model name in the `openai_args`."
+        )
+        config = {"model": "gpt-4o-mini"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
@@ -174,7 +180,7 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        config = {"model": "gpt-3.5-turbo", "logprobs": True}
+        config = {"model": "gpt-4o-mini", "logprobs": True}
         if top_logprobs:
             config["top_logprobs"] = top_logprobs
         config.update(self._openai_args or {})
@@ -221,13 +227,15 @@ class OpenAIEvalClient(EvalClient):
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We leverage the
-        function calling API to extract the short assessment results from the
+        structured outputs API to extract the short assessment results from the
         unstructured assessments, so please make sure that the model you use
-        supports function calling
-        (https://platform.openai.com/docs/guides/gpt/function-calling).
+        supports structured outputs (only available in OpenAI's latest LLMs
+        starting with GPT-4o). Also note that structured outputs API is only
+        available in OpenAI API version of 2024-08-01-preview or later (See the
+        References for more details).
 
-        Ref:
-            https://platform.openai.com/docs/guides/gpt/function-calling
+        References:
+            https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat
 
         Args:
             metric_name: The name of the metric to be used. (e.g. "toxicity")
@@ -245,75 +253,85 @@ class OpenAIEvalClient(EvalClient):
         if language not in ["en", "ja", "de", "zh"]:
             raise ValueError(f"Unsupported language: {language}")
 
-        fn_call_template = get_template(
+        options = list(score_map.keys())
+
+        class Response(BaseModel):
+            score: Literal[tuple(options)]  # type: ignore
+
+        structured_output_template = get_template(
             f"{language}/get_score/function_calling.j2"
         )
 
-        options = list(score_map.keys())
-        fn_call_messages = [
-            fn_call_template.render(
-                {
-                    "metric": metric_name,
-                    "unstructured_assessment": unstructured_assessment,
-                    "options": options,
-                }
-            )
-            if unstructured_assessment
-            else None
+        config = {"model": "gpt-4o-mini"}
+        config.update(self._openai_args or {})
+        model_inputs = [
+            {
+                **config,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": structured_output_template.render(
+                            metric_name=metric_name,
+                            unstructured_assessment=unstructured_assessment,
+                            options=options,
+                        ),
+                    }
+                ],
+                "response_format": Response,
+            }
             for unstructured_assessment in unstructured_assessment_result
         ]
 
-        functions = [
-            {
-                "name": "save_assessment",
-                "description": f"Save the assessment of {metric_name}.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "assessment": {
-                            "type": "string",
-                            "enum": options,
-                            "description": f"The assessment of {metric_name}.",
-                        },
-                    },
-                    "required": ["assessment"],
-                },
-            }
-        ]
+        if self._use_async:
+            # A helper function to call the async API.
+            async def _call_async_api() -> list[Any]:
+                responses = await asyncio.gather(
+                    *[
+                        self._client.beta.chat.completions.parse(**input)
+                        for input in model_inputs
+                    ],  # type: ignore
+                    return_exceptions=True,
+                )
+                return responses
 
-        config_structured_assessments = {
-            "functions": functions,
-            "function_call": {
-                "name": "save_assessment",
-            },
-            "model": "gpt-3.5-turbo",
-        }
-        config_structured_assessments.update(self._openai_args or {})
+            responses = asyncio.run(_call_async_api())
 
-        tqdm_description = tqdm_description or "Scores (2/2)"
-        responses = self._call_api(
-            prompts=fn_call_messages,
-            config=config_structured_assessments,
-            tqdm_description=tqdm_description,
-        )
-        function_args = [
-            json.loads(response.choices[0].message.function_call.arguments)
-            if response
-            else None
+        else:
+            # A helper function to call the API with exception filter for alignment
+            # of exception handling with the async version.
+            def _call_api_with_exception_filter(
+                model_input: dict[str, Any],
+            ) -> Any:
+                if model_input is None:
+                    return None
+                try:
+                    return self._client.beta.chat.completions.parse(
+                        **model_input
+                    )
+                except Exception as e:
+                    return e
+
+            responses = [
+                _call_api_with_exception_filter(model_input)
+                for model_input in tqdm_wrapper(
+                    model_inputs, desc=tqdm_description
+                )
+            ]
+
+        # Filter out exceptions and print them out
+        for i, response in enumerate(responses):
+            if not isinstance(response, Exception):
+                continue
+            print(
+                "OpenAI failed to return an assessment corresponding to "
+                f"{i}th prompt: {response}"
+            )
+            responses[i] = None
+
+        assessments = [
+            response.choices[0].message.parsed.score if response else None
             for response in responses
         ]
-        assessments = [
-            function_arg.get("assessment") if function_arg else None
-            for function_arg in function_args
-        ]
-
-        # Check if any of the assessments are not recognized.
-        for assessment in assessments:
-            if (assessment is None) or (assessment in options):
-                continue
-            # By leveraging the function calling API, this should be pretty
-            # rare, but we're dealing with LLMs here so nothing is absolute!
-            print(f'OpenAI returned an unrecognized assessment: "{assessment}"')
 
         return [
             score_map[assessment]
