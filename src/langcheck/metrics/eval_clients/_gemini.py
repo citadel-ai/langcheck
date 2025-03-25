@@ -255,4 +255,6 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
         )
 
         assert embed_response.embeddings is not None
-        return torch.Tensor(embed_response.embeddings[0].values)
+        return torch.Tensor(
+            [embed.values for embed in embed_response.embeddings]
+        )
