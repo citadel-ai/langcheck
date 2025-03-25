@@ -1,69 +1,63 @@
 from __future__ import annotations
 
 import os
+from typing import Literal
 from unittest.mock import Mock, patch
 
 import pytest
-from google.generativeai.types import generation_types
+from google.genai import types
+from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients import GeminiEvalClient
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
-def test_get_text_response_gemini(system_prompt):
+@pytest.mark.parametrize("system_instruction", [None, "Answer in English."])
+def test_get_text_response_gemini(system_instruction):
     prompts = ["Assess the factual consistency of the generated output..."] * 2
     answer = "The output is fully factually consistent."
-    mock_response = Mock(spec=generation_types.GenerateContentResponse)
+    mock_response = Mock(spec=types.GenerateContentResponse)
     mock_response.text = answer
     mock_response.candidates = [Mock(finish_reason=1)]
-    # Calling the google.generativeai.GenerativeModel.generate_content method
+    # Calling the google.genai.models.Models.generate_content method
     # requires a Google API key, so we mock the return value instead
     with patch(
-        "google.generativeai.GenerativeModel.generate_content",
+        "google.genai.models.Models.generate_content",
         return_value=mock_response,
     ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
-        client = GeminiEvalClient(system_prompt=system_prompt)
+        client = GeminiEvalClient(system_instruction=system_instruction)
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == answer
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
+@pytest.mark.parametrize("system_instruction", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_gemini(system_prompt, language):
+def test_get_float_score_gemini(system_instruction, language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
     short_assessment_result = "Fully Consistent"
     score_map = {short_assessment_result: 1.0}
 
-    mock_response = Mock(spec=generation_types.GenerateContentResponse)
-    mock_response.text = short_assessment_result
+    class Response(BaseModel):
+        score: Literal[tuple(score_map.keys())]  # type: ignore
 
-    class FunctionCallMock(Mock):
-        @classmethod
-        def to_dict(cls, instance):
-            return {"args": {"assessment": short_assessment_result}}
+    mock_response = Mock(spec=types.GenerateContentResponse)
+    mock_response.parsed = Response(score=short_assessment_result)
+    mock_response.candidates = [Mock(finish_reason=1)]
 
-    mock_response.candidates = [
-        Mock(
-            finish_reason=1,
-            content=Mock(parts=[Mock(function_call=FunctionCallMock())]),
-        )
-    ]
-
-    # Calling the google.generativeai.GenerativeModel.generate_content method
+    # Calling the google.genai.models.Models.generate_content method
     # requires a Google API key, so we mock the return value instead
     with patch(
-        "google.generativeai.GenerativeModel.generate_content",
+        "google.genai.models.Models.generate_content",
         return_value=mock_response,
     ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
-        client = GeminiEvalClient(system_prompt=system_prompt)
+        client = GeminiEvalClient(system_instruction=system_instruction)
 
         scores = client.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
@@ -74,13 +68,19 @@ def test_get_float_score_gemini(system_prompt, language):
 
 
 def test_similarity_scorer_gemini():
-    mock_embedding_response = {"embedding": [[0.1, 0.2, 0.3]]}
+    mock_embedding_response = [0.1, 0.2, 0.3]
 
-    # Calling the google.generativeai.embed_content method requires a Google
+    # Calling the google.genai.models.Models.embed_content method requires a Google
     # API key, so we mock the return value instead
     with patch(
-        "langcheck.metrics.eval_clients._gemini.embed_content",
-        Mock(return_value=mock_embedding_response),
+        "google.genai.models.Models.embed_content",
+        Mock(
+            return_value=types.EmbedContentResponse(
+                embeddings=[
+                    types.ContentEmbedding(values=mock_embedding_response)
+                ]
+            )
+        ),
     ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
