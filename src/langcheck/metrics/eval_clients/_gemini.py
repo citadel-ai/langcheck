@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import os
-import warnings
 from collections.abc import Iterable
 from typing import Any
 
 import google.ai.generativelanguage as glm
 import torch
-from google.generativeai.client import configure
-from google.generativeai.embedding import embed_content
-from google.generativeai.generative_models import GenerativeModel
+from google import genai
+from google.genai import types
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -23,12 +21,11 @@ class GeminiEvalClient(EvalClient):
 
     def __init__(
         self,
-        model: GenerativeModel | None = None,
-        model_args: dict[str, Any] | None = None,
+        model_name: str = "gemini-1.5-flash",
         generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
         *,
-        system_prompt: str | None = None,
+        system_instruction: str | None = None,
     ):
         """
         Initialize the Gemini evaluation client. The authentication
@@ -47,35 +44,34 @@ class GeminiEvalClient(EvalClient):
                 model will be created using the model_args.
             model_args: (Optional) Dict of args to create the Gemini model.
             generate_content_args: (Optional) Dict of args to pass in to the
-                ``generate_content`` function.
+                ``generate_content`` function. The keys should be the same as
+                the keys in the ``genai.types.GenerateContentConfig`` type.
             embed_model_name: (Optional) The name of the embedding model to use.
                 If not provided, the models/embedding-001 model will be used.
-            system_prompt: (Optional) The system prompt to use. If not provided,
-                no system prompt will be used.
+            system_instruction: (Optional) The system instruction to use. If not
+                provided, no system instruction will be used.
         """
-        if model:
-            self._text_response_model = model
-            self._structured_assessment_model = model
-        else:
-            configure(api_key=os.getenv("GOOGLE_API_KEY"))
-            model_args = model_args or {}
-            self._structured_assessment_model = GenerativeModel(**model_args)
-            # Only add system prompt to the text response model if it is provided
-            if system_prompt:
-                if "system_instruction" in model_args:
-                    warnings.warn(
-                        '"system_instruction" of model_args will be ignored because '
-                        "system_prompt is provided."
-                    )
-                model_args["system_instruction"] = system_prompt
-            self._text_response_model = GenerativeModel(**model_args)
-
+        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+        self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
+        self._system_instruction = system_instruction
+
+        self._validate_generate_content_config()
+
+    def _validate_generate_content_config(self) -> None:
+        if self._system_instruction:
+            try:
+                _ = types.GenerateContentConfig(**self._generate_content_args)
+            except (TypeError, ValueError) as e:
+                raise ValueError(
+                    f"Invalid generate_content_args: {self._generate_content_args}"
+                    f"Error: {e}"
+                )
 
     def _call_api(
         self,
-        model: GenerativeModel,
+        model: str,
         prompts: Iterable[str | None],
         config: dict[str, Any],
         *,
@@ -85,7 +81,11 @@ class GeminiEvalClient(EvalClient):
         # of exception handling with the async version.
         def _call_api_with_exception_filter(prompt: str) -> Any:
             try:
-                return model.generate_content(prompt, **config)
+                return self.client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(**config),
+                )
             except Exception as e:
                 return e
 
@@ -121,11 +121,15 @@ class GeminiEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        config = {"generation_config": {"temperature": 0.0}}
+        config: dict[str, Any] = {
+            "temperature": 0.0,
+            "system_instruction": self._system_instruction,
+        }
         config.update(self._generate_content_args or {})
+
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
-            model=self._text_response_model,
+            model=self._model_name,
             prompts=prompts,
             config=config,
             tqdm_description=tqdm_description,
@@ -208,7 +212,7 @@ class GeminiEvalClient(EvalClient):
 
         tqdm_description = tqdm_description or "Scores (2/2)"
         responses = self._call_api(
-            model=self._structured_assessment_model,
+            model=self._model_name,
             prompts=fn_call_messages,
             config=config_structured_assessments,
             tqdm_description=tqdm_description,
@@ -239,7 +243,10 @@ class GeminiEvalClient(EvalClient):
         ]
 
     def similarity_scorer(self) -> GeminiSimilarityScorer:
-        return GeminiSimilarityScorer(embed_model_name=self._embed_model_name)
+        return GeminiSimilarityScorer(
+            embed_model_name=self._embed_model_name,
+            client=self.client,
+        )
 
 
 class GeminiSimilarityScorer(BaseSimilarityScorer):
@@ -248,16 +255,23 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
     EvalClients.
     """
 
-    def __init__(self, embed_model_name: str | None):
+    def __init__(
+        self,
+        embed_model_name: str | None,
+        client: genai.Client,
+    ):
         super().__init__()
 
-        self.embed_model_name = embed_model_name or "models/embedding-001"
+        self._embed_model_name = embed_model_name or "models/text-embedding-004"
+        self._client = client
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the Gemini API."""
         # Embed the inputs
-        embed_response = embed_content(
-            model=self.embed_model_name, content=inputs
+        embed_response = self._client.models.embed_content(
+            model=self._embed_model_name,
+            contents=inputs,  # type: ignore
         )
 
-        return torch.Tensor([item for item in embed_response["embedding"]])
+        assert embed_response.embeddings is not None
+        return torch.Tensor(embed_response.embeddings[0].values)
