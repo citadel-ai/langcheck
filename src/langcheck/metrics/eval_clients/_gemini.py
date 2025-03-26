@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import Any, Literal
 
 import torch
@@ -69,7 +68,7 @@ class GeminiEvalClient(EvalClient):
     def _call_api(
         self,
         model: str,
-        prompts: Iterable[str | None],
+        prompts: list[str] | list[str | None],
         config: dict[str, Any],
         *,
         tqdm_description: str | None = None,
@@ -108,7 +107,10 @@ class GeminiEvalClient(EvalClient):
         return responses
 
     def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+        self,
+        prompts: list[str],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
 
@@ -118,6 +120,11 @@ class GeminiEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
+        if not isinstance(prompts, list):
+            raise ValueError(
+                f"prompts must be a list, not a {type(prompts).__name__}"
+            )
+
         config: dict[str, Any] = {
             "temperature": 0.0,
             "system_instruction": self._system_instruction,

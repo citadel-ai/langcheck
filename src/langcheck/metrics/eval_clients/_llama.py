@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 
@@ -70,7 +68,7 @@ class LlamaEvalClient(EvalClient):
 
     def get_text_responses(
         self,
-        prompts: Iterable[str],
+        prompts: list[str],
         language: str,
     ) -> list[str | None]:
         """The function that generates responses to the given prompt texts.
@@ -84,6 +82,11 @@ class LlamaEvalClient(EvalClient):
         """
         if language not in ["en", "ja"]:
             raise ValueError(f"Unsupported language: {language}")
+
+        if not isinstance(prompts, list):
+            raise ValueError(
+                f"prompts must be a list, not a {type(prompts).__name__}"
+            )
 
         if self._system_prompt is None:
             system_prompt = self._default_system_prompts[language]
@@ -219,7 +222,7 @@ class LlamaEvalClient(EvalClient):
         self,
         metric_name: str,
         language: str,
-        prompts: str | Iterable[str],
+        prompts: str | list[str],
         score_map: dict[str, float],
     ) -> tuple[list[float | None], list[str | None]]:
         """Give scores to texts embedded in the given prompts. The function

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import Union
 
 from jinja2 import Template
@@ -49,7 +48,7 @@ class EvalClient:
 
     def get_text_responses(
         self,
-        prompts: Iterable[str],
+        prompts: list[str],
         *,
         tqdm_description: str | None = None,
     ) -> list[str | None]:
@@ -68,7 +67,7 @@ class EvalClient:
 
     def get_text_responses_with_log_likelihood(
         self,
-        prompts: Iterable[str],
+        prompts: list[str],
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
@@ -129,7 +128,7 @@ class EvalClient:
         self,
         metric_name: str,
         language: str,
-        prompts: str | Iterable[str],
+        prompts: str | list[str],
         score_map: dict[str, float],
         *,
         intermediate_tqdm_description: str | None = None,

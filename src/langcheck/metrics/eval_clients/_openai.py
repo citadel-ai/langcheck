@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import os
 import warnings
-from collections.abc import Iterable
 from typing import Any, Literal
 
 import torch
@@ -53,7 +52,7 @@ class OpenAIEvalClient(EvalClient):
 
     def _call_api(
         self,
-        prompts: Iterable[str | None],
+        prompts: list[str],
         config: dict[str, str],
         *,
         tqdm_description: str | None = None,
@@ -120,7 +119,7 @@ class OpenAIEvalClient(EvalClient):
 
     def get_text_responses(
         self,
-        prompts: Iterable[str],
+        prompts: list[str],
         *,
         tqdm_description: str | None = None,
     ) -> list[str | None]:
@@ -140,6 +139,12 @@ class OpenAIEvalClient(EvalClient):
             "If you want to use other models, please set the model "
             "parameter to the desired model name in the `openai_args`."
         )
+
+        if not isinstance(prompts, list):
+            raise ValueError(
+                f"prompts must be a list, not a {type(prompts).__name__}"
+            )
+
         config = {"model": "gpt-4o-mini"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
@@ -158,7 +163,7 @@ class OpenAIEvalClient(EvalClient):
 
     def get_text_responses_with_log_likelihood(
         self,
-        prompts: Iterable[str],
+        prompts: list[str],
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
@@ -180,6 +185,11 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
+        if not isinstance(prompts, list):
+            raise ValueError(
+                f"prompts must be a list, not a {type(prompts).__name__}"
+            )
+
         config = {"model": "gpt-4o-mini", "logprobs": True}
         if top_logprobs:
             config["top_logprobs"] = top_logprobs
