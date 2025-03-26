@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from collections.abc import Iterable
 from typing import Any, Literal
 
@@ -50,7 +49,7 @@ class GeminiEvalClient(EvalClient):
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
         """
-        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+        self.client = genai.Client()
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
