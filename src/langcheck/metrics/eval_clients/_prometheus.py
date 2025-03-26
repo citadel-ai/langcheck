@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 from jinja2 import Template
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
@@ -94,7 +92,7 @@ class PrometheusEvalClient(EvalClient):
                     f"The {metric_name} metric (language = {language}, version = {eval_prompt_version}) is not yet supported by the Prometheus eval client."
                 )
 
-    def get_text_responses(self, prompts: Iterable[str]) -> list[str | None]:
+    def get_text_responses(self, prompts: list[str]) -> list[str | None]:
         """The function that generates responses to the given prompt texts.
 
         Args:
@@ -103,6 +101,11 @@ class PrometheusEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
+        if not isinstance(prompts, list):
+            raise ValueError(
+                f"prompts must be a list, not a {type(prompts).__name__}"
+            )
+
         if self._system_prompt is None:
             messages = [
                 [{"role": "user", "content": prompt}] for prompt in prompts
@@ -184,7 +187,7 @@ class PrometheusEvalClient(EvalClient):
         self,
         metric_name: str,
         language: str,
-        prompts: str | Iterable[str],
+        prompts: str | list[str],
         score_map: dict[str, float],
     ) -> tuple[list[float | None], list[str | None]]:
         """Give scores to texts embedded in the given prompts. The function

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import warnings
-from collections.abc import Iterable
 from typing import Any
 
 from anthropic import Anthropic, AsyncAnthropic
@@ -56,7 +55,7 @@ class AnthropicEvalClient(EvalClient):
 
     def _call_api(
         self,
-        prompts: Iterable[str | None],
+        prompts: list[str] | list[str | None],
         config: dict[str, Any],
         *,
         system_prompt: str | None = None,
@@ -118,7 +117,10 @@ class AnthropicEvalClient(EvalClient):
         return responses
 
     def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+        self,
+        prompts: list[str],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
         We use Anthropic's 'claude-3-haiku-20240307' model by default, but you
@@ -131,6 +133,11 @@ class AnthropicEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
+        if not isinstance(prompts, list):
+            raise ValueError(
+                f"prompts must be a list, not a {type(prompts).__name__}"
+            )
+
         config = {
             "model": "claude-3-haiku-20240307",
             "max_tokens": 4096,

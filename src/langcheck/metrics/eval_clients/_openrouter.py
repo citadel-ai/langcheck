@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Iterable
 from typing import Any
 
 import requests
@@ -40,7 +39,7 @@ class OpenRouterEvalClient(EvalClient):
 
     def _call_api(
         self,
-        prompts: Iterable[str | None],
+        prompts: list[str] | list[str | None],
         config: dict[str, str],
         *,
         tqdm_description: str | None = None,
@@ -82,7 +81,10 @@ class OpenRouterEvalClient(EvalClient):
         return responses
 
     def get_text_responses(
-        self, prompts: Iterable[str], *, tqdm_description: str | None = None
+        self,
+        prompts: list[str],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
         The user's default OpenRouter model is used by default, but you can
@@ -153,17 +155,15 @@ class OpenRouterEvalClient(EvalClient):
 
         # If there are any Nones in get_score_prompts,
         # they are excluded from messages to prevent passing those to the model.
-        if isinstance(get_score_prompts, str):
-            prompts = [get_score_prompts]
-        else:
-            prompts = [
-                prompt for prompt in get_score_prompts if prompt is not None
-            ]
+        prompts = [prompt for prompt in get_score_prompts if prompt is not None]
+
         config = {}
         config.update(self._openrouter_args or {})
         tqdm_description = tqdm_description or "Scores (2/2)"
         responses = self._call_api(
-            prompts, config, tqdm_description=tqdm_description
+            prompts,
+            config,
+            tqdm_description=tqdm_description,
         )
         raw_response_texts = [
             response["choices"][0]["message"]["content"] if response else None
@@ -196,7 +196,7 @@ class OpenRouterEvalClient(EvalClient):
         self,
         metric_name: str,
         language: str,
-        prompts: str | Iterable[str],
+        prompts: str | list[str],
         score_map: dict[str, float],
     ) -> tuple[list[float | None], list[str | None]]:
         """Give scores to texts embedded in the given prompts. The function
