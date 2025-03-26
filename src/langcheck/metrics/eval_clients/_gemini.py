@@ -25,49 +25,47 @@ class GeminiEvalClient(EvalClient):
         generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
         *,
-        system_instruction: str | None = None,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
 
-        TODO: Allow the user to specify the use of async. There currently
-        seems to be an issue with `generate_content_async()` that is blocking
-        this: https://github.com/google-gemini/generative-ai-python/issues/207
+        TODO: Allow the user to specify the use of async.
+        https://github.com/citadel-ai/langcheck/issues/191
 
         Ref:
             https://ai.google.dev/api/python/google/generativeai/GenerativeModel
 
         Args:
-            model: (Optional) The Gemini model to use. If not provided, the
-                model will be created using the model_args.
-            model_args: (Optional) Dict of args to create the Gemini model.
+            model_name: (Optional) The Gemini model to use. Defaults to
+                "gemini-1.5-flash".
             generate_content_args: (Optional) Dict of args to pass in to the
                 ``generate_content`` function. The keys should be the same as
                 the keys in the ``genai.types.GenerateContentConfig`` type.
             embed_model_name: (Optional) The name of the embedding model to use.
-                If not provided, the models/embedding-001 model will be used.
-            system_instruction: (Optional) The system instruction to use. If not
-                provided, no system instruction will be used.
+                If not provided, the models/text-embedding-004 model will be used.
+            system_prompt: (Optional) The system prompt for ``generate_content``
+                in ``get_text_responses`` function. If not provided, no system
+                prompt will be used.
         """
         self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
-        self._system_instruction = system_instruction
+        self._system_instruction = system_prompt
 
         self._validate_generate_content_config()
 
     def _validate_generate_content_config(self) -> None:
-        if self._system_instruction:
-            try:
-                _ = types.GenerateContentConfig(**self._generate_content_args)
-            except (TypeError, ValueError) as e:
-                raise ValueError(
-                    f"Invalid generate_content_args: {self._generate_content_args}"
-                    f"Error: {e}"
-                )
+        try:
+            _ = types.GenerateContentConfig(**self._generate_content_args)
+        except (TypeError, ValueError) as e:
+            raise ValueError(
+                f"Invalid generate_content_args: {self._generate_content_args}"
+                f"Error: {e}"
+            )
 
     def _call_api(
         self,
