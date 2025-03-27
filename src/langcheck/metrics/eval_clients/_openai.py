@@ -269,7 +269,7 @@ class OpenAIEvalClient(EvalClient):
             score: Literal[tuple(options)]  # type: ignore
 
         structured_output_template = get_template(
-            f"{language}/get_score/function_calling.j2"
+            f"{language}/get_score/structured_output.j2"
         )
 
         config = {"model": "gpt-4o-mini"}

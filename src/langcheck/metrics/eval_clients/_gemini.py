@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import os
-import warnings
-from typing import Any
+from typing import Any, Literal
 
-import google.ai.generativelanguage as glm
 import torch
-from google.generativeai.client import configure
-from google.generativeai.embedding import embed_content
-from google.generativeai.generative_models import GenerativeModel
+from google import genai
+from google.genai import types
+from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -22,8 +19,7 @@ class GeminiEvalClient(EvalClient):
 
     def __init__(
         self,
-        model: GenerativeModel | None = None,
-        model_args: dict[str, Any] | None = None,
+        model_name: str = "gemini-1.5-flash",
         generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
         *,
@@ -34,47 +30,44 @@ class GeminiEvalClient(EvalClient):
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
 
-        TODO: Allow the user to specify the use of async. There currently
-        seems to be an issue with `generate_content_async()` that is blocking
-        this: https://github.com/google-gemini/generative-ai-python/issues/207
+        TODO: Allow the user to specify the use of async.
+        https://github.com/citadel-ai/langcheck/issues/191
 
         Ref:
             https://ai.google.dev/api/python/google/generativeai/GenerativeModel
 
         Args:
-            model: (Optional) The Gemini model to use. If not provided, the
-                model will be created using the model_args.
-            model_args: (Optional) Dict of args to create the Gemini model.
+            model_name: (Optional) The Gemini model to use. Defaults to
+                "gemini-1.5-flash".
             generate_content_args: (Optional) Dict of args to pass in to the
-                ``generate_content`` function.
+                ``generate_content`` function. The keys should be the same as
+                the keys in the ``genai.types.GenerateContentConfig`` type.
             embed_model_name: (Optional) The name of the embedding model to use.
-                If not provided, the models/embedding-001 model will be used.
-            system_prompt: (Optional) The system prompt to use. If not provided,
-                no system prompt will be used.
+                If not provided, the models/text-embedding-004 model will be used.
+            system_prompt: (Optional) The system prompt for ``generate_content``
+                in ``get_text_responses`` function. If not provided, no system
+                prompt will be used.
         """
-        if model:
-            self._text_response_model = model
-            self._structured_assessment_model = model
-        else:
-            configure(api_key=os.getenv("GOOGLE_API_KEY"))
-            model_args = model_args or {}
-            self._structured_assessment_model = GenerativeModel(**model_args)
-            # Only add system prompt to the text response model if it is provided
-            if system_prompt:
-                if "system_instruction" in model_args:
-                    warnings.warn(
-                        '"system_instruction" of model_args will be ignored because '
-                        "system_prompt is provided."
-                    )
-                model_args["system_instruction"] = system_prompt
-            self._text_response_model = GenerativeModel(**model_args)
-
+        self.client = genai.Client()
+        self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
+        self._system_instruction = system_prompt
+
+        self._validate_generate_content_config()
+
+    def _validate_generate_content_config(self) -> None:
+        try:
+            _ = types.GenerateContentConfig(**self._generate_content_args)
+        except (TypeError, ValueError) as e:
+            raise ValueError(
+                f"Invalid generate_content_args: {self._generate_content_args}"
+                f"Error: {e}"
+            )
 
     def _call_api(
         self,
-        model: GenerativeModel,
+        model: str,
         prompts: list[str] | list[str | None],
         config: dict[str, Any],
         *,
@@ -84,7 +77,11 @@ class GeminiEvalClient(EvalClient):
         # of exception handling with the async version.
         def _call_api_with_exception_filter(prompt: str) -> Any:
             try:
-                return model.generate_content(prompt, **config)
+                return self.client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(**config),
+                )
             except Exception as e:
                 return e
 
@@ -128,11 +125,15 @@ class GeminiEvalClient(EvalClient):
                 f"prompts must be a list, not a {type(prompts).__name__}"
             )
 
-        config = {"generation_config": {"temperature": 0.0}}
+        config: dict[str, Any] = {
+            "temperature": 0.0,
+            "system_instruction": self._system_instruction,
+        }
         config.update(self._generate_content_args or {})
+
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
-            model=self._text_response_model,
+            model=self._model_name,
             prompts=prompts,
             config=config,
             tqdm_description=tqdm_description,
@@ -154,13 +155,12 @@ class GeminiEvalClient(EvalClient):
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We leverage the
-        function calling API to extract the short assessment results from the
+        structured output API to extract the short assessment results from the
         unstructured assessments, so please make sure that the model you use
-        supports function calling
-        (https://ai.google.dev/gemini-api/docs/function-calling#supported-models).
+        supports structured output (See the References for more details).
 
-        Ref:
-            https://ai.google.dev/gemini-api/docs/function-calling
+        References:
+            https://ai.google.dev/gemini-api/docs/structured-output
 
         Args:
             metric_name: The name of the metric to be used. (e.g. "toxicity")
@@ -178,13 +178,24 @@ class GeminiEvalClient(EvalClient):
         if language not in ["en", "ja", "de"]:
             raise ValueError(f"Unsupported language: {language}")
 
-        fn_call_template = get_template(
-            f"{language}/get_score/function_calling.j2"
+        structured_output_template = get_template(
+            f"{language}/get_score/structured_output.j2"
         )
 
         options = list(score_map.keys())
-        fn_call_messages = [
-            fn_call_template.render(
+
+        class Response(BaseModel):
+            score: Literal[tuple(options)]  # type: ignore
+
+        config = {
+            "temperature": 0.0,
+            "response_mime_type": "application/json",
+            "response_schema": Response,
+        }
+        config.update(self._generate_content_args or {})
+
+        prompts = [
+            structured_output_template.render(
                 {
                     "metric": metric_name,
                     "unstructured_assessment": unstructured_assessment,
@@ -196,47 +207,18 @@ class GeminiEvalClient(EvalClient):
             for unstructured_assessment in unstructured_assessment_result
         ]
 
-        assessment_schema = glm.Schema(type=glm.Type.STRING, enum=options)
-
-        save_assessment = glm.FunctionDeclaration(
-            name="save_assessment",
-            description=f"Save the assessment of {metric_name}.",
-            parameters=glm.Schema(
-                type=glm.Type.OBJECT,
-                properties={"assessment": assessment_schema},
-            ),
-        )
-        config_structured_assessments = {
-            "tools": [save_assessment],
-            "tool_config": {"function_calling_config": "ANY"},
-            "generation_config": {"temperature": 0.0},
-        }
-        config_structured_assessments.update(self._generate_content_args or {})
-
         tqdm_description = tqdm_description or "Scores (2/2)"
         responses = self._call_api(
-            model=self._structured_assessment_model,
-            prompts=fn_call_messages,
-            config=config_structured_assessments,
+            model=self._model_name,
+            prompts=prompts,
+            config=config,
             tqdm_description=tqdm_description,
         )
-        assessments = []
-        for response in responses:
-            if response is None:
-                assessments.append(None)
-                continue
-            function_call = (
-                response.candidates[0].content.parts[0].function_call
-            )
-            fc_dict = type(function_call).to_dict(function_call)
-            assessments.append(fc_dict.get("args", {}).get("assessment"))
-        # Check if any of the assessments are not recognized.
-        for assessment in assessments:
-            if (assessment is None) or (assessment in options):
-                continue
-            # By leveraging the function calling API, this should be pretty
-            # rare, but we're dealing with LLMs here so nothing is absolute!
-            print(f'Gemini returned an unrecognized assessment: "{assessment}"')
+
+        assessments = [
+            response.parsed.score if response else None
+            for response in responses
+        ]
 
         return [
             score_map[assessment]
@@ -246,7 +228,10 @@ class GeminiEvalClient(EvalClient):
         ]
 
     def similarity_scorer(self) -> GeminiSimilarityScorer:
-        return GeminiSimilarityScorer(embed_model_name=self._embed_model_name)
+        return GeminiSimilarityScorer(
+            embed_model_name=self._embed_model_name,
+            client=self.client,
+        )
 
 
 class GeminiSimilarityScorer(BaseSimilarityScorer):
@@ -255,16 +240,25 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
     EvalClients.
     """
 
-    def __init__(self, embed_model_name: str | None):
+    def __init__(
+        self,
+        embed_model_name: str | None,
+        client: genai.Client,
+    ):
         super().__init__()
 
-        self.embed_model_name = embed_model_name or "models/embedding-001"
+        self._embed_model_name = embed_model_name or "models/text-embedding-004"
+        self._client = client
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the Gemini API."""
         # Embed the inputs
-        embed_response = embed_content(
-            model=self.embed_model_name, content=inputs
+        embed_response = self._client.models.embed_content(
+            model=self._embed_model_name,
+            contents=inputs,  # type: ignore
         )
 
-        return torch.Tensor([item for item in embed_response["embedding"]])
+        assert embed_response.embeddings is not None
+        return torch.Tensor(
+            [embed.values for embed in embed_response.embeddings]
+        )

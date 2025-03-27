@@ -25,7 +25,7 @@ dependencies = [
     'plotly >= 5',
     'requests',
     'rouge-score >= 0.1.2',
-    'sentence-transformers >= 2',
+    'sentence-transformers >= 2, < 4',
     'sentencepiece>=0.1.95',
     'tomli; python_version < "3.11"',
     'tokenizers >= 0.13.2; python_version >= "3.11"',  # See https://github.com/citadel-ai/langcheck/pull/45
@@ -59,7 +59,7 @@ anthropic = [
     'anthropic'
 ]
 gemini = [
-    'google-generativeai'
+    'google-genai'
 ]
 local-llm = [
     'vllm'

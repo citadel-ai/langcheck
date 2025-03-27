@@ -36,7 +36,7 @@ def load_checkpoint(
     loaded = torch.hub.load_state_dict_from_url(
         checkpoint_url, map_location=device
     )
-    class_names = loaded["config"]["dataset"]["args"]["classes"]
+    class_names: list[str] = loaded["config"]["dataset"]["args"]["classes"]
     change_names = {
         "toxic": "toxicity",
         "identity_hate": "identity_attack",
