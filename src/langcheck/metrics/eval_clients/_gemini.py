@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any, Literal
 
 import torch
@@ -23,6 +24,7 @@ class GeminiEvalClient(EvalClient):
         generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
         *,
+        use_async: bool = False,
         system_prompt: str | None = None,
     ):
         """
@@ -44,6 +46,8 @@ class GeminiEvalClient(EvalClient):
                 the keys in the ``genai.types.GenerateContentConfig`` type.
             embed_model_name: (Optional) The name of the embedding model to use.
                 If not provided, the models/text-embedding-004 model will be used.
+            use_async: (Optional) If True, the async client will be used.
+                Defaults to False.
             system_prompt: (Optional) The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
@@ -52,6 +56,7 @@ class GeminiEvalClient(EvalClient):
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
+        self._use_async = use_async
         self._system_instruction = system_prompt
 
         self._validate_generate_content_config()
@@ -68,27 +73,47 @@ class GeminiEvalClient(EvalClient):
     def _call_api(
         self,
         model: str,
-        prompts: list[str] | list[str | None],
+        prompts: list[str],
         config: dict[str, Any],
         *,
         tqdm_description: str | None = None,
     ) -> list[Any]:
-        # A helper function to call the API with exception filter for alignment
-        # of exception handling with the async version.
-        def _call_api_with_exception_filter(prompt: str) -> Any:
-            try:
-                return self.client.models.generate_content(
-                    model=model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(**config),
-                )
-            except Exception as e:
-                return e
+        if self._use_async:
 
-        responses = [
-            _call_api_with_exception_filter(prompt)
-            for prompt in tqdm_wrapper(prompts, desc=tqdm_description)
-        ]
+            async def _call_async_api() -> list[Any]:
+                responses = await asyncio.gather(
+                    *map(
+                        lambda prompt: self.client.aio.models.generate_content(
+                            model=model,
+                            contents=prompt,
+                            config=types.GenerateContentConfig(**config),
+                        ),
+                        prompts,
+                    ),
+                    return_exceptions=True,
+                )
+                return responses
+
+            loop = asyncio.get_event_loop()
+            responses = loop.run_until_complete(_call_async_api())
+
+        else:
+            # A helper function to call the API with exception filter for alignment
+            # of exception handling with the async version.
+            def _call_api_with_exception_filter(prompt: str) -> Any:
+                try:
+                    return self.client.models.generate_content(
+                        model=model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(**config),
+                    )
+                except Exception as e:
+                    return e
+
+            responses = [
+                _call_api_with_exception_filter(prompt)
+                for prompt in tqdm_wrapper(prompts, desc=tqdm_description)
+            ]
 
         # Filter out exceptions and print them out. Also filter out responses
         # that are blocked by safety settings and print out the safety ratings.
@@ -194,26 +219,43 @@ class GeminiEvalClient(EvalClient):
         }
         config.update(self._generate_content_args or {})
 
-        prompts = [
-            structured_output_template.render(
-                {
-                    "metric": metric_name,
-                    "unstructured_assessment": unstructured_assessment,
-                    "options": options,
-                }
-            )
-            if unstructured_assessment
-            else None
-            for unstructured_assessment in unstructured_assessment_result
-        ]
+        # Create prompts, filtering out None
+        valid_prompts = []
+        prompt_indices = []  # Keep track of original indices
+
+        for i, unstructured_assessment in enumerate(
+            unstructured_assessment_result
+        ):
+            if unstructured_assessment is not None:
+                valid_prompts.append(
+                    structured_output_template.render(
+                        {
+                            "metric": metric_name,
+                            "unstructured_assessment": unstructured_assessment,
+                            "options": options,
+                        }
+                    )
+                )
+                prompt_indices.append(i)
 
         tqdm_description = tqdm_description or "Scores (2/2)"
-        responses = self._call_api(
-            model=self._model_name,
-            prompts=prompts,
-            config=config,
-            tqdm_description=tqdm_description,
-        )
+
+        # Call API for valid prompts
+        if valid_prompts:
+            api_responses = self._call_api(
+                model=self._model_name,
+                prompts=valid_prompts,
+                config=config,
+                tqdm_description=tqdm_description,
+            )
+        else:
+            api_responses = []
+
+        # Reconstruct full responses list with None for invalid prompts
+        responses = [None] * len(unstructured_assessment_result)
+        for i, response in enumerate(api_responses):
+            original_idx = prompt_indices[i]
+            responses[original_idx] = response
 
         assessments = [
             response.parsed.score if response else None
