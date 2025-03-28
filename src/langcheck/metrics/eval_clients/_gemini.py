@@ -31,11 +31,13 @@ class GeminiEvalClient(EvalClient):
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
+        If you want to use Vertex AI, please set the following environment
+        variables appropriately:
+        - GOOGLE_CLOUD_PROJECT=<your-project-id>
+        - GOOGLE_CLOUD_LOCATION=<location>
+        - GOOGLE_GENAI_USE_VERTEXAI=true
 
-        TODO: Allow the user to specify the use of async.
-        https://github.com/citadel-ai/langcheck/issues/191
-
-        Ref:
+        References:
             https://ai.google.dev/api/python/google/generativeai/GenerativeModel
 
         Args:
