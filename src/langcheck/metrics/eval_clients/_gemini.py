@@ -273,6 +273,7 @@ class GeminiEvalClient(EvalClient):
         return GeminiSimilarityScorer(
             embed_model_name=self._embed_model_name,
             client=self.client,
+            use_async=self._use_async,
         )
 
 
@@ -286,19 +287,33 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
         self,
         embed_model_name: str | None,
         client: genai.Client,
+        *,
+        use_async: bool = False,
     ):
         super().__init__()
 
-        self._embed_model_name = embed_model_name or "models/text-embedding-004"
+        self._embed_model_name = embed_model_name or "text-embedding-004"
         self._client = client
+        self._use_async = use_async
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the Gemini API."""
-        # Embed the inputs
-        embed_response = self._client.models.embed_content(
-            model=self._embed_model_name,
-            contents=inputs,  # type: ignore
-        )
+        if self._use_async:
+
+            async def _call_async_api():
+                embed_response = await self._client.aio.models.embed_content(
+                    model=self._embed_model_name,
+                    contents=inputs,  # type: ignore
+                )
+                return embed_response
+
+            loop = asyncio.get_event_loop()
+            embed_response = loop.run_until_complete(_call_async_api())
+        else:
+            embed_response = self._client.models.embed_content(
+                model=self._embed_model_name,
+                contents=inputs,  # type: ignore
+            )
 
         assert embed_response.embeddings is not None
         return torch.Tensor(
