@@ -85,7 +85,7 @@ class GeminiEvalClient(EvalClient):
                     *map(
                         lambda prompt: self.client.aio.models.generate_content(
                             model=model,
-                            contents=prompt,
+                            contents=types.Part.from_text(text=prompt),
                             config=types.GenerateContentConfig(**config),
                         ),
                         prompts,
@@ -104,7 +104,7 @@ class GeminiEvalClient(EvalClient):
                 try:
                     return self.client.models.generate_content(
                         model=model,
-                        contents=prompt,
+                        contents=types.Part.from_text(text=prompt),
                         config=types.GenerateContentConfig(**config),
                     )
                 except Exception as e:
@@ -303,7 +303,9 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
             async def _call_async_api():
                 embed_response = await self._client.aio.models.embed_content(
                     model=self._embed_model_name,
-                    contents=inputs,  # type: ignore
+                    contents=[
+                        types.Part.from_text(text=prompt) for prompt in inputs
+                    ],
                 )
                 return embed_response
 
@@ -312,7 +314,9 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
         else:
             embed_response = self._client.models.embed_content(
                 model=self._embed_model_name,
-                contents=inputs,  # type: ignore
+                contents=[
+                    types.Part.from_text(text=prompt) for prompt in inputs
+                ],
             )
 
         assert embed_response.embeddings is not None
