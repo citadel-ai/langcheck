@@ -472,8 +472,6 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs using the OpenAI API."""
 
-        # TODO: Fix that this async call could be much slower than the sync
-        # version. https://github.com/citadel-ai/langcheck/issues/160
         if self._use_async:
             try:
                 loop = asyncio.get_event_loop()
