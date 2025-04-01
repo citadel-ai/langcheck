@@ -37,9 +37,11 @@ class AnthropicEvalClient(EvalClient):
         variables appropriately:
         - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
         - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
+        - GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials-file>
 
         References:
-            https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
+            - https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
+            - https://cloud.google.com/docs/authentication/application-default-credentials
 
         Args:
             anthropic_client: (Optional) The Anthropic client to use.

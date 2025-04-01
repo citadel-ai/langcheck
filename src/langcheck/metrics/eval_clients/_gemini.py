@@ -36,9 +36,11 @@ class GeminiEvalClient(EvalClient):
         - GOOGLE_CLOUD_PROJECT=<your-project-id>
         - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
         - GOOGLE_GENAI_USE_VERTEXAI=true
+        - GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials-file>
 
         References:
-            https://ai.google.dev/api/python/google/generativeai/GenerativeModel
+            - https://ai.google.dev/api/python/google/generativeai/GenerativeModel
+            - https://cloud.google.com/docs/authentication/application-default-credentials
 
         Args:
             model_name: (Optional) The Gemini model to use. Defaults to
