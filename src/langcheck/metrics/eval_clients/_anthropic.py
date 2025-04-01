@@ -65,6 +65,7 @@ class AnthropicEvalClient(EvalClient):
 
         self._anthropic_args = anthropic_args or {}
         self._use_async = use_async
+        self._use_vertexai = use_vertexai
         self._system_prompt = system_prompt
 
         if system_prompt and "system" in self._anthropic_args:
@@ -159,7 +160,9 @@ class AnthropicEvalClient(EvalClient):
             )
 
         config = {
-            "model": "claude-3-haiku-20240307",
+            "model": "claude-3-haiku@20240307"
+            if self._use_vertexai
+            else "claude-3-haiku-20240307",
             "max_tokens": 4096,
             "temperature": 0.0,
         }
@@ -221,7 +224,12 @@ class AnthropicEvalClient(EvalClient):
             for unstructured_assessment in unstructured_assessment_result
         ]
 
-        config = {"model": "claude-3-haiku-20240307", "max_tokens": 1024}
+        config = {
+            "model": "claude-3-haiku@20240307"
+            if self._use_vertexai
+            else "claude-3-haiku-20240307",
+            "max_tokens": 1024,
+        }
         config.update(self._anthropic_args or {})
         tqdm_description = tqdm_description or "Scores (2/2)"
         responses = self._call_api(
