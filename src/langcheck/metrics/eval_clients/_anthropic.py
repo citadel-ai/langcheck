@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import warnings
 from typing import Any
 
-from anthropic import Anthropic, AsyncAnthropic
+from anthropic import (
+    Anthropic,
+    AnthropicVertex,
+    AsyncAnthropic,
+    AsyncAnthropicVertex,
+)
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -27,6 +33,13 @@ class AnthropicEvalClient(EvalClient):
         Initialize the Anthropic evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure ANTHROPIC_API_KEY is set.
+        If you want to use Vertex AI, please set the following environment
+        variables appropriately:
+        - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
+        - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
+
+        References:
+            https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
 
         Args:
             anthropic_client: (Optional) The Anthropic client to use.
@@ -36,8 +49,13 @@ class AnthropicEvalClient(EvalClient):
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
         """
+        use_vertexai = os.getenv("ANTHROPIC_VERTEX_PROJECT_ID") is not None
         if anthropic_client:
             self._client = anthropic_client
+        elif use_vertexai and use_async:
+            self._client = AsyncAnthropicVertex()
+        elif use_vertexai:
+            self._client = AnthropicVertex()
         elif use_async:
             self._client = AsyncAnthropic()
         else:
