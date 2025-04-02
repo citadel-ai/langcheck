@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import warnings
 from typing import Any
 
-from anthropic import Anthropic, AsyncAnthropic
+from anthropic import (
+    Anthropic,
+    AnthropicVertex,
+    AsyncAnthropic,
+    AsyncAnthropicVertex,
+)
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -27,6 +33,15 @@ class AnthropicEvalClient(EvalClient):
         Initialize the Anthropic evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure ANTHROPIC_API_KEY is set.
+        If you want to use Vertex AI, please set the following environment
+        variables appropriately:
+        - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
+        - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
+        - GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials-file>
+
+        References:
+            - https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
+            - https://cloud.google.com/docs/authentication/application-default-credentials
 
         Args:
             anthropic_client: (Optional) The Anthropic client to use.
@@ -36,8 +51,13 @@ class AnthropicEvalClient(EvalClient):
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
         """
+        use_vertexai = os.getenv("ANTHROPIC_VERTEX_PROJECT_ID") is not None
         if anthropic_client:
             self._client = anthropic_client
+        elif use_vertexai and use_async:
+            self._client = AsyncAnthropicVertex()
+        elif use_vertexai:
+            self._client = AnthropicVertex()
         elif use_async:
             self._client = AsyncAnthropic()
         else:
@@ -45,6 +65,7 @@ class AnthropicEvalClient(EvalClient):
 
         self._anthropic_args = anthropic_args or {}
         self._use_async = use_async
+        self._use_vertexai = use_vertexai
         self._system_prompt = system_prompt
 
         if system_prompt and "system" in self._anthropic_args:
@@ -139,7 +160,11 @@ class AnthropicEvalClient(EvalClient):
             )
 
         config = {
-            "model": "claude-3-haiku-20240307",
+            # The model names are slightly different for Anthropic API and Vertex AI API
+            # Reference: https://docs.anthropic.com/en/docs/about-claude/models/all-models
+            "model": "claude-3-haiku@20240307"
+            if self._use_vertexai
+            else "claude-3-haiku-20240307",
             "max_tokens": 4096,
             "temperature": 0.0,
         }
@@ -201,7 +226,14 @@ class AnthropicEvalClient(EvalClient):
             for unstructured_assessment in unstructured_assessment_result
         ]
 
-        config = {"model": "claude-3-haiku-20240307", "max_tokens": 1024}
+        config = {
+            # The model names are slightly different for Anthropic API and Vertex AI API
+            # Reference: https://docs.anthropic.com/en/docs/about-claude/models/all-models
+            "model": "claude-3-haiku@20240307"
+            if self._use_vertexai
+            else "claude-3-haiku-20240307",
+            "max_tokens": 1024,
+        }
         config.update(self._anthropic_args or {})
         tqdm_description = tqdm_description or "Scores (2/2)"
         responses = self._call_api(
