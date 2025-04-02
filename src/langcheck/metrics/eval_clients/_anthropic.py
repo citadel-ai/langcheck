@@ -160,6 +160,8 @@ class AnthropicEvalClient(EvalClient):
             )
 
         config = {
+            # The model names are slightly different for Anthropic API and Vertex AI API
+            # Reference: https://docs.anthropic.com/en/docs/about-claude/models/all-models
             "model": "claude-3-haiku@20240307"
             if self._use_vertexai
             else "claude-3-haiku-20240307",
@@ -225,6 +227,8 @@ class AnthropicEvalClient(EvalClient):
         ]
 
         config = {
+            # The model names are slightly different for Anthropic API and Vertex AI API
+            # Reference: https://docs.anthropic.com/en/docs/about-claude/models/all-models
             "model": "claude-3-haiku@20240307"
             if self._use_vertexai
             else "claude-3-haiku-20240307",
