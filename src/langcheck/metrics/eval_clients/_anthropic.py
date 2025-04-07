@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import warnings
 from typing import Any
 
