@@ -10,7 +10,6 @@ from anthropic import (
     AsyncAnthropic,
     AsyncAnthropicVertex,
 )
-from google.oauth2.credentials import Credentials
 
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -27,19 +26,18 @@ class AnthropicEvalClient(EvalClient):
         anthropic_args: dict[str, Any] | None = None,
         *,
         use_async: bool = False,
+        vertexai: bool = False,
         system_prompt: str | None = None,
-        google_cloud_project: str | None = None,
-        google_cloud_location: str | None = None,
-        google_cloud_credentials: Credentials | None = None,
     ):
         """
         Initialize the Anthropic evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure ANTHROPIC_API_KEY is set.
-        If you want to use Vertex AI, please set the following arguments:
-            - google_cloud_project
-            - google_cloud_location
-            - google_cloud_credentials
+        If you want to use Vertex AI, please set the following environment
+        variables:
+            - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
+            - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
+            - GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials-file>
 
         References:
             - https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
@@ -50,63 +48,16 @@ class AnthropicEvalClient(EvalClient):
             anthropic_args: (Optional) dict of additional args to pass in to
                 the ``client.messages.create`` function
             use_async: (Optional) If True, the async client will be used.
+            vertexai: (Optional) If True, the Vertex AI client will be used.
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
-            google_cloud_project: (Optional) The Google Cloud project ID.
-                Needed to use Vertex AI.
-            google_cloud_location: (Optional) The Google Cloud location.
-                Needed to use Vertex AI. (e.g. "europe-west1")
-            google_cloud_credentials: (Optional) The Google Cloud credentials.
-                Needed to use Vertex AI.
         """
-        use_vertexai = False
-        if (
-            google_cloud_project is not None
-            and google_cloud_location is not None
-            and google_cloud_credentials is not None
-        ):
-            use_vertexai = True
-        elif any(
-            [
-                google_cloud_project is not None,
-                google_cloud_location is not None,
-                google_cloud_credentials is not None,
-            ]
-        ):
-            missing_args = []
-            if google_cloud_project is None:
-                missing_args.append("`google_cloud_project`")
-            if google_cloud_location is None:
-                missing_args.append("`google_cloud_location`")
-            if google_cloud_credentials is None:
-                missing_args.append("`google_cloud_credentials`")
-            raise ValueError(
-                f"Missing required Vertex AI arguments: {', '.join(missing_args)}. "
-                "All of `google_cloud_project`, `google_cloud_location`, and `google_cloud_credentials` must be provided to use Vertex AI."
-            )
-
         if anthropic_client:
             self._client = anthropic_client
-        elif use_vertexai and use_async:
-            assert (
-                google_cloud_project is not None
-                and google_cloud_location is not None
-            )  # for type checking
-            self._client = AsyncAnthropicVertex(
-                project_id=google_cloud_project,
-                region=google_cloud_location,
-                credentials=google_cloud_credentials,
-            )
-        elif use_vertexai:
-            assert (
-                google_cloud_project is not None
-                and google_cloud_location is not None
-            )  # for type checking
-            self._client = AnthropicVertex(
-                project_id=google_cloud_project,
-                region=google_cloud_location,
-                credentials=google_cloud_credentials,
-            )
+        elif vertexai and use_async:
+            self._client = AsyncAnthropicVertex()
+        elif vertexai:
+            self._client = AnthropicVertex()
         elif use_async:
             self._client = AsyncAnthropic()
         else:
@@ -114,7 +65,7 @@ class AnthropicEvalClient(EvalClient):
 
         self._anthropic_args = anthropic_args or {}
         self._use_async = use_async
-        self._use_vertexai = use_vertexai
+        self._vertexai = vertexai
         self._system_prompt = system_prompt
 
         if system_prompt and "system" in self._anthropic_args:
@@ -212,7 +163,7 @@ class AnthropicEvalClient(EvalClient):
             # The model names are slightly different for Anthropic API and Vertex AI API
             # Reference: https://docs.anthropic.com/en/docs/about-claude/models/all-models
             "model": "claude-3-haiku@20240307"
-            if self._use_vertexai
+            if self._vertexai
             else "claude-3-haiku-20240307",
             "max_tokens": 4096,
             "temperature": 0.0,
@@ -279,7 +230,7 @@ class AnthropicEvalClient(EvalClient):
             # The model names are slightly different for Anthropic API and Vertex AI API
             # Reference: https://docs.anthropic.com/en/docs/about-claude/models/all-models
             "model": "claude-3-haiku@20240307"
-            if self._use_vertexai
+            if self._vertexai
             else "claude-3-haiku-20240307",
             "max_tokens": 1024,
         }

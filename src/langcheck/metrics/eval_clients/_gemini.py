@@ -6,7 +6,6 @@ from typing import Any, Literal
 import torch
 from google import genai
 from google.genai import types
-from google.oauth2.credentials import Credentials
 from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
@@ -26,19 +25,18 @@ class GeminiEvalClient(EvalClient):
         embed_model_name: str | None = None,
         *,
         use_async: bool = False,
+        vertexai: bool = False,
         system_prompt: str | None = None,
-        google_cloud_project: str | None = None,
-        google_cloud_location: str | None = None,
-        google_cloud_credentials: Credentials | None = None,
     ):
         """
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
-        If you want to use Vertex AI, please set the following arguments:
-            - google_cloud_project
-            - google_cloud_location
-            - google_cloud_credentials
+        If you want to use Vertex AI, please set the following environment
+        variables:
+            - GOOGLE_CLOUD_PROJECT=<your-project-id>
+            - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
+            - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
 
         References:
             - https://ai.google.dev/api/python/google/generativeai/GenerativeModel
@@ -54,15 +52,11 @@ class GeminiEvalClient(EvalClient):
                 If not provided, the models/text-embedding-004 model will be used.
             use_async: (Optional) If True, the async client will be used.
                 Defaults to False.
+            vertexai: (Optional) If True, the Vertex AI client will be used.
+                Defaults to False.
             system_prompt: (Optional) The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
-            google_cloud_project: (Optional) The Google Cloud project ID.
-                Needed to use Vertex AI.
-            google_cloud_location: (Optional) The Google Cloud location.
-                Needed to use Vertex AI. (e.g. "europe-west1")
-            google_cloud_credentials: (Optional) The Google Cloud credentials.
-                Needed to use Vertex AI.
         """
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
@@ -70,38 +64,7 @@ class GeminiEvalClient(EvalClient):
         self._use_async = use_async
         self._system_instruction = system_prompt
 
-        if (
-            google_cloud_project is not None
-            and google_cloud_location is not None
-            and google_cloud_credentials is not None
-        ):
-            self.client = genai.Client(
-                vertexai=True,
-                project=google_cloud_project,
-                location=google_cloud_location,
-                credentials=google_cloud_credentials,
-            )
-        elif any(
-            [
-                google_cloud_project is not None,
-                google_cloud_location is not None,
-                google_cloud_credentials is not None,
-            ]
-        ):
-            missing_args = []
-            if google_cloud_project is None:
-                missing_args.append("`google_cloud_project`")
-            if google_cloud_location is None:
-                missing_args.append("`google_cloud_location`")
-            if google_cloud_credentials is None:
-                missing_args.append("`google_cloud_credentials`")
-
-            raise ValueError(
-                f"Missing required Vertex AI arguments: {', '.join(missing_args)}. "
-                "All of `google_cloud_project`, `google_cloud_location`, and `google_cloud_credentials` must be provided to use Vertex AI."
-            )
-        else:
-            self.client = genai.Client()
+        self.client = genai.Client(vertexai=vertexai)
 
         self._validate_generate_content_config()
 
