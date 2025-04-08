@@ -28,16 +28,18 @@ class AnthropicEvalClient(EvalClient):
         *,
         use_async: bool = False,
         system_prompt: str | None = None,
-        project: str | None = None,
-        location: str | None = None,
-        credentials: Credentials | None = None,
+        google_cloud_project: str | None = None,
+        google_cloud_location: str | None = None,
+        google_cloud_credentials: Credentials | None = None,
     ):
         """
         Initialize the Anthropic evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure ANTHROPIC_API_KEY is set.
         If you want to use Vertex AI, please set the following arguments:
-        ``project``, ``location``, ``credentials``.
+            - google_cloud_project
+            - google_cloud_location
+            - google_cloud_credentials
 
         References:
             - https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
@@ -50,58 +52,60 @@ class AnthropicEvalClient(EvalClient):
             use_async: (Optional) If True, the async client will be used.
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
-            project: (Optional) The Google Cloud project ID. Needed to use
-                Vertex AI.
-            location: (Optional) The Google Cloud location. Needed to use
-                Vertex AI. (e.g. "europe-west1")
-            credentials: (Optional) The Google Cloud credentials. Needed to use
-                Vertex AI.
+            google_cloud_project: (Optional) The Google Cloud project ID.
+                Needed to use Vertex AI.
+            google_cloud_location: (Optional) The Google Cloud location.
+                Needed to use Vertex AI. (e.g. "europe-west1")
+            google_cloud_credentials: (Optional) The Google Cloud credentials.
+                Needed to use Vertex AI.
         """
         use_vertexai = False
         if (
-            project is not None
-            and location is not None
-            and credentials is not None
+            google_cloud_project is not None
+            and google_cloud_location is not None
+            and google_cloud_credentials is not None
         ):
             use_vertexai = True
         elif any(
             [
-                project is not None,
-                location is not None,
-                credentials is not None,
+                google_cloud_project is not None,
+                google_cloud_location is not None,
+                google_cloud_credentials is not None,
             ]
         ):
             missing_args = []
-            if project is None:
-                missing_args.append("`project`")
-            if location is None:
-                missing_args.append("`location`")
-            if credentials is None:
-                missing_args.append("`credentials`")
+            if google_cloud_project is None:
+                missing_args.append("`google_cloud_project`")
+            if google_cloud_location is None:
+                missing_args.append("`google_cloud_location`")
+            if google_cloud_credentials is None:
+                missing_args.append("`google_cloud_credentials`")
             raise ValueError(
                 f"Missing required Vertex AI arguments: {', '.join(missing_args)}. "
-                "All of `project`, `location`, and `credentials` must be provided to use Vertex AI."
+                "All of `google_cloud_project`, `google_cloud_location`, and `google_cloud_credentials` must be provided to use Vertex AI."
             )
 
         if anthropic_client:
             self._client = anthropic_client
         elif use_vertexai and use_async:
             assert (
-                project is not None and location is not None
+                google_cloud_project is not None
+                and google_cloud_location is not None
             )  # for type checking
             self._client = AsyncAnthropicVertex(
-                project_id=project,
-                region=location,
-                credentials=credentials,
+                project_id=google_cloud_project,
+                region=google_cloud_location,
+                credentials=google_cloud_credentials,
             )
         elif use_vertexai:
             assert (
-                project is not None and location is not None
+                google_cloud_project is not None
+                and google_cloud_location is not None
             )  # for type checking
             self._client = AnthropicVertex(
-                project_id=project,
-                region=location,
-                credentials=credentials,
+                project_id=google_cloud_project,
+                region=google_cloud_location,
+                credentials=google_cloud_credentials,
             )
         elif use_async:
             self._client = AsyncAnthropic()

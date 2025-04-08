@@ -27,16 +27,18 @@ class GeminiEvalClient(EvalClient):
         *,
         use_async: bool = False,
         system_prompt: str | None = None,
-        project: str | None = None,
-        location: str | None = None,
-        credentials: Credentials | None = None,
+        google_cloud_project: str | None = None,
+        google_cloud_location: str | None = None,
+        google_cloud_credentials: Credentials | None = None,
     ):
         """
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
         If you want to use Vertex AI, please set the following arguments:
-        ``project``, ``location``, ``credentials``.
+            - google_cloud_project
+            - google_cloud_location
+            - google_cloud_credentials
 
         References:
             - https://ai.google.dev/api/python/google/generativeai/GenerativeModel
@@ -55,12 +57,12 @@ class GeminiEvalClient(EvalClient):
             system_prompt: (Optional) The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
-            project: (Optional) The Google Cloud project ID. Needed to use
-                Vertex AI.
-            location: (Optional) The Google Cloud location. Needed to use
-                Vertex AI. (e.g. "europe-west1")
-            credentials: (Optional) The Google Cloud credentials. Needed to use
-                Vertex AI.
+            google_cloud_project: (Optional) The Google Cloud project ID.
+                Needed to use Vertex AI.
+            google_cloud_location: (Optional) The Google Cloud location.
+                Needed to use Vertex AI. (e.g. "europe-west1")
+            google_cloud_credentials: (Optional) The Google Cloud credentials.
+                Needed to use Vertex AI.
         """
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
@@ -69,34 +71,34 @@ class GeminiEvalClient(EvalClient):
         self._system_instruction = system_prompt
 
         if (
-            project is not None
-            and location is not None
-            and credentials is not None
+            google_cloud_project is not None
+            and google_cloud_location is not None
+            and google_cloud_credentials is not None
         ):
             self.client = genai.Client(
                 vertexai=True,
-                project=project,
-                location=location,
-                credentials=credentials,
+                project=google_cloud_project,
+                location=google_cloud_location,
+                credentials=google_cloud_credentials,
             )
         elif any(
             [
-                project is not None,
-                location is not None,
-                credentials is not None,
+                google_cloud_project is not None,
+                google_cloud_location is not None,
+                google_cloud_credentials is not None,
             ]
         ):
             missing_args = []
-            if project is None:
-                missing_args.append("`project`")
-            if location is None:
-                missing_args.append("`location`")
-            if credentials is None:
-                missing_args.append("`credentials`")
+            if google_cloud_project is None:
+                missing_args.append("`google_cloud_project`")
+            if google_cloud_location is None:
+                missing_args.append("`google_cloud_location`")
+            if google_cloud_credentials is None:
+                missing_args.append("`google_cloud_credentials`")
 
             raise ValueError(
                 f"Missing required Vertex AI arguments: {', '.join(missing_args)}. "
-                "All of `project`, `location`, and `credentials` must be provided to use Vertex AI."
+                "All of `google_cloud_project`, `google_cloud_location`, and `google_cloud_credentials` must be provided to use Vertex AI."
             )
         else:
             self.client = genai.Client()
