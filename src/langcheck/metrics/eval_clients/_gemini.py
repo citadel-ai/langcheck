@@ -32,8 +32,8 @@ class GeminiEvalClient(EvalClient):
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
-        If you want to use Vertex AI, please set the following environment
-        variables:
+        If you want to use Vertex AI, set the `vertexai` argument to True, and
+        please set the following environment variables:
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
