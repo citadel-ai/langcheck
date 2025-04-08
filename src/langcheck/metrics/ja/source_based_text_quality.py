@@ -5,6 +5,9 @@ from typing import cast
 from transformers.pipelines import pipeline
 from transformers.pipelines.base import Pipeline
 
+from langcheck.metrics.compute_metric_value import (
+    compute_metric_values_from_template,
+)
 from langcheck.metrics.en.source_based_text_quality import (
     factual_consistency as en_factual_consistency,
 )
@@ -12,9 +15,6 @@ from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
     get_metric_inputs,
     get_metric_inputs_with_required_lists,
-)
-from langcheck.metrics.compute_metric_value import (
-    compute_metric_values_from_template,
 )
 from langcheck.metrics.metric_value import MetricValue
 from langcheck.utils.progress_bar import tqdm_wrapper
@@ -60,7 +60,7 @@ def factual_consistency(
         sources: The source text(s), one string per generated output
         prompts: The prompts used to generate the output(s). Prompts are
             optional metadata and not used to calculate the metric.
-        eval_model: The type of model to use ('local' or the EvalClient instance
+        eval_model: The type of mode to use ('local' or the EvalClient instance
             used for the evaluation). default 'local'
         score_eval_client (Optional): The EvalClient instance used for the score evaluation.
             If not provided, the scores will be computed using the `eval_model`.

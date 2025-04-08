@@ -4,9 +4,6 @@ from typing import Union
 
 from jinja2 import Template
 
-from langcheck.metrics.metric_inputs import MetricInputs
-from langcheck.metrics.metric_value import MetricValue
-
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 
