@@ -130,14 +130,29 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         "[Swapped model outputs order] Intermediate assessments (1/2)"
     )
     score_tqdm = "[Swapped model outputs order] Calculating scores (2/2)"
-    swapped_scores, swapped_explanations = eval_client.get_score(
-        metric_name=metric_name,
-        language=language,
-        prompts=swapped_prompts,
-        score_map=score_map,
-        intermediate_tqdm_description=intermediate_tqdm,
-        score_tqdm_description=score_tqdm,
-    )
+
+    if score_eval_client:
+        swapped_explanations = eval_client.get_text_responses(
+            prompts=swapped_prompts,
+            tqdm_description=intermediate_tqdm,
+        )
+        swapped_scores = score_eval_client.get_float_score(
+            metric_name=metric_name,
+            language=language,
+            unstructured_assessment_result=swapped_explanations,
+            score_map=score_map,
+            tqdm_description=score_tqdm,
+        )
+
+    else:
+        swapped_scores, swapped_explanations = eval_client.get_score(
+            metric_name=metric_name,
+            language=language,
+            prompts=swapped_prompts,
+            score_map=score_map,
+            intermediate_tqdm_description=intermediate_tqdm,
+            score_tqdm_description=score_tqdm,
+        )
 
     # NOTE: The enforce_pairwise_comparison_consistency function assumes
     # that the score_map is symmetric, in the sense that swapping Model A
