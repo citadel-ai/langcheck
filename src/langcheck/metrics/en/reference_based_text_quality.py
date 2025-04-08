@@ -11,6 +11,7 @@ from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.prompts._utils import load_prompt_template
 from langcheck.metrics.scorer.hf_models import (
     SentenceTransformerSimilarityScorer,
 )
@@ -53,7 +54,7 @@ def answer_correctness(
     )
     metric_name = "answer_correctness"
 
-    answer_correctness_template = eval_model.load_prompt_template(
+    answer_correctness_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 

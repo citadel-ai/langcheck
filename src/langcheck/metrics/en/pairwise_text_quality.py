@@ -10,6 +10,7 @@ from langcheck.metrics._pairwise_text_quality_utils import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.prompts._utils import load_prompt_template
 
 from ..compute_metric_value import compute_metric_values_from_template
 from ..eval_clients._base import TextResponseWithLogProbs, TokenLogProb
@@ -184,8 +185,9 @@ def pairwise_comparison(
 
     metric_name = "pairwise_comparison"
     language = "en"
-    pairwise_comparison_template = eval_model.load_prompt_template(
-        language=language, metric_name=metric_name
+    pairwise_comparison_template = load_prompt_template(
+        language=language,
+        metric_name=metric_name,
     )
 
     if enforce_consistency:

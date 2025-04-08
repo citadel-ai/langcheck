@@ -6,6 +6,31 @@ from pathlib import Path
 from jinja2 import Template
 
 
+def load_prompt_template(
+    language: str,
+    metric_name: str,
+    eval_prompt_version: str | None = None,
+) -> Template:
+    """
+    Gets a Jinja template from the specified language, eval client, metric
+    name, and (optionally) eval prompt version.
+
+    Args:
+        language (str): The language of the template.
+        metric_name (str): The name of the metric.
+        eval_prompt_version (str | None): The version of the eval prompt.
+            If None, the default version is used.
+
+    Returns:
+        Template: The Jinja template.
+    """
+    if eval_prompt_version is None:
+        return get_template(f"{language}/metrics/{metric_name}.j2")
+    return get_template(
+        f"{language}/metrics/{metric_name}_{eval_prompt_version}.j2"
+    )
+
+
 def get_template(relative_path: str) -> Template:
     """
     Gets a Jinja template from the specified prompt template file.

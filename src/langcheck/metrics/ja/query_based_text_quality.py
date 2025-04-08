@@ -6,6 +6,7 @@ from langcheck.metrics.compute_metric_value import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.prompts._utils import load_prompt_template
 
 LANG = "ja"
 
@@ -32,7 +33,7 @@ def answer_relevance(
 
     metric_name = "answer_relevance"
 
-    answer_relevance_template = eval_model.load_prompt_template(
+    answer_relevance_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
@@ -72,7 +73,7 @@ def answer_safety(
 
     metric_name = "answer_safety"
 
-    answer_relevance_template = eval_model.load_prompt_template(
+    answer_relevance_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
@@ -113,7 +114,7 @@ def personal_data_leakage(
 
     metric_name = "personal_data_leakage"
 
-    answer_relevance_template = eval_model.load_prompt_template(
+    answer_relevance_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
@@ -154,7 +155,7 @@ def hate_speech(
 
     metric_name = "hate_speech"
 
-    answer_relevance_template = eval_model.load_prompt_template(
+    answer_relevance_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
@@ -195,7 +196,7 @@ def adult_content(
 
     metric_name = "adult_content"
 
-    answer_relevance_template = eval_model.load_prompt_template(
+    answer_relevance_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
@@ -236,7 +237,7 @@ def harmful_activity(
 
     metric_name = "harmful_activity"
 
-    answer_relevance_template = eval_model.load_prompt_template(
+    answer_relevance_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 

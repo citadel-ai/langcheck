@@ -11,6 +11,7 @@ from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.prompts._utils import load_prompt_template
 from langcheck.metrics.scorer.hf_models import (
     AutoModelForSequenceClassificationScorer,
 )
@@ -86,7 +87,7 @@ def sentiment(
             "An EvalClient must be provided for non-local model types."
         )
 
-        sentiment_template = eval_model.load_prompt_template(
+        sentiment_template = load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -230,7 +231,7 @@ def toxicity(
             f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are {list(toxicity_assessment_to_score.keys())}."
         )
 
-        toxicity_template = eval_model.load_prompt_template(
+        toxicity_template = load_prompt_template(
             language=LANG,
             metric_name=metric_name,
             eval_prompt_version=eval_prompt_version,
@@ -347,7 +348,7 @@ def fluency(
             "An EvalClient must be provided for non-local model types."
         )
 
-        fluency_template = eval_model.load_prompt_template(
+        fluency_template = load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -507,7 +508,7 @@ def jailbreak_prompt(
     )
 
     metric_name = "jailbreak_prompt"
-    jailbreak_prompt_template = eval_model.load_prompt_template(
+    jailbreak_prompt_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
@@ -558,7 +559,7 @@ def prompt_leakage(
 
     metric_name = "prompt_leakage"
 
-    prompt_leakage_template = eval_model.load_prompt_template(
+    prompt_leakage_template = load_prompt_template(
         language=LANG,
         metric_name=metric_name,
         eval_prompt_version=eval_prompt_version,

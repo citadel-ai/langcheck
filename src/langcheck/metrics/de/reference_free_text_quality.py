@@ -18,6 +18,7 @@ from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.prompts._utils import load_prompt_template
 from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import (
     AutoModelForSequenceClassificationScorer,
@@ -98,7 +99,7 @@ def sentiment(
             "An EvalClient must be provided for non-local model types."
         )
 
-        sentiment_template = eval_model.load_prompt_template(
+        sentiment_template = load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -213,7 +214,7 @@ def fluency(
             "An EvalClient must be provided for non-local model types."
         )
 
-        fluency_template = eval_model.load_prompt_template(
+        fluency_template = load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -299,7 +300,7 @@ def toxicity(
             "An EvalClient must be provided for non-local model types."
         )
 
-        toxicity_template = eval_model.load_prompt_template(
+        toxicity_template = load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 

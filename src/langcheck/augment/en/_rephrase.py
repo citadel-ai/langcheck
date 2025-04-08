@@ -3,6 +3,7 @@ from __future__ import annotations
 from langcheck.metrics.eval_clients import (
     EvalClient,
 )
+from langcheck.metrics.prompts._utils import load_prompt_template
 
 
 def rephrase(
@@ -35,7 +36,7 @@ def rephrase(
             f"Invalid eval_prompt_version: {eval_prompt_version}. The valid versions are 'v1' and 'v2'."
         )
 
-    prompt_template = eval_client.load_prompt_template(
+    prompt_template = load_prompt_template(
         language="en",
         metric_name="rephrase",
         eval_prompt_version=eval_prompt_version,

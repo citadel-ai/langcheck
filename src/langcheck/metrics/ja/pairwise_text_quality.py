@@ -9,6 +9,7 @@ from langcheck.metrics.compute_metric_value import (
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.prompts._utils import load_prompt_template
 
 
 def pairwise_comparison(
@@ -72,7 +73,7 @@ def pairwise_comparison(
     }
     metric_name = "pairwise_comparison"
     language = "ja"
-    pairwise_comparison_template = eval_model.load_prompt_template(
+    pairwise_comparison_template = load_prompt_template(
         language=language, metric_name=metric_name
     )
 

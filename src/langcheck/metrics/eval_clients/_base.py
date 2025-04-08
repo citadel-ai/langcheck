@@ -4,7 +4,6 @@ from typing import Union
 
 from jinja2 import Template
 
-from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 
 TokenLogProb = dict[str, Union[str, float]]
@@ -17,31 +16,6 @@ class EvalClient:
     Most metrics that use external APIs such as OpenAI API call the methods
     defined in this class to compute the metric values.
     """
-
-    def load_prompt_template(  # FIXME: it doesn't need to be a method?
-        self,
-        language: str,
-        metric_name: str,
-        eval_prompt_version: str | None = None,
-    ) -> Template:
-        """
-        Gets a Jinja template from the specified language, eval client, metric
-        name, and (optionally) eval prompt version.
-
-        Args:
-            language (str): The language of the template.
-            metric_name (str): The name of the metric.
-            eval_prompt_version (str | None): The version of the eval prompt.
-                If None, the default version is used.
-
-        Returns:
-            Template: The Jinja template.
-        """
-        if eval_prompt_version is None:
-            return get_template(f"{language}/metrics/{metric_name}.j2")
-        return get_template(
-            f"{language}/metrics/{metric_name}_{eval_prompt_version}.j2"
-        )
 
     def get_text_responses(
         self,

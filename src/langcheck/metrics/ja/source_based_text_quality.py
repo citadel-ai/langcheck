@@ -17,6 +17,7 @@ from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
+from langcheck.metrics.prompts._utils import load_prompt_template
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 _factual_consistency_translation_model_path = "Helsinki-NLP/opus-mt-ja-en"
@@ -94,7 +95,7 @@ def factual_consistency(
             "An EvalClient must be provided for non-local model types."
         )
 
-        factual_consistency_template = eval_model.load_prompt_template(
+        factual_consistency_template = load_prompt_template(
             language=LANG, metric_name=metric_name
         )
         factual_consistency_assessment_to_score = {
@@ -218,7 +219,7 @@ def context_relevance(
     )
 
     metric_name = "context_relevance"
-    context_relevance_template = eval_model.load_prompt_template(
+    context_relevance_template = load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
