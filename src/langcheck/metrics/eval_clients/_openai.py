@@ -35,7 +35,8 @@ class OpenAIEvalClient(EvalClient):
             openai_client: (Optional) The OpenAI client to use.
             openai_args: (Optional) dict of additional args to pass in to the
             ``client.chat.completions.create`` function.
-            use_async: (Optional) If True, the async client will be used.
+            use_async: If True, the async client will be used. Defaults to
+                False.
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
         """

@@ -47,8 +47,10 @@ class AnthropicEvalClient(EvalClient):
             anthropic_client: (Optional) The Anthropic client to use.
             anthropic_args: (Optional) dict of additional args to pass in to
                 the ``client.messages.create`` function
-            use_async: (Optional) If True, the async client will be used.
-            vertexai: (Optional) If True, the Vertex AI client will be used.
+            use_async: If True, the async client will be used. Defaults to
+                False.
+            vertexai: If True, the Vertex AI client will be used. Defaults to
+                False.
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
         """
