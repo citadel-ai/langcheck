@@ -5,7 +5,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from anthropic.types.message import Message
-from google.oauth2.credentials import Credentials
 
 from langcheck.metrics.eval_clients import AnthropicEvalClient
 
@@ -41,12 +40,11 @@ def test_get_text_response_anthropic_vertex_ai(system_prompt):
     with patch(
         "anthropic.resources.Messages.create", return_value=mock_chat_completion
     ):
-        client = AnthropicEvalClient(
-            google_cloud_project="dummy_project",
-            google_cloud_location="dummy_location",
-            google_cloud_credentials=Mock(spec=Credentials),
-            system_prompt=system_prompt,
-        )
+        # Set the necessary env vars for the Vertex AI AnthropicEvalClient
+        os.environ["ANTHROPIC_VERTEX_PROJECT_ID"] = "dummy_project"
+        os.environ["CLOUD_ML_REGION"] = "dummy_location"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
+        client = AnthropicEvalClient(vertexai=True, system_prompt=system_prompt)
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
@@ -99,12 +97,11 @@ def test_get_float_score_anthropic_vertex_ai(system_prompt, language):
     with patch(
         "anthropic.resources.Messages.create", return_value=mock_chat_completion
     ):
-        client = AnthropicEvalClient(
-            google_cloud_project="dummy_project",
-            google_cloud_location="dummy_location",
-            google_cloud_credentials=Mock(spec=Credentials),
-            system_prompt=system_prompt,
-        )
+        # Set the necessary env vars for the Vertex AI AnthropicEvalClient
+        os.environ["ANTHROPIC_VERTEX_PROJECT_ID"] = "dummy_project"
+        os.environ["CLOUD_ML_REGION"] = "dummy_location"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
+        client = AnthropicEvalClient(vertexai=True, system_prompt=system_prompt)
 
         scores = client.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map

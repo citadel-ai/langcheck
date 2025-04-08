@@ -6,7 +6,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from google.genai import types
-from google.oauth2.credentials import Credentials
 from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients import GeminiEvalClient
@@ -47,12 +46,11 @@ def test_get_text_response_gemini_vertex_ai(system_prompt):
         "google.genai.models.Models.generate_content",
         return_value=mock_response,
     ):
-        client = GeminiEvalClient(
-            google_cloud_project="dummy_project",
-            google_cloud_location="dummy_location",
-            google_cloud_credentials=Mock(spec=Credentials),
-            system_prompt=system_prompt,
-        )
+        # Set the necessary env vars for the Vertex AI GeminiEvalClient
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "dummy_project"
+        os.environ["GOOGLE_CLOUD_LOCATION"] = "dummy_location"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
+        client = GeminiEvalClient(vertexai=True, system_prompt=system_prompt)
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
@@ -115,12 +113,11 @@ def test_get_float_score_gemini_vertex_ai(system_prompt, language):
         "google.genai.models.Models.generate_content",
         return_value=mock_response,
     ):
-        client = GeminiEvalClient(
-            google_cloud_project="dummy_project",
-            google_cloud_location="dummy_location",
-            google_cloud_credentials=Mock(spec=Credentials),
-            system_prompt=system_prompt,
-        )
+        # Set the necessary env vars for the Vertex AI GeminiEvalClient
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "dummy_project"
+        os.environ["GOOGLE_CLOUD_LOCATION"] = "dummy_location"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
+        client = GeminiEvalClient(vertexai=True, system_prompt=system_prompt)
 
         scores = client.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
@@ -172,11 +169,11 @@ def test_similarity_scorer_gemini_vertex_ai():
             )
         ),
     ):
-        gemini_client = GeminiEvalClient(
-            google_cloud_project="dummy_project",
-            google_cloud_location="dummy_location",
-            google_cloud_credentials=Mock(spec=Credentials),
-        )
+        # Set the necessary env vars for the Vertex AI GeminiEvalClient
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "dummy_project"
+        os.environ["GOOGLE_CLOUD_LOCATION"] = "dummy_location"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
+        gemini_client = GeminiEvalClient(vertexai=True)
         scorer = gemini_client.similarity_scorer()
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the similarity score should be 1.
