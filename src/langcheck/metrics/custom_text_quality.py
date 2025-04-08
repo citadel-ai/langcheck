@@ -7,6 +7,9 @@ from jinja2 import Template
 from langcheck.metrics._pairwise_text_quality_utils import (
     compute_pairwise_comparison_metric_values_with_consistency,
 )
+from langcheck.metrics.compute_metric_value import (
+    compute_metric_values_from_template,
+)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
     IndividualInputType,
@@ -28,6 +31,7 @@ def custom_evaluator(
     *,
     additional_inputs: dict[str, IndividualInputType] | None = None,
     additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the scores of a custom evaluator. The EvalClient will first
     assess the provided inputs using the prompt template, and then convert those
@@ -75,6 +79,8 @@ def custom_evaluator(
         additional_inputs: Additional inputs other than the standard ones.
         additional_input_name_to_prompt_var_mapping: A dictionary that maps the
             additional input names to the variable names in the prompt template.
+        score_eval_client: The EvalClient instance used for the score evaluation.
+            If not provided, the scores will be computed using the `eval_model`.
 
     Returns:
         A MetricValue object
@@ -103,12 +109,14 @@ def custom_evaluator(
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=prompt_template,
         metric_name=metric_name,
         language=language,
         score_map=score_map,
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )
 
 
@@ -125,6 +133,8 @@ def custom_pairwise_evaluator(
     template_path: str,
     language: str,
     enforce_consistency: bool = True,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the scores of a custom pairwise evaluator, where "pairwise"
     means that the Responses and/or Sources of two systems will be compared
@@ -178,6 +188,8 @@ def custom_pairwise_evaluator(
             the score is the same when Model A and Model B are swapped. This is
             useful for ensuring that the evaluator's position bias is not
             impacting the scores. Default True.
+        score_eval_client: The EvalClient instance used for the score evaluation.
+            If not provided, the scores will be computed using the `eval_model`.
 
     Returns:
         A MetricValue object
@@ -215,10 +227,12 @@ def custom_pairwise_evaluator(
             score_map=score_map,
         )
     else:
-        return eval_model.compute_metric_values_from_template(
+        return compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=prompt_template,
             metric_name=metric_name,
             language=language,
             score_map=score_map,
+            eval_client=eval_model,
+            score_eval_client=score_eval_client,
         )

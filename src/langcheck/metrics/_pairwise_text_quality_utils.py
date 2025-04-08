@@ -67,6 +67,8 @@ def compute_pairwise_comparison_metric_values_with_consistency(
     metric_name: str,
     language: str,
     score_map: dict[str, float],
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Utility function to compute the pairwise metric values from the given
     Jinja template with the metric inputs. This function always enforces the
@@ -84,6 +86,8 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         language: The language of the prompts. (e.g. "en")
         score_map: The mapping from the short assessment results
             (e.g. "Good") to the scores.
+        score_eval_client: The EvalClient instance used for the score evaluation.
+            If not provided, the scores will be computed using the `eval_client`.
 
     Returns:
         MetricValue: The metric values computed from the template.
@@ -94,12 +98,24 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         for prompt_template_input in prompt_template_inputs
     ]
 
-    scores, explanations = eval_client.get_score(
-        metric_name=metric_name,
-        language=language,
-        prompts=populated_prompts,
-        score_map=score_map,
-    )
+    if score_eval_client:
+        explanations = eval_client.get_text_responses(
+            prompts=populated_prompts,
+        )
+        scores = score_eval_client.get_float_score(
+            metric_name=metric_name,
+            language=language,
+            unstructured_assessment_result=explanations,
+            score_map=score_map,
+        )
+
+    else:
+        scores, explanations = eval_client.get_score(
+            metric_name=metric_name,
+            language=language,
+            prompts=populated_prompts,
+            score_map=score_map,
+        )
 
     # Swap the generated outputs and sources to enforce consistency
     swapped_prompt_template_inputs = (

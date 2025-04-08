@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from langcheck.metrics.compute_metric_value import (
+    compute_metric_values_from_template,
+)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
@@ -11,6 +14,8 @@ def answer_relevance(
     generated_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the relevance of generated outputs to the prompt. This metric
     takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
@@ -37,10 +42,12 @@ def answer_relevance(
         "Not Relevant": 0.0,
     }
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_relevance_template,
         metric_name=metric_name,
         language=LANG,
         score_map=answer_relevance_assessment_to_score,
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )

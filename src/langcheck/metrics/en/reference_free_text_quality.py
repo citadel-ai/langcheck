@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from langcheck.metrics.compute_metric_value import (
+    compute_metric_values_from_template,
+)
 from langcheck.metrics.en.reference_based_text_quality import (
     semantic_similarity,
 )
@@ -24,6 +27,8 @@ def sentiment(
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
@@ -53,6 +58,9 @@ def sentiment(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
+        score_eval_client (Optional): The EvalClient instance used for the score
+            evaluation. If not provided, the scores will be computed using the
+            `eval_model`.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -89,12 +97,14 @@ def sentiment(
             "Negative": 0.0,
         }
 
-        return eval_model.compute_metric_values_from_template(
+        return compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=sentiment_template,
             metric_name=metric_name,
             language=LANG,
             score_map=sentiment_assessment_to_score,
+            eval_client=eval_model,
+            score_eval_client=score_eval_client,
         )
 
 
@@ -133,6 +143,8 @@ def fluency(
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
@@ -162,6 +174,9 @@ def fluency(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
+        score_eval_client (Optional): The EvalClient instance used for the score
+            evaluation. If not provided, the scores will be computed using the
+            `eval_model`.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -198,12 +213,14 @@ def fluency(
             "Good": 1.0,
         }
 
-        return eval_model.compute_metric_values_from_template(
+        return compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=fluency_template,
             metric_name=metric_name,
             language=LANG,
             score_map=fluency_assessment_to_score,
+            eval_client=eval_model,
+            score_eval_client=score_eval_client,
         )
 
 
@@ -241,6 +258,8 @@ def toxicity(
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
     eval_prompt_version: str = "v2",
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
@@ -272,6 +291,9 @@ def toxicity(
             when the outputs are too long. The default value is 'nullify'.
         eval_prompt_version: The version of the eval prompt to use when the
             EvalClient is used. The default version is 'v2' (latest).
+        score_eval_client (Optional): The EvalClient instance used for the score
+            evaluation. If not provided, the scores will be computed using the
+            `eval_model`.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -323,12 +345,14 @@ def toxicity(
             eval_prompt_version=eval_prompt_version,
         )
 
-        return eval_model.compute_metric_values_from_template(
+        return compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=toxicity_template,
             metric_name=metric_name,
             language=LANG,
             score_map=toxicity_assessment_to_score[eval_prompt_version],
+            eval_client=eval_model,
+            score_eval_client=score_eval_client,
         )
 
 
@@ -499,6 +523,8 @@ def ai_disclaimer_similarity(
 def jailbreak_prompt(
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates whether jailbreak techniques are included in the prompts.
     This metric takes on float values of either 0.0 (Low Risk),
@@ -517,7 +543,7 @@ def jailbreak_prompt(
         language=LANG, metric_name=metric_name
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=jailbreak_prompt_template,
         metric_name=metric_name,
@@ -527,6 +553,8 @@ def jailbreak_prompt(
             "Medium Risk": 0.5,
             "High Risk": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )
 
 
@@ -535,6 +563,8 @@ def prompt_leakage(
     system_prompts: list[str] | str,
     eval_model: EvalClient,
     eval_prompt_version: str = "v2",
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the severity of prompt leakage in the generated outputs.
     This metric takes on float values of either 0.0 (Low Risk),
@@ -566,7 +596,7 @@ def prompt_leakage(
         eval_prompt_version=eval_prompt_version,
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=prompt_leakage_template,
         metric_name=metric_name,
@@ -576,4 +606,6 @@ def prompt_leakage(
             "Medium Risk": 0.5,
             "High Risk": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )

@@ -21,7 +21,7 @@ class EvalClient:
     defined in this class to compute the metric values.
     """
 
-    def load_prompt_template(
+    def load_prompt_template(  # FIXME: it doesn't need to be a method?
         self,
         language: str,
         metric_name: str,
@@ -178,53 +178,6 @@ class EvalClient:
         TODO: Intergrate scorer/ with eval_clients/
         """
         raise NotImplementedError
-
-    def compute_metric_values_from_template(
-        self,
-        metric_inputs: MetricInputs,
-        template: Template,
-        metric_name: str,
-        language: str,
-        score_map: dict[str, float],
-    ) -> MetricValue[float | None]:
-        """Compute the metric values from the given Jinja template with the
-        metric inputs. This function assumes that the template parameters are
-        already validated and the template is ready to be rendered.
-
-        Args:
-            metric_inputs: The metric inputs that contain the prompts,
-                generated outputs, reference outputs... etc.
-            template: The Jinja template that is ready to be rendered.
-            enforce_pairwise_consistency: Whether to enforce pairwise
-                consistency when computing the metric values.
-            metric_name: The name of the metric to be used. (e.g. "toxicity")
-            language: The language of the prompts. (e.g. "en")
-            score_map: The mapping from the short assessment results
-                (e.g. "Good") to the scores.
-
-        Returns:
-            MetricValue: The metric values computed from the template.
-        """
-        prompt_template_inputs = metric_inputs.get_inputs_for_prompt_template()
-        populated_prompts = [
-            template.render(prompt_template_input)
-            for prompt_template_input in prompt_template_inputs
-        ]
-
-        scores, explanations = self.get_score(
-            metric_name=metric_name,
-            language=language,
-            prompts=populated_prompts,
-            score_map=score_map,
-        )
-
-        return MetricValue(
-            metric_name=metric_name,
-            metric_inputs=metric_inputs,
-            explanations=explanations,
-            metric_values=scores,
-            language=language,
-        )
 
     def repeat_requests_from_template(
         self,

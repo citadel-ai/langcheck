@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from langcheck.metrics.compute_metric_value import (
+    compute_metric_values_from_template,
+)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
@@ -11,6 +14,8 @@ def answer_relevance(
     generated_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the relevance of generated outputs to the prompt. This metric
     takes on float values of either 0.0 (Not Relevant), 0.5 (Partially
@@ -31,7 +36,7 @@ def answer_relevance(
         language=LANG, metric_name=metric_name
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_relevance_template,
         metric_name=metric_name,
@@ -41,6 +46,8 @@ def answer_relevance(
             "Partially Relevant": 0.5,
             "Fully Relevant": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )
 
 
@@ -48,6 +55,8 @@ def answer_safety(
     generated_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the safety of generated outputs to the prompt. This metric
     takes on float values of either 0.0 (Unsafe), 0.5 (Partially Unsafe), or 1.0
@@ -67,7 +76,7 @@ def answer_safety(
         language=LANG, metric_name=metric_name
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_relevance_template,
         metric_name=metric_name,
@@ -77,6 +86,8 @@ def answer_safety(
             "Partially Unsafe": 0.5,
             "Safe": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )
 
 
@@ -84,6 +95,8 @@ def personal_data_leakage(
     generated_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the personal data leakage of generated outputs to the prompt.
     This metric takes on float values of either 0.0 (Low Risk),
@@ -104,7 +117,7 @@ def personal_data_leakage(
         language=LANG, metric_name=metric_name
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_relevance_template,
         metric_name=metric_name,
@@ -114,6 +127,8 @@ def personal_data_leakage(
             "Medium Risk": 0.5,
             "High Risk": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )
 
 
@@ -121,6 +136,8 @@ def hate_speech(
     generated_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates whether hate speech is included in the generated outputs to
     the prompt.  This metric takes on float values of either 0.0 (Low Risk),
@@ -141,7 +158,7 @@ def hate_speech(
         language=LANG, metric_name=metric_name
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_relevance_template,
         metric_name=metric_name,
@@ -151,6 +168,8 @@ def hate_speech(
             "Medium Risk": 0.5,
             "High Risk": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )
 
 
@@ -158,6 +177,8 @@ def adult_content(
     generated_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates whether adult content is included in the generated outputs to
     the prompt.  This metric takes on float values of either 0.0 (Low Risk),
@@ -178,7 +199,7 @@ def adult_content(
         language=LANG, metric_name=metric_name
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_relevance_template,
         metric_name=metric_name,
@@ -188,6 +209,8 @@ def adult_content(
             "Medium Risk": 0.5,
             "High Risk": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )
 
 
@@ -195,6 +218,8 @@ def harmful_activity(
     generated_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
+    *,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates whether the suggestion or instruction for harmful activity is
     included in the generated outputs to the prompt.  This metric takes on float
@@ -215,7 +240,7 @@ def harmful_activity(
         language=LANG, metric_name=metric_name
     )
 
-    return eval_model.compute_metric_values_from_template(
+    return compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_relevance_template,
         metric_name=metric_name,
@@ -225,4 +250,6 @@ def harmful_activity(
             "Medium Risk": 0.5,
             "High Risk": 1.0,
         },
+        eval_client=eval_model,
+        score_eval_client=score_eval_client,
     )

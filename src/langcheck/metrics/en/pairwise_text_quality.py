@@ -11,6 +11,7 @@ from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import get_metric_inputs
 from langcheck.metrics.metric_value import MetricValue
 
+from ..compute_metric_value import compute_metric_values_from_template
 from ..eval_clients._base import TextResponseWithLogProbs, TokenLogProb
 from ..prompts._utils import get_template, load_few_shot_examples
 
@@ -123,6 +124,7 @@ def pairwise_comparison(
     n: int = 5,
     seed: int | None = None,
     eval_model: EvalClient | None = None,
+    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the pairwise comparison metric. This metric takes on float
     values of either 0.0 (Response A is better), 0.5 (Tie), or 1.0 (Response B
@@ -155,6 +157,9 @@ def pairwise_comparison(
             marked as Optional so that it can follow the above arguments that
             have default values (for consistency with the other metrics), but
             this is in fact a required argument.
+        score_eval_client (Optional): The EvalClient instance used for the score
+            evaluation. If not provided, the scores will be computed using the
+            `eval_model`.
 
     Returns:
         An MetricValue object
@@ -192,15 +197,18 @@ def pairwise_comparison(
                 metric_name=metric_name,
                 language=language,
                 score_map=pairwise_comparison_assessment_to_score,
+                score_eval_client=score_eval_client,
             )
         )
     else:
-        metric_value = eval_model.compute_metric_values_from_template(
+        metric_value = compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=pairwise_comparison_template,
             metric_name=metric_name,
             language=language,
             score_map=pairwise_comparison_assessment_to_score,
+            eval_client=eval_model,
+            score_eval_client=score_eval_client,
         )
 
     if calculated_confidence:
