@@ -40,7 +40,7 @@ requires-python = ">=3.9"
 de = []  # No extra dependencies needed for German
 en = []  # English support is installed by default
 ja = [
-    'chikkarpy',
+    'chikkarpy >= 0.1.1',  # See https://github.com/WorksApplications/chikkarpy/issues/8
     'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
     'unidic-lite >= 1.0.1'  # For tokenizer of metrics.ja.toxicity()
