@@ -42,8 +42,8 @@ class LlamaEvalClient(EvalClient):
             tensor_parallel_size: The number of GPUs to use for distributed
             execution with tensor parallelism.
             device: The device to load the model on.
-            system_prompt: The system prompt to use. If not provided, default
-                system prompts based on the language will be used.
+            system_prompt: (Optional) The system prompt to use. If not provided,
+                default system prompts based on the language will be used.
         """
         self._model = LLM(
             model=model_name,

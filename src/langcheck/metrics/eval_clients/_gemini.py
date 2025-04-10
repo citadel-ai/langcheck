@@ -25,43 +25,45 @@ class GeminiEvalClient(EvalClient):
         embed_model_name: str | None = None,
         *,
         use_async: bool = False,
+        vertexai: bool = False,
         system_prompt: str | None = None,
     ):
         """
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables,
         so please make sure GOOGLE_API_KEY is set.
-        If you want to use Vertex AI, please set the following environment
-        variables appropriately:
-        - GOOGLE_CLOUD_PROJECT=<your-project-id>
-        - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
-        - GOOGLE_GENAI_USE_VERTEXAI=true
-        - GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials-file>
+        If you want to use Vertex AI, set the `vertexai` argument to True, and
+        please set the following environment variables:
+            - GOOGLE_CLOUD_PROJECT=<your-project-id>
+            - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
+            - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
 
         References:
             - https://ai.google.dev/api/python/google/generativeai/GenerativeModel
             - https://cloud.google.com/docs/authentication/application-default-credentials
 
         Args:
-            model_name: (Optional) The Gemini model to use. Defaults to
-                "gemini-1.5-flash".
+            model_name: The Gemini model to use. Defaults to "gemini-1.5-flash".
             generate_content_args: (Optional) Dict of args to pass in to the
                 ``generate_content`` function. The keys should be the same as
                 the keys in the ``genai.types.GenerateContentConfig`` type.
-            embed_model_name: (Optional) The name of the embedding model to use.
-                If not provided, the models/text-embedding-004 model will be used.
-            use_async: (Optional) If True, the async client will be used.
-                Defaults to False.
+            embed_model_name: The name of the embedding model to use. If not
+                provided, the "models/text-embedding-004" model will be used.
+            use_async: If True, the async client will be used. Defaults to
+                False.
+            vertexai: If True, the Vertex AI client will be used. Defaults to
+                False.
             system_prompt: (Optional) The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
         """
-        self.client = genai.Client()
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         self._embed_model_name = embed_model_name
         self._use_async = use_async
         self._system_instruction = system_prompt
+
+        self.client = genai.Client(vertexai=vertexai)
 
         self._validate_generate_content_config()
 
