@@ -3,7 +3,6 @@ from __future__ import annotations
 from langcheck.metrics.eval_clients import (
     EvalClient,
 )
-from langcheck.metrics.prompts._utils import load_prompt_template
 
 
 def rephrase_with_system_role_context(
@@ -32,7 +31,7 @@ def rephrase_with_system_role_context(
         A list of rephrased instances.
     """
 
-    prompt_template = load_prompt_template(
+    prompt_template = eval_client.load_prompt_template(
         language="ja", metric_name="rephrase_with_system_role_context"
     )
 

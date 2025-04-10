@@ -100,8 +100,6 @@ def toxicity(
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     eval_prompt_version: str = "v2",
-    *,
-    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
@@ -131,9 +129,6 @@ def toxicity(
             used for the evaluation). default 'local'
         eval_prompt_version: The version of the eval prompt to use when the
             EvalClient is used. The default version is 'v2' (latest).
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -151,12 +146,7 @@ def toxicity(
 
         # This reuses the English prompt.
         # TODO: Update this to use a Chinese prompt.
-        metric_value = en_toxicity(
-            generated_outputs,
-            prompts,
-            eval_model,
-            score_eval_client=score_eval_client,
-        )
+        metric_value = en_toxicity(generated_outputs, prompts, eval_model)
         metric_value.language = "zh"
         return metric_value
     else:

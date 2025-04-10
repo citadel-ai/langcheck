@@ -2,16 +2,12 @@ from __future__ import annotations
 
 from rouge_score import rouge_scorer
 
-from langcheck.metrics.compute_metric_value import (
-    compute_metric_values_from_template,
-)
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.metric_inputs import (
     get_metric_inputs,
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.metrics.prompts._utils import load_prompt_template
 from langcheck.metrics.scorer.hf_models import (
     SentenceTransformerSimilarityScorer,
 )
@@ -25,8 +21,6 @@ def answer_correctness(
     reference_outputs: list[str] | str,
     prompts: list[str] | str,
     eval_model: EvalClient,
-    *,
-    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the correctness of the generated outputs. This metric takes on
     float values of either 0.0 (Incorrect), 0.5 (Partially Correct), or 1.0
@@ -39,9 +33,6 @@ def answer_correctness(
         reference_outputs: The reference output(s)
         prompts: The prompts used to generate the output(s)
         eval_model: The EvalClient instance used for the evaluation
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
 
     Returns:
         A :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -54,18 +45,16 @@ def answer_correctness(
     )
     metric_name = "answer_correctness"
 
-    answer_correctness_template = load_prompt_template(
+    answer_correctness_template = eval_model.load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
-    return compute_metric_values_from_template(
+    return eval_model.compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=answer_correctness_template,
         metric_name=metric_name,
         language=LANG,
         score_map={"Correct": 1.0, "Partially Correct": 0.5, "Incorrect": 0.0},
-        eval_client=eval_model,
-        score_eval_client=score_eval_client,
     )
 
 

@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from langcheck.metrics.compute_metric_value import (
-    compute_metric_values_from_template,
-)
 from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.en.source_based_text_quality import (
     factual_consistency as en_factual_consistency,
@@ -13,7 +10,6 @@ from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.metrics.prompts._utils import load_prompt_template
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 _factual_consistency_translation_model_path = "Helsinki-NLP/opus-mt-de-en"
@@ -26,8 +22,6 @@ def factual_consistency(
     sources: list[str] | str,
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
-    *,
-    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
@@ -58,9 +52,6 @@ def factual_consistency(
             optional metadata and not used to calculate the metric.
         eval_model: The type of model to use ('local' or the EvalClient instance
             used for the evaluation). default 'local'
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
 
     Returns:
         An MetricValue object
@@ -80,7 +71,7 @@ def factual_consistency(
             "An EvalClient must be provided for non-local model types."
         )
 
-        factual_consistency_template = load_prompt_template(
+        factual_consistency_template = eval_model.load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -89,14 +80,12 @@ def factual_consistency(
             "Partially Consistent": 0.5,
             "Not Consistent": 0.0,
         }
-        return compute_metric_values_from_template(
+        return eval_model.compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=factual_consistency_template,
             metric_name=metric_name,
             language=LANG,
             score_map=factual_consistency_assessment_to_score,
-            eval_client=eval_model,
-            score_eval_client=score_eval_client,
         )
 
     # Translate the sources and generated outputs to English.
@@ -132,11 +121,7 @@ def factual_consistency(
 
 
 def context_relevance(
-    sources: list[str] | str,
-    prompts: list[str] | str,
-    eval_model: EvalClient,
-    *,
-    score_eval_client: EvalClient | None = None,
+    sources: list[str] | str, prompts: list[str] | str, eval_model: EvalClient
 ) -> MetricValue[float | None]:
     """Calculates the relevance of the sources to the prompts. This metric takes
     on float values between [0, 1], where 0 means that the source text is not at
@@ -149,9 +134,6 @@ def context_relevance(
         sources: The source text(s), one string per prompt
         prompts: The prompt(s)
         eval_model: The EvalClient instance used for the evaluation
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
     """
     metric_inputs = get_metric_inputs(
         prompts=prompts,
@@ -159,7 +141,7 @@ def context_relevance(
         required_params=["prompts", "sources"],
     )
     metric_name = "context_relevance"
-    context_relevance_template = load_prompt_template(
+    context_relevance_template = eval_model.load_prompt_template(
         language=LANG, metric_name=metric_name
     )
 
@@ -168,12 +150,10 @@ def context_relevance(
         "Partially Relevant": 0.5,
         "Not Relevant": 0.0,
     }
-    return compute_metric_values_from_template(
+    return eval_model.compute_metric_values_from_template(
         metric_inputs=metric_inputs,
         template=context_relevance_template,
         metric_name=metric_name,
         language=LANG,
         score_map=context_relevance_assessment_to_score,
-        eval_client=eval_model,
-        score_eval_client=score_eval_client,
     )

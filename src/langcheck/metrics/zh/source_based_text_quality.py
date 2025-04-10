@@ -21,8 +21,6 @@ def factual_consistency(
     sources: list[str] | str,
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
-    *,
-    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the factual consistency between the generated outputs and
     the sources. This metric takes on float values between [0, 1], where 0
@@ -53,9 +51,6 @@ def factual_consistency(
             optional metadata and not used to calculate the metric.
         eval_model: The type of model to use ('local' or the EvalClient instance
             used for the evaluation). default 'local'
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
 
     Returns:
         An MetricValue object
@@ -104,9 +99,7 @@ def factual_consistency(
     ]
     # Compute the factual consistency scores in English.
     factual_consistency_scores = en_factual_consistency(
-        generated_outputs=en_generated_outputs,
-        sources=en_source,
-        score_eval_client=score_eval_client,
+        generated_outputs=en_generated_outputs, sources=en_source
     ).metric_values
 
     return MetricValue(

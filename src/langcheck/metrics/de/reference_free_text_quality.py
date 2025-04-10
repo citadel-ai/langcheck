@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from langcheck.metrics.compute_metric_value import (
-    compute_metric_values_from_template,
-)
 from langcheck.metrics.de._translation import Translate
 from langcheck.metrics.de.reference_based_text_quality import (
     semantic_similarity,
@@ -18,7 +15,6 @@ from langcheck.metrics.metric_inputs import (
     get_metric_inputs_with_required_lists,
 )
 from langcheck.metrics.metric_value import MetricValue
-from langcheck.metrics.prompts._utils import load_prompt_template
 from langcheck.metrics.scorer.detoxify_models import DetoxifyScorer
 from langcheck.metrics.scorer.hf_models import (
     AutoModelForSequenceClassificationScorer,
@@ -36,8 +32,6 @@ def sentiment(
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
-    *,
-    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the sentiment scores of generated outputs. This metric takes
     on float values between [0, 1], where 0 is negative sentiment and 1 is
@@ -70,9 +64,6 @@ def sentiment(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -99,7 +90,7 @@ def sentiment(
             "An EvalClient must be provided for non-local model types."
         )
 
-        sentiment_template = load_prompt_template(
+        sentiment_template = eval_model.load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -109,14 +100,12 @@ def sentiment(
             "Negative": 0.0,
         }
 
-        return compute_metric_values_from_template(
+        return eval_model.compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=sentiment_template,
             metric_name=metric_name,
             language=LANG,
             score_map=sentiment_assessment_to_score,
-            eval_client=eval_model,
-            score_eval_client=score_eval_client,
         )
 
 
@@ -154,8 +143,6 @@ def fluency(
     generated_outputs: list[str] | str,
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
-    *,
-    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the fluency scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low fluency and 1 is high fluency.
@@ -180,9 +167,6 @@ def fluency(
             optional metadata and not used to calculate the metric.
         eval_model: The type of model to use ('local' or the EvalClient instance
             used for the evaluation). default 'local'
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -214,7 +198,7 @@ def fluency(
             "An EvalClient must be provided for non-local model types."
         )
 
-        fluency_template = load_prompt_template(
+        fluency_template = eval_model.load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -224,14 +208,12 @@ def fluency(
             "Good": 1.0,
         }
 
-        return compute_metric_values_from_template(
+        return eval_model.compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=fluency_template,
             metric_name=metric_name,
             language=LANG,
             score_map=fluency_assessment_to_score,
-            eval_client=eval_model,
-            score_eval_client=score_eval_client,
         )
 
 
@@ -240,8 +222,6 @@ def toxicity(
     prompts: list[str] | str | None = None,
     eval_model: str | EvalClient = "local",
     local_overflow_strategy: str = "truncate",
-    *,
-    score_eval_client: EvalClient | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the toxicity scores of generated outputs. This metric takes on
     float values between [0, 1], where 0 is low toxicity and 1 is high toxicity.
@@ -270,9 +250,6 @@ def toxicity(
             will be assigned a score of None. If 'truncate', the outputs that
             are too long will be truncated. If 'raise', an error will be raised
             when the outputs are too long. The default value is 'nullify'.
-        score_eval_client (Optional): The EvalClient instance used for the score
-            evaluation. If not provided, the scores will be computed using the
-            `eval_model`.
 
     Returns:
         An :class:`~langcheck.metrics.metric_value.MetricValue` object
@@ -300,7 +277,7 @@ def toxicity(
             "An EvalClient must be provided for non-local model types."
         )
 
-        toxicity_template = load_prompt_template(
+        toxicity_template = eval_model.load_prompt_template(
             language=LANG, metric_name=metric_name
         )
 
@@ -312,14 +289,12 @@ def toxicity(
             "5": 1.0,
         }
 
-        return compute_metric_values_from_template(
+        return eval_model.compute_metric_values_from_template(
             metric_inputs=metric_inputs,
             template=toxicity_template,
             metric_name=metric_name,
             language=LANG,
             score_map=toxicity_assessment_to_score,
-            eval_client=eval_model,
-            score_eval_client=score_eval_client,
         )
 
 
