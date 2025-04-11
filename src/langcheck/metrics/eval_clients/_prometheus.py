@@ -205,7 +205,7 @@ class PrometheusExtractor(Extractor):
         device: str = "cuda",
     ):
         """
-        Initilize the Prometheus evaluation client.
+        Initilize the Prometheus score extractor.
 
         Args:
             model_name: The name of the model to use.
@@ -213,8 +213,6 @@ class PrometheusExtractor(Extractor):
             tensor_parallel_size: The number of GPUs to use for distributed
             execution with tensor parallelism.
             device: The device to load the model on.
-            system_prompt: (Optional) The system prompt to use. If not provided,
-                no system prompt will be used.
         """
         self._model = LLM(
             model=model_name,

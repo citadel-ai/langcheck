@@ -20,6 +20,7 @@ class EvalClient:
     Most metrics that use external APIs such as OpenAI API call the methods
     defined in this class to compute the metric values.
     """
+
     _extractor: Extractor
 
     def load_prompt_template(

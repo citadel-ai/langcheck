@@ -45,16 +45,16 @@ class AnthropicEvalClient(EvalClient):
             - https://cloud.google.com/docs/authentication/application-default-credentials
 
         Args:
-            anthropic_client: (Optional) The Anthropic client to use.
-            anthropic_args: (Optional) dict of additional args to pass in to
+            anthropic_client (Optional): The Anthropic client to use.
+            anthropic_args (Optional): dict of additional args to pass in to
                 the ``client.messages.create`` function
             use_async: If True, the async client will be used. Defaults to
                 False.
             vertexai: If True, the Vertex AI client will be used. Defaults to
                 False.
-            system_prompt: (Optional) The system prompt to use. If not provided,
+            system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
-            extractor: (Optional) The extractor to use. If not provided, the
+            extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
         if anthropic_client:
@@ -171,6 +171,15 @@ class AnthropicExtractor(Extractor):
         References:
             - https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
             - https://cloud.google.com/docs/authentication/application-default-credentials
+
+        Args:
+            anthropic_client (Optional): The Anthropic client to use.
+            anthropic_args (Optional): dict of additional args to pass in to
+                the ``client.messages.create`` function
+            use_async: If True, the async client will be used. Defaults to
+                False.
+            vertexai: If True, the Vertex AI client will be used. Defaults to
+                False.
         """
         if anthropic_client:
             self._client = anthropic_client
@@ -274,6 +283,7 @@ def _call_api(
     tqdm_description: str | None = None,
 ) -> list[Any]:
     """A helper function to call the Anthropic API."""
+
     # A helper function to call the API with exception filter for alignment
     # of exception handling with the async version.
     def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:

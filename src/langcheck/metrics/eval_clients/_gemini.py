@@ -45,19 +45,19 @@ class GeminiEvalClient(EvalClient):
 
         Args:
             model_name: The Gemini model to use. Defaults to "gemini-1.5-flash".
-            generate_content_args: (Optional) Dict of args to pass in to the
+            generate_content_args (Optional): Dict of args to pass in to the
                 ``generate_content`` function. The keys should be the same as
                 the keys in the ``genai.types.GenerateContentConfig`` type.
-            embed_model_name: The name of the embedding model to use. If not
+            embed_model_name (Optional): The name of the embedding model to use. If not
                 provided, the "models/text-embedding-004" model will be used.
             use_async: If True, the async client will be used. Defaults to
                 False.
             vertexai: If True, the Vertex AI client will be used. Defaults to
                 False.
-            system_prompt: (Optional) The system prompt for ``generate_content``
+            system_prompt (Optional): The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
-            extractor: (Optional) The extractor to use. If not provided, a
+            extractor (Optional): The extractor to use. If not provided, a
                 default GeminiExtractor will be used.
         """
         self._model_name = model_name
@@ -241,7 +241,7 @@ class GeminiExtractor(Extractor):
                 for the given assessment prompts.
             score_map: The mapping from the short assessment results
                 (e.g. "Good") to the scores.
-            tqdm_description: The description to be shown in the tqdm bar.
+            tqdm_description (Optional): The description to be shown in the tqdm bar.
 
         Returns:
             A list of scores for the given prompts. The scores can be None if
@@ -328,15 +328,15 @@ def _call_api(
     use_async: bool = False,
     tqdm_description: str | None = None,
 ) -> list[Any]:
-    """A helper function to call the Gemini API.
+    """A helper function to call `generate_content` of the Gemini API.
 
     Args:
         model: The model to use.
         prompts: The prompts to use.
         config: The config to use.
         client: The client to use.
-        use_async: If True, the async client will be used.
-        tqdm_description: The description to be shown in the tqdm bar.
+        use_async: If True, the async client will be used. Defaults to False.
+        tqdm_description (Optional): The description to be shown in the tqdm bar.
 
     Returns:
         A list of responses from the Gemini API.

@@ -31,7 +31,9 @@ class OpenAIEvalClient(EvalClient):
         extractor: Extractor | None = None,
     ):
         """
-        Initialize the OpenAI evaluation client.
+        Initialize the OpenAI evaluation client. The authentication
+        information is automatically read from the environment variables, so
+        please make sure `OPENAI_API_KEY` environment variable is set.
 
         Args:
             openai_client (Optional): The OpenAI client to use.
@@ -259,6 +261,8 @@ class OpenAIEvalClient(EvalClient):
 
 
 class OpenAIExtractor(Extractor):
+    """Score extractor defined for OpenAI API."""
+
     def __init__(
         self,
         openai_client: OpenAI | AsyncOpenAI | None = None,
@@ -267,7 +271,9 @@ class OpenAIExtractor(Extractor):
         use_async: bool = False,
     ):
         """
-        Initialize the OpenAI evaluation client.
+        Initialize the OpenAI score extractor. The authentication information is
+        automatically read from the environment variables, so please make sure
+        `OPENAI_API_KEY` environment variable is set.
 
         Args:
             openai_client (Optional): The OpenAI client to use.

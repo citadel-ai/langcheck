@@ -2,11 +2,7 @@
 
 from __future__ import annotations
 
-from transformers import (
-    AutoTokenizer,
-    PreTrainedTokenizer,
-    PreTrainedTokenizerFast,
-)
+from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 
 from ..prompts._utils import get_template
@@ -173,7 +169,7 @@ class LlamaEvalClient(EvalClient):
         unstructured_assessment_result = self.get_text_responses(
             prompts, language
         )
-        scores = self.extractor.get_float_score(
+        scores = self._extractor.get_float_score(
             metric_name,
             language,
             unstructured_assessment_result,

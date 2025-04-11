@@ -23,12 +23,14 @@ class OpenRouterEvalClient(EvalClient):
         extractor: Extractor | None = None,
     ):
         """
-        Initialize the OpenRouter evaluation client.
+        Initialize the OpenRouter evaluation client. The authentication
+        information is automatically read from the environment variables, so
+        please make sure `OPENROUTER_API_KEY` environment variable is set.
 
         Args:
-            openrouter_args: (Optional) dict of additional args to pass in to the
-            ``client.chat.completions.create`` function.
-            system_prompt: (Optional) The system prompt to use. If not provided,
+            openrouter_args (Optional): dict of additional args to pass in to
+                the ``client.chat.completions.create`` function.
+            system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
         """
 
@@ -129,11 +131,13 @@ class OpenRouterExtractor(Extractor):
         openrouter_args: dict[str, str] | None = None,
     ):
         """
-        Initialize the OpenRouter score extractor.
+        Initialize the OpenRouter score extractor. The authentication
+        information is automatically read from the environment variables, so
+        please make sure `OPENROUTER_API_KEY` environment variable is set.
 
         Args:
-            openrouter_args: (Optional) dict of additional args to pass in to the
-            ``client.chat.completions.create`` function.
+            openrouter_args (Optional): dict of additional args to pass in to
+                the ``client.chat.completions.create`` function.
         """
 
         if os.getenv("OPENROUTER_API_KEY") is None:
