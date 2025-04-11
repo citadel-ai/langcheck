@@ -9,7 +9,7 @@ import requests
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
-from ._base import EvalClient
+from ._base import EvalClient, Extractor
 
 
 class OpenRouterEvalClient(EvalClient):
@@ -20,6 +20,7 @@ class OpenRouterEvalClient(EvalClient):
         openrouter_args: dict[str, str] | None = None,
         *,
         system_prompt: str | None = None,
+        extractor: Extractor | None = None,
     ):
         """
         Initialize the OpenRouter evaluation client.
@@ -37,48 +38,12 @@ class OpenRouterEvalClient(EvalClient):
         self._openrouter_args = openrouter_args
         self._system_prompt = system_prompt
 
-    def _call_api(
-        self,
-        prompts: list[str] | list[str | None],
-        config: dict[str, str],
-        *,
-        tqdm_description: str | None = None,
-    ) -> list[Any]:
-        def generate_json_dumps(prompt: str):
-            system_message = (
-                []
-                if not self._system_prompt
-                else [
-                    {
-                        "role": "system",
-                        "content": self._system_prompt,
-                    }
-                ]
+        if extractor is None:
+            self._extractor = OpenRouterExtractor(
+                openrouter_args=openrouter_args,
             )
-            msg_dict = {
-                "messages": system_message
-                + [
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ]
-            }
-            return msg_dict | config
-
-        responses = []
-        for prompt in tqdm_wrapper(prompts, desc=tqdm_description):
-            if prompt is not None:
-                response = requests.post(
-                    url="https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-                    },
-                    data=json.dumps(generate_json_dumps(prompt)),
-                )
-                responses.append(response.json())
-
-        return responses
+        else:
+            self._extractor = extractor
 
     def get_text_responses(
         self,
@@ -99,7 +64,7 @@ class OpenRouterEvalClient(EvalClient):
         """
         config = self._openrouter_args or {}
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
-        responses = self._call_api(
+        responses = _call_api(
             prompts=prompts,
             config=config,
             tqdm_description=tqdm_description,
@@ -110,6 +75,71 @@ class OpenRouterEvalClient(EvalClient):
         ]
 
         return response_texts
+
+    def get_score(
+        self,
+        metric_name: str,
+        language: str,
+        prompts: str | list[str],
+        score_map: dict[str, float],
+    ) -> tuple[list[float | None], list[str | None]]:
+        """Give scores to texts embedded in the given prompts. The function
+        itself calls get_text_responses and get_float_score to get the scores.
+        The function returns the scores and the unstructured explanation
+        strings.
+
+        Args:
+            metric_name: The name of the metric to be used. (e.g. "toxicity")
+            language: The language of the prompts. (e.g. "en")
+            prompts: The prompts that contain the original text to be scored,
+                the evaluation criteria... etc. Typically it is based on the
+                Jinja prompt templates and instantiated withing each metric
+                function.
+            score_map: The mapping from the short assessment results
+                (e.g. "Good") to the scores.
+
+        Returns:
+            A tuple of two lists. The first list contains the scores for each
+            prompt and the second list contains the unstructured assessment
+            results for each prompt. Both can be None if the evaluation fails.
+        """
+        if isinstance(prompts, str):
+            prompts = [prompts]
+        unstructured_assessment_result = self.get_text_responses(prompts)
+        scores = self._extractor.get_float_score(
+            metric_name,
+            language,
+            unstructured_assessment_result,
+            score_map,
+        )
+        return scores, unstructured_assessment_result
+
+    def similarity_scorer(self):
+        raise NotImplementedError(
+            "Embedding-based metrics are not supported in OpenRouterEvalClient."
+            "Use other EvalClients to get these metrics."
+        )
+
+
+class OpenRouterExtractor(Extractor):
+    """Score extractor defined for the OpenRouter API."""
+
+    def __init__(
+        self,
+        openrouter_args: dict[str, str] | None = None,
+    ):
+        """
+        Initialize the OpenRouter score extractor.
+
+        Args:
+            openrouter_args: (Optional) dict of additional args to pass in to the
+            ``client.chat.completions.create`` function.
+        """
+
+        if os.getenv("OPENROUTER_API_KEY") is None:
+            raise ValueError("OPENROUTER_API_KEY not set!")
+
+        self._openrouter_args = openrouter_args
 
     def get_float_score(
         self,
@@ -160,7 +190,7 @@ class OpenRouterEvalClient(EvalClient):
         config = {}
         config.update(self._openrouter_args or {})
         tqdm_description = tqdm_description or "Scores (2/2)"
-        responses = self._call_api(
+        responses = _call_api(
             prompts,
             config,
             tqdm_description=tqdm_description,
@@ -192,46 +222,46 @@ class OpenRouterEvalClient(EvalClient):
 
         return [_turn_to_score(response) for response in responses_for_scoring]
 
-    def get_score(
-        self,
-        metric_name: str,
-        language: str,
-        prompts: str | list[str],
-        score_map: dict[str, float],
-    ) -> tuple[list[float | None], list[str | None]]:
-        """Give scores to texts embedded in the given prompts. The function
-        itself calls get_text_responses and get_float_score to get the scores.
-        The function returns the scores and the unstructured explanation
-        strings.
 
-        Args:
-            metric_name: The name of the metric to be used. (e.g. "toxicity")
-            language: The language of the prompts. (e.g. "en")
-            prompts: The prompts that contain the original text to be scored,
-                the evaluation criteria... etc. Typically it is based on the
-                Jinja prompt templates and instantiated withing each metric
-                function.
-            score_map: The mapping from the short assessment results
-                (e.g. "Good") to the scores.
-
-        Returns:
-            A tuple of two lists. The first list contains the scores for each
-            prompt and the second list contains the unstructured assessment
-            results for each prompt. Both can be None if the evaluation fails.
-        """
-        if isinstance(prompts, str):
-            prompts = [prompts]
-        unstructured_assessment_result = self.get_text_responses(prompts)
-        scores = self.get_float_score(
-            metric_name,
-            language,
-            unstructured_assessment_result,
-            score_map,
+def _call_api(
+    prompts: list[str] | list[str | None],
+    config: dict[str, str],
+    *,
+    system_prompt: str | None = None,
+    tqdm_description: str | None = None,
+) -> list[Any]:
+    def generate_json_dumps(prompt: str):
+        system_message = (
+            []
+            if not system_prompt
+            else [
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                }
+            ]
         )
-        return scores, unstructured_assessment_result
+        msg_dict = {
+            "messages": system_message
+            + [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ]
+        }
+        return msg_dict | config
 
-    def similarity_scorer(self):
-        raise NotImplementedError(
-            "Embedding-based metrics are not supported in OpenRouterEvalClient."
-            "Use other EvalClients to get these metrics."
-        )
+    responses = []
+    for prompt in tqdm_wrapper(prompts, desc=tqdm_description):
+        if prompt is not None:
+            response = requests.post(
+                url="https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                },
+                data=json.dumps(generate_json_dumps(prompt)),
+            )
+            responses.append(response.json())
+
+    return responses

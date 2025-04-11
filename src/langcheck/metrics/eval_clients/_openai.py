@@ -14,7 +14,7 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
-from ._base import EvalClient, TextResponseWithLogProbs
+from ._base import EvalClient, Extractor, TextResponseWithLogProbs
 
 
 class OpenAIEvalClient(EvalClient):
@@ -27,18 +27,24 @@ class OpenAIEvalClient(EvalClient):
         *,
         use_async: bool = False,
         system_prompt: str | None = None,
+        extractor_args: dict[str, str] | None = None,
+        extractor: Extractor | None = None,
     ):
         """
         Initialize the OpenAI evaluation client.
 
         Args:
-            openai_client: (Optional) The OpenAI client to use.
-            openai_args: (Optional) dict of additional args to pass in to the
+            openai_client (Optional): The OpenAI client to use.
+            openai_args (Optional): dict of additional args to pass in to the
             ``client.chat.completions.create`` function.
             use_async: If True, the async client will be used. Defaults to
                 False.
-            system_prompt: (Optional) The system prompt to use. If not provided,
+            system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
+            extractor_args (Optional): dict of additional args to pass in to the
+                ``client.beta.chat.completions.parse`` function.
+            extractor (Optional): The extractor to use. If not provided, the
+                default extractor will be used.
         """
         if openai_client:
             self._client = openai_client
@@ -50,6 +56,20 @@ class OpenAIEvalClient(EvalClient):
         self._openai_args = openai_args
         self._use_async = use_async
         self._system_prompt = system_prompt
+
+        if extractor is not None and extractor_args is not None:
+            raise ValueError(
+                "extractor and extractor_args cannot both be provided."
+            )
+
+        if extractor is None:
+            self._extractor = OpenAIExtractor(
+                openai_client=self._client,
+                openai_args=extractor_args,
+                use_async=use_async,
+            )
+        else:
+            self._extractor = extractor
 
     def _call_api(
         self,
@@ -227,6 +247,45 @@ class OpenAIEvalClient(EvalClient):
 
         return response_texts_with_log_likelihood
 
+    def similarity_scorer(self) -> OpenAISimilarityScorer:
+        """
+        https://openai.com/blog/new-embedding-models-and-api-updates
+        """
+        return OpenAISimilarityScorer(
+            openai_client=self._client,
+            openai_args=self._openai_args,
+            use_async=self._use_async,
+        )
+
+
+class OpenAIExtractor(Extractor):
+    def __init__(
+        self,
+        openai_client: OpenAI | AsyncOpenAI | None = None,
+        openai_args: dict[str, str] | None = None,
+        *,
+        use_async: bool = False,
+    ):
+        """
+        Initialize the OpenAI evaluation client.
+
+        Args:
+            openai_client (Optional): The OpenAI client to use.
+            openai_args (Optional): dict of additional args to pass in to the
+            ``client.chat.completions.create`` function.
+            use_async: If True, the async client will be used. Defaults to
+                False.
+        """
+        if openai_client:
+            self._client = openai_client
+        elif use_async:
+            self._client = AsyncOpenAI()
+        else:
+            self._client = OpenAI()
+
+        self._openai_args = openai_args
+        self._use_async = use_async
+
     def get_float_score(
         self,
         metric_name: str,
@@ -351,16 +410,6 @@ class OpenAIEvalClient(EvalClient):
             for assessment in assessments
         ]
 
-    def similarity_scorer(self) -> OpenAISimilarityScorer:
-        """
-        https://openai.com/blog/new-embedding-models-and-api-updates
-        """
-        return OpenAISimilarityScorer(
-            openai_client=self._client,
-            openai_args=self._openai_args,
-            use_async=self._use_async,
-        )
-
 
 class AzureOpenAIEvalClient(OpenAIEvalClient):
     def __init__(
@@ -372,6 +421,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         *,
         use_async: bool = False,
         system_prompt: str | None = None,
+        extractor: Extractor | None = None,
     ):
         """
         Intialize the Azure OpenAI evaluation client.
@@ -386,11 +436,13 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
                 `{ "model": embedding_model_name }` parameter when calling the
                 Azure OpenAI API for embedding models.
             azure_openai_client (Optional): The Azure OpenAI client to use.
-            openai_args: (Optional) dict of additional args to pass in to the
+            openai_args (Optional): dict of additional args to pass in to the
             ``client.chat.completions.create`` function
-            use_async: (Optional) If True, the async client will be used.
-            system_prompt: (Optional) The system prompt to use. If not provided,
+            use_async (Optional): If True, the async client will be used.
+            system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
+            extractor (Optional): The extractor to use. If not provided, the
+                default extractor will be used.
         """
         assert (
             text_model_name is not None or embedding_model_name is not None
@@ -400,7 +452,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         )
         # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
         kargs = {
-            "api_key": os.getenv("AZURE_OPENAI_KEY"),
+            "api_key": os.getenv("AZURE_OPENAI_API_KEY"),
             "api_version": os.getenv("OPENAI_API_VERSION"),
             "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
         }
@@ -421,6 +473,16 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
 
         self._use_async = use_async
 
+        if extractor is None:
+            self._extractor = AzureOpenAIExtractor(
+                text_model_name=text_model_name,
+                azure_openai_client=azure_openai_client,
+                openai_args=openai_args,
+                use_async=use_async,
+            )
+        else:
+            self._extractor = extractor
+
     def similarity_scorer(self) -> OpenAISimilarityScorer:
         """This method does the sanity check for the embedding_model_name and
         then calls the parent class's similarity_scorer method with the
@@ -437,6 +499,37 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             openai_args=openai_args,
             use_async=self._use_async,
         )
+
+
+class AzureOpenAIExtractor(OpenAIExtractor):
+    def __init__(
+        self,
+        text_model_name: str | None = None,
+        azure_openai_client: AzureOpenAI | None = None,
+        openai_args: dict[str, str] | None = None,
+        *,
+        use_async: bool = False,
+    ):
+        assert text_model_name is not None, (
+            "You need to specify the text_model_name to use the Azure OpenAI API."
+        )
+        # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
+        kargs = {
+            "api_key": os.getenv("AZURE_OPENAI_API_KEY"),
+            "api_version": os.getenv("OPENAI_API_VERSION"),
+            "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
+        }
+
+        if azure_openai_client is not None:
+            self._client = azure_openai_client
+        elif use_async:
+            self._client = AsyncAzureOpenAI(**kargs)  # type: ignore
+        else:
+            self._client = AzureOpenAI(**kargs)  # type: ignore
+
+        self._openai_args = openai_args or {}
+        self._openai_args["model"] = text_model_name
+        self._use_async = use_async
 
 
 class OpenAISimilarityScorer(BaseSimilarityScorer):

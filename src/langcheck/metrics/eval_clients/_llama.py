@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from transformers import AutoTokenizer
+from transformers import (
+    AutoTokenizer,
+    PreTrainedTokenizer,
+    PreTrainedTokenizerFast,
+)
 from vllm import LLM, SamplingParams
 
 from ..prompts._utils import get_template
-from ._base import EvalClient
+from ._base import EvalClient, Extractor
 
 
 class LlamaEvalClient(EvalClient):
@@ -32,6 +36,7 @@ class LlamaEvalClient(EvalClient):
         device: str = "cuda",
         *,
         system_prompt: str | None = None,
+        extractor: Extractor | None = None,
     ):
         """
         Initialize the Llama evaluation client.
@@ -65,6 +70,17 @@ class LlamaEvalClient(EvalClient):
             "en": "You are a helpful and competent assistant.",
             "ja": "あなたは誠実で優秀な日本人のアシスタントです。以下は、タスクを説明する指示です。要求を適切に満たす応答を日本語で書きなさい。",
         }
+
+        if extractor is None:
+            self._extractor = LlamaExtractor(
+                model_name=model_name,
+                torch_dtype=torch_dtype,
+                tensor_parallel_size=tensor_parallel_size,
+                device=device,
+                system_prompt=system_prompt,
+            )
+        else:
+            self._extractor = extractor
 
     def get_text_responses(
         self,
@@ -124,6 +140,84 @@ class LlamaEvalClient(EvalClient):
         ]
 
         return response_texts
+
+    def get_score(
+        self,
+        metric_name: str,
+        language: str,
+        prompts: str | list[str],
+        score_map: dict[str, float],
+    ) -> tuple[list[float | None], list[str | None]]:
+        """Give scores to texts embedded in the given prompts. The function
+        itself calls get_text_responses and get_float_score to get the scores.
+        The function returns the scores and the unstructured explanation
+        strings.
+
+        Args:
+            metric_name: The name of the metric to be used. (e.g. "toxicity")
+            language: The language of the prompts. (e.g. "en")
+            prompts: The prompts that contain the original text to be scored,
+                the evaluation criteria... etc. Typically it is based on the
+                Jinja prompt templates and instantiated withing each metric
+                function.
+            score_map: The mapping from the short assessment results
+                (e.g. "Good") to the scores.
+
+        Returns:
+            A tuple of two lists. The first list contains the scores for each
+            prompt and the second list contains the unstructured assessment
+            results for each prompt. Both can be None if the evaluation fails.
+        """
+        if isinstance(prompts, str):
+            prompts = [prompts]
+        unstructured_assessment_result = self.get_text_responses(
+            prompts, language
+        )
+        scores = self.extractor.get_float_score(
+            metric_name,
+            language,
+            unstructured_assessment_result,
+            score_map,
+        )
+        return scores, unstructured_assessment_result
+
+    def similarity_scorer(self):
+        raise NotImplementedError(
+            "Embedding-based metrics are not supported in LlamaEvalClient."
+            "Use other EvalClients to get these metrics."
+        )
+
+
+class LlamaExtractor(Extractor):
+    def __init__(
+        self,
+        model_name: str = "tokyotech-llm/Llama-3-Swallow-8B-Instruct-v0.1",
+        torch_dtype: str = "bfloat16",
+        tensor_parallel_size: int = 1,
+        device: str = "cuda",
+        *,
+        system_prompt: str | None = None,
+    ):
+        self._model = LLM(
+            model=model_name,
+            max_model_len=8192,
+            dtype=torch_dtype,
+            tensor_parallel_size=tensor_parallel_size,
+            device=device,
+        )
+        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self._sampling_params = SamplingParams(
+            temperature=0.6,
+            top_p=0.9,
+            max_tokens=1000,
+            stop="<|eot_id|>",
+            skip_special_tokens=True,
+        )
+        self._system_prompt = system_prompt
+        self._default_system_prompts = {
+            "en": "You are a helpful and competent assistant.",
+            "ja": "あなたは誠実で優秀な日本人のアシスタントです。以下は、タスクを説明する指示です。要求を適切に満たす応答を日本語で書きなさい。",
+        }
 
     def get_float_score(
         self,
@@ -217,49 +311,3 @@ class LlamaEvalClient(EvalClient):
             return score_map[option_found[0]]
 
         return [_turn_to_score(response) for response in responses_for_scoring]
-
-    def get_score(
-        self,
-        metric_name: str,
-        language: str,
-        prompts: str | list[str],
-        score_map: dict[str, float],
-    ) -> tuple[list[float | None], list[str | None]]:
-        """Give scores to texts embedded in the given prompts. The function
-        itself calls get_text_responses and get_float_score to get the scores.
-        The function returns the scores and the unstructured explanation
-        strings.
-
-        Args:
-            metric_name: The name of the metric to be used. (e.g. "toxicity")
-            language: The language of the prompts. (e.g. "en")
-            prompts: The prompts that contain the original text to be scored,
-                the evaluation criteria... etc. Typically it is based on the
-                Jinja prompt templates and instantiated withing each metric
-                function.
-            score_map: The mapping from the short assessment results
-                (e.g. "Good") to the scores.
-
-        Returns:
-            A tuple of two lists. The first list contains the scores for each
-            prompt and the second list contains the unstructured assessment
-            results for each prompt. Both can be None if the evaluation fails.
-        """
-        if isinstance(prompts, str):
-            prompts = [prompts]
-        unstructured_assessment_result = self.get_text_responses(
-            prompts, language
-        )
-        scores = self.get_float_score(
-            metric_name,
-            language,
-            unstructured_assessment_result,
-            score_map,
-        )
-        return scores, unstructured_assessment_result
-
-    def similarity_scorer(self):
-        raise NotImplementedError(
-            "Embedding-based metrics are not supported in LlamaEvalClient."
-            "Use other EvalClients to get these metrics."
-        )
