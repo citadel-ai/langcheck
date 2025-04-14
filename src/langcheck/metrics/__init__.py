@@ -11,6 +11,9 @@ from langcheck.metrics.en.query_based_text_quality import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
+    summarization_quality,
+    system_prompt_adherence,
+    user_frustration,
 )
 from langcheck.metrics.en.reference_based_text_quality import (
     answer_correctness,
@@ -59,7 +62,6 @@ __all__ = [
     "context_relevance",
     "custom_evaluator",
     "custom_pairwise_evaluator",
-    "MetricValue",
     "en",
     "eval_clients",
     "exact_match",
@@ -75,16 +77,20 @@ __all__ = [
     "is_json_object",
     "jailbreak_prompt",
     "matches_regex",
+    "MetricValue",
     "pairwise_comparison",
     "personal_data_leakage",
     "prompt_leakage",
     "rouge1",
     "rouge2",
     "rougeL",
-    "validation_fn",
     "semantic_similarity",
     "sentiment",
+    "summarization_quality",
+    "system_prompt_adherence",
     "toxicity",
+    "user_frustration",
+    "validation_fn",
 ]
 
 # Try to import language-specific packages. These packages will be hidden if

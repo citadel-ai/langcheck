@@ -1,0 +1,17 @@
+You are evaluating the quality of the summary text generated as an answer to a user's query. Here is the data:
+[BEGIN DATA]
+************
+[User Query]: {{ user_query }}
+************
+[Answer]: {{ gen_output }}
+************
+[END DATA]
+
+Determine whether the response is a good summary of the original text.
+The available assessments are:
+`1` - The summary is a good summary of the original text. It captures the main points and is easy to understand.
+`0.5` - The summary is a good summary of the original text, but it could be improved.
+`0` - The summary is not a good summary of the original text. It doesn't capture the main points or is not easy to understand.
+
+
+Take a deep breath and work on this problem step-by-step. Output your thought process first, and then provide your final answer.

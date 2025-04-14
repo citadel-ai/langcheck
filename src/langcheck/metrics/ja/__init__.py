@@ -7,6 +7,9 @@ from langcheck.metrics.ja.query_based_text_quality import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
+    summarization_quality,
+    system_prompt_adherence,
+    user_frustration,
 )
 from langcheck.metrics.ja.reference_based_text_quality import (
     answer_correctness,
@@ -49,6 +52,9 @@ __all__ = [
     "semantic_similarity",
     "fluency",
     "sentiment",
+    "summarization_quality",
+    "system_prompt_adherence",
     "tateishi_ono_yamada_reading_ease",
     "toxicity",
+    "user_frustration",
 ]

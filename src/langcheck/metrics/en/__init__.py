@@ -6,6 +6,9 @@ from langcheck.metrics.en.query_based_text_quality import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
+    summarization_quality,
+    system_prompt_adherence,
+    user_frustration,
 )
 from langcheck.metrics.en.reference_based_text_quality import (
     answer_correctness,
@@ -51,5 +54,8 @@ __all__ = [
     "rougeL",
     "semantic_similarity",
     "sentiment",
+    "summarization_quality",
+    "system_prompt_adherence",
     "toxicity",
+    "user_frustration",
 ]
