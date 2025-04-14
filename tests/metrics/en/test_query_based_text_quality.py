@@ -298,7 +298,7 @@ def test_system_prompt_adherence_eval_client(
 
 
 @pytest.mark.parametrize(
-    "prompts,chat_history",
+    "prompts,history",
     [
         (
             "Can I ask a question about programming?",
@@ -316,11 +316,9 @@ def test_system_prompt_adherence_eval_client(
         ),
     ],
 )
-def test_user_frustration_eval_client(prompts, chat_history):
+def test_user_frustration_eval_client(prompts, history):
     eval_client = MockEvalClient()
-    metric_value = user_frustration(
-        prompts, chat_history, eval_model=eval_client
-    )
+    metric_value = user_frustration(prompts, history, eval_model=eval_client)
     # MockEvalClient without any argument returns None
     assert metric_value.metric_values[0] is None
 
@@ -333,6 +331,6 @@ def test_user_frustration_eval_client(prompts, chat_history):
     for option in user_frustration_assessment_to_score:
         eval_client = MockEvalClient(option)
         metric_value = user_frustration(
-            prompts, chat_history, eval_model=eval_client
+            prompts, history, eval_model=eval_client
         )
         assert metric_value == user_frustration_assessment_to_score[option]

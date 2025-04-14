@@ -317,11 +317,11 @@ def system_prompt_adherence(
 
 def user_frustration(
     prompts: list[str] | str,
-    chat_history: list[str] | str,
+    history: list[str] | str,
     eval_model: EvalClient,
 ) -> MetricValue[float | None]:
-    """Calculates the user frustration from the chat history between the user
-    and the LLM. This metric takes on float values of either
+    """Calculates the user frustration from the interaction history between the
+    user and the LLM. This metric takes on float values of either
     0.0 (Not Frustrated), 0.5 (Somewhat Frustrated), or 1.0 (Frustrated).
     The score may also be `None` if it could not be computed.
 
@@ -329,7 +329,7 @@ def user_frustration(
 
     Args:
         prompts: The prompts used to generate the output(s)
-        chat_history: The chat history between the user and the LLM
+        history: The interaction history between the user and the LLM
         eval_model: The EvalClient instance used for the evaluation
 
     Returns:
@@ -338,12 +338,12 @@ def user_frustration(
     metric_inputs = get_metric_inputs(
         prompts=prompts,
         additional_inputs={
-            "chat_history": chat_history,
+            "history": history,
         },
         additional_input_name_to_prompt_var_mapping={
-            "chat_history": "history",
+            "history": "history",
         },
-        required_params=["prompts", "chat_history"],
+        required_params=["prompts", "history"],
     )
     metric_name = "user_frustration"
 
