@@ -1,0 +1,17 @@
+You are evaluating the user's frustration level in the conversation with the LLM.
+Here is the data:
+[BEGIN DATA]
+************
+[Chat History]: {{ history }}
+************
+[User Query]: {{ user_query }}
+************
+[END DATA]
+
+Determine whether the user seems frustrated with the LLM's responses.
+The available assessments are:
+`1` - The user is very frustrated.
+`0.5` - The user is somewhat frustrated.
+`0` - The user is not frustrated.
+
+Take a deep breath and work on this problem step-by-step. Output your thought process first, and then provide your final answer.

@@ -1,0 +1,19 @@
+You are evaluating whether the system prompt of the LLM is followed when the LLM is generating a response.
+Here is the data:
+[BEGIN DATA]
+************
+[System Prompt]: {{ system_prompt }}
+************
+[User Query]: {{ user_query }}
+************
+[Response]: {{ gen_output }}
+************
+[END DATA]
+
+Determine whether the system prompt of the LLM is followed when the LLM is generating a response.
+The available assessments are:
+`1` - The system prompt is completely followed when the LLM is generating a response.
+`0.5` - The system prompt is partially followed when the LLM is generating a response.
+`0` - The system prompt is not followed when the LLM is generating a response.
+
+Take a deep breath and work on this problem step-by-step. First, output your thought process, and then provide your final answer.

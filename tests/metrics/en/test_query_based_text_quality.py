@@ -7,6 +7,9 @@ from langcheck.metrics.en import (
     harmful_activity,
     hate_speech,
     personal_data_leakage,
+    summarization_quality,
+    system_prompt_adherence,
+    user_frustration,
 )
 from tests.utils import MockEvalClient
 
@@ -210,3 +213,124 @@ def test_harmful_activity_eval_client(generated_outputs, prompts):
             generated_outputs, prompts, eval_model=eval_client
         )
         assert metric_value == harmful_activity_assessment_to_score[option]
+
+
+@pytest.mark.parametrize(
+    "generated_outputs,prompts",
+    [
+        (
+            "The moon orbits Earth and controls tides.",
+            "Summarize this: The moon is Earth's only natural satellite. "
+            "It completes an orbit around Earth every 27.3 days and its "
+            "gravitational pull controls ocean tides.",
+        ),
+        (
+            ["The moon orbits Earth and controls tides."],
+            [
+                "Summarize this: The moon is Earth's only natural satellite. "
+                "It completes an orbit around Earth every 27.3 days and its "
+                "gravitational pull controls ocean tides."
+            ],
+        ),
+    ],
+)
+def test_summarization_quality_eval_client(generated_outputs, prompts):
+    eval_client = MockEvalClient()
+    metric_value = summarization_quality(
+        generated_outputs, prompts, eval_model=eval_client
+    )
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    summarization_quality_assessment_to_score = {
+        "0": 0.0,
+        "0.5": 0.5,
+        "1": 1.0,
+    }
+
+    for option in summarization_quality_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = summarization_quality(
+            generated_outputs, prompts, eval_model=eval_client
+        )
+        assert metric_value == summarization_quality_assessment_to_score[option]
+
+
+@pytest.mark.parametrize(
+    "generated_outputs,prompts,system_prompts",
+    [
+        (
+            "I'd be happy to help you with your math homework!",
+            "Can you help me solve this equation?",
+            "You are a friendly math tutor. Always be encouraging.",
+        ),
+        (
+            ["I'd be happy to help you with your math homework!"],
+            ["Can you help me solve this equation?"],
+            ["You are a friendly math tutor. Always be encouraging."],
+        ),
+    ],
+)
+def test_system_prompt_adherence_eval_client(
+    generated_outputs, prompts, system_prompts
+):
+    eval_client = MockEvalClient()
+    metric_value = system_prompt_adherence(
+        generated_outputs, prompts, system_prompts, eval_model=eval_client
+    )
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    system_prompt_adherence_assessment_to_score = {
+        "0": 0.0,
+        "0.5": 0.5,
+        "1": 1.0,
+    }
+
+    for option in system_prompt_adherence_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = system_prompt_adherence(
+            generated_outputs, prompts, system_prompts, eval_model=eval_client
+        )
+        assert (
+            metric_value == system_prompt_adherence_assessment_to_score[option]
+        )
+
+
+@pytest.mark.parametrize(
+    "prompts,history",
+    [
+        (
+            "Can I ask a question about programming?",
+            "user: What is a variable?\n"
+            "model: It's a container for data.\n"
+            "user: That makes no sense!",
+        ),
+        (
+            ["Can I ask a question about programming?"],
+            [
+                "user: What is a variable?\n"
+                "model: It's a container for data.\n"
+                "user: That makes no sense!"
+            ],
+        ),
+    ],
+)
+def test_user_frustration_eval_client(prompts, history):
+    eval_client = MockEvalClient()
+    metric_value = user_frustration(prompts, history, eval_model=eval_client)
+    # MockEvalClient without any argument returns None
+    assert metric_value.metric_values[0] is None
+
+    user_frustration_assessment_to_score = {
+        "0": 0.0,
+        "0.5": 0.5,
+        "1": 1.0,
+    }
+
+    for option in user_frustration_assessment_to_score:
+        eval_client = MockEvalClient(option)
+        metric_value = user_frustration(
+            prompts, history, eval_model=eval_client
+        )
+        assert metric_value == user_frustration_assessment_to_score[option]
