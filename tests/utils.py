@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Iterable
 
-from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.eval_clients import EvalClient, Extractor
 
 
 ################################################################################
@@ -18,12 +18,15 @@ class MockEvalClient(EvalClient):
         each metric function.
         """
         self.evaluation_result = evaluation_result
+        self._extractor = MockExtractor()
 
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
     ) -> list[str | None]:
         return [self.evaluation_result] * len(list(prompts))
 
+
+class MockExtractor(Extractor):
     def get_float_score(
         self,
         metric_name: str,
