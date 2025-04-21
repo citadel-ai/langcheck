@@ -48,10 +48,10 @@ try:
     )
     from langcheck.metrics.eval_clients._prometheus import (
         PrometheusEvalClient,  # NOQA: F401
-        PrometheusExtractor,  # NOQA: F401
+        StringMatchExtractor,  # NOQA: F401
     )
 except ModuleNotFoundError:
     pass
 else:
-    __all__.extend(["PrometheusEvalClient", "PrometheusExtractor"])
+    __all__.extend(["PrometheusEvalClient", "StringMatchExtractor"])
     __all__.extend(["LlamaEvalClient", "LlamaExtractor"])

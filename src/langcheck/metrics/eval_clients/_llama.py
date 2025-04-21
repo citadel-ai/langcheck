@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from transformers import AutoTokenizer
+from transformers import (
+    AutoTokenizer,
+    PreTrainedTokenizer,
+    PreTrainedTokenizerFast,
+)
 from vllm import LLM, SamplingParams
 
 from ..prompts._utils import get_template
@@ -21,7 +25,8 @@ class LlamaEvalClient(EvalClient):
     - `meta-llama/Meta-Llama-3.1-8B-Instruct`
     - `meta-llama/Meta-Llama-3.1-70B-Instruct`
     To use the 70B models, set tensor_parallel_size to 8 or more.
-    To use the Llama 3.1 models, you need to agree to the terms of service and login with your huggingface account.
+    To use the Llama 3.1 models, you need to agree to the terms of service and
+    login with your huggingface account.
     """
 
     def __init__(
@@ -69,10 +74,9 @@ class LlamaEvalClient(EvalClient):
 
         if extractor is None:
             self._extractor = LlamaExtractor(
-                model_name=model_name,
-                torch_dtype=torch_dtype,
-                tensor_parallel_size=tensor_parallel_size,
-                device=device,
+                model=self._model,
+                tokenizer=self._tokenizer,
+                sampling_params=self._sampling_params,
                 system_prompt=system_prompt,
             )
         else:
@@ -82,6 +86,8 @@ class LlamaEvalClient(EvalClient):
         self,
         prompts: list[str],
         language: str,
+        *,
+        tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that generates responses to the given prompt texts.
 
@@ -192,17 +198,20 @@ class LlamaExtractor(Extractor):
         tensor_parallel_size: int = 1,
         device: str = "cuda",
         *,
+        model: LLM | None = None,
+        tokenizer: PreTrainedTokenizer | PreTrainedTokenizerFast | None = None,
+        sampling_params: SamplingParams | None = None,
         system_prompt: str | None = None,
     ):
-        self._model = LLM(
+        self._model = model or LLM(
             model=model_name,
             max_model_len=8192,
             dtype=torch_dtype,
             tensor_parallel_size=tensor_parallel_size,
             device=device,
         )
-        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self._sampling_params = SamplingParams(
+        self._tokenizer = tokenizer or AutoTokenizer.from_pretrained(model_name)
+        self._sampling_params = sampling_params or SamplingParams(
             temperature=0.6,
             top_p=0.9,
             max_tokens=1000,
@@ -221,6 +230,8 @@ class LlamaExtractor(Extractor):
         language: str,
         unstructured_assessment_result: list[str | None],
         score_map: dict[str, float],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores.

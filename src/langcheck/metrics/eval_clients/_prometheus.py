@@ -4,6 +4,8 @@ from jinja2 import Template
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 
+from langcheck.utils.progress_bar import tqdm_wrapper
+
 from ..prompts._utils import get_template
 from ._base import EvalClient, Extractor
 
@@ -56,12 +58,7 @@ class PrometheusEvalClient(EvalClient):
         self._system_prompt = system_prompt
 
         if extractor is None:
-            self._extractor = PrometheusExtractor(
-                model_name=model_name,
-                torch_dtype=torch_dtype,
-                tensor_parallel_size=tensor_parallel_size,
-                device=device,
-            )
+            self._extractor = StringMatchExtractor()
         else:
             self._extractor = extractor
 
@@ -103,7 +100,12 @@ class PrometheusEvalClient(EvalClient):
                     f"The {metric_name} metric (language = {language}, version = {eval_prompt_version}) is not yet supported by the Prometheus eval client."
                 )
 
-    def get_text_responses(self, prompts: list[str]) -> list[str | None]:
+    def get_text_responses(
+        self,
+        prompts: list[str],
+        *,
+        tqdm_description: str | None = None,
+    ) -> list[str | None]:
         """The function that generates responses to the given prompt texts.
 
         Args:
@@ -194,40 +196,10 @@ class PrometheusEvalClient(EvalClient):
         )
 
 
-class PrometheusExtractor(Extractor):
-    """Score extractor defined for the Prometheus 2 model."""
-
-    def __init__(
-        self,
-        model_name: str = "prometheus-eval/prometheus-7b-v2.0",
-        torch_dtype: str = "bfloat16",
-        tensor_parallel_size: int = 1,
-        device: str = "cuda",
-    ):
-        """
-        Initilize the Prometheus score extractor.
-
-        Args:
-            model_name: The name of the model to use.
-            torch_dtype: The torch dtype to use. torch.bfloat16 is recommended.
-            tensor_parallel_size: The number of GPUs to use for distributed
-            execution with tensor parallelism.
-            device: The device to load the model on.
-        """
-        self._model = LLM(
-            model=model_name,
-            max_model_len=8192,
-            dtype=torch_dtype,
-            tensor_parallel_size=tensor_parallel_size,
-            device=device,
-        )
-        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self._sampling_params = SamplingParams(
-            temperature=0.6,
-            top_p=0.9,
-            max_tokens=1000,
-            skip_special_tokens=True,
-        )
+class StringMatchExtractor(Extractor):
+    """Score extractor that uses string matching to find assessment results in
+    the text.
+    """
 
     def get_float_score(
         self,
@@ -235,9 +207,11 @@ class PrometheusExtractor(Extractor):
         language: str,
         unstructured_assessment_result: list[str | None],
         score_map: dict[str, float],
+        *,
+        tqdm_description: str | None = None,
     ) -> list[float | None]:
-        """The function that transforms the unstructured assessments (i.e. long
-        texts that describe the evaluation results) into scores. We simple find
+        """The function that gets the scores from the unstructured assessments
+        (i.e. long texts that describe the evaluation results). We simply find
         the assessment result which appeared latest in the unstructured text.
         Args:
             metric_name: The name of the metric to be used. (e.g. "toxicity")
@@ -256,7 +230,10 @@ class PrometheusExtractor(Extractor):
 
         options = list(score_map.keys())
         assessments = []
-        for unstructured_assessment in unstructured_assessment_result:
+        for unstructured_assessment in tqdm_wrapper(
+            unstructured_assessment_result,
+            desc=tqdm_description,
+        ):
             if unstructured_assessment is None:
                 assessments.append(None)
                 continue
