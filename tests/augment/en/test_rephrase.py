@@ -78,7 +78,8 @@ def test_rephrase(
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         azure_openai_client = AzureOpenAIEvalClient(
-            embedding_model_name="foo bar"
+            text_model_name="foo",
+            embedding_model_name="bar",
         )
         actual = rephrase(
             instances,

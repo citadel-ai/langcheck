@@ -187,7 +187,8 @@ def test_semantic_similarity_openai(generated_outputs, reference_outputs):
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         azure_openai_client = AzureOpenAIEvalClient(
-            embedding_model_name="foo bar"
+            text_model_name="foo",
+            embedding_model_name="bar",
         )
         metric_value = semantic_similarity(
             generated_outputs, reference_outputs, eval_model=azure_openai_client
