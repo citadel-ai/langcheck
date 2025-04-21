@@ -8,7 +8,10 @@ import pytest
 from google.genai import types
 from pydantic import BaseModel
 
-from langcheck.metrics.eval_clients import GeminiEvalClient
+from langcheck.metrics.eval_clients import (
+    GeminiEvalClient,
+    GeminiExtractor,
+)
 
 
 @pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
@@ -57,9 +60,8 @@ def test_get_text_response_gemini_vertex_ai(system_prompt):
             assert response == answer
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_gemini(system_prompt, language):
+def test_get_float_score_gemini(language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -81,9 +83,9 @@ def test_get_float_score_gemini(system_prompt, language):
     ):
         # Set the necessary env vars for the GeminiEvalClient
         os.environ["GOOGLE_API_KEY"] = "dummy_key"
-        client = GeminiEvalClient(system_prompt=system_prompt)
+        extractor = GeminiExtractor()
 
-        scores = client.get_float_score(
+        scores = extractor.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
         )
         assert len(scores) == len(unstructured_assessment_result)
@@ -91,9 +93,8 @@ def test_get_float_score_gemini(system_prompt, language):
             assert score == 1.0
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_gemini_vertex_ai(system_prompt, language):
+def test_get_float_score_gemini_vertex_ai(language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -117,9 +118,9 @@ def test_get_float_score_gemini_vertex_ai(system_prompt, language):
         os.environ["GOOGLE_CLOUD_PROJECT"] = "dummy_project"
         os.environ["GOOGLE_CLOUD_LOCATION"] = "dummy_location"
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
-        client = GeminiEvalClient(vertexai=True, system_prompt=system_prompt)
+        extractor = GeminiExtractor(vertexai=True)
 
-        scores = client.get_float_score(
+        scores = extractor.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
         )
         assert len(scores) == len(unstructured_assessment_result)

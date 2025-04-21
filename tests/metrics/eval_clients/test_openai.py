@@ -10,7 +10,9 @@ from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients import (
     AzureOpenAIEvalClient,
+    AzureOpenAIExtractor,
     OpenAIEvalClient,
+    OpenAIExtractor,
 )
 
 
@@ -35,9 +37,8 @@ def test_get_text_response_openai(system_prompt):
             assert response == answer
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_openai(system_prompt, language):
+def test_get_float_score_openai(language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -59,9 +60,9 @@ def test_get_float_score_openai(system_prompt, language):
     ):
         # Set the necessary env vars for the OpenAIEValClient
         os.environ["OPENAI_API_KEY"] = "dummy_key"
-        client = OpenAIEvalClient(system_prompt=system_prompt)
+        extractor = OpenAIExtractor()
 
-        scores = client.get_float_score(
+        scores = extractor.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
         )
         assert len(scores) == len(unstructured_assessment_result)
@@ -82,7 +83,7 @@ def test_get_text_response_azure_openai(system_prompt):
         return_value=mock_chat_completion,
     ):
         # Set the necessary env vars for the 'azure_openai' model type
-        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["AZURE_OPENAI_API_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
 
@@ -95,8 +96,7 @@ def test_get_text_response_azure_openai(system_prompt):
             assert response == answer
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
-def test_get_float_score_azure_openai(system_prompt):
+def test_get_float_score_azure_openai():
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -117,14 +117,12 @@ def test_get_float_score_azure_openai(system_prompt):
         return_value=mock_chat_completion,
     ):
         # Set the necessary env vars for the 'azure_openai' model type
-        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["AZURE_OPENAI_API_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
-        client = AzureOpenAIEvalClient(
-            text_model_name="foo bar", system_prompt=system_prompt
-        )
+        extractor = AzureOpenAIExtractor(text_model_name="foo bar")
 
-        scores = client.get_float_score(
+        scores = extractor.get_float_score(
             "dummy_metric", "en", unstructured_assessment_result, score_map
         )
         assert len(scores) == len(unstructured_assessment_result)

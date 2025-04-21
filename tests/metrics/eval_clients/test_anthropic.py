@@ -6,7 +6,10 @@ from unittest.mock import Mock, patch
 import pytest
 from anthropic.types.message import Message
 
-from langcheck.metrics.eval_clients import AnthropicEvalClient
+from langcheck.metrics.eval_clients import (
+    AnthropicEvalClient,
+    AnthropicExtractor,
+)
 
 
 @pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
@@ -51,9 +54,8 @@ def test_get_text_response_anthropic_vertex_ai(system_prompt):
             assert response == answer
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_anthropic(system_prompt, language):
+def test_get_float_score_anthropic(language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -70,9 +72,8 @@ def test_get_float_score_anthropic(system_prompt, language):
     ):
         # Set the necessary env vars for the AnthropicEvalClient
         os.environ["ANTHROPIC_API_KEY"] = "dummy_key"
-        client = AnthropicEvalClient(system_prompt=system_prompt)
-
-        scores = client.get_float_score(
+        extractor = AnthropicExtractor()
+        scores = extractor.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
         )
         assert len(scores) == len(unstructured_assessment_result)
@@ -80,9 +81,8 @@ def test_get_float_score_anthropic(system_prompt, language):
             assert score == 1.0
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "de", "ja"])
-def test_get_float_score_anthropic_vertex_ai(system_prompt, language):
+def test_get_float_score_anthropic_vertex_ai(language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -101,9 +101,9 @@ def test_get_float_score_anthropic_vertex_ai(system_prompt, language):
         os.environ["ANTHROPIC_VERTEX_PROJECT_ID"] = "dummy_project"
         os.environ["CLOUD_ML_REGION"] = "dummy_location"
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
-        client = AnthropicEvalClient(vertexai=True, system_prompt=system_prompt)
+        extractor = AnthropicExtractor(vertexai=True)
 
-        scores = client.get_float_score(
+        scores = extractor.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
         )
         assert len(scores) == len(unstructured_assessment_result)
