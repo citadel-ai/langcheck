@@ -6,6 +6,7 @@ from vllm import LLM, SamplingParams
 
 from ..prompts._utils import get_template
 from ._base import EvalClient
+from .extractor import Extractor, StringMatchExtractor
 
 
 class PrometheusEvalClient(EvalClient):
@@ -25,6 +26,7 @@ class PrometheusEvalClient(EvalClient):
         device: str = "cuda",
         *,
         system_prompt: str | None = None,
+        extractor: Extractor | None = None,
     ):
         """
         Initilize the Prometheus evaluation client.
@@ -37,6 +39,8 @@ class PrometheusEvalClient(EvalClient):
             device: The device to load the model on.
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
+            extractor: (Optional) The extractor to use. If not provided, the
+                default extractor will be used.
         """
         self._model = LLM(
             model=model_name,
@@ -53,6 +57,11 @@ class PrometheusEvalClient(EvalClient):
             skip_special_tokens=True,
         )
         self._system_prompt = system_prompt
+
+        if extractor is None:
+            self._extractor = StringMatchExtractor()
+        else:
+            self._extractor = extractor
 
     def load_prompt_template(
         self,
@@ -92,7 +101,12 @@ class PrometheusEvalClient(EvalClient):
                     f"The {metric_name} metric (language = {language}, version = {eval_prompt_version}) is not yet supported by the Prometheus eval client."
                 )
 
-    def get_text_responses(self, prompts: list[str]) -> list[str | None]:
+    def get_text_responses(
+        self,
+        prompts: list[str],
+        *,
+        tqdm_description: str | None = None,
+    ) -> list[str | None]:
         """The function that generates responses to the given prompt texts.
 
         Args:
@@ -138,51 +152,6 @@ class PrometheusEvalClient(EvalClient):
 
         return response_texts
 
-    def get_float_score(
-        self,
-        metric_name: str,
-        language: str,
-        unstructured_assessment_result: list[str | None],
-        score_map: dict[str, float],
-    ) -> list[float | None]:
-        """The function that transforms the unstructured assessments (i.e. long
-        texts that describe the evaluation results) into scores. We simple find
-        the assessment result which appeared latest in the unstructured text.
-        Args:
-            metric_name: The name of the metric to be used. (e.g. "toxicity")
-            language: The language of the prompts. (e.g. "en")
-            unstructured_assessment_result: The unstructured assessment results
-                for the given assessment prompts.
-            score_map: The mapping from the short assessment results
-                (e.g. "Good") to the scores.
-
-        Returns:
-            A list of scores for the given prompts. The scores can be None if
-            the evaluation fails.
-        """
-        if language != "en":
-            raise ValueError(f"Unsupported language: {language}")
-
-        options = list(score_map.keys())
-        assessments = []
-        for unstructured_assessment in unstructured_assessment_result:
-            if unstructured_assessment is None:
-                assessments.append(None)
-                continue
-
-            # Find the option that appears latest in the assessment
-            assessment = max(options, key=unstructured_assessment.rfind)
-            if unstructured_assessment.find(assessment) == -1:
-                print("No options found in the assessment.")
-                assessments.append(None)
-            else:
-                assessments.append(assessment)
-
-        return [
-            score_map[assessment] if assessment else None
-            for assessment in assessments
-        ]
-
     def get_score(
         self,
         metric_name: str,
@@ -213,7 +182,7 @@ class PrometheusEvalClient(EvalClient):
         if isinstance(prompts, str):
             prompts = [prompts]
         unstructured_assessment_result = self.get_text_responses(prompts)
-        scores = self.get_float_score(
+        scores = self._extractor.get_float_score(
             metric_name,
             language,
             unstructured_assessment_result,

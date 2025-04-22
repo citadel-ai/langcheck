@@ -15,6 +15,7 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ._base import EvalClient
+from .extractor import Extractor
 
 
 class AnthropicEvalClient(EvalClient):
@@ -28,13 +29,14 @@ class AnthropicEvalClient(EvalClient):
         use_async: bool = False,
         vertexai: bool = False,
         system_prompt: str | None = None,
+        extractor: Extractor | None = None,
     ):
         """
         Initialize the Anthropic evaluation client. The authentication
-        information is automatically read from the environment variables,
-        so please make sure ANTHROPIC_API_KEY is set.
-        If you want to use Vertex AI, set the `vertexai` argument to True, and
-        please set the following environment variables:
+        information is automatically read from the environment variables.
+        If you want to use Anthropic API, please set `ANTHROPIC_API_KEY`.
+        If you want to use Vertex AI API, set the `vertexai` argument to True,
+        and please set the following environment variables:
             - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
             - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials-file>
@@ -44,15 +46,17 @@ class AnthropicEvalClient(EvalClient):
             - https://cloud.google.com/docs/authentication/application-default-credentials
 
         Args:
-            anthropic_client: (Optional) The Anthropic client to use.
-            anthropic_args: (Optional) dict of additional args to pass in to
-                the ``client.messages.create`` function
+            anthropic_client (Optional): The Anthropic client to use.
+            anthropic_args (Optional): dict of additional args to pass in to
+                the `client.messages.create` function
             use_async: If True, the async client will be used. Defaults to
                 False.
             vertexai: If True, the Vertex AI client will be used. Defaults to
                 False.
-            system_prompt: (Optional) The system prompt to use. If not provided,
+            system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
+            extractor (Optional): The extractor to use. If not provided, the
+                default extractor will be used.
         """
         if anthropic_client:
             self._client = anthropic_client
@@ -76,68 +80,14 @@ class AnthropicEvalClient(EvalClient):
                 "system_prompt is provided."
             )
 
-    def _call_api(
-        self,
-        prompts: list[str] | list[str | None],
-        config: dict[str, Any],
-        *,
-        system_prompt: str | None = None,
-        tqdm_description: str | None = None,
-    ) -> list[Any]:
-        # A helper function to call the API with exception filter for alignment
-        # of exception handling with the async version.
-        def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:
-            if model_input is None:
-                return None
-            try:
-                return self._client.messages.create(**model_input)
-            except Exception as e:
-                return e
-
-        if system_prompt:
-            config["system"] = system_prompt
-
-        model_inputs = [
-            {
-                "messages": [{"role": "user", "content": prompt}],
-                **config,
-            }
-            for prompt in prompts
-        ]
-
-        if self._use_async:
-            # A helper function to call the async API.
-            async def _call_async_api() -> list[Any]:
-                responses = await asyncio.gather(
-                    *map(
-                        lambda model_input: self._client.messages.create(
-                            **model_input
-                        ),
-                        model_inputs,
-                    ),
-                    return_exceptions=True,
-                )
-                return responses
-
-            responses = asyncio.run(_call_async_api())
-        else:
-            responses = [
-                _call_api_with_exception_filter(model_input)
-                for model_input in tqdm_wrapper(
-                    model_inputs, desc=tqdm_description
-                )
-            ]
-
-        # Filter out exceptions and print them out.
-        for i, response in enumerate(responses):
-            if not isinstance(response, Exception):
-                continue
-            print(
-                "Anthropic failed to return an assessment corresponding to "
-                f"{i}th prompt: {response}"
+        if extractor is None:
+            self._extractor = AnthropicExtractor(
+                anthropic_client=self._client,
+                use_async=self._use_async,
+                vertexai=self._vertexai,
             )
-            responses[i] = None
-        return responses
+        else:
+            self._extractor = extractor
 
     def get_text_responses(
         self,
@@ -172,9 +122,11 @@ class AnthropicEvalClient(EvalClient):
         }
         config.update(self._anthropic_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
-        responses = self._call_api(
+        responses = _call_api(
+            client=self._client,
             prompts=prompts,
             config=config,
+            use_async=self._use_async,
             tqdm_description=tqdm_description,
             system_prompt=self._system_prompt,
         )
@@ -184,6 +136,66 @@ class AnthropicEvalClient(EvalClient):
         ]
 
         return response_texts
+
+    def similarity_scorer(self):
+        raise NotImplementedError(
+            "Embedding-based metrics are not supported in AnthropicEvalClient."
+            "Use other EvalClients to get these metrics."
+        )
+
+
+class AnthropicExtractor(Extractor):
+    """Score extractor for Anthropic API."""
+
+    def __init__(
+        self,
+        anthropic_client: Anthropic
+        | AsyncAnthropic
+        | AnthropicVertex
+        | AsyncAnthropicVertex
+        | None = None,
+        anthropic_args: dict[str, Any] | None = None,
+        *,
+        use_async: bool = False,
+        vertexai: bool = False,
+    ):
+        """
+        Initialize the Anthropic score extractor. The authentication information
+        is automatically read from the environment variables.
+        If you want to use Anthropic API, please set `ANTHROPIC_API_KEY`.
+        If you want to use Vertex AI API, set the `vertexai` argument to True,
+        and please set the following environment variables:
+            - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
+            - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
+            - GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials-file>
+
+        References:
+            - https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
+            - https://cloud.google.com/docs/authentication/application-default-credentials
+
+        Args:
+            anthropic_client (Optional): The Anthropic client to use.
+            anthropic_args (Optional): dict of additional args to pass in to
+                the `client.messages.create` function
+            use_async: If True, the async client will be used. Defaults to
+                False.
+            vertexai: If True, the Vertex AI client will be used. Defaults to
+                False.
+        """
+        if anthropic_client:
+            self._client = anthropic_client
+        elif vertexai and use_async:
+            self._client = AsyncAnthropicVertex()
+        elif vertexai:
+            self._client = AnthropicVertex()
+        elif use_async:
+            self._client = AsyncAnthropic()
+        else:
+            self._client = Anthropic()
+
+        self._anthropic_args = anthropic_args or {}
+        self._use_async = use_async
+        self._vertexai = vertexai
 
     def get_float_score(
         self,
@@ -238,9 +250,11 @@ class AnthropicEvalClient(EvalClient):
         }
         config.update(self._anthropic_args or {})
         tqdm_description = tqdm_description or "Scores (2/2)"
-        responses = self._call_api(
+        responses = _call_api(
+            client=self._client,
             prompts=get_score_prompts,
             config=config,
+            use_async=self._use_async,
             tqdm_description=tqdm_description,
         )
         raw_response_texts = [
@@ -259,8 +273,65 @@ class AnthropicEvalClient(EvalClient):
 
         return [_turn_to_score(response) for response in raw_response_texts]
 
-    def similarity_scorer(self):
-        raise NotImplementedError(
-            "Embedding-based metrics are not supported in AnthropicEvalClient."
-            "Use other EvalClients to get these metrics."
+
+def _call_api(
+    client: Anthropic | AsyncAnthropic | AnthropicVertex | AsyncAnthropicVertex,
+    prompts: list[str] | list[str | None],
+    config: dict[str, Any],
+    *,
+    use_async: bool = False,
+    system_prompt: str | None = None,
+    tqdm_description: str | None = None,
+) -> list[Any]:
+    """A helper function to call the Anthropic API."""
+
+    # A helper function to call the API with exception filter for alignment
+    # of exception handling with the async version.
+    def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:
+        if model_input is None:
+            return None
+        try:
+            return client.messages.create(**model_input)
+        except Exception as e:
+            return e
+
+    if system_prompt:
+        config["system"] = system_prompt
+
+    model_inputs = [
+        {
+            "messages": [{"role": "user", "content": prompt}],
+            **config,
+        }
+        for prompt in prompts
+    ]
+
+    if use_async:
+        # A helper function to call the async API.
+        async def _call_async_api() -> list[Any]:
+            responses = await asyncio.gather(
+                *map(
+                    lambda model_input: client.messages.create(**model_input),
+                    model_inputs,
+                ),
+                return_exceptions=True,
+            )
+            return responses
+
+        responses = asyncio.run(_call_async_api())
+    else:
+        responses = [
+            _call_api_with_exception_filter(model_input)
+            for model_input in tqdm_wrapper(model_inputs, desc=tqdm_description)
+        ]
+
+    # Filter out exceptions and print them out.
+    for i, response in enumerate(responses):
+        if not isinstance(response, Exception):
+            continue
+        print(
+            "Anthropic failed to return an assessment corresponding to "
+            f"{i}th prompt: {response}"
         )
+        responses[i] = None
+    return responses

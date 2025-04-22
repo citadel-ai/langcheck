@@ -137,9 +137,9 @@ from langcheck.metrics.eval_clients import AzureOpenAIEvalClient
 generated_outputs = ["The cat is sitting on the mat."]
 reference_outputs = ["The cat sat on the mat."]
 
-# Option 1: Set the AZURE_OPENAI_KEY, OPENAI_API_VERSION, and
+# Option 1: Set the AZURE_OPENAI_API_KEY, OPENAI_API_VERSION, and
 # AZURE_OPENAI_ENDPOINT environment variables
-os.environ["AZURE_OPENAI_KEY"] = 'YOUR_AZURE_OPENAI_KEY'
+os.environ["AZURE_OPENAI_API_KEY"] = 'YOUR_AZURE_OPENAI_API_KEY'
 os.environ["OPENAI_API_VERSION"] = 'YOUR_OPENAI_API_VERSION'
 os.environ["AZURE_OPENAI_ENDPOINT"] = 'YOUR_AZURE_OPENAI_ENDPOINT'
 
@@ -157,7 +157,7 @@ similarity_value = semantic_similarity(
 from openai import AzureOpenAI
 from langcheck.metrics.en import fluency
 
-azure_openai_client = AzureOpenAI(api_key='YOUR_AZURE_OPENAI_KEY',
+azure_openai_client = AzureOpenAI(api_key='YOUR_AZURE_OPENAI_API_KEY',
                      api_version='YOUR_OPENAI_API_VERSION',
                      azure_endpoint='YOUR_AZURE_OPENAI_ENDPOINT')
 # You need to specify text_model_name to enable text-based evaluations

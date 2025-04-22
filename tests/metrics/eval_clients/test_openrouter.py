@@ -5,7 +5,10 @@ from unittest.mock import patch
 
 import pytest
 
-from langcheck.metrics.eval_clients import OpenRouterEvalClient
+from langcheck.metrics.eval_clients import (
+    OpenRouterEvalClient,
+    OpenRouterExtractor,
+)
 
 
 @pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
@@ -16,7 +19,7 @@ def test_get_text_response_openrouter(system_prompt):
     # Calling the _call_api method requires an
     # OpenRouter API key, so we mock the return value instead
     with patch(
-        "langcheck.metrics.eval_clients.OpenRouterEvalClient._call_api",
+        "langcheck.metrics.eval_clients._openrouter._call_api",
         return_value=mock_response,
     ):
         # Set the necessary env vars for the OpenRouterEvalClient
@@ -28,9 +31,8 @@ def test_get_text_response_openrouter(system_prompt):
             assert response == answer
 
 
-@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
 @pytest.mark.parametrize("language", ["en", "ja"])
-def test_get_float_score_openrouter(system_prompt, language):
+def test_get_float_score_openrouter(language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
     ] * 2
@@ -42,14 +44,13 @@ def test_get_float_score_openrouter(system_prompt, language):
     ] * 2
 
     with patch(
-        "langcheck.metrics.eval_clients.OpenRouterEvalClient._call_api",
+        "langcheck.metrics.eval_clients._openrouter._call_api",
         return_value=mock_response,
     ):
         # Set the necessary env vars for the OpenRouterEvalClient
         os.environ["OPENROUTER_API_KEY"] = "dummy_key"
-        client = OpenRouterEvalClient(system_prompt=system_prompt)
-
-        scores = client.get_float_score(
+        extractor = OpenRouterExtractor()
+        scores = extractor.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
         )
         assert len(scores) == len(unstructured_assessment_result)

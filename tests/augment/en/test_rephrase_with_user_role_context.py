@@ -68,11 +68,12 @@ def test_rephrase_with_user_role_context(
         side_effect=side_effect,
     ):
         # Set the necessary env vars for the 'azure_openai' model type
-        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["AZURE_OPENAI_API_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         azure_openai_client = AzureOpenAIEvalClient(
-            embedding_model_name="foo bar"
+            text_model_name="foo",
+            embedding_model_name="bar",
         )
         actual = rephrase_with_user_role_context(
             instances,

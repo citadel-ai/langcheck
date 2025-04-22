@@ -228,11 +228,12 @@ def test_ai_disclaimer_similarity_openai(generated_outputs):
         assert 0.99 <= metric_value <= 1
 
         # Set the necessary env vars for the 'azure_openai' model type
-        os.environ["AZURE_OPENAI_KEY"] = "dummy_azure_key"
+        os.environ["AZURE_OPENAI_API_KEY"] = "dummy_azure_key"
         os.environ["OPENAI_API_VERSION"] = "dummy_version"
         os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
         azure_openai_client = AzureOpenAIEvalClient(
-            embedding_model_name="foo bar"
+            text_model_name="foo",
+            embedding_model_name="bar",
         )
         metric_value = ai_disclaimer_similarity(
             generated_outputs, eval_model=azure_openai_client
