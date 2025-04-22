@@ -3,7 +3,8 @@ from __future__ import annotations
 import math
 from collections.abc import Iterable
 
-from langcheck.metrics.eval_clients import EvalClient, Extractor
+from langcheck.metrics.eval_clients import EvalClient
+from langcheck.metrics.eval_clients.extractor import Extractor
 
 
 ################################################################################
