@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langcheck"
-version = "0.10.0.dev2"
+version = "0.10.0.dev3"
 description = "Simple, Pythonic building blocks to evaluate LLM-based applications"
 readme = "README.md"
 authors = [{ name = "Citadel AI", email = "info@citadel.co.jp" }]
