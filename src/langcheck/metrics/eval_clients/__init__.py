@@ -9,13 +9,11 @@ from langcheck.metrics.eval_clients._openrouter import (
     OpenRouterEvalClient,
     OpenRouterExtractor,
 )
-from langcheck.metrics.eval_clients.extractor import Extractor
 
 __all__ = [
     "AzureOpenAIEvalClient",
     "AzureOpenAIExtractor",
     "EvalClient",
-    "Extractor",
     "OpenAIEvalClient",
     "OpenAIExtractor",
     "OpenRouterEvalClient",
