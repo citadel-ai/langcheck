@@ -15,7 +15,7 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient, TextResponseWithLogProbs
-from .extractor import Extractor
+from .extractor import Extractor, StringMatchExtractor
 
 
 class OpenAIEvalClient(EvalClient):
@@ -490,7 +490,9 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
 
         self._use_async = use_async
 
-        if extractor is None:
+        if extractor is not None:
+            self._extractor = extractor
+        elif text_model_name is not None:
             self._extractor = AzureOpenAIExtractor(
                 text_model_name=text_model_name,
                 azure_openai_client=azure_openai_client,
@@ -498,7 +500,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
                 use_async=use_async,
             )
         else:
-            self._extractor = extractor
+            self._extractor = StringMatchExtractor()
 
     def similarity_scorer(self) -> OpenAISimilarityScorer:
         """This method does the sanity check for the embedding_model_name and
