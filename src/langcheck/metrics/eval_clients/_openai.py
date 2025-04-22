@@ -435,7 +435,7 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
                 Azure OpenAI API for embedding models.
             azure_openai_client (Optional): The Azure OpenAI client to use.
             openai_args (Optional): dict of additional args to pass in to the
-            ``client.chat.completions.create`` function
+                `client.chat.completions.create` function.
             use_async (Optional): If True, the async client will be used.
             system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
@@ -449,6 +449,22 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             "embedding_model_name to use the Azure OpenAI API."
         )
         # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
+
+        # Check for old environment variable
+        if os.getenv("AZURE_OPENAI_KEY") is not None:
+            warnings.warn(
+                "Environment variable 'AZURE_OPENAI_KEY' is deprecated and will be removed in a future version. "
+                "Please use 'AZURE_OPENAI_API_KEY' instead.",
+                DeprecationWarning,
+            )
+            if os.getenv("AZURE_OPENAI_API_KEY") is None:
+                warnings.warn(
+                    "Environment variable 'AZURE_OPENAI_API_KEY' is not set. "
+                    "Falling back to 'AZURE_OPENAI_KEY'.",
+                    DeprecationWarning,
+                )
+                os.environ["AZURE_OPENAI_API_KEY"] = os.environ["AZURE_OPENAI_KEY"]
+
         kargs = {
             "api_key": os.getenv("AZURE_OPENAI_API_KEY"),
             "api_version": os.getenv("OPENAI_API_VERSION"),
