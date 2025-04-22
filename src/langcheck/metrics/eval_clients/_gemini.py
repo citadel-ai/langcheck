@@ -32,9 +32,9 @@ class GeminiEvalClient(EvalClient):
         """
         Initialize the Gemini evaluation client. The authentication
         information is automatically read from the environment variables.
-        If you want to use Gemini Developer API, please set `GOOGLE_API_KEY`.
-        If you want to use Vertex AI, please set `vertexai` argument to True,
-        and set the following environment variables:
+        If you want to use Gemini Developer API, please set ``GOOGLE_API_KEY``.
+        If you want to use Vertex AI API, please set ``vertexai`` argument to
+        True, and set the following environment variables:
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
@@ -187,8 +187,8 @@ class GeminiExtractor(Extractor):
         Initialize the Gemini score extraction client. The authentication
         information is automatically read from the environment variables.
         If you want to use Gemini Developer API, please set ``GOOGLE_API_KEY``.
-        If you want to use Vertex AI, please set `vertexai` argument to True,
-        and set the following environment variables:
+        If you want to use Vertex AI API, please set ``vertexai`` argument to
+        True, and set the following environment variables:
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
