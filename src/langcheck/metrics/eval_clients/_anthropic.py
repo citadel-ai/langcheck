@@ -14,7 +14,8 @@ from anthropic import (
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
-from ._base import EvalClient, Extractor
+from ._base import EvalClient
+from .extractor import Extractor
 
 
 class AnthropicEvalClient(EvalClient):

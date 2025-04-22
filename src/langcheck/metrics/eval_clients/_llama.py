@@ -10,7 +10,8 @@ from transformers import (
 from vllm import LLM, SamplingParams
 
 from ..prompts._utils import get_template
-from ._base import EvalClient, Extractor
+from ._base import EvalClient
+from .extractor import Extractor
 
 
 class LlamaEvalClient(EvalClient):

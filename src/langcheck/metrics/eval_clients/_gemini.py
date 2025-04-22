@@ -12,7 +12,8 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
-from ._base import EvalClient, Extractor
+from ._base import EvalClient
+from .extractor import Extractor
 
 
 class GeminiEvalClient(EvalClient):

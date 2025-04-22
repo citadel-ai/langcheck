@@ -14,7 +14,8 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
-from ._base import EvalClient, Extractor, TextResponseWithLogProbs
+from ._base import EvalClient, TextResponseWithLogProbs
+from .extractor import Extractor
 
 
 class OpenAIEvalClient(EvalClient):
@@ -463,7 +464,9 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
                     "Falling back to 'AZURE_OPENAI_KEY'.",
                     DeprecationWarning,
                 )
-                os.environ["AZURE_OPENAI_API_KEY"] = os.environ["AZURE_OPENAI_KEY"]
+                os.environ["AZURE_OPENAI_API_KEY"] = os.environ[
+                    "AZURE_OPENAI_KEY"
+                ]
 
         kargs = {
             "api_key": os.getenv("AZURE_OPENAI_API_KEY"),

@@ -1,4 +1,4 @@
-from langcheck.metrics.eval_clients._base import EvalClient, Extractor
+from langcheck.metrics.eval_clients._base import EvalClient
 from langcheck.metrics.eval_clients._openai import (
     AzureOpenAIEvalClient,
     AzureOpenAIExtractor,
@@ -9,6 +9,7 @@ from langcheck.metrics.eval_clients._openrouter import (
     OpenRouterEvalClient,
     OpenRouterExtractor,
 )
+from langcheck.metrics.eval_clients.extractor import Extractor
 
 __all__ = [
     "AzureOpenAIEvalClient",
@@ -48,10 +49,9 @@ try:
     )
     from langcheck.metrics.eval_clients._prometheus import (
         PrometheusEvalClient,  # NOQA: F401
-        StringMatchExtractor,  # NOQA: F401
     )
 except ModuleNotFoundError:
     pass
 else:
-    __all__.extend(["PrometheusEvalClient", "StringMatchExtractor"])
+    __all__.extend(["PrometheusEvalClient"])
     __all__.extend(["LlamaEvalClient", "LlamaExtractor"])
