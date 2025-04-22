@@ -29,9 +29,11 @@ class OpenRouterEvalClient(EvalClient):
 
         Args:
             openrouter_args (Optional): dict of additional args to pass in to
-                the ``client.chat.completions.create`` function.
+                the `client.chat.completions.create` function.
             system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
+            extractor (Optional): The extractor to use. If not provided, the
+                default extractor will be used.
         """
 
         if os.getenv("OPENROUTER_API_KEY") is None:
@@ -137,7 +139,7 @@ class OpenRouterExtractor(Extractor):
 
         Args:
             openrouter_args (Optional): dict of additional args to pass in to
-                the ``client.chat.completions.create`` function.
+                the `client.chat.completions.create` function.
         """
 
         if os.getenv("OPENROUTER_API_KEY") is None:

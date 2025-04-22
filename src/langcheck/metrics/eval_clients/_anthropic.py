@@ -33,8 +33,8 @@ class AnthropicEvalClient(EvalClient):
         """
         Initialize the Anthropic evaluation client. The authentication
         information is automatically read from the environment variables.
-        If you want to use Anthropic API, please set ``ANTHROPIC_API_KEY``.
-        If you want to use Vertex AI API, set the ``vertexai`` argument to True,
+        If you want to use Anthropic API, please set `ANTHROPIC_API_KEY`.
+        If you want to use Vertex AI API, set the `vertexai` argument to True,
         and please set the following environment variables:
             - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
             - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
@@ -47,7 +47,7 @@ class AnthropicEvalClient(EvalClient):
         Args:
             anthropic_client (Optional): The Anthropic client to use.
             anthropic_args (Optional): dict of additional args to pass in to
-                the ``client.messages.create`` function
+                the `client.messages.create` function
             use_async: If True, the async client will be used. Defaults to
                 False.
             vertexai: If True, the Vertex AI client will be used. Defaults to
@@ -161,8 +161,8 @@ class AnthropicExtractor(Extractor):
         """
         Initialize the Anthropic score extractor. The authentication information
         is automatically read from the environment variables.
-        If you want to use Anthropic API, please set ``ANTHROPIC_API_KEY``.
-        If you want to use Vertex AI API, set the ``vertexai`` argument to True,
+        If you want to use Anthropic API, please set `ANTHROPIC_API_KEY`.
+        If you want to use Vertex AI API, set the `vertexai` argument to True,
         and please set the following environment variables:
             - ANTHROPIC_VERTEX_PROJECT_ID=<your-project-id>
             - CLOUD_ML_REGION=<region>  (e.g. europe-west1)
@@ -175,7 +175,7 @@ class AnthropicExtractor(Extractor):
         Args:
             anthropic_client (Optional): The Anthropic client to use.
             anthropic_args (Optional): dict of additional args to pass in to
-                the ``client.messages.create`` function
+                the `client.messages.create` function
             use_async: If True, the async client will be used. Defaults to
                 False.
             vertexai: If True, the Vertex AI client will be used. Defaults to

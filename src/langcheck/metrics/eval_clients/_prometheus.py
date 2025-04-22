@@ -40,6 +40,8 @@ class PrometheusEvalClient(EvalClient):
             device: The device to load the model on.
             system_prompt: (Optional) The system prompt to use. If not provided,
                 no system prompt will be used.
+            extractor: (Optional) The extractor to use. If not provided, the
+                default extractor will be used.
         """
         self._model = LLM(
             model=model_name,

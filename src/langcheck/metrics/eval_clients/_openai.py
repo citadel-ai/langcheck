@@ -27,7 +27,6 @@ class OpenAIEvalClient(EvalClient):
         *,
         use_async: bool = False,
         system_prompt: str | None = None,
-        extractor_args: dict[str, str] | None = None,
         extractor: Extractor | None = None,
     ):
         """
@@ -38,13 +37,11 @@ class OpenAIEvalClient(EvalClient):
         Args:
             openai_client (Optional): The OpenAI client to use.
             openai_args (Optional): dict of additional args to pass in to the
-            ``client.chat.completions.create`` function.
+            `client.chat.completions.create` function.
             use_async: If True, the async client will be used. Defaults to
                 False.
             system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
-            extractor_args (Optional): dict of additional args to pass in to the
-                ``client.beta.chat.completions.parse`` function.
             extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
@@ -59,15 +56,10 @@ class OpenAIEvalClient(EvalClient):
         self._use_async = use_async
         self._system_prompt = system_prompt
 
-        if extractor is not None and extractor_args is not None:
-            raise ValueError(
-                "extractor and extractor_args cannot both be provided."
-            )
-
         if extractor is None:
             self._extractor = OpenAIExtractor(
                 openai_client=self._client,
-                openai_args=extractor_args,
+                openai_args=openai_args,
                 use_async=use_async,
             )
         else:
@@ -278,7 +270,7 @@ class OpenAIExtractor(Extractor):
         Args:
             openai_client (Optional): The OpenAI client to use.
             openai_args (Optional): dict of additional args to pass in to the
-            ``client.chat.completions.create`` function.
+                `client.chat.completions.create` function.
             use_async: If True, the async client will be used. Defaults to
                 False.
         """
