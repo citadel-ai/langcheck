@@ -48,14 +48,15 @@ class GeminiEvalClient(EvalClient):
 
         Args:
             model_name: The Gemini model to use. Defaults to "gemini-1.5-flash".
+            embed_model_name (Optional): The name of the embedding model to use. If not
+                provided, the "models/text-embedding-004" model will be used.
             generate_content_args (Optional): Dict of args to pass in to the
                 ``generate_content`` function. The keys should be the same as
                 the keys in the ``genai.types.GenerateContentConfig`` type.
-            embed_model_name (Optional): The name of the embedding model to use. If not
-                provided, the "models/text-embedding-004" model will be used.
+            genai_client (Optional): The genai.Client instance to use. If not
+                provided, the client will be created using the environment
+                variables.
             use_async: If True, the async client will be used. Defaults to
-                False.
-            vertexai: If True, the Vertex AI client will be used. Defaults to
                 False.
             system_prompt (Optional): The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
@@ -229,9 +230,10 @@ class GeminiExtractor(Extractor):
             generate_content_args (Optional): Dict of args to pass in to the
                 ``generate_content`` function. The keys should be the same as
                 the keys in the ``genai.types.GenerateContentConfig`` type.
+            genai_client (Optional): The genai.Client instance to use. If not
+                provided, the client will be created using the environment
+                variables.
             use_async: If True, the async client will be used. Defaults to
-                False.
-            vertexai: If True, the Vertex AI client will be used. Defaults to
                 False.
         """
         self._model_name = model_name
