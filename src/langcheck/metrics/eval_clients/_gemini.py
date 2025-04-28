@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Any, Literal
 
 import torch
@@ -22,20 +23,21 @@ class GeminiEvalClient(EvalClient):
     def __init__(
         self,
         model_name: str = "gemini-1.5-flash",
-        generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
+        generate_content_args: dict[str, Any] | None = None,
+        genai_client: genai.Client | None = None,
         *,
         use_async: bool = False,
-        vertexai: bool = False,
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
     ):
         """
-        Initialize the Gemini evaluation client. The authentication
-        information is automatically read from the environment variables.
-        If you want to use Gemini Developer API, please set `GOOGLE_API_KEY`.
-        If you want to use Vertex AI API, please set `vertexai` argument to
-        True, and set the following environment variables:
+        Initialize the Gemini evaluation client. You can provide your own
+        genai.Client instance via the `genai_client` argument, or set the
+        necessary environment variables. If you want to use Gemini Developer
+        API, please set `GOOGLE_API_KEY`. If you want to use Vertex AI API, set
+        the following environment variables:
+            - GOOGLE_GENAI_USE_VERTEXAI=true
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
@@ -69,12 +71,35 @@ class GeminiEvalClient(EvalClient):
         self._use_async = use_async
         self._system_instruction = system_prompt
 
-        self._client = genai.Client(vertexai=vertexai)
+        if genai_client is None:
+            # Check for required environment variables
+            if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").lower() in [
+                "true",
+                "1",
+            ]:
+                # Vertex AI requires these environment variables
+                for env_var in [
+                    "GOOGLE_CLOUD_PROJECT",
+                    "GOOGLE_CLOUD_LOCATION",
+                    "GOOGLE_APPLICATION_CREDENTIALS",
+                ]:
+                    if not os.environ.get(env_var):
+                        raise ValueError(
+                            f"Environment variable '{env_var}' must be set when using Vertex AI."
+                        )
+            elif not os.environ.get("GOOGLE_API_KEY"):
+                # Gemini Developer API requires API key
+                raise ValueError(
+                    "Environment variable 'GOOGLE_API_KEY' must be set when using Gemini Developer API."
+                )
+            self._client = genai.Client()
+        else:
+            self._client = genai_client
 
         if extractor is None:
             self._extractor = GeminiExtractor(
+                genai_client=self._client,
                 use_async=use_async,
-                vertexai=vertexai,
             )
         else:
             self._extractor = extractor
@@ -179,17 +204,18 @@ class GeminiExtractor(Extractor):
     def __init__(
         self,
         model_name: str = "gemini-1.5-flash",
+        genai_client: genai.Client | None = None,
         generate_content_args: dict[str, Any] | None = None,
         *,
         use_async: bool = False,
-        vertexai: bool = False,
     ):
         """
-        Initialize the Gemini score extraction client. The authentication
-        information is automatically read from the environment variables.
-        If you want to use Gemini Developer API, please set `GOOGLE_API_KEY`.
-        If you want to use Vertex AI API, please set the `vertexai` argument to
-        True, and set the following environment variables:
+        Initialize the Gemini score extraction client. You can provide your own
+        genai.Client instance via the `genai_client` argument, or set the
+        necessary environment variables. If you want to use Gemini Developer
+        API, please set `GOOGLE_API_KEY`. If you want to use Vertex AI API, set
+        the following environment variables:
+            - GOOGLE_GENAI_USE_VERTEXAI=true
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
@@ -213,9 +239,31 @@ class GeminiExtractor(Extractor):
         _validate_generate_content_config(self._generate_content_args)
 
         self._use_async = use_async
-        self._vertexai = vertexai
 
-        self._client = genai.Client(vertexai=vertexai)
+        if genai_client is None:
+            # Check for required environment variables
+            if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").lower() in [
+                "true",
+                "1",
+            ]:
+                # Vertex AI requires these environment variables
+                for env_var in [
+                    "GOOGLE_CLOUD_PROJECT",
+                    "GOOGLE_CLOUD_LOCATION",
+                    "GOOGLE_APPLICATION_CREDENTIALS",
+                ]:
+                    if not os.environ.get(env_var):
+                        raise ValueError(
+                            f"Environment variable '{env_var}' must be set when using Vertex AI."
+                        )
+            elif not os.environ.get("GOOGLE_API_KEY"):
+                # Gemini Developer API requires API key
+                raise ValueError(
+                    "Environment variable 'GOOGLE_API_KEY' must be set when using Gemini Developer API."
+                )
+            self._client = genai.Client()
+        else:
+            self._client = genai_client
 
     def get_float_score(
         self,
