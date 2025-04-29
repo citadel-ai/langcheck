@@ -386,10 +386,10 @@ def _call_api(
     """A helper function to call `generate_content` of the Gemini API.
 
     Args:
-        model: The model to use.
-        prompts: The prompts to use.
-        config: The config to use.
-        client: The client to use.
+        model: The model name to use.
+        prompts: The prompts for `generate_content`.
+        config: The config for `generate_content`.
+        client: The genai client.
         use_async: If True, the async client will be used. Defaults to False.
         tqdm_description (Optional): The description to be shown in the tqdm bar.
 
