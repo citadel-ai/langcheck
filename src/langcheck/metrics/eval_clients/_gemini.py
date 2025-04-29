@@ -185,7 +185,11 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
                 )
                 return embed_response
 
-            loop = asyncio.get_event_loop()
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:  # pragma: py-lt-310
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
             embed_response = loop.run_until_complete(_call_async_api())
         else:
             embed_response = self._client.models.embed_content(
@@ -396,19 +400,24 @@ def _call_api(
 
         async def _call_async_api() -> list[Any]:
             responses = await asyncio.gather(
-                *map(
-                    lambda prompt: client.aio.models.generate_content(
+                *[
+                    client.aio.models.generate_content(
                         model=model,
                         contents=types.Part.from_text(text=prompt),
                         config=types.GenerateContentConfig(**config),
-                    ),
-                    prompts,
-                ),
+                    )
+                    for prompt in prompts
+                ],
                 return_exceptions=True,
             )
             return responses
 
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:  # pragma: py-lt-310
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
         responses = loop.run_until_complete(_call_async_api())
 
     else:
