@@ -50,11 +50,10 @@ def test_get_text_response_gemini_vertex_ai(system_prompt):
         return_value=mock_response,
     ):
         # Set the necessary env vars for the Vertex AI GeminiEvalClient
-        os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "true"
         os.environ["GOOGLE_CLOUD_PROJECT"] = "dummy_project"
         os.environ["GOOGLE_CLOUD_LOCATION"] = "dummy_location"
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
-        client = GeminiEvalClient(system_prompt=system_prompt)
+        client = GeminiEvalClient(system_prompt=system_prompt, vertexai=True)
         responses = client.get_text_responses(prompts)
         assert len(responses) == len(prompts)
         for response in responses:
@@ -116,11 +115,10 @@ def test_get_float_score_gemini_vertex_ai(language):
         return_value=mock_response,
     ):
         # Set the necessary env vars for the Vertex AI GeminiEvalClient
-        os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "true"
         os.environ["GOOGLE_CLOUD_PROJECT"] = "dummy_project"
         os.environ["GOOGLE_CLOUD_LOCATION"] = "dummy_location"
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
-        extractor = GeminiExtractor()
+        extractor = GeminiExtractor(vertexai=True)
 
         scores = extractor.get_float_score(
             "dummy_metric", language, unstructured_assessment_result, score_map
@@ -173,11 +171,10 @@ def test_similarity_scorer_gemini_vertex_ai():
         ),
     ):
         # Set the necessary env vars for the Vertex AI GeminiEvalClient
-        os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "true"
         os.environ["GOOGLE_CLOUD_PROJECT"] = "dummy_project"
         os.environ["GOOGLE_CLOUD_LOCATION"] = "dummy_location"
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dummy_credentials_path"
-        gemini_client = GeminiEvalClient()
+        gemini_client = GeminiEvalClient(vertexai=True)
         scorer = gemini_client.similarity_scorer()
         # Since the mock embeddings are the same for the generated and reference
         # outputs, the similarity score should be 1.

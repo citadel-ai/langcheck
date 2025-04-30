@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import warnings
 from typing import Any
 
@@ -23,7 +24,11 @@ class AnthropicEvalClient(EvalClient):
 
     def __init__(
         self,
-        anthropic_client: Anthropic | None = None,
+        anthropic_client: Anthropic
+        | AsyncAnthropic
+        | AnthropicVertex
+        | AsyncAnthropicVertex
+        | None = None,
         anthropic_args: dict[str, Any] | None = None,
         *,
         use_async: bool = False,
@@ -58,16 +63,50 @@ class AnthropicEvalClient(EvalClient):
             extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
-        if anthropic_client:
-            self._client = anthropic_client
-        elif vertexai and use_async:
-            self._client = AsyncAnthropicVertex()
-        elif vertexai:
-            self._client = AnthropicVertex()
-        elif use_async:
-            self._client = AsyncAnthropic()
+
+        if anthropic_client is None:
+            if vertexai:
+                # Vertex AI requires these environment variables
+                for env_var in [
+                    "ANTHROPIC_VERTEX_PROJECT_ID",
+                    "CLOUD_ML_REGION",
+                    "GOOGLE_APPLICATION_CREDENTIALS",
+                ]:
+                    if not os.environ.get(env_var):
+                        raise ValueError(
+                            f"Environment variable '{env_var}' must be set when using Vertex AI."
+                        )
+
+                if not os.environ.get("ANTHROPIC_VERTEX_PROJECT_ID"):
+                    raise ValueError(
+                        "`ANTHROPIC_VERTEX_PROJECT_ID` must be set when using Vertex AI."
+                    )
+
+                # Warn that `ANTHROPIC_API_KEY` is not used when using Vertex AI
+                if os.environ.get("ANTHROPIC_API_KEY", None):
+                    warnings.warn(
+                        "`ANTHROPIC_API_KEY` is set when using Vertex AI. "
+                        "Vertex AI will take precedence over the API key from "
+                        "the environment variable."
+                    )
+
+                if use_async:
+                    self._client = AsyncAnthropicVertex()
+                else:
+                    self._client = AnthropicVertex()
+            else:
+                if os.environ.get("ANTHROPIC_API_KEY", None) is None:
+                    raise ValueError(
+                        "`ANTHROPIC_API_KEY` is not set when using Anthropic API. "
+                        "Please set the `ANTHROPIC_API_KEY` environment variable."
+                    )
+
+                if use_async:
+                    self._client = AsyncAnthropic()
+                else:
+                    self._client = Anthropic()
         else:
-            self._client = Anthropic()
+            self._client = anthropic_client
 
         self._anthropic_args = anthropic_args or {}
         self._use_async = use_async
@@ -182,16 +221,49 @@ class AnthropicExtractor(Extractor):
             vertexai: If True, the Vertex AI client will be used. Defaults to
                 False.
         """
-        if anthropic_client:
-            self._client = anthropic_client
-        elif vertexai and use_async:
-            self._client = AsyncAnthropicVertex()
-        elif vertexai:
-            self._client = AnthropicVertex()
-        elif use_async:
-            self._client = AsyncAnthropic()
+        if anthropic_client is None:
+            if vertexai:
+                # Vertex AI requires these environment variables
+                for env_var in [
+                    "ANTHROPIC_VERTEX_PROJECT_ID",
+                    "CLOUD_ML_REGION",
+                    "GOOGLE_APPLICATION_CREDENTIALS",
+                ]:
+                    if not os.environ.get(env_var):
+                        raise ValueError(
+                            f"Environment variable '{env_var}' must be set when using Vertex AI."
+                        )
+
+                if not os.environ.get("ANTHROPIC_VERTEX_PROJECT_ID"):
+                    raise ValueError(
+                        "`ANTHROPIC_VERTEX_PROJECT_ID` must be set when using Vertex AI."
+                    )
+
+                # Warn that `ANTHROPIC_API_KEY` is not used when using Vertex AI
+                if os.environ.get("ANTHROPIC_API_KEY", None):
+                    warnings.warn(
+                        "`ANTHROPIC_API_KEY` is set when using Vertex AI. "
+                        "Vertex AI will take precedence over the API key from "
+                        "the environment variable."
+                    )
+
+                if use_async:
+                    self._client = AsyncAnthropicVertex()
+                else:
+                    self._client = AnthropicVertex()
+            else:
+                if os.environ.get("ANTHROPIC_API_KEY", None) is None:
+                    raise ValueError(
+                        "`ANTHROPIC_API_KEY` is not set when using Anthropic API. "
+                        "Please set the `ANTHROPIC_API_KEY` environment variable."
+                    )
+
+                if use_async:
+                    self._client = AsyncAnthropic()
+                else:
+                    self._client = Anthropic()
         else:
-            self._client = Anthropic()
+            self._client = anthropic_client
 
         self._anthropic_args = anthropic_args or {}
         self._use_async = use_async

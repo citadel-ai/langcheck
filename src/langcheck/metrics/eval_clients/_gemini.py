@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import warnings
 from typing import Any, Literal
 
 import torch
@@ -28,6 +29,7 @@ class GeminiEvalClient(EvalClient):
         genai_client: genai.Client | None = None,
         *,
         use_async: bool = False,
+        vertexai: bool = False,
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
     ):
@@ -35,9 +37,9 @@ class GeminiEvalClient(EvalClient):
         Initialize the Gemini evaluation client. You can provide your own
         genai.Client instance via the `genai_client` argument, or set the
         necessary environment variables. If you want to use Gemini Developer
-        API, please set `GOOGLE_API_KEY`. If you want to use Vertex AI API, set
-        the following environment variables:
-            - GOOGLE_GENAI_USE_VERTEXAI=true
+        API, please set `GOOGLE_API_KEY`. If you want to use Vertex AI API,
+        set the `vertexai` argument to True, and set the following environment
+        variables:
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
@@ -58,6 +60,8 @@ class GeminiEvalClient(EvalClient):
                 variables.
             use_async: If True, the async client will be used. Defaults to
                 False.
+            vertexai: If True, the Vertex AI client will be used. Defaults to
+                False.
             system_prompt (Optional): The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
@@ -74,10 +78,7 @@ class GeminiEvalClient(EvalClient):
 
         if genai_client is None:
             # Check for required environment variables
-            if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").lower() in [
-                "true",
-                "1",
-            ]:
+            if vertexai:
                 # Vertex AI requires these environment variables
                 for env_var in [
                     "GOOGLE_CLOUD_PROJECT",
@@ -88,12 +89,22 @@ class GeminiEvalClient(EvalClient):
                         raise ValueError(
                             f"Environment variable '{env_var}' must be set when using Vertex AI."
                         )
-            elif not os.environ.get("GOOGLE_API_KEY"):
+
+                # Warn that `GOOGLE_API_KEY` is not used when using Vertex AI
+                if os.environ.get("GOOGLE_API_KEY", None):
+                    warnings.warn(
+                        "`GOOGLE_API_KEY` is set when using Vertex AI. "
+                        "Vertex AI will take precedence over the API key from "
+                        "the environment variable."
+                    )
+
+            elif os.environ.get("GOOGLE_API_KEY", None) is None:
                 # Gemini Developer API requires API key
                 raise ValueError(
-                    "Environment variable 'GOOGLE_API_KEY' must be set when using Gemini Developer API."
+                    "`GOOGLE_API_KEY` is not set when using Gemini Developer API. "
+                    "Please set the `GOOGLE_API_KEY` environment variable."
                 )
-            self._client = genai.Client()
+            self._client = genai.Client(vertexai=vertexai)
         else:
             self._client = genai_client
 
@@ -213,14 +224,15 @@ class GeminiExtractor(Extractor):
         generate_content_args: dict[str, Any] | None = None,
         *,
         use_async: bool = False,
+        vertexai: bool = False,
     ):
         """
         Initialize the Gemini score extraction client. You can provide your own
         genai.Client instance via the `genai_client` argument, or set the
         necessary environment variables. If you want to use Gemini Developer
         API, please set `GOOGLE_API_KEY`. If you want to use Vertex AI API, set
-        the following environment variables:
-            - GOOGLE_GENAI_USE_VERTEXAI=true
+        the `vertexai` argument to True, and set the following environment
+        variables:
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
@@ -239,6 +251,8 @@ class GeminiExtractor(Extractor):
                 variables.
             use_async: If True, the async client will be used. Defaults to
                 False.
+            vertexai: If True, the Vertex AI client will be used. Defaults to
+                False.
         """
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
@@ -248,10 +262,7 @@ class GeminiExtractor(Extractor):
 
         if genai_client is None:
             # Check for required environment variables
-            if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").lower() in [
-                "true",
-                "1",
-            ]:
+            if vertexai:
                 # Vertex AI requires these environment variables
                 for env_var in [
                     "GOOGLE_CLOUD_PROJECT",
@@ -262,12 +273,13 @@ class GeminiExtractor(Extractor):
                         raise ValueError(
                             f"Environment variable '{env_var}' must be set when using Vertex AI."
                         )
-            elif not os.environ.get("GOOGLE_API_KEY"):
+            elif os.environ.get("GOOGLE_API_KEY", None) is None:
                 # Gemini Developer API requires API key
                 raise ValueError(
-                    "Environment variable 'GOOGLE_API_KEY' must be set when using Gemini Developer API."
+                    "`GOOGLE_API_KEY` is not set when using Gemini Developer API. "
+                    "Please set the `GOOGLE_API_KEY` environment variable."
                 )
-            self._client = genai.Client()
+            self._client = genai.Client(vertexai=vertexai)
         else:
             self._client = genai_client
 
