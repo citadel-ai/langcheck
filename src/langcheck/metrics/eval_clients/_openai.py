@@ -23,7 +23,7 @@ class OpenAIEvalClient(EvalClient):
 
     def __init__(
         self,
-        openai_client: OpenAI | None = None,
+        openai_client: OpenAI | AsyncOpenAI | None = None,
         openai_args: dict[str, str] | None = None,
         *,
         use_async: bool = False,
@@ -48,20 +48,28 @@ class OpenAIEvalClient(EvalClient):
         """
         if openai_client:
             self._client = openai_client
-        elif use_async:
-            self._client = AsyncOpenAI()
+            self._use_async = isinstance(openai_client, AsyncOpenAI)
+            if self._use_async and not use_async:
+                warnings.warn(
+                    "Using an AsyncOpenAI client but use_async is False. "
+                    "AsyncOpenAI client will be used."
+                )
+            elif not self._use_async and use_async:
+                warnings.warn(
+                    "Using OpenAI client but use_async is True. "
+                    "OpenAI client will be used."
+                )
         else:
-            self._client = OpenAI()
+            self._client = AsyncOpenAI() if use_async else OpenAI()
+            self._use_async = use_async
 
         self._openai_args = openai_args
-        self._use_async = use_async
         self._system_prompt = system_prompt
 
         if extractor is None:
             self._extractor = OpenAIExtractor(
-                openai_client=self._client,
+                openai_client=openai_client,
                 openai_args=openai_args,
-                use_async=use_async,
             )
         else:
             self._extractor = extractor
@@ -249,7 +257,6 @@ class OpenAIEvalClient(EvalClient):
         return OpenAISimilarityScorer(
             openai_client=self._client,
             openai_args=self._openai_args,
-            use_async=self._use_async,
         )
 
 
@@ -277,13 +284,22 @@ class OpenAIExtractor(Extractor):
         """
         if openai_client:
             self._client = openai_client
-        elif use_async:
-            self._client = AsyncOpenAI()
+            self._use_async = isinstance(openai_client, AsyncOpenAI)
+            if self._use_async and not use_async:
+                warnings.warn(
+                    "Using an AsyncOpenAI client but use_async is False. "
+                    "AsyncOpenAI client will be used."
+                )
+            elif not self._use_async and use_async:
+                warnings.warn(
+                    "Using OpenAI client but use_async is True. "
+                    "OpenAI client will be used."
+                )
         else:
-            self._client = OpenAI()
+            self._client = AsyncOpenAI() if use_async else OpenAI()
+            self._use_async = use_async
 
         self._openai_args = openai_args
-        self._use_async = use_async
 
     def get_float_score(
         self,
@@ -473,12 +489,26 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             "api_version": os.getenv("OPENAI_API_VERSION"),
             "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
         }
-        if azure_openai_client is not None:
+
+        if azure_openai_client:
             self._client = azure_openai_client
-        elif use_async:
-            self._client = AsyncAzureOpenAI(**kargs)  # type: ignore
+            self._use_async = isinstance(azure_openai_client, AsyncAzureOpenAI)
+
+            if self._use_async and not use_async:
+                warnings.warn(
+                    "Using an AsyncAzureOpenAI client but use_async is False. "
+                    "AsyncAzureOpenAI client will be used."
+                )
+            elif not self._use_async and use_async:
+                warnings.warn(
+                    "Using AzureOpenAI client but use_async is True. "
+                    "AzureOpenAI client will be used."
+                )
         else:
-            self._client = AzureOpenAI(**kargs)  # type: ignore
+            self._client = (
+                AsyncAzureOpenAI(**kargs) if use_async else AzureOpenAI(**kargs)  # type: ignore
+            )
+            self._use_async = use_async
 
         self._text_model_name = text_model_name
         self._embedding_model_name = embedding_model_name
@@ -488,8 +518,6 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         if self._text_model_name is not None:
             self._openai_args["model"] = self._text_model_name
 
-        self._use_async = use_async
-
         if extractor is not None:
             self._extractor = extractor
         elif text_model_name is not None:
@@ -497,7 +525,6 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
                 text_model_name=text_model_name,
                 azure_openai_client=azure_openai_client,
                 openai_args=openai_args,
-                use_async=use_async,
             )
         else:
             self._extractor = StringMatchExtractor()
@@ -516,7 +543,6 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         return OpenAISimilarityScorer(
             openai_client=self._client,
             openai_args=openai_args,
-            use_async=self._use_async,
         )
 
 
@@ -539,16 +565,28 @@ class AzureOpenAIExtractor(OpenAIExtractor):
             "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
         }
 
-        if azure_openai_client is not None:
+        if azure_openai_client:
             self._client = azure_openai_client
-        elif use_async:
-            self._client = AsyncAzureOpenAI(**kargs)  # type: ignore
+            self._use_async = isinstance(azure_openai_client, AsyncAzureOpenAI)
+
+            if self._use_async and not use_async:
+                warnings.warn(
+                    "Using an AsyncAzureOpenAI client but use_async is False. "
+                    "AsyncAzureOpenAI client will be used."
+                )
+            elif not self._use_async and use_async:
+                warnings.warn(
+                    "Using AzureOpenAI client but use_async is True. "
+                    "AzureOpenAI client will be used."
+                )
         else:
-            self._client = AzureOpenAI(**kargs)  # type: ignore
+            self._client = (
+                AsyncAzureOpenAI(**kargs) if use_async else AzureOpenAI(**kargs)  # type: ignore
+            )
+            self._use_async = use_async
 
         self._openai_args = openai_args or {}
         self._openai_args["model"] = text_model_name
-        self._use_async = use_async
 
 
 class OpenAISimilarityScorer(BaseSimilarityScorer):
@@ -561,13 +599,12 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
         self,
         openai_client: OpenAI | AzureOpenAI | AsyncOpenAI | AsyncAzureOpenAI,
         openai_args: dict[str, Any] | None = None,
-        use_async: bool = False,
     ):
         super().__init__()
 
         self.openai_client = openai_client
         self.openai_args = openai_args
-        self._use_async = use_async
+        self._use_async = isinstance(openai_client, AsyncOpenAI)
 
     async def _async_embed(self, inputs: list[str]) -> CreateEmbeddingResponse:
         """Embed the inputs using the OpenAI API in async mode."""
