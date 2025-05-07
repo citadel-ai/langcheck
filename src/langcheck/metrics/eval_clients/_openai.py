@@ -70,6 +70,7 @@ class OpenAIEvalClient(EvalClient):
             self._extractor = OpenAIExtractor(
                 openai_client=openai_client,
                 openai_args=openai_args,
+                use_async=self._use_async,
             )
         else:
             self._extractor = extractor
