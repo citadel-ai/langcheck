@@ -213,11 +213,7 @@ class GeminiSimilarityScorer(BaseSimilarityScorer):
                 )
                 return embed_response
 
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:  # pragma: py-lt-310
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+            loop = asyncio.get_event_loop()
             embed_response = loop.run_until_complete(_call_async_api())
         else:
             embed_response = self._client.models.embed_content(
