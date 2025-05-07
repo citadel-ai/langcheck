@@ -105,13 +105,30 @@ class GeminiEvalClient(EvalClient):
                     "Please set the `GOOGLE_API_KEY` environment variable."
                 )
             self._client = genai.Client(vertexai=vertexai)
+            self._vertexai = vertexai
+
         else:
             self._client = genai_client
+            self._vertexai = genai_client.vertexai
+
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
+            if self._vertexai and not vertexai:
+                warnings.warn(
+                    "Using an Vertex AI client but `vertexai` is False. "
+                    "Vertex AI client will be used."
+                )
+            elif not self._vertexai and vertexai:
+                warnings.warn(
+                    "Using Gemini Developer client but `vertexai` is True. "
+                    "Gemini Developer client will be used."
+                )
 
         if extractor is None:
             self._extractor = GeminiExtractor(
                 genai_client=self._client,
-                use_async=use_async,
+                use_async=self._use_async,
+                vertexai=self._vertexai,
             )
         else:
             self._extractor = extractor
@@ -282,6 +299,18 @@ class GeminiExtractor(Extractor):
             self._client = genai.Client(vertexai=vertexai)
         else:
             self._client = genai_client
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
+            if genai_client.vertexai and not vertexai:
+                warnings.warn(
+                    "Using an Vertex AI client but `vertexai` is False. "
+                    "Vertex AI client will be used."
+                )
+            elif not genai_client.vertexai and vertexai:
+                warnings.warn(
+                    "Using Gemini Developer client but `vertexai` is True. "
+                    "Gemini Developer client will be used."
+                )
 
     def get_float_score(
         self,

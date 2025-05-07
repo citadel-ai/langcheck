@@ -49,6 +49,9 @@ class OpenAIEvalClient(EvalClient):
         if openai_client:
             self._client = openai_client
             self._use_async = isinstance(openai_client, AsyncOpenAI)
+
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
                     "Using an AsyncOpenAI client but use_async is False. "
@@ -68,8 +71,8 @@ class OpenAIEvalClient(EvalClient):
 
         if extractor is None:
             self._extractor = OpenAIExtractor(
-                openai_client=openai_client,
-                openai_args=openai_args,
+                openai_client=self._client,
+                openai_args=self._openai_args,
                 use_async=self._use_async,
             )
         else:
@@ -286,6 +289,9 @@ class OpenAIExtractor(Extractor):
         if openai_client:
             self._client = openai_client
             self._use_async = isinstance(openai_client, AsyncOpenAI)
+
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
                     "Using an AsyncOpenAI client but use_async is False. "
@@ -495,6 +501,8 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             self._client = azure_openai_client
             self._use_async = isinstance(azure_openai_client, AsyncAzureOpenAI)
 
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
                     "Using an AsyncAzureOpenAI client but use_async is False. "
@@ -570,6 +578,8 @@ class AzureOpenAIExtractor(OpenAIExtractor):
             self._client = azure_openai_client
             self._use_async = isinstance(azure_openai_client, AsyncAzureOpenAI)
 
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
                     "Using an AsyncAzureOpenAI client but use_async is False. "
