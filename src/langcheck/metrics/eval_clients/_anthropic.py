@@ -121,24 +121,24 @@ class AnthropicEvalClient(EvalClient):
             # argument will be ignored.
             if self._vertexai and not vertexai:
                 warnings.warn(
-                    "Using an Vertex AI client but `vertexai` is False. "
-                    "Vertex AI client will be used."
+                    "The provided `anthropic_client` is a Vertex AI client, "
+                    "so the `vertexai=False` argument will be ignored. The Vertex AI client will be used."
                 )
             elif not self._vertexai and vertexai:
                 warnings.warn(
-                    "Using Anthropic client but `vertexai` is True. "
-                    "Anthropic client will be used."
+                    "The provided `anthropic_client` is an Anthropic client, "
+                    "so the `vertexai=True` argument will be ignored. The Anthropic client will be used."
                 )
 
             if self._use_async and not use_async:
                 warnings.warn(
-                    "Using an AsyncAnthropic client but use_async is False. "
-                    "AsyncAnthropic client will be used."
+                    "The provided `anthropic_client` is an async client, "
+                    "so the `use_async=False` argument will be ignored. The async client will be used."
                 )
             elif not self._use_async and use_async:
                 warnings.warn(
-                    "Using Anthropic client but use_async is True. "
-                    "Anthropic client will be used."
+                    "The provided `anthropic_client` is a synchronous client, "
+                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
                 )
 
         self._anthropic_args = anthropic_args or {}
@@ -310,24 +310,24 @@ class AnthropicExtractor(Extractor):
             # argument will be ignored.
             if self._vertexai and not vertexai:
                 warnings.warn(
-                    "Using an Vertex AI client but `vertexai` is False. "
-                    "Vertex AI client will be used."
+                    "The provided `anthropic_client` is a Vertex AI client, "
+                    "so the `vertexai=False` argument will be ignored. The Vertex AI client will be used."
                 )
             elif not self._vertexai and vertexai:
                 warnings.warn(
-                    "Using Anthropic client but `vertexai` is True. "
-                    "Anthropic client will be used."
+                    "The provided `anthropic_client` is an Anthropic client, "
+                    "so the `vertexai=True` argument will be ignored. The Anthropic client will be used."
                 )
 
             if self._use_async and not use_async:
                 warnings.warn(
-                    "Using an AsyncAnthropic client but use_async is False. "
-                    "AsyncAnthropic client will be used."
+                    "The provided `anthropic_client` is an async client, "
+                    "so the `use_async=False` argument will be ignored. The async client will be used."
                 )
             elif not self._use_async and use_async:
                 warnings.warn(
-                    "Using Anthropic client but use_async is True. "
-                    "Anthropic client will be used."
+                    "The provided `anthropic_client` is a synchronous client, "
+                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
                 )
 
         self._anthropic_args = anthropic_args or {}

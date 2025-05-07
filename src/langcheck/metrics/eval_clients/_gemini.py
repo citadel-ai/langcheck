@@ -115,13 +115,13 @@ class GeminiEvalClient(EvalClient):
             # argument will be ignored.
             if self._vertexai and not vertexai:
                 warnings.warn(
-                    "Using an Vertex AI client but `vertexai` is False. "
-                    "Vertex AI client will be used."
+                    "The provided `genai_client` is a Vertex AI client, "
+                    "so the `vertexai=False` argument will be ignored. The Vertex AI client will be used."
                 )
             elif not self._vertexai and vertexai:
                 warnings.warn(
-                    "Using Gemini Developer client but `vertexai` is True. "
-                    "Gemini Developer client will be used."
+                    "The provided `genai_client` is a Gemini Developer client, "
+                    "so the `vertexai=True` argument will be ignored. The Gemini Developer client will be used."
                 )
 
         if extractor is None:
@@ -299,13 +299,13 @@ class GeminiExtractor(Extractor):
             # argument will be ignored.
             if genai_client.vertexai and not vertexai:
                 warnings.warn(
-                    "Using an Vertex AI client but `vertexai` is False. "
-                    "Vertex AI client will be used."
+                    "The provided `genai_client` is a Vertex AI client, "
+                    "so the `vertexai=False` argument will be ignored. The Vertex AI client will be used."
                 )
             elif not genai_client.vertexai and vertexai:
                 warnings.warn(
-                    "Using Gemini Developer client but `vertexai` is True. "
-                    "Gemini Developer client will be used."
+                    "The provided `genai_client` is a Gemini Developer client, "
+                    "so the `vertexai=True` argument will be ignored. The Gemini Developer client will be used."
                 )
 
     def get_float_score(

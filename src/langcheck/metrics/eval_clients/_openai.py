@@ -54,13 +54,13 @@ class OpenAIEvalClient(EvalClient):
             # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
-                    "Using an AsyncOpenAI client but use_async is False. "
-                    "AsyncOpenAI client will be used."
+                    "The provided `openai_client` is an async client, "
+                    "so the `use_async=False` argument will be ignored. The async client will be used."
                 )
             elif not self._use_async and use_async:
                 warnings.warn(
-                    "Using OpenAI client but use_async is True. "
-                    "OpenAI client will be used."
+                    "The provided `openai_client` is a synchronous client, "
+                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
                 )
         else:
             self._client = AsyncOpenAI() if use_async else OpenAI()
@@ -294,13 +294,13 @@ class OpenAIExtractor(Extractor):
             # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
-                    "Using an AsyncOpenAI client but use_async is False. "
-                    "AsyncOpenAI client will be used."
+                    "The provided `openai_client` is an async client, "
+                    "so the `use_async=False` argument will be ignored. The async client will be used."
                 )
             elif not self._use_async and use_async:
                 warnings.warn(
-                    "Using OpenAI client but use_async is True. "
-                    "OpenAI client will be used."
+                    "The provided `openai_client` is a synchronous client, "
+                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
                 )
         else:
             self._client = AsyncOpenAI() if use_async else OpenAI()
@@ -505,13 +505,13 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
-                    "Using an AsyncAzureOpenAI client but use_async is False. "
-                    "AsyncAzureOpenAI client will be used."
+                    "The provided `azure_openai_client` is an async client, "
+                    "so the `use_async=False` argument will be ignored. The async client will be used."
                 )
             elif not self._use_async and use_async:
                 warnings.warn(
-                    "Using AzureOpenAI client but use_async is True. "
-                    "AzureOpenAI client will be used."
+                    "The provided `azure_openai_client` is a synchronous client, "
+                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
                 )
         else:
             self._client = (
@@ -582,13 +582,13 @@ class AzureOpenAIExtractor(OpenAIExtractor):
             # argument will be ignored.
             if self._use_async and not use_async:
                 warnings.warn(
-                    "Using an AsyncAzureOpenAI client but use_async is False. "
-                    "AsyncAzureOpenAI client will be used."
+                    "The provided `azure_openai_client` is an async client, "
+                    "so the `use_async=False` argument will be ignored. The async client will be used."
                 )
             elif not self._use_async and use_async:
                 warnings.warn(
-                    "Using AzureOpenAI client but use_async is True. "
-                    "AzureOpenAI client will be used."
+                    "The provided `azure_openai_client` is a synchronous client, "
+                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
                 )
         else:
             self._client = (
