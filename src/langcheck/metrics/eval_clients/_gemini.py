@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import os
+import warnings
 from typing import Any, Literal
 
 import torch
@@ -22,8 +24,9 @@ class GeminiEvalClient(EvalClient):
     def __init__(
         self,
         model_name: str = "gemini-1.5-flash",
-        generate_content_args: dict[str, Any] | None = None,
         embed_model_name: str | None = None,
+        generate_content_args: dict[str, Any] | None = None,
+        genai_client: genai.Client | None = None,
         *,
         use_async: bool = False,
         vertexai: bool = False,
@@ -31,11 +34,12 @@ class GeminiEvalClient(EvalClient):
         extractor: Extractor | None = None,
     ):
         """
-        Initialize the Gemini evaluation client. The authentication
-        information is automatically read from the environment variables.
-        If you want to use Gemini Developer API, please set `GOOGLE_API_KEY`.
-        If you want to use Vertex AI API, please set `vertexai` argument to
-        True, and set the following environment variables:
+        Initialize the Gemini evaluation client. You can provide your own
+        genai.Client instance via the `genai_client` argument, or set the
+        necessary environment variables. If you want to use Gemini Developer
+        API, please set `GOOGLE_API_KEY`. If you want to use Vertex AI API,
+        set the `vertexai` argument to True, and set the following environment
+        variables:
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
@@ -46,15 +50,18 @@ class GeminiEvalClient(EvalClient):
 
         Args:
             model_name: The Gemini model to use. Defaults to "gemini-1.5-flash".
+            embed_model_name (Optional): The name of the embedding model to use. If not
+                provided, the "models/text-embedding-004" model will be used.
             generate_content_args (Optional): Dict of args to pass in to the
                 ``generate_content`` function. The keys should be the same as
                 the keys in the ``genai.types.GenerateContentConfig`` type.
-            embed_model_name (Optional): The name of the embedding model to use. If not
-                provided, the "models/text-embedding-004" model will be used.
+            genai_client (Optional): The genai.Client instance to use. If not
+                provided, the client will be created using the environment
+                variables.
             use_async: If True, the async client will be used. Defaults to
                 False.
-            vertexai: If True, the Vertex AI client will be used. Defaults to
-                False.
+            vertexai: If True, the Vertex AI client will be used. Ignored when
+                `genai_client` is provided. Defaults to False.
             system_prompt (Optional): The system prompt for ``generate_content``
                 in ``get_text_responses`` function. If not provided, no system
                 prompt will be used.
@@ -69,12 +76,59 @@ class GeminiEvalClient(EvalClient):
         self._use_async = use_async
         self._system_instruction = system_prompt
 
-        self._client = genai.Client(vertexai=vertexai)
+        if genai_client is None:
+            # Check for required environment variables
+            if vertexai:
+                # Vertex AI requires these environment variables
+                for env_var in [
+                    "GOOGLE_CLOUD_PROJECT",
+                    "GOOGLE_CLOUD_LOCATION",
+                    "GOOGLE_APPLICATION_CREDENTIALS",
+                ]:
+                    if not os.environ.get(env_var):
+                        raise ValueError(
+                            f"Environment variable '{env_var}' must be set when using Vertex AI."
+                        )
+
+                # Warn that `GOOGLE_API_KEY` is not used when using Vertex AI
+                if os.environ.get("GOOGLE_API_KEY", None):
+                    warnings.warn(
+                        "`GOOGLE_API_KEY` is set when using Vertex AI. "
+                        "Vertex AI will take precedence over the API key from "
+                        "the environment variable."
+                    )
+
+            elif os.environ.get("GOOGLE_API_KEY", None) is None:
+                # Gemini Developer API requires API key
+                raise ValueError(
+                    "`GOOGLE_API_KEY` is not set when using Gemini Developer API. "
+                    "Please set the `GOOGLE_API_KEY` environment variable."
+                )
+            self._client = genai.Client(vertexai=vertexai)
+            self._vertexai = vertexai
+
+        else:
+            self._client = genai_client
+            self._vertexai = genai_client.vertexai
+
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
+            if self._vertexai and not vertexai:
+                warnings.warn(
+                    "The provided `genai_client` is a Vertex AI client, "
+                    "so the `vertexai=False` argument will be ignored. The Vertex AI client will be used."
+                )
+            elif not self._vertexai and vertexai:
+                warnings.warn(
+                    "The provided `genai_client` is a Gemini Developer client, "
+                    "so the `vertexai=True` argument will be ignored. The Gemini Developer client will be used."
+                )
 
         if extractor is None:
             self._extractor = GeminiExtractor(
-                use_async=use_async,
-                vertexai=vertexai,
+                genai_client=self._client,
+                use_async=self._use_async,
+                vertexai=self._vertexai,
             )
         else:
             self._extractor = extractor
@@ -179,17 +233,19 @@ class GeminiExtractor(Extractor):
     def __init__(
         self,
         model_name: str = "gemini-1.5-flash",
+        genai_client: genai.Client | None = None,
         generate_content_args: dict[str, Any] | None = None,
         *,
         use_async: bool = False,
         vertexai: bool = False,
     ):
         """
-        Initialize the Gemini score extraction client. The authentication
-        information is automatically read from the environment variables.
-        If you want to use Gemini Developer API, please set `GOOGLE_API_KEY`.
-        If you want to use Vertex AI API, please set the `vertexai` argument to
-        True, and set the following environment variables:
+        Initialize the Gemini score extraction client. You can provide your own
+        genai.Client instance via the `genai_client` argument, or set the
+        necessary environment variables. If you want to use Gemini Developer
+        API, please set `GOOGLE_API_KEY`. If you want to use Vertex AI API, set
+        the `vertexai` argument to True, and set the following environment
+        variables:
             - GOOGLE_CLOUD_PROJECT=<your-project-id>
             - GOOGLE_CLOUD_LOCATION=<location>  (e.g. europe-west1)
             - GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-credentials>
@@ -203,19 +259,54 @@ class GeminiExtractor(Extractor):
             generate_content_args (Optional): Dict of args to pass in to the
                 ``generate_content`` function. The keys should be the same as
                 the keys in the ``genai.types.GenerateContentConfig`` type.
+            genai_client (Optional): The genai.Client instance to use. If not
+                provided, the client will be created using the environment
+                variables.
             use_async: If True, the async client will be used. Defaults to
                 False.
-            vertexai: If True, the Vertex AI client will be used. Defaults to
-                False.
+            vertexai: If True, the Vertex AI client will be used. Ignored when
+                `genai_client` is provided. Defaults to False.
         """
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         _validate_generate_content_config(self._generate_content_args)
 
         self._use_async = use_async
-        self._vertexai = vertexai
 
-        self._client = genai.Client(vertexai=vertexai)
+        if genai_client is None:
+            # Check for required environment variables
+            if vertexai:
+                # Vertex AI requires these environment variables
+                for env_var in [
+                    "GOOGLE_CLOUD_PROJECT",
+                    "GOOGLE_CLOUD_LOCATION",
+                    "GOOGLE_APPLICATION_CREDENTIALS",
+                ]:
+                    if not os.environ.get(env_var):
+                        raise ValueError(
+                            f"Environment variable '{env_var}' must be set when using Vertex AI."
+                        )
+            elif os.environ.get("GOOGLE_API_KEY", None) is None:
+                # Gemini Developer API requires API key
+                raise ValueError(
+                    "`GOOGLE_API_KEY` is not set when using Gemini Developer API. "
+                    "Please set the `GOOGLE_API_KEY` environment variable."
+                )
+            self._client = genai.Client(vertexai=vertexai)
+        else:
+            self._client = genai_client
+            # Client config will take precedence over the argument, and the
+            # argument will be ignored.
+            if genai_client.vertexai and not vertexai:
+                warnings.warn(
+                    "The provided `genai_client` is a Vertex AI client, "
+                    "so the `vertexai=False` argument will be ignored. The Vertex AI client will be used."
+                )
+            elif not genai_client.vertexai and vertexai:
+                warnings.warn(
+                    "The provided `genai_client` is a Gemini Developer client, "
+                    "so the `vertexai=True` argument will be ignored. The Gemini Developer client will be used."
+                )
 
     def get_float_score(
         self,
@@ -332,10 +423,10 @@ def _call_api(
     """A helper function to call `generate_content` of the Gemini API.
 
     Args:
-        model: The model to use.
-        prompts: The prompts to use.
-        config: The config to use.
-        client: The client to use.
+        model: The model name to use.
+        prompts: The prompts for `generate_content`.
+        config: The config for `generate_content`.
+        client: The genai client.
         use_async: If True, the async client will be used. Defaults to False.
         tqdm_description (Optional): The description to be shown in the tqdm bar.
 
@@ -346,20 +437,19 @@ def _call_api(
 
         async def _call_async_api() -> list[Any]:
             responses = await asyncio.gather(
-                *map(
-                    lambda prompt: client.aio.models.generate_content(
+                *[
+                    client.aio.models.generate_content(
                         model=model,
                         contents=types.Part.from_text(text=prompt),
                         config=types.GenerateContentConfig(**config),
-                    ),
-                    prompts,
-                ),
+                    )
+                    for prompt in prompts
+                ],
                 return_exceptions=True,
             )
             return responses
 
-        loop = asyncio.get_event_loop()
-        responses = loop.run_until_complete(_call_async_api())
+        responses = asyncio.run(_call_async_api())
 
     else:
         # A helper function to call the API with exception filter for alignment
