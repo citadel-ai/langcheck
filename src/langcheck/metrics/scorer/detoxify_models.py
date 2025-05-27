@@ -47,9 +47,13 @@ def load_checkpoint(
     num_classes = loaded["config"]["arch"]["args"]["num_classes"]
     state_dict = loaded["state_dict"]
 
+    config = class_model_type.config_class.from_pretrained(
+        model_type, num_labels=num_classes
+    )
+
     model = class_model_type.from_pretrained(
-        pretrained_model_name_or_path=model_type,
-        num_labels=num_classes,
+        pretrained_model_name_or_path=None,
+        config=config,
         state_dict=state_dict,
     )
     tokenizer = tokenizer_type.from_pretrained(model_type)
