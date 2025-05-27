@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from transformers import (
-    AutoTokenizer,
-)
+from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.tokenization_utils import (
     PreTrainedTokenizer,
 )

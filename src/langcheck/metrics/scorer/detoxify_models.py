@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import torch
-from transformers import (
+from transformers.models.bert import (
     BertForSequenceClassification,
     BertTokenizer,
+)
+from transformers.models.xlm_roberta import (
     XLMRobertaForSequenceClassification,
     XLMRobertaTokenizer,
 )
