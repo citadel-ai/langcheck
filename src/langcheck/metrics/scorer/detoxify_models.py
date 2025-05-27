@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import torch
 from transformers import (
-    BatchEncoding,
     BertForSequenceClassification,
     BertTokenizer,
     XLMRobertaForSequenceClassification,
     XLMRobertaTokenizer,
 )
+from transformers.tokenization_utils_base import BatchEncoding
 
 from langcheck._handle_logs import _handle_logging_level
 
