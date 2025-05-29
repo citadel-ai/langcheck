@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from jinja2 import Template
-from transformers import AutoTokenizer
+from transformers.models.auto.tokenization_auto import AutoTokenizer
 from vllm import LLM, SamplingParams
 
 from ..prompts._utils import get_template

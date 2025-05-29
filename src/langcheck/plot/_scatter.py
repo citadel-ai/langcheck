@@ -222,8 +222,8 @@ def _scatter_one_metric_value(
             )
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
-        fig.update_xaxes(range=[-0.1, len(df)])
-        fig.update_yaxes(
+        fig.update_xaxes(range=[-0.1, len(df)])  # type: ignore
+        fig.update_yaxes(  # type: ignore
             range=[
                 min(-0.1, math.floor(df[metric_value.metric_name].min())),
                 max(1.1, math.ceil(df[metric_value.metric_name].max())),
@@ -451,13 +451,13 @@ def _scatter_two_metric_values(
 
         # Explicitly set the default axis ranges (with a little padding) so that
         # the plot doesn't change when the user types in the search boxes
-        fig.update_xaxes(
+        fig.update_xaxes(  # type: ignore
             range=[
                 min(-0.1, math.floor(df[metric_value.metric_name].min())),
                 max(1.1, math.ceil(df[metric_value.metric_name].max())),
             ]
         )
-        fig.update_yaxes(
+        fig.update_yaxes(  # type: ignore
             range=[
                 min(-0.1, math.floor(df[other_metric_value.metric_name].min())),
                 max(1.1, math.ceil(df[other_metric_value.metric_name].max())),

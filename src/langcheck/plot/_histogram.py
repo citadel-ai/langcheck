@@ -92,7 +92,7 @@ def histogram(metric_value: MetricValue, jupyter_mode: str = "inline") -> None:
         fig.update_traces(xbins={"start": start, "end": end, "size": step_size})
         # Explicitly set the default axis ranges (with a little padding) so that
         # the range plotted would not be influenced by threshold settings
-        fig.update_xaxes(
+        fig.update_xaxes(  # type: ignore
             range=[
                 min(-0.1, math.floor(df[metric_value.metric_name].min())),
                 max(1.1, math.ceil(df[metric_value.metric_name].max())),
