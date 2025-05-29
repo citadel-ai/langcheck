@@ -57,7 +57,7 @@ class LlamaEvalClient(EvalClient):
         self._model = LLM(
             model=model_name,
             max_model_len=8192,
-            dtype=torch_dtype,
+            dtype=torch_dtype,  # type: ignore
             tensor_parallel_size=tensor_parallel_size,
             device=device,
         )
@@ -209,7 +209,7 @@ class LlamaExtractor(Extractor):
         self._model = model or LLM(
             model=model_name,
             max_model_len=8192,
-            dtype=torch_dtype,
+            dtype=torch_dtype,  # type: ignore
             tensor_parallel_size=tensor_parallel_size,
             device=device,
         )
