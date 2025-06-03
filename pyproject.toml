@@ -19,6 +19,8 @@ dependencies = [
     'jaconv',
     'Jinja2',
     'nlpaug',
+    'litellm',
+    'boto3',
     'nltk >= 3.9',
     'openai >= 1',
     'pandas >= 1',
