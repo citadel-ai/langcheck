@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import os
-import warnings
+import json
 from typing import Any, Literal
 
 import torch
-from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
-from openai.types.create_embedding_response import CreateEmbeddingResponse
+from litellm import acompletion, aembedding, completion, embedding
 from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
@@ -15,17 +13,25 @@ from langcheck.utils.progress_bar import tqdm_wrapper
 from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient, TextResponseWithLogProbs
-from .extractor import Extractor, StringMatchExtractor
+from .extractor import Extractor
 
 
-class OpenAIEvalClient(EvalClient):
+class LLMEvalClient(EvalClient):
     """EvalClient defined for OpenAI API."""
 
     def __init__(
         self,
-        openai_client: OpenAI | AsyncOpenAI | None = None,
-        openai_args: dict[str, str] | None = None,
+        model: str,
+        embedding_model: str | None = None,
         *,
+        api_key: str | None = None,
+        api_base: str | None = None,
+        api_version: str | None = None,
+        vertex_location: str | None = None,
+        vertex_credentials: str | None = None,
+        aws_access_key_id: str | None = None,
+        aws_secret_access_key: str | None = None,
+        aws_region_name: str | None = None,
         use_async: bool = False,
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
@@ -36,9 +42,6 @@ class OpenAIEvalClient(EvalClient):
         please make sure `OPENAI_API_KEY` environment variable is set.
 
         Args:
-            openai_client (Optional): The OpenAI client to use.
-            openai_args (Optional): dict of additional args to pass in to the
-            `client.chat.completions.create` function.
             use_async: If True, the async client will be used. Defaults to
                 False.
             system_prompt (Optional): The system prompt to use. If not provided,
@@ -46,34 +49,34 @@ class OpenAIEvalClient(EvalClient):
             extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
-        if openai_client:
-            self._client = openai_client
-            self._use_async = isinstance(openai_client, AsyncOpenAI)
+        self._model = model
+        self._embedding_model = embedding_model
 
-            # Client config will take precedence over the argument, and the
-            # argument will be ignored.
-            if self._use_async and not use_async:
-                warnings.warn(
-                    "The provided `openai_client` is an async client, "
-                    "so the `use_async=False` argument will be ignored. The async client will be used."
-                )
-            elif not self._use_async and use_async:
-                warnings.warn(
-                    "The provided `openai_client` is a synchronous client, "
-                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
-                )
-        else:
-            self._client = AsyncOpenAI() if use_async else OpenAI()
-            self._use_async = use_async
+        self._api_key = api_key
+        self._api_base = api_base
+        self._api_version = api_version
+        self._vertex_location = vertex_location
+        self._vertex_credentials = vertex_credentials
+        self._aws_access_key_id = aws_access_key_id
+        self._aws_secret_access_key = aws_secret_access_key
+        self._aws_region_name = aws_region_name
 
-        self._openai_args = openai_args
+        self._use_async = use_async
         self._system_prompt = system_prompt
 
         if extractor is None:
-            self._extractor = OpenAIExtractor(
-                openai_client=self._client,
-                openai_args=self._openai_args,
+            self._extractor = LLMExtractor(
+                model=self._model,
+                api_key=self._api_key,
+                api_base=self._api_base,
+                api_version=self._api_version,
+                vertex_location=self._vertex_location,
+                vertex_credentials=self._vertex_credentials,
+                aws_access_key_id=self._aws_access_key_id,
+                aws_secret_access_key=self._aws_secret_access_key,
+                aws_region_name=self._aws_region_name,
                 use_async=self._use_async,
+                system_prompt=self._system_prompt,
             )
         else:
             self._extractor = extractor
@@ -81,52 +84,81 @@ class OpenAIEvalClient(EvalClient):
     def _call_api(
         self,
         prompts: list[str],
-        config: dict[str, str],
         *,
+        top_logprobs: int | None = None,
         tqdm_description: str | None = None,
         system_prompt: str | None = None,
     ) -> list[Any]:
-        # A helper function to call the API with exception filter for alignment
-        # of exception handling with the async version.
-        def _call_api_with_exception_filter(model_input: dict[str, Any]) -> Any:
-            if model_input is None:
-                return None
-            try:
-                return self._client.chat.completions.create(**model_input)
-            except Exception as e:
-                return e
-
-        system_message = []
-        if system_prompt:
-            system_message.append({"role": "system", "content": system_prompt})
-
         # Call API with different seed values for each prompt.
         model_inputs = [
             {
-                "messages": system_message
-                + [{"role": "user", "content": prompt}],
+                "messages": [{"role": "user", "content": prompt}]
+                + (
+                    [{"role": "system", "content": system_prompt}]
+                    if system_prompt
+                    else []
+                ),
                 "seed": i,
-                **config,
             }
             for i, prompt in enumerate(prompts)
         ]
+
+        logprobs = top_logprobs is not None
 
         if self._use_async:
             # A helper function to call the async API.
             async def _call_async_api() -> list[Any]:
                 responses = await asyncio.gather(
-                    *map(
-                        lambda model_input: self._client.chat.completions.create(
-                            **model_input
-                        ),
-                        model_inputs,
-                    ),
+                    *[
+                        acompletion(
+                            model=self._model,
+                            messages=model_input["messages"],
+                            seed=model_input["seed"],
+                            logprobs=logprobs,
+                            top_logprobs=top_logprobs,
+                            api_key=self._api_key,
+                            api_base=self._api_base,
+                            api_version=self._api_version,
+                            vertex_location=self._vertex_location,
+                            vertex_credentials=self._vertex_credentials,
+                            aws_access_key_id=self._aws_access_key_id,
+                            aws_secret_access_key=self._aws_secret_access_key,
+                            aws_region_name=self._aws_region_name,
+                        )
+                        for model_input in model_inputs
+                    ],
                     return_exceptions=True,
                 )
                 return responses
 
             responses = asyncio.run(_call_async_api())
         else:
+            # A helper function to call the API with exception filter for alignment
+            # of exception handling with the async version.
+            def _call_api_with_exception_filter(
+                model_input: dict[str, Any],
+            ) -> Any:
+                if model_input is None:
+                    return None
+                try:
+                    return completion(
+                        model=self._model,
+                        messages=model_input["messages"],
+                        seed=model_input["seed"],
+                        logprobs=logprobs,
+                        top_logprobs=top_logprobs,
+                        api_key=self._api_key,
+                        api_base=self._api_base,
+                        api_version=self._api_version,
+                        vertex_location=self._vertex_location,
+                        vertex_credentials=self._vertex_credentials,
+                        aws_access_key_id=self._aws_access_key_id,
+                        aws_secret_access_key=self._aws_secret_access_key,
+                        aws_region_name=self._aws_region_name,
+                    )
+                except Exception as e:
+                    return e
+
             responses = [
                 _call_api_with_exception_filter(model_input)
                 for model_input in tqdm_wrapper(
@@ -162,23 +194,14 @@ class OpenAIEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        warnings.warn(
-            "The default model is changed to gpt-4o-mini from gpt-3.5-turbo. "
-            "If you want to use other models, please set the model "
-            "parameter to the desired model name in the `openai_args`."
-        )
-
         if not isinstance(prompts, list):
             raise ValueError(
                 f"prompts must be a list, not a {type(prompts).__name__}"
             )
 
-        config = {"model": "gpt-4o-mini"}
-        config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
             prompts=prompts,
-            config=config,
             tqdm_description=tqdm_description,
             system_prompt=self._system_prompt,
         )
@@ -202,7 +225,8 @@ class OpenAIEvalClient(EvalClient):
 
         NOTE: Please make sure that the model you use supports logprobs. In
         Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
-        supports logprobs (https://learn.microsoft.com/en-us/azure/ai-services/openai/whats-new#new-ga-api-release).
+        supports logprobs
+        (https://learn.microsoft.com/en-us/azure/ai-services/openai/whats-new#new-ga-api-release).
 
         Args:
             prompts: The prompts you want to get the responses for.
@@ -218,14 +242,10 @@ class OpenAIEvalClient(EvalClient):
                 f"prompts must be a list, not a {type(prompts).__name__}"
             )
 
-        config = {"model": "gpt-4o-mini", "logprobs": True}
-        if top_logprobs:
-            config["top_logprobs"] = top_logprobs
-        config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Getting log likelihoods"
         responses = self._call_api(
             prompts=prompts,
-            config=config,
+            top_logprobs=top_logprobs,
             tqdm_description=tqdm_description,
             system_prompt=self._system_prompt,
         )
@@ -254,25 +274,37 @@ class OpenAIEvalClient(EvalClient):
 
         return response_texts_with_log_likelihood
 
-    def similarity_scorer(self) -> OpenAISimilarityScorer:
+    def similarity_scorer(self) -> LLMSimilarityScorer:
         """
         https://openai.com/blog/new-embedding-models-and-api-updates
         """
-        return OpenAISimilarityScorer(
-            openai_client=self._client,
-            openai_args=self._openai_args,
+        if self._embedding_model is None:
+            raise ValueError("embedding_model is not set")
+
+        return LLMSimilarityScorer(
+            model=self._embedding_model,
+            api_key=self._api_key,
+            use_async=self._use_async,
         )
 
 
-class OpenAIExtractor(Extractor):
+class LLMExtractor(Extractor):
     """Score extractor defined for OpenAI API."""
 
     def __init__(
         self,
-        openai_client: OpenAI | AsyncOpenAI | None = None,
-        openai_args: dict[str, str] | None = None,
+        model: str,
         *,
+        api_key: str | None = None,
+        api_base: str | None = None,
+        api_version: str | None = None,
+        vertex_location: str | None = None,
+        vertex_credentials: str | None = None,
+        aws_access_key_id: str | None = None,
+        aws_secret_access_key: str | None = None,
+        aws_region_name: str | None = None,
         use_async: bool = False,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the OpenAI score extractor. The authentication information is
@@ -286,27 +318,18 @@ class OpenAIExtractor(Extractor):
             use_async: If True, the async client will be used. Defaults to
                 False.
         """
-        if openai_client:
-            self._client = openai_client
-            self._use_async = isinstance(openai_client, AsyncOpenAI)
+        self._model = model
 
-            # Client config will take precedence over the argument, and the
-            # argument will be ignored.
-            if self._use_async and not use_async:
-                warnings.warn(
-                    "The provided `openai_client` is an async client, "
-                    "so the `use_async=False` argument will be ignored. The async client will be used."
-                )
-            elif not self._use_async and use_async:
-                warnings.warn(
-                    "The provided `openai_client` is a synchronous client, "
-                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
-                )
-        else:
-            self._client = AsyncOpenAI() if use_async else OpenAI()
-            self._use_async = use_async
-
-        self._openai_args = openai_args
+        self._api_key = api_key
+        self._api_base = api_base
+        self._api_version = api_version
+        self._vertex_location = vertex_location
+        self._vertex_credentials = vertex_credentials
+        self._aws_access_key_id = aws_access_key_id
+        self._aws_secret_access_key = aws_secret_access_key
+        self._aws_region_name = aws_region_name
+        self._use_async = use_async
+        self._system_prompt = system_prompt
 
     def get_float_score(
         self,
@@ -354,23 +377,17 @@ class OpenAIExtractor(Extractor):
             f"{language}/get_score/structured_output.j2"
         )
 
-        config = {"model": "gpt-4o-mini"}
-        config.update(self._openai_args or {})
         model_inputs = [
-            {
-                **config,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": structured_output_template.render(
-                            metric_name=metric_name,
-                            unstructured_assessment=unstructured_assessment,
-                            options=options,
-                        ),
-                    }
-                ],
-                "response_format": Response,
-            }
+            [
+                {
+                    "role": "user",
+                    "content": structured_output_template.render(
+                        metric_name=metric_name,
+                        unstructured_assessment=unstructured_assessment,
+                        options=options,
+                    ),
+                }
+            ]
             for unstructured_assessment in unstructured_assessment_result
         ]
 
@@ -379,9 +396,21 @@ class OpenAIExtractor(Extractor):
             async def _call_async_api() -> list[Any]:
                 responses = await asyncio.gather(
                     *[
-                        self._client.beta.chat.completions.parse(**input)
+                        acompletion(
+                            model=self._model,
+                            messages=input,
+                            response_format=Response,
+                            api_key=self._api_key,
+                            api_base=self._api_base,
+                            api_version=self._api_version,
+                            vertex_location=self._vertex_location,
+                            vertex_credentials=self._vertex_credentials,
+                            aws_access_key_id=self._aws_access_key_id,
+                            aws_secret_access_key=self._aws_secret_access_key,
+                            aws_region_name=self._aws_region_name,
+                        )
                         for input in model_inputs
-                    ],  # type: ignore
+                    ],
                     return_exceptions=True,
                 )
                 return responses
@@ -392,13 +421,23 @@ class OpenAIExtractor(Extractor):
             # A helper function to call the API with exception filter for alignment
             # of exception handling with the async version.
             def _call_api_with_exception_filter(
-                model_input: dict[str, Any],
+                model_input: list[dict[str, Any]],
             ) -> Any:
                 if model_input is None:
                     return None
                 try:
-                    return self._client.beta.chat.completions.parse(
-                        **model_input
+                    return completion(
+                        model=self._model,
+                        messages=model_input,
+                        response_format=Response,
+                        api_key=self._api_key,
+                        api_base=self._api_base,
+                        api_version=self._api_version,
+                        vertex_location=self._vertex_location,
+                        vertex_credentials=self._vertex_credentials,
+                        aws_access_key_id=self._aws_access_key_id,
+                        aws_secret_access_key=self._aws_secret_access_key,
+                        aws_region_name=self._aws_region_name,
                     )
                 except Exception as e:
                     return e
@@ -415,13 +454,15 @@ class OpenAIExtractor(Extractor):
             if not isinstance(response, Exception):
                 continue
             print(
-                "OpenAI failed to return an assessment corresponding to "
-                f"{i}th prompt: {response}"
+                f"Failed to return an assessment corresponding to {i}th prompt: "
+                f"{response}"
             )
             responses[i] = None
 
         assessments = [
-            response.choices[0].message.parsed.score if response else None
+            json.loads(response.choices[0].message.content).get("score")
+            if response
+            else None
             for response in responses
         ]
 
@@ -433,174 +474,7 @@ class OpenAIExtractor(Extractor):
         ]
 
 
-class AzureOpenAIEvalClient(OpenAIEvalClient):
-    def __init__(
-        self,
-        text_model_name: str | None = None,
-        embedding_model_name: str | None = None,
-        azure_openai_client: AzureOpenAI | None = None,
-        openai_args: dict[str, str] | None = None,
-        *,
-        use_async: bool = False,
-        system_prompt: str | None = None,
-        extractor: Extractor | None = None,
-    ):
-        """
-        Intialize the Azure OpenAI evaluation client.
-
-        Args:
-            text_model_name (Optional): The text model name you want to use with
-                the Azure OpenAI API. The name is used as
-                `{ "model": text_model_name }` parameter when calling the Azure
-                OpenAI API for text models.
-            embedding_model_name (Optional): The text model name you want to
-                use with the Azure OpenAI API. The name is used as
-                `{ "model": embedding_model_name }` parameter when calling the
-                Azure OpenAI API for embedding models.
-            azure_openai_client (Optional): The Azure OpenAI client to use.
-            openai_args (Optional): dict of additional args to pass in to the
-                `client.chat.completions.create` function.
-            use_async (Optional): If True, the async client will be used.
-            system_prompt (Optional): The system prompt to use. If not provided,
-                no system prompt will be used.
-            extractor (Optional): The extractor to use. If not provided, the
-                default extractor will be used.
-        """
-        assert (
-            text_model_name is not None or embedding_model_name is not None
-        ), (
-            "You need to specify either the text_model_name or the "
-            "embedding_model_name to use the Azure OpenAI API."
-        )
-        # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
-
-        # Check for old environment variable
-        if os.getenv("AZURE_OPENAI_KEY") is not None:
-            warnings.warn(
-                "Environment variable 'AZURE_OPENAI_KEY' is deprecated and will be removed in a future version. "
-                "Please use 'AZURE_OPENAI_API_KEY' instead.",
-                DeprecationWarning,
-            )
-            if os.getenv("AZURE_OPENAI_API_KEY") is None:
-                warnings.warn(
-                    "Environment variable 'AZURE_OPENAI_API_KEY' is not set. "
-                    "Falling back to 'AZURE_OPENAI_KEY'.",
-                    DeprecationWarning,
-                )
-                os.environ["AZURE_OPENAI_API_KEY"] = os.environ[
-                    "AZURE_OPENAI_KEY"
-                ]
-
-        kargs = {
-            "api_key": os.getenv("AZURE_OPENAI_API_KEY"),
-            "api_version": os.getenv("OPENAI_API_VERSION"),
-            "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
-        }
-
-        if azure_openai_client:
-            self._client = azure_openai_client
-            self._use_async = isinstance(azure_openai_client, AsyncAzureOpenAI)
-
-            # Client config will take precedence over the argument, and the
-            # argument will be ignored.
-            if self._use_async and not use_async:
-                warnings.warn(
-                    "The provided `azure_openai_client` is an async client, "
-                    "so the `use_async=False` argument will be ignored. The async client will be used."
-                )
-            elif not self._use_async and use_async:
-                warnings.warn(
-                    "The provided `azure_openai_client` is a synchronous client, "
-                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
-                )
-        else:
-            self._client = (
-                AsyncAzureOpenAI(**kargs) if use_async else AzureOpenAI(**kargs)  # type: ignore
-            )
-            self._use_async = use_async
-
-        self._text_model_name = text_model_name
-        self._embedding_model_name = embedding_model_name
-        self._openai_args = openai_args or {}
-        self._system_prompt = system_prompt
-
-        if self._text_model_name is not None:
-            self._openai_args["model"] = self._text_model_name
-
-        if extractor is not None:
-            self._extractor = extractor
-        elif text_model_name is not None:
-            self._extractor = AzureOpenAIExtractor(
-                text_model_name=text_model_name,
-                azure_openai_client=azure_openai_client,
-                openai_args=openai_args,
-            )
-        else:
-            self._extractor = StringMatchExtractor()
-
-    def similarity_scorer(self) -> OpenAISimilarityScorer:
-        """This method does the sanity check for the embedding_model_name and
-        then calls the parent class's similarity_scorer method with the
-        additional "model" parameter. See the parent class for the detailed
-        documentation.
-        """
-        assert self._embedding_model_name is not None, (
-            "You need to specify the embedding_model_name to get the score for "
-            "this metric."
-        )
-        openai_args = {**self._openai_args, "model": self._embedding_model_name}
-        return OpenAISimilarityScorer(
-            openai_client=self._client,
-            openai_args=openai_args,
-        )
-
-
-class AzureOpenAIExtractor(OpenAIExtractor):
-    def __init__(
-        self,
-        text_model_name: str | None = None,
-        azure_openai_client: AzureOpenAI | None = None,
-        openai_args: dict[str, str] | None = None,
-        *,
-        use_async: bool = False,
-    ):
-        assert text_model_name is not None, (
-            "You need to specify the text_model_name to use the Azure OpenAI API."
-        )
-        # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/migration?tabs=python-new%2Cdalle-fix#completions
-        kargs = {
-            "api_key": os.getenv("AZURE_OPENAI_API_KEY"),
-            "api_version": os.getenv("OPENAI_API_VERSION"),
-            "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
-        }
-
-        if azure_openai_client:
-            self._client = azure_openai_client
-            self._use_async = isinstance(azure_openai_client, AsyncAzureOpenAI)
-
-            # Client config will take precedence over the argument, and the
-            # argument will be ignored.
-            if self._use_async and not use_async:
-                warnings.warn(
-                    "The provided `azure_openai_client` is an async client, "
-                    "so the `use_async=False` argument will be ignored. The async client will be used."
-                )
-            elif not self._use_async and use_async:
-                warnings.warn(
-                    "The provided `azure_openai_client` is a synchronous client, "
-                    "so the `use_async=True` argument will be ignored. The synchronous client will be used."
-                )
-        else:
-            self._client = (
-                AsyncAzureOpenAI(**kargs) if use_async else AzureOpenAI(**kargs)  # type: ignore
-            )
-            self._use_async = use_async
-
-        self._openai_args = openai_args or {}
-        self._openai_args["model"] = text_model_name
-
-
-class OpenAISimilarityScorer(BaseSimilarityScorer):
+class LLMSimilarityScorer(BaseSimilarityScorer):
     """Similarity scorer that uses the OpenAI API to embed the inputs.
     In the current version of langcheck, the class is only instantiated within
     EvalClients.
@@ -608,26 +482,25 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
 
     def __init__(
         self,
-        openai_client: OpenAI | AzureOpenAI | AsyncOpenAI | AsyncAzureOpenAI,
-        openai_args: dict[str, Any] | None = None,
+        model: str,
+        api_key: str | None = None,
+        *,
+        use_async: bool = False,
     ):
         super().__init__()
 
-        self.openai_client = openai_client
-        self.openai_args = openai_args
-        self._use_async = isinstance(openai_client, AsyncOpenAI)
+        self._model = model
+        self._api_key = api_key
+        self._use_async = use_async
 
-    async def _async_embed(self, inputs: list[str]) -> CreateEmbeddingResponse:
+    # TODO: attach the type to the response
+    async def _async_embed(self, inputs: list[str]):
         """Embed the inputs using the OpenAI API in async mode."""
-        assert isinstance(self.openai_client, AsyncOpenAI)
-        if self.openai_args:
-            responses = await self.openai_client.embeddings.create(
-                input=inputs, **self.openai_args
-            )
-        else:
-            responses = await self.openai_client.embeddings.create(
-                input=inputs, model="text-embedding-3-small"
-            )
+        responses = await aembedding(
+            input=inputs,
+            model=self._model,
+            api_key=self._api_key,
+        )
         return responses
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
@@ -642,16 +515,11 @@ class OpenAISimilarityScorer(BaseSimilarityScorer):
             embed_response = loop.run_until_complete(self._async_embed(inputs))
             embeddings = [item.embedding for item in embed_response.data]
         else:
-            assert isinstance(self.openai_client, OpenAI)
-
-            if self.openai_args:
-                embed_response = self.openai_client.embeddings.create(
-                    input=inputs, **self.openai_args
-                )
-            else:
-                embed_response = self.openai_client.embeddings.create(
-                    input=inputs, model="text-embedding-3-small"
-                )
-            embeddings = [item.embedding for item in embed_response.data]
+            embed_response = embedding(
+                input=inputs,
+                model=self._model,
+                api_key=self._api_key,
+            )
+            embeddings = [item.embedding for item in embed_response.data]  # type: ignore
 
         return torch.Tensor(embeddings)
