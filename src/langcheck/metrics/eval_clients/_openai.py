@@ -124,6 +124,7 @@ class LLMEvalClient(EvalClient):
                             aws_access_key_id=self._aws_access_key_id,
                             aws_secret_access_key=self._aws_secret_access_key,
                             aws_region_name=self._aws_region_name,
+                            drop_params=True,
                         )
                         for model_input in model_inputs
                     ],
@@ -155,6 +156,7 @@ class LLMEvalClient(EvalClient):
                         aws_access_key_id=self._aws_access_key_id,
                         aws_secret_access_key=self._aws_secret_access_key,
                         aws_region_name=self._aws_region_name,
+                        drop_params=True,
                     )
                 except Exception as e:
                     return e
@@ -408,6 +410,7 @@ class LLMExtractor(Extractor):
                             aws_access_key_id=self._aws_access_key_id,
                             aws_secret_access_key=self._aws_secret_access_key,
                             aws_region_name=self._aws_region_name,
+                            drop_params=True,
                         )
                         for input in model_inputs
                     ],
@@ -438,6 +441,7 @@ class LLMExtractor(Extractor):
                         aws_access_key_id=self._aws_access_key_id,
                         aws_secret_access_key=self._aws_secret_access_key,
                         aws_region_name=self._aws_region_name,
+                        drop_params=True,
                     )
                 except Exception as e:
                     return e
