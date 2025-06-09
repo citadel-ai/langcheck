@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from typing import Any, Literal
 
 import instructor
 import torch
 from litellm import acompletion, aembedding, completion, embedding
+from litellm.types.utils import EmbeddingResponse
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
@@ -124,8 +125,8 @@ class LLMEvalClient(EvalClient):
 
             responses = asyncio.run(_call_async_api())
         else:
-            # A helper function to call the API with exception filter for alignment
-            # of exception handling with the async version.
+            # A helper function to call the API with exception filter for
+            # alignment of exception handling with the async version.
             def _call_api_with_exception_filter(
                 model_input: dict[str, Any],
             ) -> Any:
@@ -358,7 +359,7 @@ class LLMExtractor(Extractor):
             f"{language}/get_score/structured_output.j2"
         )
 
-        model_inputs = [
+        model_inputs: list[list[ChatCompletionMessageParam]] = [
             [
                 {
                     "role": "user",
@@ -407,7 +408,7 @@ class LLMExtractor(Extractor):
             # A helper function to call the API with exception filter for alignment
             # of exception handling with the async version.
             def _call_api_with_exception_filter(
-                model_input: list[dict[str, Any]],
+                model_input: list[ChatCompletionMessageParam],
             ) -> Any:
                 if model_input is None:
                     return None
@@ -477,8 +478,7 @@ class LLMSimilarityScorer(BaseSimilarityScorer):
         self._api_key = api_key
         self._use_async = use_async
 
-    # TODO: attach the type to the response
-    async def _async_embed(self, inputs: list[str]):
+    async def _async_embed(self, inputs: list[str]) -> EmbeddingResponse:
         """Embed the inputs using the OpenAI API in async mode."""
         responses = await aembedding(
             input=inputs,
