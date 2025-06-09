@@ -38,17 +38,7 @@ class LLMEvalClient(EvalClient):
         extractor: Extractor | None = None,
     ):
         """
-        Initialize the OpenAI evaluation client. The authentication
-        information is automatically read from the environment variables, so
-        please make sure `OPENAI_API_KEY` environment variable is set.
-
-        Args:
-            use_async: If True, the async client will be used. Defaults to
-                False.
-            system_prompt (Optional): The system prompt to use. If not provided,
-                no system prompt will be used.
-            extractor (Optional): The extractor to use. If not provided, the
-                default extractor will be used.
+        Initialize the LLM evaluation client.
         """
         self._model = model
         self._embedding_model = embedding_model
@@ -307,16 +297,7 @@ class LLMExtractor(Extractor):
         system_prompt: str | None = None,
     ):
         """
-        Initialize the OpenAI score extractor. The authentication information is
-        automatically read from the environment variables, so please make sure
-        `OPENAI_API_KEY` environment variable is set.
-
-        Args:
-            openai_client (Optional): The OpenAI client to use.
-            openai_args (Optional): dict of additional args to pass in to the
-                `client.chat.completions.create` function.
-            use_async: If True, the async client will be used. Defaults to
-                False.
+        Initialize the LLM score extractor.
         """
         self._model = model
 
@@ -466,10 +447,7 @@ class LLMExtractor(Extractor):
             responses[i] = None
 
         assessments = [
-            response.score
-            if response
-            else None
-            for response in responses
+            response.score if response else None for response in responses
         ]
 
         return [
