@@ -87,15 +87,14 @@ class LLMEvalClient(EvalClient):
         *,
         top_logprobs: int | None = None,
         tqdm_description: str | None = None,
-        system_prompt: str | None = None,
     ) -> list[Any]:
         # Call API with different seed values for each prompt.
         model_inputs = [
             {
                 "messages": [{"role": "user", "content": prompt}]
                 + (
-                    [{"role": "system", "content": system_prompt}]
-                    if system_prompt
+                    [{"role": "system", "content": self._system_prompt}]
+                    if self._system_prompt
                     else []
                 ),
                 "seed": i,
@@ -205,7 +204,6 @@ class LLMEvalClient(EvalClient):
         responses = self._call_api(
             prompts=prompts,
             tqdm_description=tqdm_description,
-            system_prompt=self._system_prompt,
         )
         response_texts = [
             response.choices[0].message.content if response else None
@@ -249,7 +247,6 @@ class LLMEvalClient(EvalClient):
             prompts=prompts,
             top_logprobs=top_logprobs,
             tqdm_description=tqdm_description,
-            system_prompt=self._system_prompt,
         )
         response_texts_with_log_likelihood = []
         for response in responses:
