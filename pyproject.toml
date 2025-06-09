@@ -19,6 +19,8 @@ dependencies = [
     'jaconv',
     'Jinja2',
     'nlpaug',
+    'eval_type_backport',
+    'instructor',
     'litellm',
     'boto3',
     'nltk >= 3.9',

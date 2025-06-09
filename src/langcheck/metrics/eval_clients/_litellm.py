@@ -4,6 +4,7 @@ import asyncio
 import json
 from typing import Any, Literal
 
+import instructor
 import torch
 from litellm import acompletion, aembedding, completion, embedding
 from pydantic import BaseModel
@@ -391,14 +392,16 @@ class LLMExtractor(Extractor):
         ]
 
         if self._use_async:
+            client = instructor.from_litellm(acompletion)
+
             # A helper function to call the async API.
             async def _call_async_api() -> list[Any]:
                 responses = await asyncio.gather(
                     *[
-                        acompletion(
+                        client.chat.completions.create(
                             model=self._model,
                             messages=input,
-                            response_format=Response,
+                            response_model=Response,
                             api_key=self._api_key,
                             api_base=self._api_base,
                             api_version=self._api_version,
@@ -418,6 +421,8 @@ class LLMExtractor(Extractor):
             responses = asyncio.run(_call_async_api())
 
         else:
+            client = instructor.from_litellm(completion)
+
             # A helper function to call the API with exception filter for alignment
             # of exception handling with the async version.
             def _call_api_with_exception_filter(
@@ -426,10 +431,10 @@ class LLMExtractor(Extractor):
                 if model_input is None:
                     return None
                 try:
-                    return completion(
+                    return client.chat.completions.create(
                         model=self._model,
                         messages=model_input,
-                        response_format=Response,
+                        response_model=Response,
                         api_key=self._api_key,
                         api_base=self._api_base,
                         api_version=self._api_version,
@@ -461,7 +466,7 @@ class LLMExtractor(Extractor):
             responses[i] = None
 
         assessments = [
-            json.loads(response.choices[0].message.content).get("score")
+            response.score
             if response
             else None
             for response in responses
