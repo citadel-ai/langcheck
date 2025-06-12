@@ -47,6 +47,9 @@ class StringMatchExtractor(Extractor):
                 continue
 
             # Find the option that appears latest in the assessment
+            # In case an option is a substring of another option, the options
+            # are sorted in descending order of length.
+            options.sort(key=len, reverse=True)
             assessment = max(options, key=unstructured_assessment.rfind)
             if unstructured_assessment.find(assessment) == -1:
                 print("No options found in the assessment.")
