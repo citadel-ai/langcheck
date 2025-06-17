@@ -422,14 +422,21 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
         self,
         model: str,
         api_key: str | None = None,
+        api_base: str | None = None,
+        api_version: str | None = None,
         *,
         use_async: bool = False,
+        **kwargs,
     ):
         super().__init__()
 
         self._model = model
         self._api_key = api_key
+        self._api_base = api_base
+        self._api_version = api_version
         self._use_async = use_async
+
+        self._kwargs = kwargs
 
     async def _async_embed(self, inputs: list[str]) -> EmbeddingResponse:
         """Embed the inputs in async mode."""
@@ -437,6 +444,9 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
             input=inputs,
             model=self._model,
             api_key=self._api_key,
+            api_base=self._api_base,
+            api_version=self._api_version,
+            **self._kwargs,
         )
         return responses
 
@@ -449,13 +459,15 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
             embed_response = loop.run_until_complete(self._async_embed(inputs))
-            embeddings = [item.embedding for item in embed_response.data]
         else:
             embed_response = embedding(
                 input=inputs,
                 model=self._model,
                 api_key=self._api_key,
+                api_base=self._api_base,
+                api_version=self._api_version,
+                **self._kwargs,
             )
-            embeddings = [item.embedding for item in embed_response.data]  # type: ignore
 
+        embeddings = [item["embedding"] for item in embed_response.data]  # type: ignore
         return torch.Tensor(embeddings)
