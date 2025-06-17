@@ -35,7 +35,7 @@ class LiteLLMEvalClient(EvalClient):
         **kwargs,
     ):
         """
-        Initialize the LLM evaluation client.
+        Initialize the litellm evaluation client.
         """
         self._model = model
         self._embedding_model = embedding_model
@@ -198,8 +198,8 @@ class LiteLLMEvalClient(EvalClient):
 
         NOTE: Please make sure that the model you use supports logprobs. In
         Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
-        supports logprobs
-        (https://learn.microsoft.com/en-us/azure/ai-services/openai/whats-new#new-ga-api-release).
+        supports logprobs.
+        (https://docs.litellm.ai/docs/completion/input#translated-openai-params)
 
         Args:
             prompts: The prompts you want to get the responses for.
