@@ -29,14 +29,10 @@ class LiteLLMEvalClient(EvalClient):
         api_key: str | None = None,
         api_base: str | None = None,
         api_version: str | None = None,
-        vertex_location: str | None = None,
-        vertex_credentials: str | None = None,
-        aws_access_key_id: str | None = None,
-        aws_secret_access_key: str | None = None,
-        aws_region_name: str | None = None,
         use_async: bool = False,
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
+        **kwargs,
     ):
         """
         Initialize the LLM evaluation client.
@@ -47,14 +43,11 @@ class LiteLLMEvalClient(EvalClient):
         self._api_key = api_key
         self._api_base = api_base
         self._api_version = api_version
-        self._vertex_location = vertex_location
-        self._vertex_credentials = vertex_credentials
-        self._aws_access_key_id = aws_access_key_id
-        self._aws_secret_access_key = aws_secret_access_key
-        self._aws_region_name = aws_region_name
 
         self._use_async = use_async
         self._system_prompt = system_prompt
+
+        self._kwargs = kwargs
 
         if extractor is None:
             self._extractor = LiteLLMExtractor(
@@ -62,13 +55,9 @@ class LiteLLMEvalClient(EvalClient):
                 api_key=self._api_key,
                 api_base=self._api_base,
                 api_version=self._api_version,
-                vertex_location=self._vertex_location,
-                vertex_credentials=self._vertex_credentials,
-                aws_access_key_id=self._aws_access_key_id,
-                aws_secret_access_key=self._aws_secret_access_key,
-                aws_region_name=self._aws_region_name,
                 use_async=self._use_async,
                 system_prompt=self._system_prompt,
+                **self._kwargs,
             )
         else:
             self._extractor = extractor
@@ -110,12 +99,8 @@ class LiteLLMEvalClient(EvalClient):
                             api_key=self._api_key,
                             api_base=self._api_base,
                             api_version=self._api_version,
-                            vertex_location=self._vertex_location,
-                            vertex_credentials=self._vertex_credentials,
-                            aws_access_key_id=self._aws_access_key_id,
-                            aws_secret_access_key=self._aws_secret_access_key,
-                            aws_region_name=self._aws_region_name,
                             drop_params=True,
+                            **self._kwargs,
                         )
                         for model_input in model_inputs
                     ],
@@ -142,12 +127,8 @@ class LiteLLMEvalClient(EvalClient):
                         api_key=self._api_key,
                         api_base=self._api_base,
                         api_version=self._api_version,
-                        vertex_location=self._vertex_location,
-                        vertex_credentials=self._vertex_credentials,
-                        aws_access_key_id=self._aws_access_key_id,
-                        aws_secret_access_key=self._aws_secret_access_key,
-                        aws_region_name=self._aws_region_name,
                         drop_params=True,
+                        **self._kwargs,
                     )
                 except Exception as e:
                     return e
@@ -289,13 +270,9 @@ class LiteLLMExtractor(Extractor):
         api_key: str | None = None,
         api_base: str | None = None,
         api_version: str | None = None,
-        vertex_location: str | None = None,
-        vertex_credentials: str | None = None,
-        aws_access_key_id: str | None = None,
-        aws_secret_access_key: str | None = None,
-        aws_region_name: str | None = None,
         use_async: bool = False,
         system_prompt: str | None = None,
+        **kwargs,
     ):
         """
         Initialize the LLM score extractor.
@@ -305,13 +282,9 @@ class LiteLLMExtractor(Extractor):
         self._api_key = api_key
         self._api_base = api_base
         self._api_version = api_version
-        self._vertex_location = vertex_location
-        self._vertex_credentials = vertex_credentials
-        self._aws_access_key_id = aws_access_key_id
-        self._aws_secret_access_key = aws_secret_access_key
-        self._aws_region_name = aws_region_name
         self._use_async = use_async
         self._system_prompt = system_prompt
+        self._kwargs = kwargs
 
     def get_float_score(
         self,
@@ -387,12 +360,8 @@ class LiteLLMExtractor(Extractor):
                             api_key=self._api_key,
                             api_base=self._api_base,
                             api_version=self._api_version,
-                            vertex_location=self._vertex_location,
-                            vertex_credentials=self._vertex_credentials,
-                            aws_access_key_id=self._aws_access_key_id,
-                            aws_secret_access_key=self._aws_secret_access_key,
-                            aws_region_name=self._aws_region_name,
                             drop_params=True,
+                            **self._kwargs,
                         )
                         for input in model_inputs
                     ],
@@ -420,12 +389,8 @@ class LiteLLMExtractor(Extractor):
                         api_key=self._api_key,
                         api_base=self._api_base,
                         api_version=self._api_version,
-                        vertex_location=self._vertex_location,
-                        vertex_credentials=self._vertex_credentials,
-                        aws_access_key_id=self._aws_access_key_id,
-                        aws_secret_access_key=self._aws_secret_access_key,
-                        aws_region_name=self._aws_region_name,
                         drop_params=True,
+                        **self._kwargs,
                     )
                 except Exception as e:
                     return e
