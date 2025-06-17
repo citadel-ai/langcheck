@@ -68,6 +68,11 @@ class GeminiEvalClient(EvalClient):
             extractor (Optional): The extractor to use. If not provided, a
                 default GeminiExtractor will be used.
         """
+        warnings.warn(
+            "GeminiEvalClient will be deprecated in the next release."
+            "Please use LiteLLMEvalClient instead."
+        )
+
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         _validate_generate_content_config(self._generate_content_args)
@@ -267,6 +272,11 @@ class GeminiExtractor(Extractor):
             vertexai: If True, the Vertex AI client will be used. Ignored when
                 `genai_client` is provided. Defaults to False.
         """
+        warnings.warn(
+            "GeminiExtractor will be deprecated in the next release."
+            "Please use LiteLLMExtractor instead."
+        )
+
         self._model_name = model_name
         self._generate_content_args = generate_content_args or {}
         _validate_generate_content_config(self._generate_content_args)

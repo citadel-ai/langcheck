@@ -46,6 +46,11 @@ class OpenAIEvalClient(EvalClient):
             extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
+        warnings.warn(
+            "OpenAIEvalClient will be deprecated in the next release."
+            "Please use LiteLLMEvalClient instead."
+        )
+
         if openai_client:
             self._client = openai_client
             self._use_async = isinstance(openai_client, AsyncOpenAI)
@@ -286,6 +291,11 @@ class OpenAIExtractor(Extractor):
             use_async: If True, the async client will be used. Defaults to
                 False.
         """
+        warnings.warn(
+            "OpenAIExtractor will be deprecated in the next release."
+            "Please use LiteLLMExtractor instead."
+        )
+
         if openai_client:
             self._client = openai_client
             self._use_async = isinstance(openai_client, AsyncOpenAI)
@@ -466,6 +476,11 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
+        warnings.warn(
+            "AzureOpenAIEvalClient will be deprecated in the next release."
+            "Please use LiteLLMEvalClient instead."
+        )
+
         assert (
             text_model_name is not None or embedding_model_name is not None
         ), (
@@ -564,6 +579,11 @@ class AzureOpenAIExtractor(OpenAIExtractor):
         *,
         use_async: bool = False,
     ):
+        warnings.warn(
+            "AzureOpenAIExtractor will be deprecated in the next release."
+            "Please use LiteLLMExtractor instead."
+        )
+
         assert text_model_name is not None, (
             "You need to specify the text_model_name to use the Azure OpenAI API."
         )
