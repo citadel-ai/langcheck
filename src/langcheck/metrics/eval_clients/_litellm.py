@@ -19,7 +19,7 @@ from .extractor import Extractor
 
 
 class LiteLLMEvalClient(EvalClient):
-    """EvalClient defined for OpenAI API."""
+    """EvalClient defined for litellm."""
 
     def __init__(
         self,
@@ -145,8 +145,8 @@ class LiteLLMEvalClient(EvalClient):
             if not isinstance(response, Exception):
                 continue
             print(
-                "OpenAI failed to return an assessment corresponding to "
-                f"{i}th prompt: {response}"
+                f"Failed to return an assessment corresponding to {i}th prompt: "
+                f"{response}"
             )
             responses[i] = None
         return responses
@@ -158,8 +158,6 @@ class LiteLLMEvalClient(EvalClient):
         tqdm_description: str | None = None,
     ) -> list[str | None]:
         """The function that gets responses to the given prompt texts.
-        We use OpenAI's 'gpt-4o-mini' model by default, but you can configure
-        it by passing the 'model' parameter in the openai_args.
 
         Args:
             prompts: The prompts you want to get the responses for.
@@ -196,9 +194,7 @@ class LiteLLMEvalClient(EvalClient):
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
 
-        NOTE: Please make sure that the model you use supports logprobs. In
-        Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
-        supports logprobs.
+        NOTE: Please make sure that the model you use supports logprobs.
         (https://docs.litellm.ai/docs/completion/input#translated-openai-params)
 
         Args:
@@ -247,9 +243,6 @@ class LiteLLMEvalClient(EvalClient):
         return response_texts_with_log_likelihood
 
     def similarity_scorer(self) -> LiteLLMSimilarityScorer:
-        """
-        https://openai.com/blog/new-embedding-models-and-api-updates
-        """
         if self._embedding_model is None:
             raise ValueError("embedding_model is not set")
 
@@ -261,7 +254,7 @@ class LiteLLMEvalClient(EvalClient):
 
 
 class LiteLLMExtractor(Extractor):
-    """Score extractor defined for OpenAI API."""
+    """Score extractor defined for litellm."""
 
     def __init__(
         self,
@@ -299,10 +292,7 @@ class LiteLLMExtractor(Extractor):
         texts that describe the evaluation results) into scores. We leverage the
         structured outputs API to extract the short assessment results from the
         unstructured assessments, so please make sure that the model you use
-        supports structured outputs (only available in OpenAI's latest LLMs
-        starting with GPT-4o). Also note that structured outputs API is only
-        available in OpenAI API version of 2024-08-01-preview or later (See the
-        References for more details).
+        supports structured outputs.
 
         References:
             https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat
@@ -425,7 +415,7 @@ class LiteLLMExtractor(Extractor):
 
 
 class LiteLLMSimilarityScorer(BaseSimilarityScorer):
-    """Similarity scorer that uses the OpenAI API to embed the inputs.
+    """Similarity scorer to embed the inputs.
     In the current version of langcheck, the class is only instantiated within
     EvalClients.
     """
@@ -444,7 +434,7 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
         self._use_async = use_async
 
     async def _async_embed(self, inputs: list[str]) -> EmbeddingResponse:
-        """Embed the inputs using the OpenAI API in async mode."""
+        """Embed the inputs in async mode."""
         responses = await aembedding(
             input=inputs,
             model=self._model,
@@ -453,8 +443,7 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
         return responses
 
     def _embed(self, inputs: list[str]) -> torch.Tensor:
-        """Embed the inputs using the OpenAI API."""
-
+        """Embed the inputs."""
         if self._use_async:
             try:
                 loop = asyncio.get_event_loop()
