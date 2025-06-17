@@ -1,13 +1,13 @@
 from langcheck.metrics.eval_clients._base import EvalClient
 from langcheck.metrics.eval_clients._litellm import (
-    LLMEvalClient,
-    LLMExtractor,
+    LiteLLMEvalClient,
+    LiteLLMSimilarityScorer,
 )
 
 __all__ = [
     "EvalClient",
-    "LLMEvalClient",
-    "LLMExtractor",
+    "LiteLLMEvalClient",
+    "LiteLLMSimilarityScorer",
 ]
 
 

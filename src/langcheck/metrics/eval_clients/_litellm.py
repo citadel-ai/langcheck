@@ -18,7 +18,7 @@ from ._base import EvalClient, TextResponseWithLogProbs
 from .extractor import Extractor
 
 
-class LLMEvalClient(EvalClient):
+class LiteLLMEvalClient(EvalClient):
     """EvalClient defined for OpenAI API."""
 
     def __init__(
@@ -57,7 +57,7 @@ class LLMEvalClient(EvalClient):
         self._system_prompt = system_prompt
 
         if extractor is None:
-            self._extractor = LLMExtractor(
+            self._extractor = LiteLLMExtractor(
                 model=self._model,
                 api_key=self._api_key,
                 api_base=self._api_base,
@@ -265,21 +265,21 @@ class LLMEvalClient(EvalClient):
 
         return response_texts_with_log_likelihood
 
-    def similarity_scorer(self) -> LLMSimilarityScorer:
+    def similarity_scorer(self) -> LiteLLMSimilarityScorer:
         """
         https://openai.com/blog/new-embedding-models-and-api-updates
         """
         if self._embedding_model is None:
             raise ValueError("embedding_model is not set")
 
-        return LLMSimilarityScorer(
+        return LiteLLMSimilarityScorer(
             model=self._embedding_model,
             api_key=self._api_key,
             use_async=self._use_async,
         )
 
 
-class LLMExtractor(Extractor):
+class LiteLLMExtractor(Extractor):
     """Score extractor defined for OpenAI API."""
 
     def __init__(
@@ -459,7 +459,7 @@ class LLMExtractor(Extractor):
         ]
 
 
-class LLMSimilarityScorer(BaseSimilarityScorer):
+class LiteLLMSimilarityScorer(BaseSimilarityScorer):
     """Similarity scorer that uses the OpenAI API to embed the inputs.
     In the current version of langcheck, the class is only instantiated within
     EvalClients.
