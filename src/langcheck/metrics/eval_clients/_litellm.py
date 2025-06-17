@@ -26,16 +26,37 @@ class LiteLLMEvalClient(EvalClient):
         model: str,
         embedding_model: str | None = None,
         *,
-        api_key: str | None = None,
-        api_base: str | None = None,
-        api_version: str | None = None,
         use_async: bool = False,
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
+        api_key: str | None = None,
+        api_base: str | None = None,
+        api_version: str | None = None,
         **kwargs,
     ):
         """
         Initialize the litellm evaluation client.
+
+        References:
+            https://docs.litellm.ai/docs/completion/input
+
+        Args:
+            model: The model name for evaluation. The name should be
+                <model_provider>/<model_name> (e.g. "openai/gpt-4o-mini").
+            embedding_model: The model name for embedding. The name should be
+                <model_provider>/<model_name> (e.g. "openai/text-embedding-3-small").
+            use_async: Whether to use async mode.
+            system_prompt: The system prompt to use for the API.
+            extractor: The extractor to use for the API.
+            api_key: The API key for the model. This will be checked for all the
+                providers.
+            api_base: The base URL for the API.
+            api_version: The version of the API.
+            kwargs: Additional arguments to pass to the API. The credentials for
+                cloud providers can be passed here.
+                Examples:
+                - aws_access_key_id, aws_secret_access_key, aws_region_name
+                - vertex_location, vertex_credentials
         """
         self._model = model
         self._embedding_model = embedding_model
@@ -56,7 +77,6 @@ class LiteLLMEvalClient(EvalClient):
                 api_base=self._api_base,
                 api_version=self._api_version,
                 use_async=self._use_async,
-                system_prompt=self._system_prompt,
                 **self._kwargs,
             )
         else:
@@ -260,15 +280,28 @@ class LiteLLMExtractor(Extractor):
         self,
         model: str,
         *,
+        use_async: bool = False,
         api_key: str | None = None,
         api_base: str | None = None,
         api_version: str | None = None,
-        use_async: bool = False,
-        system_prompt: str | None = None,
         **kwargs,
     ):
         """
         Initialize the LLM score extractor.
+
+        Args:
+            model: The model name for evaluation. The name should be
+                <model_provider>/<model_name> (e.g. "openai/gpt-4o-mini").
+            use_async: Whether to use async mode.
+            api_key: The API key for the model. This will be checked for all the
+                providers.
+            api_base: The base URL for the API.
+            api_version: The version of the API.
+            kwargs: Additional arguments to pass to the API. The credentials for
+                cloud providers can be passed here.
+                Examples:
+                - aws_access_key_id, aws_secret_access_key, aws_region_name
+                - vertex_location, vertex_credentials
         """
         self._model = model
 
@@ -276,7 +309,6 @@ class LiteLLMExtractor(Extractor):
         self._api_base = api_base
         self._api_version = api_version
         self._use_async = use_async
-        self._system_prompt = system_prompt
         self._kwargs = kwargs
 
     def get_float_score(
@@ -395,7 +427,7 @@ class LiteLLMExtractor(Extractor):
             if not isinstance(response, Exception):
                 continue
             print(
-                f"Failed to return an assessment corresponding to {i}th prompt: "
+                f"Failed to return an assessment for the {i}th prompt: "
                 f"{response}"
             )
             responses[i] = None
@@ -428,6 +460,24 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
         use_async: bool = False,
         **kwargs,
     ):
+        """
+        Initialize the similarity scorer.
+
+        Args:
+            model: The embedding model name. The name should be
+                <model_provider>/<model_name> (e.g. "openai/text-embedding-3-small").
+            api_key: The API key for the model. This will be checked for all the
+                providers.
+            api_base: The base URL for the API.
+            api_version: The version of the API.
+            use_async: Whether to use async mode.
+            kwargs: Additional arguments to pass to the API. The credentials for
+                cloud providers can be passed here.
+                Examples:
+                - aws_access_key_id, aws_secret_access_key, aws_region_name
+                - vertex_location, vertex_credentials
+        """
+
         super().__init__()
 
         self._model = model
