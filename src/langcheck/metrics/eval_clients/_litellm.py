@@ -289,13 +289,11 @@ class LiteLLMExtractor(Extractor):
         tqdm_description: str | None = None,
     ) -> list[float | None]:
         """The function that transforms the unstructured assessments (i.e. long
-        texts that describe the evaluation results) into scores. We leverage the
-        structured outputs API to extract the short assessment results from the
-        unstructured assessments, so please make sure that the model you use
-        supports structured outputs.
+        texts that describe the evaluation results) into scores. `instructor` is
+        used to extract the result with robust structured outputs.
 
         References:
-            https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat
+            https://docs.litellm.ai/docs/tutorials/instructor
 
         Args:
             metric_name: The name of the metric to be used. (e.g. "toxicity")
