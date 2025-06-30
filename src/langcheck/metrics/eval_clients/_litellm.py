@@ -271,7 +271,10 @@ class LiteLLMEvalClient(EvalClient):
         return LiteLLMSimilarityScorer(
             model=self._embedding_model,
             api_key=self._api_key,
+            api_base=self._api_base,
+            api_version=self._api_version,
             use_async=self._use_async,
+            **self._kwargs,
         )
 
 
