@@ -74,7 +74,7 @@ def sentiment(
 
     tokenizer, model = manager.fetch_model(language="zh", metric="sentiment")
     _sentiment_pipeline = pipeline(
-        "sentiment-analysis",
+        "text-classification",
         model=model,  # type: ignore[reportGeneralTypeIssues]
         tokenizer=tokenizer,  # type: ignore[reportGeneralTypeIssues]
     )

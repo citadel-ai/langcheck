@@ -52,10 +52,10 @@ def test_get_float_score_openai(language):
     mock_chat_completion.choices = [
         Mock(message=Mock(parsed=Response(score=short_assessment_result)))
     ]
-    # Calling the openai.resources.beta.chat.Completions.parse method requires
+    # Calling the openai.resources.chat.Completions.parse method requires
     # an OpenAI API key, so we mock the return value instead
     with patch(
-        "openai.resources.beta.chat.Completions.parse",
+        "openai.resources.chat.Completions.parse",
         return_value=mock_chat_completion,
     ):
         # Set the necessary env vars for the OpenAIEValClient
@@ -110,10 +110,10 @@ def test_get_float_score_azure_openai():
     mock_chat_completion.choices = [
         Mock(message=Mock(parsed=Response(score=short_assessment_result)))
     ]
-    # Calling the openai.resources.beta.chat.Completions.parse method requires
+    # Calling the openai.resources.chat.Completions.parse method requires
     # an OpenAI API key, so we mock the return value instead
     with patch(
-        "openai.resources.beta.chat.Completions.parse",
+        "openai.resources.chat.Completions.parse",
         return_value=mock_chat_completion,
     ):
         # Set the necessary env vars for the 'azure_openai' model type
