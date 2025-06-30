@@ -505,6 +505,8 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
     def _embed(self, inputs: list[str]) -> torch.Tensor:
         """Embed the inputs."""
         if self._use_async:
+            # TODO: For Gemini, this outputs some warnings about async client
+            # session. https://github.com/BerriAI/litellm/issues/12108
             try:
                 loop = asyncio.get_event_loop()
             except RuntimeError:  # pragma: py-lt-310
