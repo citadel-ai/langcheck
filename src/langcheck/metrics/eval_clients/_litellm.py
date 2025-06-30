@@ -39,6 +39,7 @@ class LiteLLMEvalClient(EvalClient):
 
         References:
             https://docs.litellm.ai/docs/completion/input
+            https://docs.litellm.ai/docs/providers
 
         Args:
             model: The model name for evaluation. The name should be
@@ -53,7 +54,8 @@ class LiteLLMEvalClient(EvalClient):
             api_base: The base URL for the API.
             api_version: The version of the API.
             kwargs: Additional arguments to pass to the API. The credentials for
-                cloud providers can be passed here.
+                cloud providers can be passed here. See the references for the
+                supported providers and their credentials.
                 Examples:
                 - aws_access_key_id, aws_secret_access_key, aws_region_name
                 - vertex_location, vertex_credentials
