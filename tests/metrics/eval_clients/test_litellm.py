@@ -35,7 +35,7 @@ def test_get_text_response(system_prompt):
     # Calling litellm.completion requires a credentials, so we mock the return
     # value instead
     with patch(
-        "litellm.completion",
+        "langcheck.metrics.eval_clients._litellm.completion",
         return_value=mock_response,
     ):
         client = LiteLLMEvalClient(
@@ -70,7 +70,9 @@ def test_get_float_score(language):
         return_value=mock_response,
     ):
         # Set the necessary env vars for the GeminiEvalClient
-        extractor = LiteLLMExtractor(model="dummy_model", api_key="dummy_key")
+        extractor = LiteLLMExtractor(
+            model="openai/dummy_model", api_key="dummy_key"
+        )
 
         scores = extractor.get_float_score(
             "dummy_metric",
@@ -95,16 +97,16 @@ def test_similarity_scorer():
         ],
     )
 
-    # Calling the google.genai.models.Models.embed_content method requires a
-    # Google API key, so we mock the return value instead
+    # Calling the litellm.embedding method requires credentials, so we mock the
+    # return value instead
     with patch(
-        "litellm.embedding",
+        "langcheck.metrics.eval_clients._litellm.embedding",
         return_value=mock_response,
     ):
         # Set the necessary env vars for the GeminiEvalClient
         client = LiteLLMEvalClient(
             model="dummy_model",
-            embedding_model="dummy embedding model",
+            embedding_model="dummy-embedding-model",
             api_key="dummy_key",
         )
         scorer = client.similarity_scorer()
