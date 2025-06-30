@@ -4,8 +4,8 @@ import asyncio
 from typing import Any, Literal
 
 import instructor
+import litellm
 import torch
-from litellm import acompletion, aembedding, completion, embedding
 from litellm.types.utils import EmbeddingResponse
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
@@ -112,7 +112,7 @@ class LiteLLMEvalClient(EvalClient):
             async def _call_async_api() -> list[Any]:
                 responses = await asyncio.gather(
                     *[
-                        acompletion(
+                        litellm.acompletion(
                             model=self._model,
                             messages=model_input["messages"],
                             seed=model_input["seed"],
@@ -140,7 +140,7 @@ class LiteLLMEvalClient(EvalClient):
                 if model_input is None:
                     return None
                 try:
-                    return completion(
+                    return litellm.completion(
                         model=self._model,
                         messages=model_input["messages"],
                         seed=model_input["seed"],
@@ -369,7 +369,7 @@ class LiteLLMExtractor(Extractor):
         ]
 
         if self._use_async:
-            client = instructor.from_litellm(acompletion)
+            client = instructor.from_litellm(litellm.acompletion)
 
             # A helper function to call the async API.
             async def _call_async_api() -> list[Any]:
@@ -394,7 +394,7 @@ class LiteLLMExtractor(Extractor):
             responses = asyncio.run(_call_async_api())
 
         else:
-            client = instructor.from_litellm(completion)
+            client = instructor.from_litellm(litellm.completion)
 
             # A helper function to call the API with exception filter for alignment
             # of exception handling with the async version.
@@ -492,7 +492,7 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
 
     async def _async_embed(self, inputs: list[str]) -> EmbeddingResponse:
         """Embed the inputs in async mode."""
-        responses = await aembedding(
+        responses = await litellm.aembedding(
             input=inputs,
             model=self._model,
             api_key=self._api_key,
@@ -512,7 +512,7 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
                 asyncio.set_event_loop(loop)
             embed_response = loop.run_until_complete(self._async_embed(inputs))
         else:
-            embed_response = embedding(
+            embed_response = litellm.embedding(
                 input=inputs,
                 model=self._model,
                 api_key=self._api_key,
