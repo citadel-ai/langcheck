@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from typing import Any
 
 import requests
@@ -36,6 +37,11 @@ class OpenRouterEvalClient(EvalClient):
             extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
+
+        warnings.warn(
+            "OpenRouterEvalClient will be deprecated in the next release."
+            "Please use LiteLLMEvalClient instead."
+        )
 
         if os.getenv("OPENROUTER_API_KEY") is None:
             raise ValueError("OPENROUTER_API_KEY not set!")
@@ -142,6 +148,11 @@ class OpenRouterExtractor(Extractor):
             openrouter_args (Optional): dict of additional args to pass in to
                 the `client.chat.completions.create` function.
         """
+
+        warnings.warn(
+            "OpenRouterExtractor will be deprecated in the next release."
+            "Please use LiteLLMExtractor instead."
+        )
 
         if os.getenv("OPENROUTER_API_KEY") is None:
             raise ValueError("OPENROUTER_API_KEY not set!")

@@ -1,4 +1,8 @@
 from langcheck.metrics.eval_clients._base import EvalClient
+from langcheck.metrics.eval_clients._litellm import (
+    LiteLLMEvalClient,
+    LiteLLMExtractor,
+)
 from langcheck.metrics.eval_clients._openai import (
     AzureOpenAIEvalClient,
     AzureOpenAIExtractor,
@@ -14,6 +18,8 @@ __all__ = [
     "AzureOpenAIEvalClient",
     "AzureOpenAIExtractor",
     "EvalClient",
+    "LiteLLMEvalClient",
+    "LiteLLMExtractor",
     "OpenAIEvalClient",
     "OpenAIExtractor",
     "OpenRouterEvalClient",

@@ -63,6 +63,10 @@ class AnthropicEvalClient(EvalClient):
             extractor (Optional): The extractor to use. If not provided, the
                 default extractor will be used.
         """
+        warnings.warn(
+            "AnthropicEvalClient will be deprecated in the next release."
+            "Please use LiteLLMEvalClient instead."
+        )
 
         if anthropic_client is None:
             if vertexai:
@@ -252,6 +256,11 @@ class AnthropicExtractor(Extractor):
             vertexai: If True, the Vertex AI client will be used. Ignored when
                 `anthropic_client` is provided. Defaults to False.
         """
+        warnings.warn(
+            "AnthropicExtractor will be deprecated in the next release."
+            "Please use LiteLLMExtractor instead."
+        )
+
         if anthropic_client is None:
             if vertexai:
                 # Vertex AI requires these environment variables
