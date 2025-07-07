@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Union
+from typing import Mapping, Union
 
 import pandas as pd
 from jinja2 import Environment, meta
@@ -379,7 +379,11 @@ def get_metric_inputs(
     | tuple[IndividualInputType, IndividualInputType] = None,
     reference_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
-    additional_inputs: dict[str, IndividualInputType] | None = None,
+    additional_inputs: Mapping[
+        str,
+        IndividualInputType | tuple[IndividualInputType, IndividualInputType],
+    ]
+    | None = None,
     additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
     required_params: list[str],
 ) -> MetricInputs:
@@ -458,7 +462,11 @@ def get_metric_inputs_with_required_lists(
     | tuple[IndividualInputType, IndividualInputType] = None,
     reference_outputs: IndividualInputType
     | tuple[IndividualInputType, IndividualInputType] = None,
-    additional_inputs: dict[str, IndividualInputType] | None = None,
+    additional_inputs: Mapping[
+        str,
+        IndividualInputType | tuple[IndividualInputType, IndividualInputType],
+    ]
+    | None = None,
     additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
     required_params: list[str],
 ) -> tuple[MetricInputs, list[list[str]]]:

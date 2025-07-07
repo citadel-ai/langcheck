@@ -125,6 +125,13 @@ def custom_pairwise_evaluator(
     template_path: str,
     language: str,
     enforce_consistency: bool = True,
+    *,
+    additional_inputs: dict[
+        str,
+        IndividualInputType | tuple[IndividualInputType, IndividualInputType],
+    ]
+    | None = None,
+    additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
 ) -> MetricValue[float | None]:
     """Calculates the scores of a custom pairwise evaluator, where "pairwise"
     means that the Responses and/or Sources of two systems will be compared
@@ -191,6 +198,8 @@ def custom_pairwise_evaluator(
         prompts=prompts,
         sources=(sources_a, sources_b),
         reference_outputs=reference_outputs,
+        additional_inputs=additional_inputs,
+        additional_input_name_to_prompt_var_mapping=additional_input_name_to_prompt_var_mapping,
         required_params=[],
     )
 
