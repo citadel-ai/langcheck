@@ -11,16 +11,21 @@ from tests.utils import MockEvalClient
 
 
 @pytest.mark.parametrize(
-    "generated_outputs,sources",
+    "generated_outputs,sources,additional",
     [
-        ("Tokyo is the capital of Japan.", "Tokyo is Japan's capital city."),
+        (
+            "Tokyo is the capital of Japan.",
+            "Tokyo is Japan's capital city.",
+            "Additional Information",
+        ),
         (
             ["Tokyo is the capital of Japan.", "The Earth is flat."],
             ["Tokyo is Japan's capital city.", "The Earth is round."],
+            ["Additional Information", "Additional Information"],
         ),
     ],
 )
-def test_custom_evaluator(generated_outputs, sources):
+def test_custom_evaluator(generated_outputs, sources, additional):
     metric_name = "factual consistency"
     score_map = {
         "Fully Consistent": 1.0,
@@ -33,6 +38,7 @@ def test_custom_evaluator(generated_outputs, sources):
         Evaluate the submitted claim's factual consistency with the source:
         [Source]: {{ src }}
         [Submission]: {{ gen_output }}
+        [Additional Information]: {{ additional_info }}
         """)
         template_path = temp.name
 
@@ -48,6 +54,10 @@ def test_custom_evaluator(generated_outputs, sources):
                 score_map,
                 template_path,
                 "en",
+                additional_inputs={"additional": additional},
+                additional_input_name_to_prompt_var_mapping={
+                    "additional": "additional_info",
+                },
             )
             assert metric_value == score_map[option]
 
@@ -131,6 +141,9 @@ def test_custom_pairwise_evaluator(
         {% endif %}
         [Response A]: {{ gen_output_a }}
         [Response B]: {{ gen_output_b }}
+        [Additional Information]: {{ additional_info }}
+        [Additional Pairwise Information A]: {{ additional_pairwise_info_a }}
+        [Additional Pairwise Information B]: {{ additional_pairwise_info_b }}
         """)
         template_path = temp.name
 
@@ -148,6 +161,17 @@ def test_custom_pairwise_evaluator(
             score_map,
             template_path,
             "en",
+            additional_inputs={
+                "additional": "Additional Information",
+                "additional_pairwise": (
+                    "Additional Pairwise Information A",
+                    "Additional Pairwise Information B",
+                ),
+            },
+            additional_input_name_to_prompt_var_mapping={
+                "additional": "additional_info",
+                "additional_pairwise": "additional_pairwise_info",
+            },
         )
 
         # MockEvalClient returns 0.5 for Tie
