@@ -66,7 +66,9 @@ class LiteLLMEvalClient(EvalClient):
                 https://platform.openai.com/docs/guides/reasoning?api-mode=responses#get-started-with-reasoning
                 https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
             reasoning_effort: How many reasoning tokens to generate.
+                This is only used when `use_reasoning_summary` is True.
             reasoning_summary: The level of detail of the summarizer.
+                This is only used when `use_reasoning_summary` is True.
             system_prompt: The system prompt to use for the API.
             extractor: The extractor to use for the API.
             api_key: The API key for the model. This will be checked for all the
@@ -121,6 +123,7 @@ class LiteLLMEvalClient(EvalClient):
         seed: int | None = None,
         top_logprobs: int | None = None,
     ) -> Any:
+        """Dispatch the API call to litellm."""
         include = []
         if top_logprobs is not None and self._api_mode == APIMode.RESPONSES:
             include.append("message.output_text.logprobs")
@@ -191,9 +194,11 @@ class LiteLLMEvalClient(EvalClient):
                 return await asyncio.gather(
                     *(
                         self._dispatch(
-                            message["messages"], message["seed"], top_logprobs
+                            model_input["messages"],
+                            model_input["seed"],
+                            top_logprobs,
                         )
-                        for message in model_inputs
+                        for model_input in model_inputs
                     ),
                     return_exceptions=True,
                 )
@@ -201,11 +206,13 @@ class LiteLLMEvalClient(EvalClient):
             responses = asyncio.run(_gather())
         else:
             responses = []
-            for message in tqdm_wrapper(model_inputs, desc=tqdm_description):
+            for model_input in tqdm_wrapper(
+                model_inputs, desc=tqdm_description
+            ):
                 try:
                     response = self._dispatch(
-                        message["messages"],
-                        message["seed"],
+                        model_input["messages"],
+                        model_input["seed"],
                         top_logprobs,
                     )
                 except Exception as e:
@@ -306,7 +313,8 @@ class LiteLLMEvalClient(EvalClient):
 
         if self._api_mode == APIMode.RESPONSES:
             raise ValueError(
-                "Responses API is only used for reasoning summary. But reasoning model does not support logprobs."
+                "Responses API is only used for reasoning summary."
+                "But reasoning model does not support logprobs."
             )
 
         tqdm_description = tqdm_description or "Getting log likelihoods"
