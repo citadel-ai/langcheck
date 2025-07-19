@@ -154,7 +154,9 @@ class LiteLLMEvalClient(EvalClient):
             fn = litellm.aresponses if self._use_async else litellm.responses
             return fn(
                 model=self._model,
-                input=messages,
+                # The response API requires a more precise type,
+                # but list[dict[str, str]] is sufficient.
+                input=messages,  # type: ignore
                 include=include,
                 top_logprobs=top_logprobs,
                 store=False,
@@ -262,7 +264,7 @@ class LiteLLMEvalClient(EvalClient):
                 response_texts.append(None)
                 continue
 
-            if self._api_mode == "completions":
+            if self._api_mode == APIMode.COMPLETION:
                 content = response.choices[0].message.content
             else:
                 content = None
