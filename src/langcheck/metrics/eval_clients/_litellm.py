@@ -63,7 +63,7 @@ class LiteLLMEvalClient(EvalClient):
             use_reasoning_summary: Whether to use reasoning summary.
                 NOTE: Please make sure that the model and api version you
                 use supports reasoning summary.
-                https://platform.openai.com/docs/guides/reasoning?api-mode=responses#get-started-with-reasoning
+                https://platform.openai.com/docs/models
                 https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
             reasoning_effort: How many reasoning tokens to generate.
                 This is only used when `use_reasoning_summary` is True.
@@ -270,6 +270,13 @@ class LiteLLMEvalClient(EvalClient):
 
                 for output in response.output:
                     if hasattr(output, "summary"):
+                        if output.summary == []:
+                            print(
+                                "Reasoning summary is empty. "
+                                "This may happen even if model supports reasoning summary."
+                            )
+                            continue
+
                         # Summary can be a list of summaries
                         summaries.extend([s.text for s in output.summary])
                     elif hasattr(output, "content"):
@@ -313,7 +320,7 @@ class LiteLLMEvalClient(EvalClient):
 
         if self._api_mode == APIMode.RESPONSES:
             raise ValueError(
-                "Responses API is only used for reasoning summary."
+                "Responses API is only used for reasoning summary. "
                 "But reasoning model does not support logprobs."
             )
 
