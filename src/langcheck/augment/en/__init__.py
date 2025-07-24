@@ -12,7 +12,6 @@ from langcheck.augment.en._rephrase_with_system_role_context import (
 from langcheck.augment.en._rephrase_with_user_role_context import (
     rephrase_with_user_role_context,
 )
-from langcheck.augment.en._synonym import synonym
 from langcheck.augment.en._to_full_width import to_full_width
 
 __all__ = [
@@ -26,6 +25,5 @@ __all__ = [
     "rephrase",
     "rephrase_with_system_role_context",
     "rephrase_with_user_role_context",
-    "synonym",
     "to_full_width",
 ]
