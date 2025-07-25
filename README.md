@@ -24,14 +24,6 @@ Simple, Pythonic building blocks to evaluate LLM applications.
 
 ```shell
 # Install English metrics only
-pip install langcheck
-
-# Install English and Japanese metrics
-pip install langcheck[ja]
-
-# Install metrics for all languages (requires pip 21.2+)
-pip install --upgrade pip
-pip install langcheck[all]
 ```
 
 Having installation issues? [See the FAQ](https://langcheck.readthedocs.io/en/latest/installation.html#installation-faq).
