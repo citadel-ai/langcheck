@@ -129,3 +129,8 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 langcheck = ["metrics/model_manager/config/*.yaml", "metrics/prompts/**/*.j2"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.5",
+]
