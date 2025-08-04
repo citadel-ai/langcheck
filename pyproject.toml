@@ -22,6 +22,8 @@ dependencies = [
     'eval_type_backport',
     'instructor',
     'litellm',
+    'google-genai',
+    'anthropic',
     'boto3',
     'nltk >= 3.9',
     'openai >= 1',
@@ -56,12 +58,7 @@ zh = [
 ]
 
 # Different LLM clients
-anthropic = [
-    'anthropic'
-]
-gemini = [
-    'google-genai'
-]
+
 local-llm = [
     'vllm'
 ]
@@ -72,8 +69,6 @@ all = [
     'langcheck[ja]',
     'langcheck[ja-optional]',
     'langcheck[zh]',
-    'langcheck[anthropic]',
-    'langcheck[gemini]',
     'langcheck[local-llm]'
 ]
 
@@ -83,8 +78,6 @@ no-local-llm = [
     'langcheck[ja]',
     'langcheck[ja-optional]',
     'langcheck[zh]',
-    'langcheck[anthropic]',
-    'langcheck[gemini]',
 ]
 
 dev = [
