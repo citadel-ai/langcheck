@@ -61,8 +61,8 @@ class LiteLLMEvalClient(EvalClient):
                 <model_provider>/<model_name> (e.g. "openai/text-embedding-3-small").
             use_async: Whether to use async mode.
             use_reasoning_summary: Whether to use reasoning summary.
-                NOTE: Please make sure that the model and api version you
-                use supports reasoning summary.
+                NOTE: Please make sure that the model and API version support 
+                reasoning summary.
                 https://platform.openai.com/docs/models
                 https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
             reasoning_effort: How many reasoning tokens to generate.
