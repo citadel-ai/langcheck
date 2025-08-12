@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from enum import Enum
 from typing import Any, Literal
 
 import instructor
@@ -18,13 +17,6 @@ from ..prompts._utils import get_template
 from ..scorer._base import BaseSimilarityScorer
 from ._base import EvalClient, TextResponseWithLogProbs
 from .extractor import Extractor
-
-
-class APIMode(Enum):
-    """API mode for the litellm client."""
-
-    COMPLETION = "completion"
-    RESPONSES = "responses"
 
 
 class LiteLLMEvalClient(EvalClient):
@@ -61,7 +53,7 @@ class LiteLLMEvalClient(EvalClient):
                 <model_provider>/<model_name> (e.g. "openai/text-embedding-3-small").
             use_async: Whether to use async mode.
             use_reasoning_summary: Whether to use reasoning summary.
-                NOTE: Please make sure that the model and API version support 
+                NOTE: Please make sure that the model and API version support
                 reasoning summary.
                 https://platform.openai.com/docs/models
                 https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
@@ -90,17 +82,12 @@ class LiteLLMEvalClient(EvalClient):
         self._api_version = api_version
 
         self._use_async = use_async
-        # To use reasoning summary, we must use the `responses` API
-        # instead of `completions` API.
-        # https://platform.openai.com/docs/guides/reasoning#reasoning-summaries
-        self._api_mode = (
-            APIMode.RESPONSES if use_reasoning_summary else APIMode.COMPLETION
+        self._reasoning_effort: ReasoningEffort = (
+            reasoning_effort if use_reasoning_summary else None
         )
-        self._use_reasoning_summary = use_reasoning_summary
-        self._reasoning_effort: ReasoningEffort = reasoning_effort
         self._reasoning_summary: (
             Literal["auto", "concise", "detailed"] | None
-        ) = reasoning_summary
+        ) = reasoning_summary if use_reasoning_summary else None
         self._system_prompt = system_prompt
 
         self._kwargs = kwargs
@@ -124,18 +111,7 @@ class LiteLLMEvalClient(EvalClient):
         top_logprobs: int | None = None,
     ) -> Any:
         """Dispatch the API call to litellm."""
-        include = []
-        if top_logprobs is not None and self._api_mode == APIMode.RESPONSES:
-            include.append("message.output_text.logprobs")
-
-        reasoning: Reasoning | None = None
-        if self._use_reasoning_summary:
-            reasoning = {
-                "effort": self._reasoning_effort,
-                "summary": self._reasoning_summary,
-            }
-
-        if self._api_mode == APIMode.COMPLETION:
+        if self._reasoning_summary is None:
             fn = litellm.acompletion if self._use_async else litellm.completion
             return fn(
                 model=self._model,
@@ -150,6 +126,19 @@ class LiteLLMEvalClient(EvalClient):
                 **self._kwargs,
             )
         else:
+            # To use reasoning summary, we must use the Responses API
+            # instead of Chat Completions API.
+            # https://platform.openai.com/docs/guides/reasoning#reasoning-summaries
+
+            include = []
+            if top_logprobs is not None:
+                include.append("message.output_text.logprobs")
+
+            reasoning: Reasoning = {
+                "effort": self._reasoning_effort,
+                "summary": self._reasoning_summary,
+            }
+
             # seed and logprobs are not supported in responses API.
             fn = litellm.aresponses if self._use_async else litellm.responses
             return fn(
@@ -264,7 +253,9 @@ class LiteLLMEvalClient(EvalClient):
                 response_texts.append(None)
                 continue
 
-            if self._api_mode == APIMode.COMPLETION:
+            # Use the Responses API only when a reasoning summary is required.
+            # Otherwise, use the Chat Completions API.
+            if self._reasoning_summary is None:
                 content = response.choices[0].message.content
             else:
                 content = None
@@ -320,7 +311,7 @@ class LiteLLMEvalClient(EvalClient):
                 f"prompts must be a list, not a {type(prompts).__name__}"
             )
 
-        if self._api_mode == APIMode.RESPONSES:
+        if self._reasoning_summary is not None:
             raise ValueError(
                 "Responses API is only used for reasoning summary. "
                 "But reasoning model does not support logprobs."
