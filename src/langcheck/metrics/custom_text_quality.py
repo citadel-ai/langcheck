@@ -23,8 +23,9 @@ def custom_evaluator(
     eval_model: EvalClient,
     metric_name: str,
     score_map: dict[str, float],
-    template_path: str,
+    template_path: str | None,
     language: str,
+    template_str: str | None = None,
     *,
     additional_inputs: dict[str, IndividualInputType] | None = None,
     additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
@@ -72,6 +73,8 @@ def custom_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
+        template_str: The prompt template string. This should be a Jinja2 template string.
+            If provided, template_path will be ignored.
         additional_inputs: Additional inputs other than the standard ones.
         additional_input_name_to_prompt_var_mapping: A dictionary that maps the
             additional input names to the variable names in the prompt template.
@@ -92,14 +95,19 @@ def custom_evaluator(
         required_params=[],
     )
 
-    assert Path(template_path).exists(), (
-        f"Prompt template file {template_path} does not exist."
-    )
-    assert template_path.endswith(".j2"), (
-        'The prompt template file must be a Jinja2 template file with the extension ".j2"'
-    )
+    if template_str is not None:
+        prompt_template_source = template_str
+    else:
+        assert template_path is not None, "Either template_path or template_str must be provided."
+        assert Path(template_path).exists(), (
+            f"Prompt template file {template_path} does not exist."
+        )
+        assert template_path.endswith(".j2"), (
+            'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+        )
 
-    prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+        prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
@@ -122,8 +130,9 @@ def custom_pairwise_evaluator(
     eval_model: EvalClient,
     metric_name: str,
     score_map: dict[str, float],
-    template_path: str,
+    template_path: str | None,
     language: str,
+    template_str: str | None,
     enforce_consistency: bool = True,
     *,
     additional_inputs: dict[
@@ -181,6 +190,8 @@ def custom_pairwise_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
+        template_str: The prompt template string. This should be a Jinja2 template string.
+            If provided, template_path will be ignored.
         enforce_consistency: When this is True, we will only return a score if
             the score is the same when Model A and Model B are swapped. This is
             useful for ensuring that the evaluator's position bias is not
@@ -203,14 +214,19 @@ def custom_pairwise_evaluator(
         required_params=[],
     )
 
-    assert Path(template_path).exists(), (
+    if template_str is not None:
+        prompt_template_source = template_str
+    else:
+        assert template_path is not None, "Either template_path or template_str must be provided."
+        assert Path(template_path).exists(), (
         f"Prompt template file {template_path} does not exist."
-    )
-    assert template_path.endswith(".j2"), (
-        'The prompt template file must be a Jinja2 template file with the extension ".j2"'
-    )
+        )
+        assert template_path.endswith(".j2"), (
+            'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+        )
 
-    prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+        prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+    
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
