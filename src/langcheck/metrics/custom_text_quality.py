@@ -95,20 +95,7 @@ def custom_evaluator(
         required_params=[],
     )
 
-    if template_str is not None:
-        prompt_template_source = template_str
-    else:
-        assert template_path is not None, (
-            "Either template_path or template_str must be provided."
-        )
-        assert Path(template_path).exists(), (
-            f"Prompt template file {template_path} does not exist."
-        )
-        assert template_path.endswith(".j2"), (
-            'The prompt template file must be a Jinja2 template file with the extension ".j2"'
-        )
-
-        prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+    prompt_template_source = _get_template_str(template_path, template_str)
 
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
@@ -216,20 +203,7 @@ def custom_pairwise_evaluator(
         required_params=[],
     )
 
-    if template_str is not None:
-        prompt_template_source = template_str
-    else:
-        assert template_path is not None, (
-            "Either template_path or template_str must be provided."
-        )
-        assert Path(template_path).exists(), (
-            f"Prompt template file {template_path} does not exist."
-        )
-        assert template_path.endswith(".j2"), (
-            'The prompt template file must be a Jinja2 template file with the extension ".j2"'
-        )
-
-        prompt_template_source = Path(template_path).read_text(encoding="utf-8")
+    prompt_template_source = _get_template_str(template_path, template_str)
 
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
@@ -251,3 +225,22 @@ def custom_pairwise_evaluator(
             language=language,
             score_map=score_map,
         )
+
+
+def _get_template_str(
+    template_path: str | None, template_str: str | None
+) -> str:
+    """Gets the template string from the template path or template string."""
+    if template_str is not None:
+        return template_str
+    else:
+        assert template_path is not None, (
+            "Either template_path or template_str must be provided."
+        )
+        assert Path(template_path).exists(), (
+            f"Prompt template file {template_path} does not exist."
+        )
+        assert template_path.endswith(".j2"), (
+            'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+        )
+        return Path(template_path).read_text(encoding="utf-8")

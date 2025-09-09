@@ -63,6 +63,58 @@ def test_custom_evaluator(generated_outputs, sources, additional):
 
 
 @pytest.mark.parametrize(
+    "generated_outputs,sources,additional",
+    [
+        (
+            "Tokyo is the capital of Japan.",
+            "Tokyo is Japan's capital city.",
+            "Additional Information",
+        ),
+        (
+            ["Tokyo is the capital of Japan.", "The Earth is flat."],
+            ["Tokyo is Japan's capital city.", "The Earth is round."],
+            ["Additional Information", "Additional Information"],
+        ),
+    ],
+)
+def test_custom_evaluator_with_template_str(
+    generated_outputs, sources, additional
+):
+    metric_name = "factual consistency"
+    score_map = {
+        "Fully Consistent": 1.0,
+        "Partially Consistent": 0.5,
+        "Not Consistent": 0.0,
+    }
+
+    template_str = """
+    Evaluate the submitted claim's factual consistency with the source:
+    [Source]: {{ src }}
+    [Submission]: {{ gen_output }}
+    [Additional Information]: {{ additional_info }}
+    """
+    for option in score_map:
+        eval_client = MockEvalClient(option)
+        metric_value = custom_evaluator(
+            generated_outputs,
+            None,
+            sources,
+            None,
+            eval_client,
+            metric_name,
+            score_map,
+            None,
+            "en",
+            template_str=template_str,
+            additional_inputs={"additional": additional},
+            additional_input_name_to_prompt_var_mapping={
+                "additional": "additional_info",
+            },
+        )
+        assert metric_value == score_map[option]
+
+
+@pytest.mark.parametrize(
     "generated_outputs_a,generated_outputs_b,prompts,sources_a,sources_b,reference_outputs",
     [
         (
