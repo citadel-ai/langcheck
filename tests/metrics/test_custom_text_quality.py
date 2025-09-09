@@ -326,7 +326,7 @@ def test_custom_pairwise_evaluator_with_template_str(
         score_map,
         None,
         "en",
-        template_str,
+        template_str=template_str,
         additional_inputs={
             "additional": "Additional Information",
             "additional_pairwise": (
