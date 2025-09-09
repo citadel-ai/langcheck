@@ -98,7 +98,9 @@ def custom_evaluator(
     if template_str is not None:
         prompt_template_source = template_str
     else:
-        assert template_path is not None, "Either template_path or template_str must be provided."
+        assert template_path is not None, (
+            "Either template_path or template_str must be provided."
+        )
         assert Path(template_path).exists(), (
             f"Prompt template file {template_path} does not exist."
         )
@@ -132,8 +134,8 @@ def custom_pairwise_evaluator(
     score_map: dict[str, float],
     template_path: str | None,
     language: str,
-    template_str: str | None,
     enforce_consistency: bool = True,
+    template_str: str | None = None,
     *,
     additional_inputs: dict[
         str,
@@ -190,12 +192,12 @@ def custom_pairwise_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
-        template_str: The prompt template string. This should be a Jinja2 template string.
-            If provided, template_path will be ignored.
         enforce_consistency: When this is True, we will only return a score if
             the score is the same when Model A and Model B are swapped. This is
             useful for ensuring that the evaluator's position bias is not
             impacting the scores. Default True.
+        template_str: The prompt template string. This should be a Jinja2 template string.
+            If provided, template_path will be ignored.
 
     Returns:
         A MetricValue object
@@ -217,16 +219,18 @@ def custom_pairwise_evaluator(
     if template_str is not None:
         prompt_template_source = template_str
     else:
-        assert template_path is not None, "Either template_path or template_str must be provided."
+        assert template_path is not None, (
+            "Either template_path or template_str must be provided."
+        )
         assert Path(template_path).exists(), (
-        f"Prompt template file {template_path} does not exist."
+            f"Prompt template file {template_path} does not exist."
         )
         assert template_path.endswith(".j2"), (
             'The prompt template file must be a Jinja2 template file with the extension ".j2"'
         )
 
         prompt_template_source = Path(template_path).read_text(encoding="utf-8")
-    
+
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
