@@ -1,4 +1,5 @@
 import tempfile
+from textwrap import dedent
 
 import pytest
 
@@ -40,6 +41,7 @@ def test_custom_evaluator(generated_outputs, sources, additional):
         [Submission]: {{ gen_output }}
         [Additional Information]: {{ additional_info }}
         """)
+        temp.flush()
         template_path = temp.name
 
         for option in score_map:
@@ -93,6 +95,8 @@ def test_custom_evaluator_with_template_str(
     [Submission]: {{ gen_output }}
     [Additional Information]: {{ additional_info }}
     """
+    template_str = dedent(template_str).strip()
+
     for option in score_map:
         eval_client = MockEvalClient(option)
         metric_value = custom_evaluator(
@@ -197,6 +201,7 @@ def test_custom_pairwise_evaluator(
         [Additional Pairwise Information A]: {{ additional_pairwise_info_a }}
         [Additional Pairwise Information B]: {{ additional_pairwise_info_b }}
         """)
+        temp.flush()
         template_path = temp.name
 
         # Return "Tie" so that it passes the consistency check
@@ -312,6 +317,7 @@ def test_custom_pairwise_evaluator_with_template_str(
     [Additional Pairwise Information A]: {{ additional_pairwise_info_a }}
     [Additional Pairwise Information B]: {{ additional_pairwise_info_b }}
     """
+    template_str = dedent(template_str).strip()
 
     eval_client = MockEvalClient("Tie")
     metric_value = custom_pairwise_evaluator(
