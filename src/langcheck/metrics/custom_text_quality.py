@@ -23,8 +23,9 @@ def custom_evaluator(
     eval_model: EvalClient,
     metric_name: str,
     score_map: dict[str, float],
-    template_path: str,
+    template_path: str | None,
     language: str,
+    template_str: str | None = None,
     *,
     additional_inputs: dict[str, IndividualInputType] | None = None,
     additional_input_name_to_prompt_var_mapping: dict[str, str] | None = None,
@@ -72,6 +73,8 @@ def custom_evaluator(
         template_path: The path to the prompt template file. This should be a
             Jinja2 file (file extension .j2).
         language: The language that the evaluator will use ('en', 'ja', or 'de')
+        template_str: The prompt template string. This should be a Jinja2 template string.
+            If provided, template_path will be ignored.
         additional_inputs: Additional inputs other than the standard ones.
         additional_input_name_to_prompt_var_mapping: A dictionary that maps the
             additional input names to the variable names in the prompt template.
@@ -92,14 +95,8 @@ def custom_evaluator(
         required_params=[],
     )
 
-    assert Path(template_path).exists(), (
-        f"Prompt template file {template_path} does not exist."
-    )
-    assert template_path.endswith(".j2"), (
-        'The prompt template file must be a Jinja2 template file with the extension ".j2"'
-    )
+    prompt_template_source = _get_template_str(template_path, template_str)
 
-    prompt_template_source = Path(template_path).read_text(encoding="utf-8")
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
@@ -122,9 +119,10 @@ def custom_pairwise_evaluator(
     eval_model: EvalClient,
     metric_name: str,
     score_map: dict[str, float],
-    template_path: str,
+    template_path: str | None,
     language: str,
     enforce_consistency: bool = True,
+    template_str: str | None = None,
     *,
     additional_inputs: dict[
         str,
@@ -185,6 +183,8 @@ def custom_pairwise_evaluator(
             the score is the same when Model A and Model B are swapped. This is
             useful for ensuring that the evaluator's position bias is not
             impacting the scores. Default True.
+        template_str: The prompt template string. This should be a Jinja2 template string.
+            If provided, template_path will be ignored.
 
     Returns:
         A MetricValue object
@@ -203,14 +203,8 @@ def custom_pairwise_evaluator(
         required_params=[],
     )
 
-    assert Path(template_path).exists(), (
-        f"Prompt template file {template_path} does not exist."
-    )
-    assert template_path.endswith(".j2"), (
-        'The prompt template file must be a Jinja2 template file with the extension ".j2"'
-    )
+    prompt_template_source = _get_template_str(template_path, template_str)
 
-    prompt_template_source = Path(template_path).read_text(encoding="utf-8")
     metric_inputs.validate_template(prompt_template_source)
     prompt_template = Template(prompt_template_source)
 
@@ -231,3 +225,22 @@ def custom_pairwise_evaluator(
             language=language,
             score_map=score_map,
         )
+
+
+def _get_template_str(
+    template_path: str | None, template_str: str | None
+) -> str:
+    """Gets the template string from the template path or template string."""
+    if template_str is not None:
+        return template_str
+    else:
+        assert template_path is not None, (
+            "Either template_path or template_str must be provided."
+        )
+        assert Path(template_path).exists(), (
+            f"Prompt template file {template_path} does not exist."
+        )
+        assert template_path.endswith(".j2"), (
+            'The prompt template file must be a Jinja2 template file with the extension ".j2"'
+        )
+        return Path(template_path).read_text(encoding="utf-8")
