@@ -8,6 +8,7 @@ import litellm
 import torch
 from litellm.types.utils import EmbeddingResponse
 from openai.types.chat import ChatCompletionMessageParam
+from openai.types.shared_params import Reasoning, ReasoningEffort
 from pydantic import BaseModel
 
 from langcheck.utils.progress_bar import tqdm_wrapper
@@ -27,6 +28,10 @@ class LiteLLMEvalClient(EvalClient):
         embedding_model: str | None = None,
         *,
         use_async: bool = False,
+        use_reasoning_summary: bool = False,
+        reasoning_effort: ReasoningEffort = "medium",
+        reasoning_summary: Literal["auto", "concise", "detailed"]
+        | None = "auto",
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
         api_key: str | None = None,
@@ -47,6 +52,15 @@ class LiteLLMEvalClient(EvalClient):
             embedding_model: The model name for embedding. The name should be
                 <model_provider>/<model_name> (e.g. "openai/text-embedding-3-small").
             use_async: Whether to use async mode.
+            use_reasoning_summary: Whether to use reasoning summary.
+                NOTE: Please make sure that the model and API version support
+                reasoning summary.
+                https://platform.openai.com/docs/models
+                https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
+            reasoning_effort: How many reasoning tokens to generate.
+                This is only used when `use_reasoning_summary` is True.
+            reasoning_summary: The level of detail of the summarizer.
+                This is only used when `use_reasoning_summary` is True.
             system_prompt: The system prompt to use for the API.
             extractor: The extractor to use for the API.
             api_key: The API key for the model. This will be checked for all the
@@ -68,6 +82,12 @@ class LiteLLMEvalClient(EvalClient):
         self._api_version = api_version
 
         self._use_async = use_async
+        self._reasoning_effort: ReasoningEffort = (
+            reasoning_effort if use_reasoning_summary else None
+        )
+        self._reasoning_summary: (
+            Literal["auto", "concise", "detailed"] | None
+        ) = reasoning_summary if use_reasoning_summary else None
         self._system_prompt = system_prompt
 
         self._kwargs = kwargs
@@ -83,6 +103,60 @@ class LiteLLMEvalClient(EvalClient):
             )
         else:
             self._extractor = extractor
+
+    def _dispatch(
+        self,
+        messages: list[dict[str, str]],
+        seed: int | None = None,
+        top_logprobs: int | None = None,
+    ) -> Any:
+        """Dispatch the API call to litellm."""
+        if self._reasoning_summary is None:
+            fn = litellm.acompletion if self._use_async else litellm.completion
+            return fn(
+                model=self._model,
+                messages=messages,
+                seed=seed,
+                logprobs=(top_logprobs is not None),
+                top_logprobs=top_logprobs,
+                api_key=self._api_key,
+                api_base=self._api_base,
+                api_version=self._api_version,
+                drop_params=True,
+                **self._kwargs,
+            )
+        else:
+            # To use reasoning summary, we must use the Responses API
+            # instead of Chat Completions API.
+            # https://platform.openai.com/docs/guides/reasoning#reasoning-summaries
+
+            include = []
+            if top_logprobs is not None:
+                include.append("message.output_text.logprobs")
+
+            reasoning: Reasoning = {
+                "effort": self._reasoning_effort,
+                "summary": self._reasoning_summary,
+            }
+
+            # seed and logprobs are not supported in responses API.
+            fn = litellm.aresponses if self._use_async else litellm.responses
+            return fn(
+                model=self._model,
+                # The response API requires a more precise type,
+                # but list[dict[str, str]] is sufficient.
+                input=messages,  # type: ignore
+                include=include,
+                top_logprobs=top_logprobs,
+                store=False,
+                reasoning=reasoning,
+                truncation="auto",
+                api_key=self._api_key,
+                api_base=self._api_base,
+                api_version=self._api_version,
+                drop_params=True,
+                **self._kwargs,
+            )
 
     def _call_api(
         self,
@@ -105,62 +179,36 @@ class LiteLLMEvalClient(EvalClient):
             for i, prompt in enumerate(prompts)
         ]
 
-        logprobs = top_logprobs is not None
-
         if self._use_async:
             # A helper function to call the async API.
-            async def _call_async_api() -> list[Any]:
-                responses = await asyncio.gather(
-                    *[
-                        litellm.acompletion(
-                            model=self._model,
-                            messages=model_input["messages"],
-                            seed=model_input["seed"],
-                            logprobs=logprobs,
-                            top_logprobs=top_logprobs,
-                            api_key=self._api_key,
-                            api_base=self._api_base,
-                            api_version=self._api_version,
-                            drop_params=True,
-                            **self._kwargs,
+            async def _gather():
+                return await asyncio.gather(
+                    *(
+                        self._dispatch(
+                            model_input["messages"],
+                            model_input["seed"],
+                            top_logprobs,
                         )
                         for model_input in model_inputs
-                    ],
+                    ),
                     return_exceptions=True,
                 )
-                return responses
 
-            responses = asyncio.run(_call_async_api())
+            responses = asyncio.run(_gather())
         else:
-            # A helper function to call the API with exception filter for
-            # alignment of exception handling with the async version.
-            def _call_api_with_exception_filter(
-                model_input: dict[str, Any],
-            ) -> Any:
-                if model_input is None:
-                    return None
+            responses = []
+            for model_input in tqdm_wrapper(
+                model_inputs, desc=tqdm_description
+            ):
                 try:
-                    return litellm.completion(
-                        model=self._model,
-                        messages=model_input["messages"],
-                        seed=model_input["seed"],
-                        logprobs=logprobs,
-                        top_logprobs=top_logprobs,
-                        api_key=self._api_key,
-                        api_base=self._api_base,
-                        api_version=self._api_version,
-                        drop_params=True,
-                        **self._kwargs,
+                    response = self._dispatch(
+                        model_input["messages"],
+                        model_input["seed"],
+                        top_logprobs,
                     )
                 except Exception as e:
-                    return e
-
-            responses = [
-                _call_api_with_exception_filter(model_input)
-                for model_input in tqdm_wrapper(
-                    model_inputs, desc=tqdm_description
-                )
-            ]
+                    response = e
+                responses.append(response)
 
         # Filter out exceptions and print them out.
         for i, response in enumerate(responses):
@@ -198,10 +246,40 @@ class LiteLLMEvalClient(EvalClient):
             prompts=prompts,
             tqdm_description=tqdm_description,
         )
-        response_texts = [
-            response.choices[0].message.content if response else None
-            for response in responses
-        ]
+
+        response_texts = []
+        for response in responses:
+            if not response:
+                response_texts.append(None)
+                continue
+
+            # Use the Responses API only when a reasoning summary is required.
+            # Otherwise, use the Chat Completions API.
+            if self._reasoning_summary is None:
+                content = response.choices[0].message.content
+            else:
+                content = None
+                summaries = []
+
+                for output in response.output:
+                    if hasattr(output, "summary"):
+                        if output.summary == []:
+                            print(
+                                "Reasoning summary is empty. "
+                                "This may happen even if model supports reasoning summary."
+                            )
+                            continue
+
+                        # Summary can be a list of summaries
+                        summaries.extend([s.text for s in output.summary])
+                    elif hasattr(output, "content"):
+                        content = output.content[0].text
+
+                if content is not None and summaries:
+                    summaries_str = "\n\n".join(summaries)
+                    content += f"\n\n**Reasoning Summary:**\n\n{summaries_str}"
+
+            response_texts.append(content)
 
         return response_texts
 
@@ -231,6 +309,12 @@ class LiteLLMEvalClient(EvalClient):
         if not isinstance(prompts, list):
             raise ValueError(
                 f"prompts must be a list, not a {type(prompts).__name__}"
+            )
+
+        if self._reasoning_summary is not None:
+            raise ValueError(
+                "Responses API is only used for reasoning summary. "
+                "But reasoning model does not support logprobs."
             )
 
         tqdm_description = tqdm_description or "Getting log likelihoods"

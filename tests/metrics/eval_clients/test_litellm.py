@@ -4,12 +4,19 @@ from typing import Literal
 from unittest.mock import Mock, patch
 
 import pytest
+from litellm.types.llms.openai import ResponsesAPIResponse
 from litellm.types.utils import (
     Choices,
     EmbeddingResponse,
     Message,
     ModelResponse,
 )
+from openai.types.responses import (
+    ResponseOutputMessage,
+    ResponseOutputText,
+    ResponseReasoningItem,
+)
+from openai.types.responses.response_reasoning_item import Summary
 from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients import (
@@ -44,6 +51,48 @@ def test_get_text_response(system_prompt):
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == answer
+
+
+@pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
+def test_get_text_response_with_reasoning_summary(system_prompt):
+    prompts = ["Prompt A", "Prompt B"]
+    answer = "Here is the direct answer."
+    reasoning_summary1 = "This is the reasoning summary 1."
+    reasoning_summary2 = "This is the reasoning summary 2."
+    expected = f"{answer}\n\n**Reasoning Summary:**\n\n{reasoning_summary1}\n\n{reasoning_summary2}"
+
+    # Build a fake response from litellm.responses
+    mock_response = Mock(
+        spec=ResponsesAPIResponse,
+        output=[
+            Mock(
+                spec=ResponseReasoningItem,
+                summary=[
+                    Mock(spec=Summary, text=reasoning_summary1),
+                    Mock(spec=Summary, text=reasoning_summary2),
+                ],
+            ),
+            Mock(
+                spec=ResponseOutputMessage,
+                content=[Mock(spec=ResponseOutputText, text=answer)],
+            ),
+        ],
+    )
+
+    # Calling litellm.responses requires a credentials, so we mock the return
+    # value instead
+    with patch("litellm.responses", return_value=mock_response):
+        client = LiteLLMEvalClient(
+            model="dummy_model",
+            use_reasoning_summary=True,
+            system_prompt=system_prompt,
+            api_key="dummy_key",
+        )
+        responses = client.get_text_responses(prompts)
+        # We expect each to include the answer, then a blank line, then the **Reasoning Summary:** block
+        assert len(responses) == len(prompts)
+        for response in responses:
+            assert response == expected
 
 
 @pytest.mark.parametrize("language", ["en", "de", "ja"])

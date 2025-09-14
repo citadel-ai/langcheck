@@ -335,23 +335,6 @@ class MetricInputs:
             f"The prompt template contains invalid parameters. The allowed parameters are {allowed_params} but the prompt template expects the parameters {expected_params}"
         )
 
-        for param in expected_params:
-            arg_key = self.prompt_var_to_input_name_mapping[param]
-            if arg_key in self.individual_inputs:
-                assert self.individual_inputs[arg_key] is not None, (
-                    f'The prompt template expects the parameter "{param}" but it is not provided.'
-                )
-            else:
-                pairwise_inputs_a, pairwise_inputs_b = self.pairwise_inputs[
-                    arg_key
-                ]
-                assert pairwise_inputs_a is not None, (
-                    f'The prompt template expects the parameter "{param}_a" but it is not provided.'
-                )
-                assert pairwise_inputs_b is not None, (
-                    f'The prompt template expects the parameter "{param}_b" but it is not provided.'
-                )
-
     def get_required_individual_input(self, key: str) -> list[str]:
         """Get the list of a required parameter in individual_inputs.
         Mainly used for metrics without eval clients.
