@@ -21,7 +21,7 @@ dependencies = [
     'nlpaug',
     'eval_type_backport',
     'instructor',
-    'litellm',
+    'litellm < 1.76',
     'google-genai',
     'anthropic',
     'boto3',
