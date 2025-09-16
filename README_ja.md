@@ -102,7 +102,6 @@ toxicity_values.histogram()
 more_prompts = []
 more_prompts += langcheck.augment.keyboard_typo(prompts)
 more_prompts += langcheck.augment.ocr_typo(prompts)
-more_prompts += langcheck.augment.synonym(prompts)
 more_prompts += langcheck.augment.gender(prompts, to_gender='male')
 more_prompts += langcheck.augment.gpt35_rewrite(prompts)
 ```

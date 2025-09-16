@@ -7,7 +7,6 @@ from langcheck.augment.ja._rephrase_with_system_role_context import (
 from langcheck.augment.ja._rephrase_with_user_role_context import (
     rephrase_with_user_role_context,
 )
-from langcheck.augment.ja._synonym import synonym
 
 __all__ = [
     "conv_hiragana",
@@ -15,5 +14,4 @@ __all__ = [
     "payload_splitting",
     "rephrase_with_system_role_context",
     "rephrase_with_user_role_context",
-    "synonym",
 ]

@@ -73,7 +73,6 @@ Finally, you can use text augmentations to automatically generate reworded promp
 ```python
 prompt = 'write my friend an email inviting her to my birthday party'
 
-reworded_prompts = langcheck.augment.synonym(prompt, num_perturbations=3)
 typo_prompts = langcheck.augment.keyboard_typo(prompt, num_perturbations=3)
 male_prompts = langcheck.augment.gender(prompt, to_gender='male')
 ```
