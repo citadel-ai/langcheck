@@ -462,6 +462,9 @@ class LiteLLMExtractor(Extractor):
 
             # A helper function to call the async API.
             async def _call_async_api() -> list[Any]:
+                async def _return_none():
+                    return None
+
                 responses = await asyncio.gather(
                     *[
                         client.chat.completions.create(
@@ -475,7 +478,7 @@ class LiteLLMExtractor(Extractor):
                             **self._kwargs,
                         )
                         if input
-                        else None
+                        else _return_none()
                         for input in model_inputs
                     ],
                     return_exceptions=True,
