@@ -99,7 +99,7 @@ def test_get_text_response_with_reasoning_summary(system_prompt):
 def test_get_float_score(language):
     unstructured_assessment_result: list[str | None] = [
         "The output is fully factually consistent."
-    ] * 2
+    ] * 2 + [None]
     short_assessment_result = "Fully Consistent"
     score_map = {short_assessment_result: 1.0}
 
@@ -122,8 +122,9 @@ def test_get_float_score(language):
             score_map,
         )
         assert len(scores) == len(unstructured_assessment_result)
-        for score in scores:
-            assert score == 1.0
+        assert scores[0] == 1.0
+        assert scores[1] == 1.0
+        assert scores[2] is None
 
 
 def test_similarity_scorer():

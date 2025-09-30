@@ -441,7 +441,7 @@ class LiteLLMExtractor(Extractor):
             f"{language}/get_score/structured_output.j2"
         )
 
-        model_inputs: list[list[ChatCompletionMessageParam]] = [
+        model_inputs: list[list[ChatCompletionMessageParam] | None] = [
             [
                 {
                     "role": "user",
@@ -452,6 +452,8 @@ class LiteLLMExtractor(Extractor):
                     ),
                 }
             ]
+            if unstructured_assessment
+            else None
             for unstructured_assessment in unstructured_assessment_result
         ]
 
@@ -460,6 +462,9 @@ class LiteLLMExtractor(Extractor):
 
             # A helper function to call the async API.
             async def _call_async_api() -> list[Any]:
+                async def _return_none():
+                    return None
+
                 responses = await asyncio.gather(
                     *[
                         client.chat.completions.create(
@@ -472,6 +477,8 @@ class LiteLLMExtractor(Extractor):
                             drop_params=True,
                             **self._kwargs,
                         )
+                        if input
+                        else _return_none()
                         for input in model_inputs
                     ],
                     return_exceptions=True,
@@ -486,7 +493,7 @@ class LiteLLMExtractor(Extractor):
             # A helper function to call the API with exception filter for alignment
             # of exception handling with the async version.
             def _call_api_with_exception_filter(
-                model_input: list[ChatCompletionMessageParam],
+                model_input: list[ChatCompletionMessageParam] | None,
             ) -> Any:
                 if model_input is None:
                     return None
