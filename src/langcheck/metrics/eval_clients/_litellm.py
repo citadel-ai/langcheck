@@ -493,7 +493,7 @@ class LiteLLMExtractor(Extractor):
             # A helper function to call the API with exception filter for alignment
             # of exception handling with the async version.
             def _call_api_with_exception_filter(
-                model_input: list[ChatCompletionMessageParam],
+                model_input: list[ChatCompletionMessageParam] | None,
             ) -> Any:
                 if model_input is None:
                     return None
