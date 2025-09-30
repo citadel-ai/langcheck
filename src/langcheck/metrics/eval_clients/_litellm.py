@@ -441,7 +441,7 @@ class LiteLLMExtractor(Extractor):
             f"{language}/get_score/structured_output.j2"
         )
 
-        model_inputs: list[list[ChatCompletionMessageParam]] = [
+        model_inputs: list[list[ChatCompletionMessageParam] | None] = [
             [
                 {
                     "role": "user",
@@ -452,6 +452,8 @@ class LiteLLMExtractor(Extractor):
                     ),
                 }
             ]
+            if unstructured_assessment
+            else None
             for unstructured_assessment in unstructured_assessment_result
         ]
 
@@ -472,6 +474,8 @@ class LiteLLMExtractor(Extractor):
                             drop_params=True,
                             **self._kwargs,
                         )
+                        if input
+                        else None
                         for input in model_inputs
                     ],
                     return_exceptions=True,
