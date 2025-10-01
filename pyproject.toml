@@ -21,7 +21,9 @@ dependencies = [
     'nlpaug',
     'eval_type_backport',
     'instructor',
-    'litellm',
+    'litellm < 1.76',
+    'google-genai',
+    'anthropic',
     'boto3',
     'nltk >= 3.9',
     'openai >= 1.92',
@@ -44,27 +46,19 @@ requires-python = ">=3.9"
 de = []  # No extra dependencies needed for German
 en = []  # English support is installed by default
 ja = [
-    'chikkarpy >= 0.1.1',  # See https://github.com/WorksApplications/chikkarpy/issues/8
     'fugashi',  # For tokenizer of metrics.ja.toxicity()
     'janome >= 0.3.1',
     'unidic-lite >= 1.0.1'  # For tokenizer of metrics.ja.toxicity()
 ]
 ja-optional = [  # Optional dependencies for extended Japanese support
     'mecab-python3 >= 1.0.4',
-    'sudachidict-core',
-    'sudachipy'
 ]
 zh = [
     'hanlp >= 2.1.0b33'
 ]
 
 # Different LLM clients
-anthropic = [
-    'anthropic'
-]
-gemini = [
-    'google-genai'
-]
+
 local-llm = [
     'vllm'
 ]
@@ -75,8 +69,6 @@ all = [
     'langcheck[ja]',
     'langcheck[ja-optional]',
     'langcheck[zh]',
-    'langcheck[anthropic]',
-    'langcheck[gemini]',
     'langcheck[local-llm]'
 ]
 
@@ -86,8 +78,6 @@ no-local-llm = [
     'langcheck[ja]',
     'langcheck[ja-optional]',
     'langcheck[zh]',
-    'langcheck[anthropic]',
-    'langcheck[gemini]',
 ]
 
 dev = [
@@ -132,3 +122,8 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 langcheck = ["metrics/model_manager/config/*.yaml", "metrics/prompts/**/*.j2"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.5",
+]
