@@ -69,7 +69,7 @@ Here’s the response from the LLM:
 >
 > pip install langcheck
 >
-> Please note that LangCheck requires Python 3.9 or higher to work properly.
+> Please note that LangCheck requires Python 3.10 or higher to work properly.
 
 We can also see the sources that were retrieved from the index. By default, the top 2 most relevant source nodes are returned, which is what we see in `response.source_nodes`.
 
