@@ -293,3 +293,23 @@ class MetricValueWithThreshold(MetricValue):
         `assert (metric_value > 0.5).all()`.
         """
         return self.all()
+
+
+@dataclass
+class MetricTokenUsage:
+    input_token_count: int | None = None
+    output_token_count: int | None = None
+    input_token_cost: float | None = None
+    output_token_cost: float | None = None
+
+
+class TextResponsesWithTokenUsage(list):
+    token_usage: MetricTokenUsage | None = None
+
+    def __init__(
+        self,
+        response_texts: list[str | None],
+        token_usage: MetricTokenUsage | None,
+    ):
+        super().__init__(response_texts)
+        self.token_usage = token_usage
