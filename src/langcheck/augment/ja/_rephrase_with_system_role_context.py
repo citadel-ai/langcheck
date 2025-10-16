@@ -3,7 +3,7 @@ from __future__ import annotations
 from langcheck.metrics.eval_clients import (
     EvalClient,
 )
-from src.langcheck.metrics.metric_value import TextResponsesWithTokenUsage
+from src.langcheck.metrics.metric_value import ResponsesWithTokenUsage
 
 
 def rephrase_with_system_role_context(
@@ -12,7 +12,7 @@ def rephrase_with_system_role_context(
     *,
     num_perturbations: int = 1,
     eval_client: EvalClient,
-) -> TextResponsesWithTokenUsage:
+) -> ResponsesWithTokenUsage[str]:
     """Rephrases each prompt in instances (usually a list of prompts) by adding
     the specified system role as context to each prompt. This adds context about
     what role the AI should assume when responding.
