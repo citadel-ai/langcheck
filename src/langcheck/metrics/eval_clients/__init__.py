@@ -3,21 +3,11 @@ from langcheck.metrics.eval_clients._litellm import (
     LiteLLMEvalClient,
     LiteLLMExtractor,
 )
-from langcheck.metrics.eval_clients._openrouter import (
-    OpenRouterEvalClient,
-    OpenRouterExtractor,
-)
 
 __all__ = [
-    "AzureOpenAIEvalClient",
-    "AzureOpenAIExtractor",
     "EvalClient",
     "LiteLLMEvalClient",
     "LiteLLMExtractor",
-    "OpenAIEvalClient",
-    "OpenAIExtractor",
-    "OpenRouterEvalClient",
-    "OpenRouterExtractor",
 ]
 
 try:
