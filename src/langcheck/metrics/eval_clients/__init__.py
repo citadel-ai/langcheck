@@ -3,11 +3,17 @@ from langcheck.metrics.eval_clients._litellm import (
     LiteLLMEvalClient,
     LiteLLMExtractor,
 )
+from langcheck.metrics.eval_clients.eval_response import (
+    MetricTokenUsage,
+    ResponsesWithTokenUsage,
+)
 
 __all__ = [
     "EvalClient",
     "LiteLLMEvalClient",
     "LiteLLMExtractor",
+    "MetricTokenUsage",
+    "ResponsesWithTokenUsage",
 ]
 
 try:
