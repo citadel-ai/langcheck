@@ -4,6 +4,10 @@ from typing import Union
 
 from jinja2 import Template
 
+from langcheck.metrics.eval_clients.eval_response import (
+    MetricTokenUsage,
+    ResponsesWithTokenUsage,
+)
 from langcheck.metrics.metric_inputs import MetricInputs
 from langcheck.metrics.metric_value import MetricValue
 
@@ -197,7 +201,7 @@ class EvalClient:
         prompt_template_inputs: list[dict[str, str]],
         template: Template,
         num_perturbations: int = 1,
-    ) -> list[str | None]:
+    ) -> ResponsesWithTokenUsage[str]:
         """Repeats the request using the given Jinja template for
         `num_perturbations` times. Note that every EvalClient subclass is
         expected to implement `get_text_responses` method to get different
@@ -220,7 +224,7 @@ class EvalClient:
             for _ in range(num_perturbations)
         ]
 
-        responses = self.get_text_responses(
+        responses: ResponsesWithTokenUsage[str] = self.get_text_responses(
             populated_prompts, tqdm_description="Getting responses"
         )
 
