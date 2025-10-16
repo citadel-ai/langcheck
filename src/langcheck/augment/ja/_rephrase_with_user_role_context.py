@@ -3,6 +3,7 @@ from __future__ import annotations
 from langcheck.metrics.eval_clients import (
     EvalClient,
 )
+from src.langcheck.metrics.metric_value import ResponsesWithTokenUsage
 
 
 def rephrase_with_user_role_context(
@@ -11,7 +12,7 @@ def rephrase_with_user_role_context(
     *,
     num_perturbations: int = 1,
     eval_client: EvalClient,
-) -> list[str | None]:
+) -> ResponsesWithTokenUsage[str]:
     """Rephrases each prompt in instances (usually a list of prompts) by adding
     the specified user role as context to each prompt. This adds context about
     the role of the user that is making the request.
