@@ -11,6 +11,10 @@ from openai.types.chat import ChatCompletionMessageParam
 from openai.types.shared_params import Reasoning, ReasoningEffort
 from pydantic import BaseModel
 
+from langcheck.metrics.eval_clients.eval_response import (
+    MetricTokenUsage,
+    ResponsesWithTokenUsage,
+)
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
@@ -226,7 +230,7 @@ class LiteLLMEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithTokenUsage[str]:
         """The function that gets responses to the given prompt texts.
 
         Args:
@@ -236,10 +240,6 @@ class LiteLLMEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
 
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
@@ -248,11 +248,14 @@ class LiteLLMEvalClient(EvalClient):
         )
 
         response_texts = []
+        input_token_count = 0
+        output_token_count = 0
         for response in responses:
             if not response:
                 response_texts.append(None)
                 continue
-
+            input_token_count += response.usage.prompt_tokens
+            output_token_count += response.usage.completion_tokens
             # Use the Responses API only when a reasoning summary is required.
             # Otherwise, use the Chat Completions API.
             if self._reasoning_summary is None:
@@ -280,8 +283,19 @@ class LiteLLMEvalClient(EvalClient):
                     content += f"\n\n**Reasoning Summary:**\n\n{summaries_str}"
 
             response_texts.append(content)
+        input_token_cost, output_token_cost = litellm.cost_per_token(
+            self._model, input_token_count, output_token_count
+        )
 
-        return response_texts
+        return ResponsesWithTokenUsage(
+            response_texts,
+            MetricTokenUsage(
+                input_token_count,
+                output_token_count,
+                input_token_cost,
+                output_token_cost,
+            ),
+        )
 
     def get_text_responses_with_log_likelihood(
         self,
@@ -289,7 +303,7 @@ class LiteLLMEvalClient(EvalClient):
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> list[TextResponseWithLogProbs | None]:
+    ) -> ResponsesWithTokenUsage[TextResponseWithLogProbs]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
@@ -306,10 +320,6 @@ class LiteLLMEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
 
         if self._reasoning_summary is not None:
             raise ValueError(
@@ -324,10 +334,14 @@ class LiteLLMEvalClient(EvalClient):
             tqdm_description=tqdm_description,
         )
         response_texts_with_log_likelihood = []
+        input_token_count = 0
+        output_token_count = 0
         for response in responses:
             if response is None:
                 response_texts_with_log_likelihood.append(None)
             else:
+                input_token_count += response.usage.prompt_tokens
+                output_token_count += response.usage.completion_tokens
                 response_dict = {
                     "response_text": response.choices[0].message.content,
                     "response_logprobs": [],
@@ -345,8 +359,19 @@ class LiteLLMEvalClient(EvalClient):
                     )
 
                 response_texts_with_log_likelihood.append(response_dict)
+        input_token_cost, output_token_cost = litellm.cost_per_token(
+            self._model, input_token_count, output_token_count
+        )
 
-        return response_texts_with_log_likelihood
+        return ResponsesWithTokenUsage(
+            response_texts_with_log_likelihood,
+            MetricTokenUsage(
+                input_token_count,
+                output_token_count,
+                input_token_cost,
+                output_token_cost,
+            ),
+        )
 
     def similarity_scorer(self) -> LiteLLMSimilarityScorer:
         if self._embedding_model is None:

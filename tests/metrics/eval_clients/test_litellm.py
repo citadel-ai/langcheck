@@ -10,6 +10,7 @@ from litellm.types.utils import (
     EmbeddingResponse,
     Message,
     ModelResponse,
+    Usage,
 )
 from openai.types.responses import (
     ResponseOutputMessage,
@@ -39,9 +40,15 @@ def test_get_text_response(system_prompt):
         ],
     )
     mock_response.choices[0].message.content = answer
+    mock_response.usage = Mock(
+        spec=Usage, prompt_tokens=10, completion_tokens=15
+    )
     # Calling litellm.completion requires a credentials, so we mock the return
     # value instead
-    with patch("litellm.completion", return_value=mock_response):
+    with (
+        patch("litellm.completion", return_value=mock_response),
+        patch("litellm.cost_per_token", return_value=(1.0, 2.0)),
+    ):
         client = LiteLLMEvalClient(
             model="dummy_model",
             system_prompt=system_prompt,
@@ -51,6 +58,11 @@ def test_get_text_response(system_prompt):
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == answer
+        assert responses.token_usage is not None
+        assert responses.token_usage.input_token_count == 20
+        assert responses.token_usage.output_token_count == 30
+        assert responses.token_usage.input_token_cost == 1.0
+        assert responses.token_usage.output_token_cost == 2.0
 
 
 @pytest.mark.parametrize("system_prompt", [None, "Answer in English."])
@@ -79,9 +91,16 @@ def test_get_text_response_with_reasoning_summary(system_prompt):
         ],
     )
 
+    mock_response.usage = Mock(
+        spec=Usage, prompt_tokens=20, completion_tokens=30
+    )
+
     # Calling litellm.responses requires a credentials, so we mock the return
     # value instead
-    with patch("litellm.responses", return_value=mock_response):
+    with (
+        patch("litellm.responses", return_value=mock_response),
+        patch("litellm.cost_per_token", return_value=(1.0, 2.0)),
+    ):
         client = LiteLLMEvalClient(
             model="dummy_model",
             use_reasoning_summary=True,
@@ -93,6 +112,11 @@ def test_get_text_response_with_reasoning_summary(system_prompt):
         assert len(responses) == len(prompts)
         for response in responses:
             assert response == expected
+        assert responses.token_usage is not None
+        assert responses.token_usage.input_token_count == 40
+        assert responses.token_usage.output_token_count == 60
+        assert responses.token_usage.input_token_cost == 1.0
+        assert responses.token_usage.output_token_cost == 2.0
 
 
 @pytest.mark.parametrize("language", ["en", "de", "ja"])

@@ -5,6 +5,9 @@ from collections.abc import Iterable
 
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.eval_clients.extractor import Extractor
+from src.langcheck.metrics.eval_clients.eval_response import (
+    ResponsesWithTokenUsage,
+)
 
 
 ################################################################################
@@ -23,8 +26,11 @@ class MockEvalClient(EvalClient):
 
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
-    ) -> list[str | None]:
-        return [self.evaluation_result] * len(list(prompts))
+    ) -> ResponsesWithTokenUsage[str]:
+        return ResponsesWithTokenUsage(
+            [self.evaluation_result] * len(list(prompts)),
+            None,
+        )
 
 
 class MockExtractor(Extractor):

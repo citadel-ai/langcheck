@@ -58,7 +58,7 @@ class EvalClient:
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithTokenUsage[str]:
         """The function that gets responses to the given prompt texts. Each
         concrete subclass needs to define the concrete implementation of this
         function to enable text scoring.
@@ -78,7 +78,7 @@ class EvalClient:
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> list[TextResponseWithLogProbs | None]:
+    ) -> ResponsesWithTokenUsage[TextResponseWithLogProbs]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
@@ -103,7 +103,7 @@ class EvalClient:
         *,
         intermediate_tqdm_description: str | None = None,
         score_tqdm_description: str | None = None,
-    ) -> tuple[list[float | None], list[str | None]]:
+    ) -> tuple[list[float | None], list[str | None], MetricTokenUsage | None]:
         """Give scores to texts embedded in the given prompts. The function
         itself calls get_text_responses and get_float_score to get the scores.
         The function returns the scores and the unstructured explanation
@@ -130,8 +130,10 @@ class EvalClient:
         """
         if isinstance(prompts, str):
             prompts = [prompts]
-        unstructured_assessment_result = self.get_text_responses(
-            prompts, tqdm_description=intermediate_tqdm_description
+        unstructured_assessment_result: ResponsesWithTokenUsage[str] = (
+            self.get_text_responses(
+                prompts, tqdm_description=intermediate_tqdm_description
+            )
         )
         scores = self._extractor.get_float_score(
             metric_name,
@@ -140,7 +142,11 @@ class EvalClient:
             score_map,
             tqdm_description=score_tqdm_description,
         )
-        return scores, unstructured_assessment_result
+        return (
+            scores,
+            unstructured_assessment_result,
+            unstructured_assessment_result.token_usage,
+        )
 
     def similarity_scorer(self) -> BaseSimilarityScorer:
         """Get the BaseSimilarityScorer object that corresponds to the

@@ -9,6 +9,11 @@ from transformers.tokenization_utils import (
 from transformers.tokenization_utils_fast import PreTrainedTokenizerFast
 from vllm import LLM, SamplingParams
 
+from langcheck.metrics.eval_clients.eval_response import (
+    MetricTokenUsage,
+    ResponsesWithTokenUsage,
+)
+
 from ..prompts._utils import get_template
 from ._base import EvalClient
 from .extractor import Extractor
@@ -91,7 +96,7 @@ class LlamaEvalClient(EvalClient):
         language: str,
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithTokenUsage[str]:
         """The function that generates responses to the given prompt texts.
 
         Args:
@@ -144,7 +149,8 @@ class LlamaEvalClient(EvalClient):
             for response in responses
         ]
 
-        return response_texts
+        # Token usage is not supported in LlamaEvalClient
+        return ResponsesWithTokenUsage(response_texts, None)
 
     def get_score(
         self,
@@ -152,7 +158,7 @@ class LlamaEvalClient(EvalClient):
         language: str,
         prompts: str | list[str],
         score_map: dict[str, float],
-    ) -> tuple[list[float | None], list[str | None]]:
+    ) -> tuple[list[float | None], list[str | None], MetricTokenUsage | None]:
         """Give scores to texts embedded in the given prompts. The function
         itself calls get_text_responses and get_float_score to get the scores.
         The function returns the scores and the unstructured explanation
@@ -184,7 +190,8 @@ class LlamaEvalClient(EvalClient):
             unstructured_assessment_result,
             score_map,
         )
-        return scores, unstructured_assessment_result
+        # Token usage is not supported in LlamaEvalClient
+        return (scores, unstructured_assessment_result, None)
 
     def similarity_scorer(self):
         raise NotImplementedError(

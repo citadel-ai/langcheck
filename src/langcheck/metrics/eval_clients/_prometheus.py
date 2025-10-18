@@ -4,6 +4,10 @@ from jinja2 import Template
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from vllm import LLM, SamplingParams
 
+from langcheck.metrics.eval_clients.eval_response import (
+    ResponsesWithTokenUsage,
+)
+
 from ..prompts._utils import get_template
 from ._base import EvalClient
 from .extractor import Extractor, StringMatchExtractor
@@ -106,7 +110,7 @@ class PrometheusEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithTokenUsage[str]:
         """The function that generates responses to the given prompt texts.
 
         Args:
@@ -150,7 +154,8 @@ class PrometheusEvalClient(EvalClient):
             for response in responses
         ]
 
-        return response_texts
+        # Token usage is not supported in PrometheusEvalClient
+        return ResponsesWithTokenUsage(response_texts, None)
 
     def get_score(
         self,
