@@ -2,7 +2,7 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
-from openai.types import CreateEmbeddingResponse
+from litellm.types.utils import EmbeddingResponse
 
 from langcheck.metrics.en import (
     ai_disclaimer_similarity,
@@ -15,8 +15,7 @@ from langcheck.metrics.en import (
     toxicity,
 )
 from langcheck.metrics.eval_clients import (
-    AzureOpenAIEvalClient,
-    OpenAIEvalClient,
+    LiteLLMEvalClient,
 )
 from tests.utils import MockEvalClient, is_close
 
@@ -207,36 +206,30 @@ def test_ai_disclaimer_similarity(generated_outputs):
     ],
 )
 def test_ai_disclaimer_similarity_openai(generated_outputs):
-    mock_embedding_response = Mock(spec=CreateEmbeddingResponse)
-    mock_embedding_response.data = [Mock(embedding=[0.1, 0.2, 0.3])]
+    mock_embedding_response = [0.1, 0.2, 0.3]
+    mock_response = Mock(
+        spec=EmbeddingResponse,
+        data=[
+            {
+                "embedding": mock_embedding_response,
+            }
+        ],
+    )
 
-    # Calling the openai.resources.embeddings.create method requires an OpenAI
+    # Calling the litellm.embedding method requires an OpenAI
     # API key, so we mock the return value instead
     with patch(
-        "openai.resources.Embeddings.create",
-        Mock(return_value=mock_embedding_response),
+        "litellm.embedding",
+        return_value=mock_response,
     ):
         # Set the necessary env vars for the 'openai' embedding model type
-        os.environ["OPENAI_API_KEY"] = "dummy_key"
-        openai_client = OpenAIEvalClient()
-        metric_value = ai_disclaimer_similarity(
-            generated_outputs, eval_model=openai_client
-        )
-        # Since the mock embeddings are the same for the generated output and
-        # the AI disclaimer phrase, the AI disclaimer language similarity should
-        # be 1.
-        assert 0.99 <= metric_value <= 1
-
-        # Set the necessary env vars for the 'azure_openai' model type
-        os.environ["AZURE_OPENAI_API_KEY"] = "dummy_azure_key"
-        os.environ["OPENAI_API_VERSION"] = "dummy_version"
-        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
-        azure_openai_client = AzureOpenAIEvalClient(
-            text_model_name="foo",
-            embedding_model_name="bar",
+        client = LiteLLMEvalClient(
+            model="openai/gpt-4o-mini",
+            api_key="dummy_key",
+            embedding_model="bar",
         )
         metric_value = ai_disclaimer_similarity(
-            generated_outputs, eval_model=azure_openai_client
+            generated_outputs, eval_model=client
         )
         # Since the mock embeddings are the same for the generated output and
         # the AI disclaimer phrase, the AI disclaimer language similarity should
