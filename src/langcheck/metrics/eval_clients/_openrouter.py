@@ -7,6 +7,9 @@ from typing import Any
 
 import requests
 
+from langcheck.metrics.eval_clients.eval_response import (
+    ResponsesWithTokenUsage,
+)
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
@@ -61,7 +64,7 @@ class OpenRouterEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithTokenUsage[str]:
         """The function that gets responses to the given prompt texts.
         The user's default OpenRouter model is used by default, but you can
         configure it by passing the 'model' parameter in the openrouter_args.
@@ -85,7 +88,9 @@ class OpenRouterEvalClient(EvalClient):
             for response in responses
         ]
 
-        return response_texts
+        # Token usage is not supported in OpenRouterEvalClient
+        # If you need token usage, please use LiteLLMEvalClient instead.
+        return ResponsesWithTokenUsage(response_texts, None)
 
     def get_score(
         self,

@@ -25,11 +25,11 @@ __all__ = [
     "LiteLLMEvalClient",
     "LiteLLMExtractor",
     "MetricTokenUsage",
-    "ResponsesWithTokenUsage",
     "OpenAIEvalClient",
     "OpenAIExtractor",
     "OpenRouterEvalClient",
     "OpenRouterExtractor",
+    "ResponsesWithTokenUsage",
 ]
 
 try:
