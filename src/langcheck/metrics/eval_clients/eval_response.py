@@ -11,6 +11,22 @@ class MetricTokenUsage:
     input_token_cost: float | None = None
     output_token_cost: float | None = None
 
+    def __add__(self, other: MetricTokenUsage) -> MetricTokenUsage:
+        def add_or_keep(a, b):
+            if a is not None and b is not None:
+                return a + b
+            return a if a is not None else b
+
+        if other is None:
+            return self
+
+        return MetricTokenUsage(
+            add_or_keep(self.input_token_count, other.input_token_count),
+            add_or_keep(self.output_token_count, other.output_token_count),
+            add_or_keep(self.input_token_cost, other.input_token_cost),
+            add_or_keep(self.output_token_cost, other.output_token_cost),
+        )
+
 
 T = TypeVar("T")
 
