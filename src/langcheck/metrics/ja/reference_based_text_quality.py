@@ -124,6 +124,7 @@ def semantic_similarity(
         explanations=None,
         metric_values=scores,
         language="ja",
+        token_usage=None,
     )
 
 

@@ -53,6 +53,7 @@ def is_int(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -105,6 +106,7 @@ def is_float(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -147,6 +149,7 @@ def is_json_object(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -189,6 +192,7 @@ def is_json_array(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -229,6 +233,7 @@ def matches_regex(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -269,6 +274,7 @@ def contains_regex(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -319,6 +325,7 @@ def contains_all_strings(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -370,6 +377,7 @@ def contains_any_strings(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )
 
 
@@ -415,4 +423,5 @@ def validation_fn(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )

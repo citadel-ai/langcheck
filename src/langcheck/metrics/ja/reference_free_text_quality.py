@@ -193,6 +193,7 @@ def toxicity(
             explanations=explanations,
             metric_values=scores,
             language=LANG,
+            token_usage=None,
         )
     else:  # EvalClient
         assert isinstance(eval_model, EvalClient), (
@@ -322,6 +323,7 @@ def fluency(
             explanations=explanations,
             metric_values=scores,
             language=LANG,
+            token_usage=None,
         )
     else:  # EvalClient
         assert isinstance(eval_model, EvalClient), (
@@ -464,6 +466,7 @@ def tateishi_ono_yamada_reading_ease(
         explanations=None,
         metric_values=scores,
         language="ja",
+        token_usage=None,
     )
 
 

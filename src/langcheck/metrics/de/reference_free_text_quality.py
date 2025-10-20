@@ -84,6 +84,7 @@ def sentiment(
             explanations=explanations,
             metric_values=scores,
             language=LANG,
+            token_usage=None,
         )
     else:  # EvalClient
         assert isinstance(eval_model, EvalClient), (
@@ -192,6 +193,7 @@ def fluency(
             explanations=explanations,
             metric_values=scores,
             language=LANG,
+            token_usage=None,
         )
     else:  # EvalClient
         assert isinstance(eval_model, EvalClient), (
@@ -270,6 +272,7 @@ def toxicity(
             explanations=explanations,
             metric_values=scores,
             language=LANG,
+            token_usage=None,
         )
 
     else:  # EvalClient
@@ -381,6 +384,7 @@ def flesch_reading_ease(
         explanations=None,
         metric_values=scores,
         language=LANG,
+        token_usage=None,
     )
 
 
@@ -430,4 +434,5 @@ def ai_disclaimer_similarity(
         explanations=None,
         metric_values=semantic_similarity_values.metric_values,
         language=LANG,
+        token_usage=None,
     )

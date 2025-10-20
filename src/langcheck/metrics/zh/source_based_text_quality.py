@@ -108,4 +108,5 @@ def factual_consistency(
         explanations=None,
         metric_values=factual_consistency_scores,
         language="zh",
+        token_usage=None,
     )

@@ -51,4 +51,5 @@ def exact_match(
         explanations=None,
         metric_values=metric_values,
         language=None,
+        token_usage=None,
     )

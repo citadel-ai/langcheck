@@ -32,7 +32,7 @@ class MetricValue(Generic[NumericType]):
     explanations: list[str | None] | None
     language: str | None
 
-    token_usage: MetricTokenUsage | None = None
+    token_usage: MetricTokenUsage | None
 
     def to_df(self) -> pd.DataFrame:
         """Returns a DataFrame of metric values for each data point."""

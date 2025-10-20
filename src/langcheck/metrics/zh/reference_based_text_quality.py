@@ -85,6 +85,7 @@ def semantic_similarity(
         explanations=None,
         metric_values=scores,
         language="zh",
+        token_usage=None,
     )
 
 
@@ -130,6 +131,7 @@ def rouge1(
         explanations=None,
         metric_values=scores,
         language="zh",
+        token_usage=None,
     )
 
 
@@ -176,6 +178,7 @@ def rouge2(
         explanations=None,
         metric_values=scores,
         language="zh",
+        token_usage=None,
     )
 
 
@@ -232,6 +235,7 @@ def rougeL(
         explanations=None,
         metric_values=scores,
         language="zh",
+        token_usage=None,
     )
 
 
