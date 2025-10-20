@@ -19,11 +19,17 @@ from langcheck.metrics.eval_clients.eval_response import (
 )
 
 __all__ = [
+    "AzureOpenAIEvalClient",
+    "AzureOpenAIExtractor",
     "EvalClient",
     "LiteLLMEvalClient",
     "LiteLLMExtractor",
     "MetricTokenUsage",
     "ResponsesWithTokenUsage",
+    "OpenAIEvalClient",
+    "OpenAIExtractor",
+    "OpenRouterEvalClient",
+    "OpenRouterExtractor",
 ]
 
 try:
