@@ -3,7 +3,7 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
-from litellm.types.utils import Choices, Message, ModelResponse, Usage
+from litellm.types.utils import ModelResponse, Usage
 
 from langcheck.augment.ja import rephrase_with_system_role_context
 from langcheck.metrics.eval_clients import LiteLLMEvalClient
