@@ -187,7 +187,7 @@ class EvalClient:
             for prompt_template_input in prompt_template_inputs
         ]
 
-        scores, explanations = self.get_score(
+        scores, explanations, token_usage = self.get_score(
             metric_name=metric_name,
             language=language,
             prompts=populated_prompts,
@@ -200,6 +200,7 @@ class EvalClient:
             explanations=explanations,
             metric_values=scores,
             language=language,
+            token_usage=token_usage,
         )
 
     def repeat_requests_from_template(

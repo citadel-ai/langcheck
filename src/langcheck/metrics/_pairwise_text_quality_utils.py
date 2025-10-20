@@ -94,7 +94,7 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         for prompt_template_input in prompt_template_inputs
     ]
 
-    scores, explanations = eval_client.get_score(
+    scores, explanations, token_usage = eval_client.get_score(
         metric_name=metric_name,
         language=language,
         prompts=populated_prompts,
@@ -114,13 +114,15 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         "[Swapped model outputs order] Intermediate assessments (1/2)"
     )
     score_tqdm = "[Swapped model outputs order] Calculating scores (2/2)"
-    swapped_scores, swapped_explanations = eval_client.get_score(
-        metric_name=metric_name,
-        language=language,
-        prompts=swapped_prompts,
-        score_map=score_map,
-        intermediate_tqdm_description=intermediate_tqdm,
-        score_tqdm_description=score_tqdm,
+    swapped_scores, swapped_explanations, swapped_token_usage = (
+        eval_client.get_score(
+            metric_name=metric_name,
+            language=language,
+            prompts=swapped_prompts,
+            score_map=score_map,
+            intermediate_tqdm_description=intermediate_tqdm,
+            score_tqdm_description=score_tqdm,
+        )
     )
 
     # NOTE: The enforce_pairwise_comparison_consistency function assumes
@@ -157,4 +159,7 @@ def compute_pairwise_comparison_metric_values_with_consistency(
         explanations=explanations,
         metric_values=scores,
         language=language,
+        token_usage=token_usage + swapped_token_usage
+        if token_usage is not None and swapped_token_usage is not None
+        else None,
     )
