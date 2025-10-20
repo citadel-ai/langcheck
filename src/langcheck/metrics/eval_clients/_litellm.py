@@ -6,7 +6,7 @@ from typing import Any, Literal
 import instructor
 import litellm
 import torch
-from litellm import cost_per_token
+from litellm.cost_calculator import cost_per_token
 from litellm.types.utils import EmbeddingResponse
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.shared_params import Reasoning, ReasoningEffort

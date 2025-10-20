@@ -47,7 +47,10 @@ def test_get_text_response(system_prompt):
     # value instead
     with (
         patch("litellm.completion", return_value=mock_response),
-        patch("litellm.cost_per_token", return_value=(1.0, 2.0)),
+        patch(
+            "langcheck.metrics.eval_clients._litellm.cost_per_token",
+            return_value=(1.0, 2.0),
+        ),
     ):
         client = LiteLLMEvalClient(
             model="dummy_model",
@@ -99,7 +102,10 @@ def test_get_text_response_with_reasoning_summary(system_prompt):
     # value instead
     with (
         patch("litellm.responses", return_value=mock_response),
-        patch("litellm.cost_per_token", return_value=(1.0, 2.0)),
+        patch(
+            "langcheck.metrics.eval_clients._litellm.cost_per_token",
+            return_value=(1.0, 2.0),
+        ),
     ):
         client = LiteLLMEvalClient(
             model="dummy_model",
