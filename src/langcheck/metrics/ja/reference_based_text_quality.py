@@ -171,6 +171,7 @@ def rouge1(
         explanations=None,
         metric_values=scores,
         language="ja",
+        token_usage=None,
     )
 
 
@@ -217,6 +218,7 @@ def rouge2(
         explanations=None,
         metric_values=scores,
         language="ja",
+        token_usage=None,
     )
 
 
@@ -273,6 +275,7 @@ def rougeL(
         explanations=None,
         metric_values=scores,
         language="ja",
+        token_usage=None,
     )
 
 

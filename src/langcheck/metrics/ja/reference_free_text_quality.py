@@ -73,6 +73,7 @@ def sentiment(
             explanations=explanations,
             metric_values=scores,
             language=LANG,
+            token_usage=None,
         )
     else:  # EvalClient
         assert isinstance(eval_model, EvalClient), (
