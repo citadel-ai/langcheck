@@ -6,6 +6,7 @@ from typing import Any, Literal
 import instructor
 import litellm
 import torch
+from litellm import cost_per_token
 from litellm.types.utils import EmbeddingResponse
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.shared_params import Reasoning, ReasoningEffort
@@ -283,7 +284,7 @@ class LiteLLMEvalClient(EvalClient):
                     content += f"\n\n**Reasoning Summary:**\n\n{summaries_str}"
 
             response_texts.append(content)
-        input_token_cost, output_token_cost = litellm.cost_per_token(
+        input_token_cost, output_token_cost = cost_per_token(
             self._model, input_token_count, output_token_count
         )
 
@@ -359,7 +360,7 @@ class LiteLLMEvalClient(EvalClient):
                     )
 
                 response_texts_with_log_likelihood.append(response_dict)
-        input_token_cost, output_token_cost = litellm.cost_per_token(
+        input_token_cost, output_token_cost = cost_per_token(
             self._model, input_token_count, output_token_count
         )
 
