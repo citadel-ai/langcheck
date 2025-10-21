@@ -12,10 +12,10 @@ from anthropic import (
     AsyncAnthropicVertex,
 )
 
-from langcheck.utils.progress_bar import tqdm_wrapper
-from src.langcheck.metrics.eval_clients.eval_response import (
+from langcheck.metrics.eval_clients.eval_response import (
     ResponsesWithTokenUsage,
 )
+from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
 from ._base import EvalClient

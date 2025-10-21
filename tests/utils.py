@@ -4,10 +4,10 @@ import math
 from collections.abc import Iterable
 
 from langcheck.metrics.eval_clients import EvalClient
-from langcheck.metrics.eval_clients.extractor import Extractor
-from src.langcheck.metrics.eval_clients.eval_response import (
+from langcheck.metrics.eval_clients.eval_response import (
     ResponsesWithTokenUsage,
 )
+from langcheck.metrics.eval_clients.extractor import Extractor
 
 
 ################################################################################
