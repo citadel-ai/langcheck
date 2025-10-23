@@ -11,7 +11,7 @@ from openai.types.create_embedding_response import CreateEmbeddingResponse
 from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients.eval_response import (
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -158,7 +158,7 @@ class OpenAIEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
         We use OpenAI's 'gpt-4o-mini' model by default, but you can configure
         it by passing the 'model' parameter in the openai_args.
@@ -192,7 +192,7 @@ class OpenAIEvalClient(EvalClient):
 
         # Token usage is not supported in OpenAIEvalClient
         # If you need token usage, please use LiteLLMEvalClient instead.
-        return ResponsesWithTokenUsage(response_texts, None)
+        return ResponsesWithMetadata(response_texts, None)
 
     def get_text_responses_with_log_likelihood(
         self,
@@ -200,7 +200,7 @@ class OpenAIEvalClient(EvalClient):
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[TextResponseWithLogProbs]:
+    ) -> ResponsesWithMetadata[TextResponseWithLogProbs]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
@@ -254,7 +254,7 @@ class OpenAIEvalClient(EvalClient):
 
         # Token usage is not supported in OpenAIEvalClient
         # If you need token usage, please use LiteLLMEvalClient instead.
-        return ResponsesWithTokenUsage(response_texts_with_log_likelihood, None)
+        return ResponsesWithMetadata(response_texts_with_log_likelihood, None)
 
     def similarity_scorer(self) -> OpenAISimilarityScorer:
         """

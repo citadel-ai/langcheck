@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients.eval_response import (
     MetricTokenUsage,
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -231,7 +231,7 @@ class LiteLLMEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
 
         Args:
@@ -288,7 +288,7 @@ class LiteLLMEvalClient(EvalClient):
             self._model, input_token_count, output_token_count
         )
 
-        return ResponsesWithTokenUsage(
+        return ResponsesWithMetadata(
             response_texts,
             MetricTokenUsage(
                 input_token_count,
@@ -304,7 +304,7 @@ class LiteLLMEvalClient(EvalClient):
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[TextResponseWithLogProbs]:
+    ) -> ResponsesWithMetadata[TextResponseWithLogProbs]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
@@ -364,7 +364,7 @@ class LiteLLMEvalClient(EvalClient):
             self._model, input_token_count, output_token_count
         )
 
-        return ResponsesWithTokenUsage(
+        return ResponsesWithMetadata(
             response_texts_with_log_likelihood,
             MetricTokenUsage(
                 input_token_count,

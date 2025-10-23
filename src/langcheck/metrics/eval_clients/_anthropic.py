@@ -13,7 +13,7 @@ from anthropic import (
 )
 
 from langcheck.metrics.eval_clients.eval_response import (
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -171,7 +171,7 @@ class AnthropicEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
         We use Anthropic's 'claude-3-haiku-20240307' model by default, but you
         can configure it by passing the 'model' parameter in the anthropic_args.
@@ -209,7 +209,7 @@ class AnthropicEvalClient(EvalClient):
 
         # Token usage is not supported in AnthropicEvalClient
         # If you need token usage, please use LiteLLMEvalClient instead.
-        return ResponsesWithTokenUsage(response_texts, None)
+        return ResponsesWithMetadata(response_texts, None)
 
     def similarity_scorer(self):
         raise NotImplementedError(

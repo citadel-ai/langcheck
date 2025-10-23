@@ -5,7 +5,7 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 from vllm import LLM, SamplingParams
 
 from langcheck.metrics.eval_clients.eval_response import (
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 
 from ..prompts._utils import get_template
@@ -110,7 +110,7 @@ class PrometheusEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that generates responses to the given prompt texts.
 
         Args:
@@ -155,7 +155,7 @@ class PrometheusEvalClient(EvalClient):
         ]
 
         # Token usage is not supported in PrometheusEvalClient
-        return ResponsesWithTokenUsage(response_texts, None)
+        return ResponsesWithMetadata(response_texts, None)
 
     def get_score(
         self,

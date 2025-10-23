@@ -6,7 +6,7 @@ from jinja2 import Template
 
 from langcheck.metrics.eval_clients.eval_response import (
     MetricTokenUsage,
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 from langcheck.metrics.metric_inputs import MetricInputs
 from langcheck.metrics.metric_value import MetricValue
@@ -58,7 +58,7 @@ class EvalClient:
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts. Each
         concrete subclass needs to define the concrete implementation of this
         function to enable text scoring.
@@ -78,7 +78,7 @@ class EvalClient:
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[TextResponseWithLogProbs]:
+    ) -> ResponsesWithMetadata[TextResponseWithLogProbs]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
@@ -130,7 +130,7 @@ class EvalClient:
         """
         if isinstance(prompts, str):
             prompts = [prompts]
-        unstructured_assessment_result: ResponsesWithTokenUsage[str] = (
+        unstructured_assessment_result: ResponsesWithMetadata[str] = (
             self.get_text_responses(
                 prompts, tqdm_description=intermediate_tqdm_description
             )
@@ -208,7 +208,7 @@ class EvalClient:
         prompt_template_inputs: list[dict[str, str]],
         template: Template,
         num_perturbations: int = 1,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """Repeats the request using the given Jinja template for
         `num_perturbations` times. Note that every EvalClient subclass is
         expected to implement `get_text_responses` method to get different
@@ -231,7 +231,7 @@ class EvalClient:
             for _ in range(num_perturbations)
         ]
 
-        responses: ResponsesWithTokenUsage[str] = self.get_text_responses(
+        responses: ResponsesWithMetadata[str] = self.get_text_responses(
             populated_prompts, tqdm_description="Getting responses"
         )
 

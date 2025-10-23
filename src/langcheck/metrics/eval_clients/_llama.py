@@ -11,7 +11,7 @@ from vllm import LLM, SamplingParams
 
 from langcheck.metrics.eval_clients.eval_response import (
     MetricTokenUsage,
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 
 from ..prompts._utils import get_template
@@ -96,7 +96,7 @@ class LlamaEvalClient(EvalClient):
         language: str,
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that generates responses to the given prompt texts.
 
         Args:
@@ -150,7 +150,7 @@ class LlamaEvalClient(EvalClient):
         ]
 
         # Token usage is not supported in LlamaEvalClient
-        return ResponsesWithTokenUsage(response_texts, None)
+        return ResponsesWithMetadata(response_texts, None)
 
     def get_score(
         self,

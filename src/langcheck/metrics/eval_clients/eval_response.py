@@ -51,7 +51,7 @@ class MetricTokenUsage:
 T = TypeVar("T")
 
 
-class ResponsesWithTokenUsage(list[T | None], Generic[T]):
+class ResponsesWithMetadata(list[T | None], Generic[T]):  # type: ignore
     """
     A backward-compatible list subclass that carries additional token
     usage information.

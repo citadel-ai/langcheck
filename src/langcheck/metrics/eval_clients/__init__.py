@@ -15,7 +15,7 @@ from langcheck.metrics.eval_clients._openrouter import (
 )
 from langcheck.metrics.eval_clients.eval_response import (
     MetricTokenUsage,
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 
 __all__ = [
@@ -29,7 +29,7 @@ __all__ = [
     "OpenAIExtractor",
     "OpenRouterEvalClient",
     "OpenRouterExtractor",
-    "ResponsesWithTokenUsage",
+    "ResponsesWithMetadata",
 ]
 
 try:

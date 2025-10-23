@@ -4,7 +4,7 @@ from langcheck.metrics.eval_clients import (
     EvalClient,
 )
 from langcheck.metrics.eval_clients.eval_response import (
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 
 
@@ -14,7 +14,7 @@ def rephrase(
     num_perturbations: int = 1,
     eval_client: EvalClient,
     eval_prompt_version: str = "v2",
-) -> ResponsesWithTokenUsage[str]:
+) -> ResponsesWithMetadata[str]:
     """Rephrases each string in instances (usually a list of prompts) without
     changing their meaning. We use a modified version of the prompt presented
     in `"Rethinking Benchmark and Contamination for Language Models with

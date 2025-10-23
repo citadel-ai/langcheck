@@ -11,7 +11,7 @@ from google.genai import types
 from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients.eval_response import (
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -146,7 +146,7 @@ class GeminiEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> ResponsesWithTokenUsage[str]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
 
         Args:
@@ -176,7 +176,7 @@ class GeminiEvalClient(EvalClient):
 
         # Token usage is not supported in GeminiEvalClient
         # If you need token usage, please use LiteLLMEvalClient instead.
-        return ResponsesWithTokenUsage(response_texts, None)
+        return ResponsesWithMetadata(response_texts, None)
 
     def similarity_scorer(self) -> GeminiSimilarityScorer:
         return GeminiSimilarityScorer(
