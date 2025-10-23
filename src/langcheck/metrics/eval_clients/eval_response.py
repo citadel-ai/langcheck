@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 
 @dataclass
@@ -51,7 +51,7 @@ class MetricTokenUsage:
 T = TypeVar("T")
 
 
-class ResponsesWithTokenUsage(list[Optional[T]], Generic[T]):
+class ResponsesWithTokenUsage(list[T | None], Generic[T]):
     """
     A backward-compatible list subclass that carries additional token
     usage information.
