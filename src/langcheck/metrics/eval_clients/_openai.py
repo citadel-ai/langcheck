@@ -323,7 +323,7 @@ class OpenAIExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We leverage the
         structured outputs API to extract the short assessment results from the
@@ -432,12 +432,17 @@ class OpenAIExtractor(Extractor):
             for response in responses
         ]
 
-        return [
-            score_map[assessment]
-            if assessment and assessment in options
-            else None
-            for assessment in assessments
-        ]
+        # Token usage is not supported in OpenAIExtractor
+        # If you need token usage, please use LiteLLMExtractor instead.
+        return ResponsesWithMetadata(
+            [
+                score_map[assessment]
+                if assessment and assessment in options
+                else None
+                for assessment in assessments
+            ],
+            None,
+        )
 
 
 class AzureOpenAIEvalClient(OpenAIEvalClient):

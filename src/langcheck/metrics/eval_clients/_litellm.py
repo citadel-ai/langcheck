@@ -434,7 +434,7 @@ class LiteLLMExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. `instructor` is
         used to extract the result with robust structured outputs.
@@ -462,6 +462,7 @@ class LiteLLMExtractor(Extractor):
 
         class Response(BaseModel):
             score: Literal[tuple(options)]  # type: ignore
+            usage: dict[str, int] | None = None
 
         structured_output_template = get_template(
             f"{language}/get_score/structured_output.j2"
@@ -558,12 +559,37 @@ class LiteLLMExtractor(Extractor):
             response.score if response else None for response in responses
         ]
 
-        return [
-            score_map[assessment]
-            if assessment and assessment in options
-            else None
-            for assessment in assessments
-        ]
+        input_token_count = sum(
+            response.usage["prompt_tokens"]
+            if response and response.usage
+            else 0
+            for response in responses
+        )
+
+        output_token_count = sum(
+            response.usage["completion_tokens"]
+            if response and response.usage
+            else 0
+            for response in responses
+        )
+
+        input_token_cost, output_token_cost = cost_per_token(
+            self._model, input_token_count, output_token_count
+        )
+        return ResponsesWithMetadata(
+            [
+                score_map[assessment]
+                if assessment and assessment in options
+                else None
+                for assessment in assessments
+            ],
+            MetricTokenUsage(
+                input_token_count,
+                output_token_count,
+                input_token_cost,
+                output_token_cost,
+            ),
+        )
 
 
 class LiteLLMSimilarityScorer(BaseSimilarityScorer):

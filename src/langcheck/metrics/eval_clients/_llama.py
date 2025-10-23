@@ -242,7 +242,7 @@ class LlamaExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores.
 
@@ -327,4 +327,9 @@ class LlamaExtractor(Extractor):
                 return None
             return score_map[option_found[0]]
 
-        return [_turn_to_score(response) for response in responses_for_scoring]
+        # Token usage is not supported in LlamaExtractor
+        # If you need token usage, please use LiteLLMExtractor instead.
+        return ResponsesWithMetadata(
+            [_turn_to_score(response) for response in responses_for_scoring],
+            None,
+        )

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from langcheck.metrics.eval_clients.eval_response import ResponsesWithMetadata
+
 
 class Extractor:
     """An abstract class that defines the interface for the extractors."""
@@ -12,7 +14,7 @@ class Extractor:
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. A typical
         workflow can be:
@@ -36,7 +38,7 @@ class Extractor:
             tqdm_description: The description to be shown in the tqdm bar.
 
         Returns:
-            A list of scores for the given prompts. The scores can be None if
-            the evaluation fails.
+            A ResponsesWithMeta data object containing the scores for the given
+            prompts. The scores can be None if the evaluation fails.
         """
         raise NotImplementedError

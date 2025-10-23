@@ -349,7 +349,7 @@ class AnthropicExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores.
 
@@ -415,7 +415,12 @@ class AnthropicExtractor(Extractor):
                 return None
             return score_map[option_found[0]]
 
-        return [_turn_to_score(response) for response in raw_response_texts]
+        # Token usage is not supported in AnthropicExtractor
+        # If you need token usage, please use LiteLLMExtractor instead.
+        return ResponsesWithMetadata(
+            [_turn_to_score(response) for response in raw_response_texts],
+            None,
+        )
 
 
 def _call_api(

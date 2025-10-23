@@ -135,13 +135,24 @@ def test_get_float_score(language):
 
     class Response(BaseModel):
         score: Literal[tuple(score_map.keys())]  # type: ignore
+        usage: dict[str, int] | None = None
 
     mock_response = Mock(spec=Response, score=short_assessment_result)
     mock_response.score = short_assessment_result
+    mock_response.usage = {
+        "prompt_tokens": 20,
+        "completion_tokens": 30,
+    }
 
     # Calling litellm.completion requires a credentials, so we mock the return
     # value instead
-    with patch("instructor.Instructor.create", return_value=mock_response):
+    with (
+        patch("instructor.Instructor.create", return_value=mock_response),
+        patch(
+            "langcheck.metrics.eval_clients._litellm.cost_per_token",
+            return_value=(1.0, 2.0),
+        ),
+    ):
         # Set the necessary env vars for the GeminiEvalClient
         extractor = LiteLLMExtractor(model="dummy_model", api_key="dummy_key")
 
@@ -155,6 +166,12 @@ def test_get_float_score(language):
         assert scores[0] == 1.0
         assert scores[1] == 1.0
         assert scores[2] is None
+
+        assert scores.token_usage is not None
+        assert scores.token_usage.input_token_count == 40
+        assert scores.token_usage.output_token_count == 60
+        assert scores.token_usage.input_token_cost == 1.0
+        assert scores.token_usage.output_token_cost == 2.0
 
 
 def test_similarity_scorer():
