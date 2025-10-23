@@ -5,7 +5,7 @@ from collections.abc import Iterable
 
 from langcheck.metrics.eval_clients import EvalClient
 from langcheck.metrics.eval_clients.eval_response import (
-    ResponsesWithTokenUsage,
+    ResponsesWithMetadata,
 )
 from langcheck.metrics.eval_clients.extractor import Extractor
 
@@ -26,8 +26,8 @@ class MockEvalClient(EvalClient):
 
     def get_text_responses(
         self, prompts: Iterable[str], *, tqdm_description: str | None = None
-    ) -> ResponsesWithTokenUsage[str]:
-        return ResponsesWithTokenUsage(
+    ) -> ResponsesWithMetadata[str]:
+        return ResponsesWithMetadata(
             [self.evaluation_result] * len(list(prompts)),
             None,
         )
@@ -42,7 +42,7 @@ class MockExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         eval_results = []
         # Assume that the evaluation result is actually structured and it can be
         # put into the score_map directly
@@ -52,7 +52,7 @@ class MockExtractor(Extractor):
             else:
                 eval_results.append(score_map[assessment])
 
-        return eval_results
+        return ResponsesWithMetadata(eval_results, None)
 
 
 ################################################################################
