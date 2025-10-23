@@ -6,12 +6,32 @@ from typing import Generic, Optional, TypeVar
 
 @dataclass
 class MetricTokenUsage:
+    """
+    A dataclass that contains the token usage information for a metric.
+
+    Args:
+        input_token_count: The number of input tokens used.
+        output_token_count: The number of output tokens used.
+        input_token_cost: The cost of the input tokens.
+        output_token_cost: The cost of the output tokens.
+    """
+
     input_token_count: int | None = None
     output_token_count: int | None = None
     input_token_cost: float | None = None
     output_token_cost: float | None = None
 
     def __add__(self, other: MetricTokenUsage) -> MetricTokenUsage:
+        """
+        Add two MetricTokenUsage objects together.
+
+        Args:
+            other: The MetricTokenUsage object to add to the current object.
+
+        Returns:
+            A new MetricTokenUsage object with the sum of the input and output token counts and costs.
+        """
+
         def add_or_keep(a, b):
             if a is not None and b is not None:
                 return a + b
