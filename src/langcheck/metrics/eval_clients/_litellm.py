@@ -249,14 +249,10 @@ class LiteLLMEvalClient(EvalClient):
         )
 
         response_texts = []
-        input_token_count = 0
-        output_token_count = 0
         for response in responses:
             if not response:
                 response_texts.append(None)
                 continue
-            input_token_count += response.usage.prompt_tokens
-            output_token_count += response.usage.completion_tokens
             # Use the Responses API only when a reasoning summary is required.
             # Otherwise, use the Chat Completions API.
             if self._reasoning_summary is None:
@@ -284,18 +280,11 @@ class LiteLLMEvalClient(EvalClient):
                     content += f"\n\n**Reasoning Summary:**\n\n{summaries_str}"
 
             response_texts.append(content)
-        input_token_cost, output_token_cost = cost_per_token(
-            self._model, input_token_count, output_token_count
-        )
+        token_usage = _get_token_usage(responses, self._model)
 
         return ResponsesWithMetadata(
             response_texts,
-            MetricTokenUsage(
-                input_token_count,
-                output_token_count,
-                input_token_cost,
-                output_token_cost,
-            ),
+            token_usage,
         )
 
     def get_text_responses_with_log_likelihood(
@@ -335,14 +324,10 @@ class LiteLLMEvalClient(EvalClient):
             tqdm_description=tqdm_description,
         )
         response_texts_with_log_likelihood = []
-        input_token_count = 0
-        output_token_count = 0
         for response in responses:
             if response is None:
                 response_texts_with_log_likelihood.append(None)
             else:
-                input_token_count += response.usage.prompt_tokens
-                output_token_count += response.usage.completion_tokens
                 response_dict = {
                     "response_text": response.choices[0].message.content,
                     "response_logprobs": [],
@@ -360,18 +345,11 @@ class LiteLLMEvalClient(EvalClient):
                     )
 
                 response_texts_with_log_likelihood.append(response_dict)
-        input_token_cost, output_token_cost = cost_per_token(
-            self._model, input_token_count, output_token_count
-        )
+        token_usage = _get_token_usage(responses, self._model)
 
         return ResponsesWithMetadata(
             response_texts_with_log_likelihood,
-            MetricTokenUsage(
-                input_token_count,
-                output_token_count,
-                input_token_cost,
-                output_token_cost,
-            ),
+            token_usage,
         )
 
     def similarity_scorer(self) -> LiteLLMSimilarityScorer:
@@ -462,7 +440,6 @@ class LiteLLMExtractor(Extractor):
 
         class Response(BaseModel):
             score: Literal[tuple(options)]  # type: ignore
-            usage: dict[str, int] | None = None
 
         structured_output_template = get_template(
             f"{language}/get_score/structured_output.j2"
@@ -558,23 +535,12 @@ class LiteLLMExtractor(Extractor):
         assessments = [
             response.score if response else None for response in responses
         ]
-
-        input_token_count = sum(
-            response.usage["prompt_tokens"]
-            if response and response.usage
-            else 0
-            for response in responses
-        )
-
-        output_token_count = sum(
-            response.usage["completion_tokens"]
-            if response and response.usage
-            else 0
-            for response in responses
-        )
-
-        input_token_cost, output_token_cost = cost_per_token(
-            self._model, input_token_count, output_token_count
+        token_usage = _get_token_usage(
+            [
+                response._raw_response if response else None
+                for response in responses
+            ],
+            self._model,
         )
         return ResponsesWithMetadata(
             [
@@ -583,12 +549,7 @@ class LiteLLMExtractor(Extractor):
                 else None
                 for assessment in assessments
             ],
-            MetricTokenUsage(
-                input_token_count,
-                output_token_count,
-                input_token_cost,
-                output_token_cost,
-            ),
+            token_usage,
         )
 
 
@@ -671,3 +632,24 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
 
         embeddings = [item["embedding"] for item in embed_response.data]  # type: ignore
         return torch.Tensor(embeddings)
+
+
+def _get_token_usage(responses: list[Any], model: str) -> MetricTokenUsage:
+    """Get the token usage from the response."""
+    input_token_count = sum(
+        response.usage.prompt_tokens if response and response.usage else 0
+        for response in responses
+    )
+    output_token_count = sum(
+        response.usage.completion_tokens if response and response.usage else 0
+        for response in responses
+    )
+    input_token_cost, output_token_cost = cost_per_token(
+        model, input_token_count, output_token_count
+    )
+    return MetricTokenUsage(
+        input_token_count,
+        output_token_count,
+        input_token_cost,
+        output_token_cost,
+    )

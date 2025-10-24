@@ -143,6 +143,10 @@ def test_get_float_score(language):
         "prompt_tokens": 20,
         "completion_tokens": 30,
     }
+    mock_response._raw_response = Mock(
+        spec=ModelResponse,
+        usage=Mock(spec=Usage, prompt_tokens=20, completion_tokens=30),
+    )
 
     # Calling litellm.completion requires a credentials, so we mock the return
     # value instead
