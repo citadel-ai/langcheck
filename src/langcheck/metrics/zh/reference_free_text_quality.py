@@ -92,6 +92,7 @@ def sentiment(
         explanations=None,
         metric_values=scores,  # type: ignore[reportGeneralTypeIssues]
         language="zh",
+        token_usage=None,
     )
 
 
@@ -160,6 +161,7 @@ def toxicity(
             # type: ignore (pyright doesn't understand that a list of floats is a list of optional floats)
             metric_values=scores,
             language="zh",
+            token_usage=None,
         )
 
 
@@ -293,4 +295,5 @@ def xuyaochen_report_readability(
         explanations=None,
         metric_values=r3,
         language="zh",
+        token_usage=None,
     )

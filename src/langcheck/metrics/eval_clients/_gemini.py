@@ -10,6 +10,9 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
+from langcheck.metrics.eval_clients.eval_response import (
+    ResponsesWithMetadata,
+)
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
@@ -143,7 +146,7 @@ class GeminiEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
 
         Args:
@@ -152,11 +155,6 @@ class GeminiEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
-
         config: dict[str, Any] = {
             "temperature": 0.0,
             "system_instruction": self._system_instruction,
@@ -176,7 +174,9 @@ class GeminiEvalClient(EvalClient):
             response.text if response else None for response in responses
         ]
 
-        return response_texts
+        # Token usage is not supported in GeminiEvalClient
+        # If you need token usage, please use LiteLLMEvalClient instead.
+        return ResponsesWithMetadata(response_texts, None)
 
     def similarity_scorer(self) -> GeminiSimilarityScorer:
         return GeminiSimilarityScorer(
@@ -326,7 +326,7 @@ class GeminiExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We leverage the
         structured output API to extract the short assessment results from the
@@ -413,12 +413,17 @@ class GeminiExtractor(Extractor):
             for response in responses
         ]
 
-        return [
-            score_map[assessment]
-            if assessment and assessment in options
-            else None
-            for assessment in assessments
-        ]
+        # Token usage is not supported in GeminiExtractor
+        # If you need token usage, please use LiteLLMExtractor instead.
+        return ResponsesWithMetadata(
+            [
+                score_map[assessment]
+                if assessment and assessment in options
+                else None
+                for assessment in assessments
+            ],
+            None,
+        )
 
 
 def _call_api(

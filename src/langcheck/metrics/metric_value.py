@@ -8,6 +8,7 @@ from typing import Generic, TypeVar, Union
 
 import pandas as pd
 
+from langcheck.metrics.eval_clients.eval_response import MetricTokenUsage
 from langcheck.metrics.metric_inputs import MetricInputs
 
 # Metrics take on float or integer values
@@ -30,6 +31,8 @@ class MetricValue(Generic[NumericType]):
     # An explanation can be None if the metric could not be computed
     explanations: list[str | None] | None
     language: str | None
+
+    token_usage: MetricTokenUsage | None
 
     def to_df(self) -> pd.DataFrame:
         """Returns a DataFrame of metric values for each data point."""

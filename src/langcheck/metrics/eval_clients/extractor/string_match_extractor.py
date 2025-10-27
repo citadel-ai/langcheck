@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from langcheck.metrics.eval_clients.eval_response import ResponsesWithMetadata
 from langcheck.metrics.eval_clients.extractor import Extractor
 from langcheck.utils.progress_bar import tqdm_wrapper
 
@@ -17,7 +18,7 @@ class StringMatchExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that gets the scores from the unstructured assessments
         (i.e. long texts that describe the evaluation results). We simply find
         the assessment result which appeared latest in the unstructured text.
@@ -57,7 +58,10 @@ class StringMatchExtractor(Extractor):
             else:
                 assessments.append(assessment)
 
-        return [
-            score_map[assessment] if assessment else None
-            for assessment in assessments
-        ]
+        return ResponsesWithMetadata(
+            [
+                score_map[assessment] if assessment else None
+                for assessment in assessments
+            ],
+            None,
+        )

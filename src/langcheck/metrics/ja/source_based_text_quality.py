@@ -81,6 +81,7 @@ def factual_consistency(
             # type: ignore (pyright doesn't understand that a list of floats is a list of optional floats)
             metric_values=scores,
             language="en",
+            token_usage=None,
         )
     else:  # EvalClient
         assert isinstance(eval_model, EvalClient), (

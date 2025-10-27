@@ -6,11 +6,16 @@ from typing import Any, Literal
 import instructor
 import litellm
 import torch
+from litellm.cost_calculator import cost_per_token
 from litellm.types.utils import EmbeddingResponse
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.shared_params import Reasoning, ReasoningEffort
 from pydantic import BaseModel
 
+from langcheck.metrics.eval_clients.eval_response import (
+    MetricTokenUsage,
+    ResponsesWithMetadata,
+)
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
@@ -226,7 +231,7 @@ class LiteLLMEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
 
         Args:
@@ -236,10 +241,6 @@ class LiteLLMEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
 
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
         responses = self._call_api(
@@ -252,7 +253,6 @@ class LiteLLMEvalClient(EvalClient):
             if not response:
                 response_texts.append(None)
                 continue
-
             # Use the Responses API only when a reasoning summary is required.
             # Otherwise, use the Chat Completions API.
             if self._reasoning_summary is None:
@@ -280,8 +280,12 @@ class LiteLLMEvalClient(EvalClient):
                     content += f"\n\n**Reasoning Summary:**\n\n{summaries_str}"
 
             response_texts.append(content)
+        token_usage = _get_token_usage(responses, self._model)
 
-        return response_texts
+        return ResponsesWithMetadata(
+            response_texts,
+            token_usage,
+        )
 
     def get_text_responses_with_log_likelihood(
         self,
@@ -289,7 +293,7 @@ class LiteLLMEvalClient(EvalClient):
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> list[TextResponseWithLogProbs | None]:
+    ) -> ResponsesWithMetadata[TextResponseWithLogProbs]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
@@ -306,10 +310,6 @@ class LiteLLMEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
 
         if self._reasoning_summary is not None:
             raise ValueError(
@@ -345,8 +345,12 @@ class LiteLLMEvalClient(EvalClient):
                     )
 
                 response_texts_with_log_likelihood.append(response_dict)
+        token_usage = _get_token_usage(responses, self._model)
 
-        return response_texts_with_log_likelihood
+        return ResponsesWithMetadata(
+            response_texts_with_log_likelihood,
+            token_usage,
+        )
 
     def similarity_scorer(self) -> LiteLLMSimilarityScorer:
         if self._embedding_model is None:
@@ -408,7 +412,7 @@ class LiteLLMExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. `instructor` is
         used to extract the result with robust structured outputs.
@@ -531,13 +535,22 @@ class LiteLLMExtractor(Extractor):
         assessments = [
             response.score if response else None for response in responses
         ]
-
-        return [
-            score_map[assessment]
-            if assessment and assessment in options
-            else None
-            for assessment in assessments
-        ]
+        token_usage = _get_token_usage(
+            [
+                response._raw_response if response else None
+                for response in responses
+            ],
+            self._model,
+        )
+        return ResponsesWithMetadata(
+            [
+                score_map[assessment]
+                if assessment and assessment in options
+                else None
+                for assessment in assessments
+            ],
+            token_usage,
+        )
 
 
 class LiteLLMSimilarityScorer(BaseSimilarityScorer):
@@ -619,3 +632,24 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
 
         embeddings = [item["embedding"] for item in embed_response.data]  # type: ignore
         return torch.Tensor(embeddings)
+
+
+def _get_token_usage(responses: list[Any], model: str) -> MetricTokenUsage:
+    """Get the token usage from the response."""
+    input_token_count = sum(
+        response.usage.prompt_tokens if response and response.usage else 0
+        for response in responses
+    )
+    output_token_count = sum(
+        response.usage.completion_tokens if response and response.usage else 0
+        for response in responses
+    )
+    input_token_cost, output_token_cost = cost_per_token(
+        model, input_token_count, output_token_count
+    )
+    return MetricTokenUsage(
+        input_token_count,
+        output_token_count,
+        input_token_cost,
+        output_token_cost,
+    )

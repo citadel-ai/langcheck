@@ -10,6 +10,9 @@ from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 from openai.types.create_embedding_response import CreateEmbeddingResponse
 from pydantic import BaseModel
 
+from langcheck.metrics.eval_clients.eval_response import (
+    ResponsesWithMetadata,
+)
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
@@ -155,7 +158,7 @@ class OpenAIEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
         We use OpenAI's 'gpt-4o-mini' model by default, but you can configure
         it by passing the 'model' parameter in the openai_args.
@@ -173,11 +176,6 @@ class OpenAIEvalClient(EvalClient):
             "parameter to the desired model name in the `openai_args`."
         )
 
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
-
         config = {"model": "gpt-4o-mini"}
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Intermediate assessments (1/2)"
@@ -192,7 +190,9 @@ class OpenAIEvalClient(EvalClient):
             for response in responses
         ]
 
-        return response_texts
+        # Token usage is not supported in OpenAIEvalClient
+        # If you need token usage, please use LiteLLMEvalClient instead.
+        return ResponsesWithMetadata(response_texts, None)
 
     def get_text_responses_with_log_likelihood(
         self,
@@ -200,7 +200,7 @@ class OpenAIEvalClient(EvalClient):
         top_logprobs: int | None = None,
         *,
         tqdm_description: str | None = None,
-    ) -> list[TextResponseWithLogProbs | None]:
+    ) -> ResponsesWithMetadata[TextResponseWithLogProbs]:
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
@@ -218,11 +218,6 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
-
         config = {"model": "gpt-4o-mini", "logprobs": True}
         if top_logprobs:
             config["top_logprobs"] = top_logprobs
@@ -257,7 +252,9 @@ class OpenAIEvalClient(EvalClient):
 
                 response_texts_with_log_likelihood.append(response_dict)
 
-        return response_texts_with_log_likelihood
+        # Token usage is not supported in OpenAIEvalClient
+        # If you need token usage, please use LiteLLMEvalClient instead.
+        return ResponsesWithMetadata(response_texts_with_log_likelihood, None)
 
     def similarity_scorer(self) -> OpenAISimilarityScorer:
         """
@@ -326,7 +323,7 @@ class OpenAIExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores. We leverage the
         structured outputs API to extract the short assessment results from the
@@ -435,12 +432,17 @@ class OpenAIExtractor(Extractor):
             for response in responses
         ]
 
-        return [
-            score_map[assessment]
-            if assessment and assessment in options
-            else None
-            for assessment in assessments
-        ]
+        # Token usage is not supported in OpenAIExtractor
+        # If you need token usage, please use LiteLLMExtractor instead.
+        return ResponsesWithMetadata(
+            [
+                score_map[assessment]
+                if assessment and assessment in options
+                else None
+                for assessment in assessments
+            ],
+            None,
+        )
 
 
 class AzureOpenAIEvalClient(OpenAIEvalClient):

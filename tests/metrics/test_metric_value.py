@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from langcheck.metrics import is_float
+from langcheck.metrics.eval_clients.eval_response import MetricTokenUsage
 from langcheck.metrics.metric_inputs import MetricInputs
 from langcheck.metrics.metric_value import MetricValue
 
@@ -75,11 +76,22 @@ def test_optional_metric_values():
         explanations=None,
         metric_values=score_list,
         language="en",
+        token_usage=MetricTokenUsage(
+            input_token_count=1,
+            output_token_count=1,
+            input_token_cost=0.01,
+            output_token_cost=0.02,
+        ),
     )
 
     assert (metric_value > 0).pass_rate == 0.5
     assert (metric_value == 1).pass_rate == 0.5
     assert (metric_value == 0).pass_rate == 0
+    assert metric_value.token_usage is not None
+    assert metric_value.token_usage.input_token_count == 1
+    assert metric_value.token_usage.output_token_count == 1
+    assert metric_value.token_usage.input_token_cost == 0.01
+    assert metric_value.token_usage.output_token_cost == 0.02
 
 
 def test_pairwise_metric_value():
@@ -104,6 +116,12 @@ def test_pairwise_metric_value():
         explanations=None,
         metric_values=score_list,
         language="en",
+        token_usage=MetricTokenUsage(
+            input_token_count=1,
+            output_token_count=1,
+            input_token_cost=0.01,
+            output_token_cost=0.02,
+        ),
     )
 
     metric_value_df = metric_value.to_df()
@@ -115,3 +133,8 @@ def test_pairwise_metric_value():
     )
     assert metric_value_df["sources_a"].equals(pd.Series([None, None]))
     assert metric_value_df["sources_b"].equals(pd.Series([None, None]))
+    assert metric_value.token_usage is not None
+    assert metric_value.token_usage.input_token_count == 1
+    assert metric_value.token_usage.output_token_count == 1
+    assert metric_value.token_usage.input_token_cost == 0.01
+    assert metric_value.token_usage.output_token_cost == 0.02

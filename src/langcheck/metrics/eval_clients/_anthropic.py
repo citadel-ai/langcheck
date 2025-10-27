@@ -12,6 +12,9 @@ from anthropic import (
     AsyncAnthropicVertex,
 )
 
+from langcheck.metrics.eval_clients.eval_response import (
+    ResponsesWithMetadata,
+)
 from langcheck.utils.progress_bar import tqdm_wrapper
 
 from ..prompts._utils import get_template
@@ -168,7 +171,7 @@ class AnthropicEvalClient(EvalClient):
         prompts: list[str],
         *,
         tqdm_description: str | None = None,
-    ) -> list[str | None]:
+    ) -> ResponsesWithMetadata[str]:
         """The function that gets responses to the given prompt texts.
         We use Anthropic's 'claude-3-haiku-20240307' model by default, but you
         can configure it by passing the 'model' parameter in the anthropic_args.
@@ -180,11 +183,6 @@ class AnthropicEvalClient(EvalClient):
             A list of responses to the prompts. The responses can be None if the
             evaluation fails.
         """
-        if not isinstance(prompts, list):
-            raise ValueError(
-                f"prompts must be a list, not a {type(prompts).__name__}"
-            )
-
         config = {
             # The model names are slightly different for Anthropic API and Vertex AI API
             # Reference: https://docs.anthropic.com/en/docs/about-claude/models/all-models
@@ -209,7 +207,9 @@ class AnthropicEvalClient(EvalClient):
             for response in responses
         ]
 
-        return response_texts
+        # Token usage is not supported in AnthropicEvalClient
+        # If you need token usage, please use LiteLLMEvalClient instead.
+        return ResponsesWithMetadata(response_texts, None)
 
     def similarity_scorer(self):
         raise NotImplementedError(
@@ -349,7 +349,7 @@ class AnthropicExtractor(Extractor):
         score_map: dict[str, float],
         *,
         tqdm_description: str | None = None,
-    ) -> list[float | None]:
+    ) -> ResponsesWithMetadata[float]:
         """The function that transforms the unstructured assessments (i.e. long
         texts that describe the evaluation results) into scores.
 
@@ -415,7 +415,12 @@ class AnthropicExtractor(Extractor):
                 return None
             return score_map[option_found[0]]
 
-        return [_turn_to_score(response) for response in raw_response_texts]
+        # Token usage is not supported in AnthropicExtractor
+        # If you need token usage, please use LiteLLMExtractor instead.
+        return ResponsesWithMetadata(
+            [_turn_to_score(response) for response in raw_response_texts],
+            None,
+        )
 
 
 def _call_api(

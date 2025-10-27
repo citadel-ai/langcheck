@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-import os
 from unittest.mock import Mock, patch
 
 import pytest
-from openai.types.chat import ChatCompletion
+from litellm.types.utils import Choices, Message, ModelResponse, Usage
 
 from langcheck.augment.en import rephrase_with_user_role_context
-from langcheck.metrics.eval_clients import (
-    AzureOpenAIEvalClient,
-    OpenAIEvalClient,
-)
+from langcheck.metrics.eval_clients import LiteLLMEvalClient
 
 RESPONSE_1 = "I'm a student, and I'm currently learning about European geography. What is the capital of France?"
 RESPONSE_2 = "I'm a student, and I'm eager to learn more about world geography. What is the capital of France?"
@@ -39,46 +35,47 @@ def test_rephrase_with_user_role_context(
     num_perturbations: int,
     expected: list[str],
 ):
-    mock_chat_completion1 = Mock(spec=ChatCompletion)
-    mock_chat_completion1.choices = [Mock(message=Mock(content=RESPONSE_1))]
-    mock_chat_completion2 = Mock(spec=ChatCompletion)
-    mock_chat_completion2.choices = [Mock(message=Mock(content=RESPONSE_2))]
-
-    side_effect = [mock_chat_completion1, mock_chat_completion2]
-
+    mock_response_1 = Mock(
+        spec=ModelResponse,
+        choices=[
+            Mock(
+                spec=Choices,
+                message=Mock(spec=Message, content=RESPONSE_1),
+            )
+        ],
+    )
+    mock_response_1.choices[0].message.content = RESPONSE_1
+    mock_response_1.usage = Mock(
+        spec=Usage, prompt_tokens=10, completion_tokens=15
+    )
+    mock_response_2 = Mock(
+        spec=ModelResponse,
+        choices=[
+            Mock(
+                spec=Choices,
+                message=Mock(spec=Message, content=RESPONSE_2),
+            )
+        ],
+    )
+    mock_response_2.choices[0].message.content = RESPONSE_2
+    mock_response_2.usage = Mock(
+        spec=Usage, prompt_tokens=10, completion_tokens=15
+    )
     # Calling the openai.ChatCompletion.create method requires an OpenAI API
     # key, so we mock the return value instead
     with patch(
-        "openai.resources.chat.Completions.create",
-        side_effect=side_effect,
+        "litellm.completion",
+        side_effect=[mock_response_1, mock_response_2],
     ):
-        # Set the necessary env vars for the 'openai' model type
-        os.environ["OPENAI_API_KEY"] = "dummy_key"
-        openai_client = OpenAIEvalClient()
-        actual = rephrase_with_user_role_context(
-            instances,
-            user_role,
-            num_perturbations=num_perturbations,
-            eval_client=openai_client,
-        )
-        assert actual == expected
-
-    with patch(
-        "openai.resources.chat.Completions.create",
-        side_effect=side_effect,
-    ):
-        # Set the necessary env vars for the 'azure_openai' model type
-        os.environ["AZURE_OPENAI_API_KEY"] = "dummy_azure_key"
-        os.environ["OPENAI_API_VERSION"] = "dummy_version"
-        os.environ["AZURE_OPENAI_ENDPOINT"] = "dummy_endpoint"
-        azure_openai_client = AzureOpenAIEvalClient(
-            text_model_name="foo",
-            embedding_model_name="bar",
+        client = LiteLLMEvalClient(
+            model="openai/gpt-4o-mini",
+            api_key="dummy_key",
         )
         actual = rephrase_with_user_role_context(
             instances,
             user_role,
             num_perturbations=num_perturbations,
-            eval_client=azure_openai_client,
+            eval_client=client,
         )
         assert actual == expected
+        assert actual.token_usage is not None
