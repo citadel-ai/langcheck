@@ -126,8 +126,6 @@ class OpenAIEvalClient(EvalClient):
             # instead of Chat Completions API.
             # https://platform.openai.com/docs/guides/reasoning#reasoning-summaries
 
-            include = []
-
             reasoning: Reasoning = {
                 "effort": self._reasoning_effort,
                 "summary": self._reasoning_summary,
@@ -136,7 +134,6 @@ class OpenAIEvalClient(EvalClient):
             # seed and logprobs are not supported in responses API.
             return self._client.responses.create(
                 input=messages,  # type: ignore
-                include=include,
                 store=False,
                 reasoning=reasoning,
                 truncation="auto",
@@ -295,6 +292,7 @@ class OpenAIEvalClient(EvalClient):
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
+        This is not available for reasoning models.
 
         NOTE: Please make sure that the model you use supports logprobs. In
         Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
@@ -309,8 +307,15 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        config = {"model": "gpt-4o-mini", "logprobs": True}
+        if self._reasoning_summary is not None:
+            raise ValueError(
+                "Log likelihood is not supported with reasoning models."
+            )
+
+        config: dict[str, Any] = {"model": "gpt-4o-mini"}
+
         if top_logprobs:
+            config["logprobs"] = True
             config["top_logprobs"] = top_logprobs
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Getting log likelihoods"
