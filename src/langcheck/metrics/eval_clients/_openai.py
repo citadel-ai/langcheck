@@ -106,7 +106,7 @@ class OpenAIEvalClient(EvalClient):
         top_logprobs: int | None = None,
         config: dict[str, str] | None = None,
     ) -> Any:
-        """Dispatch the API call to litellm."""
+        """Dispatch the API call to the OpenAI API."""
         if self._reasoning_summary is None:
             return self._client.chat.completions.create(
                 messages=messages,  # type: ignore
