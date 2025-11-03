@@ -205,14 +205,14 @@ class OpenAIEvalClient(EvalClient):
             ]
 
         # Filter out exceptions and print them out.
+        for i, response in enumerate(responses):
+            if not isinstance(response, Exception):
+                continue
             print(
                 "OpenAI failed to return an assessment corresponding to "
                 f"{i}th prompt: {response}"
             )
             traceback.print_exception(response)
-                "OpenAI failed to return an assessment corresponding to "
-                f"{i}th prompt: {response}"
-            )
             responses[i] = None
         return responses
 
