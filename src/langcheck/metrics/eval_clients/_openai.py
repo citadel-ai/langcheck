@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import os
+import traceback
 import warnings
 from typing import Any, Literal
 
 import torch
 from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 from openai.types.create_embedding_response import CreateEmbeddingResponse
+from openai.types.shared_params import Reasoning, ReasoningEffort
 from pydantic import BaseModel
 
 from langcheck.metrics.eval_clients.eval_response import (
@@ -30,6 +32,10 @@ class OpenAIEvalClient(EvalClient):
         openai_args: dict[str, str] | None = None,
         *,
         use_async: bool = False,
+        use_reasoning_summary: bool = False,
+        reasoning_effort: ReasoningEffort = "medium",
+        reasoning_summary: Literal["auto", "concise", "detailed"]
+        | None = "auto",
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
     ):
@@ -44,6 +50,15 @@ class OpenAIEvalClient(EvalClient):
             `client.chat.completions.create` function.
             use_async: If True, the async client will be used. Defaults to
                 False.
+            use_reasoning_summary: Whether to use reasoning summary.
+                NOTE: Please make sure that the model and API version support
+                reasoning summary.
+                https://platform.openai.com/docs/models
+                https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
+            reasoning_effort: How many reasoning tokens to generate.
+                This is only used when `use_reasoning_summary` is True.
+            reasoning_summary: The level of detail of the summarizer.
+                This is only used when `use_reasoning_summary` is True.
             system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
             extractor (Optional): The extractor to use. If not provided, the
@@ -77,6 +92,13 @@ class OpenAIEvalClient(EvalClient):
         self._openai_args = openai_args
         self._system_prompt = system_prompt
 
+        self._reasoning_effort: ReasoningEffort = (
+            reasoning_effort if use_reasoning_summary else None
+        )
+        self._reasoning_summary: (
+            Literal["auto", "concise", "detailed"] | None
+        ) = reasoning_summary if use_reasoning_summary else None
+
         if extractor is None:
             self._extractor = OpenAIExtractor(
                 openai_client=self._client,
@@ -85,6 +107,38 @@ class OpenAIEvalClient(EvalClient):
             )
         else:
             self._extractor = extractor
+
+    def _dispatch(
+        self,
+        messages: list[dict[str, str]],
+        seed: int | None = None,
+        config: dict[str, str] | None = None,
+    ) -> Any:
+        """Dispatch the API call to the OpenAI API."""
+        if self._reasoning_summary is None:
+            return self._client.chat.completions.create(
+                messages=messages,  # type: ignore
+                seed=seed,
+                **config,
+            )
+        else:
+            # To use reasoning summary, we must use the Responses API
+            # instead of Chat Completions API.
+            # https://platform.openai.com/docs/guides/reasoning#reasoning-summaries
+
+            reasoning: Reasoning = {
+                "effort": self._reasoning_effort,
+                "summary": self._reasoning_summary,
+            }
+
+            # seed and logprobs are not supported in responses API.
+            return self._client.responses.create(
+                input=messages,  # type: ignore
+                store=False,
+                reasoning=reasoning,
+                truncation="auto",
+                **config,
+            )
 
     def _call_api(
         self,
@@ -100,7 +154,11 @@ class OpenAIEvalClient(EvalClient):
             if model_input is None:
                 return None
             try:
-                return self._client.chat.completions.create(**model_input)
+                return self._dispatch(
+                    model_input["messages"],
+                    model_input["seed"],
+                    config=config,
+                )
             except Exception as e:
                 return e
 
@@ -114,7 +172,6 @@ class OpenAIEvalClient(EvalClient):
                 "messages": system_message
                 + [{"role": "user", "content": prompt}],
                 "seed": i,
-                **config,
             }
             for i, prompt in enumerate(prompts)
         ]
@@ -124,8 +181,10 @@ class OpenAIEvalClient(EvalClient):
             async def _call_async_api() -> list[Any]:
                 responses = await asyncio.gather(
                     *map(
-                        lambda model_input: self._client.chat.completions.create(
-                            **model_input
+                        lambda model_input: self._dispatch(
+                            model_input["messages"],
+                            model_input["seed"],
+                            config=config,
                         ),
                         model_inputs,
                     ),
@@ -150,6 +209,7 @@ class OpenAIEvalClient(EvalClient):
                 "OpenAI failed to return an assessment corresponding to "
                 f"{i}th prompt: {response}"
             )
+            traceback.print_exception(response)
             responses[i] = None
         return responses
 
@@ -185,11 +245,39 @@ class OpenAIEvalClient(EvalClient):
             tqdm_description=tqdm_description,
             system_prompt=self._system_prompt,
         )
-        response_texts = [
-            response.choices[0].message.content if response else None
-            for response in responses
-        ]
 
+        response_texts = []
+        for response in responses:
+            if not response:
+                response_texts.append(None)
+                continue
+            # Use the Responses API only when a reasoning summary is required.
+            # Otherwise, use the Chat Completions API.
+            if self._reasoning_summary is None:
+                content = response.choices[0].message.content
+            else:
+                content = None
+                summaries = []
+
+                for output in response.output:
+                    if hasattr(output, "summary"):
+                        if output.summary == []:
+                            print(
+                                "Reasoning summary is empty. "
+                                "This may happen even if model supports reasoning summary."
+                            )
+                            continue
+
+                        # Summary can be a list of summaries
+                        summaries.extend([s.text for s in output.summary])
+                    elif hasattr(output, "content"):
+                        content = output.content[0].text
+
+                if content is not None and summaries:
+                    summaries_str = "\n\n".join(summaries)
+                    content += f"\n\n**Reasoning Summary:**\n\n{summaries_str}"
+
+            response_texts.append(content)
         # Token usage is not supported in OpenAIEvalClient
         # If you need token usage, please use LiteLLMEvalClient instead.
         return ResponsesWithMetadata(response_texts, None)
@@ -204,6 +292,7 @@ class OpenAIEvalClient(EvalClient):
         """The function that gets responses with log likelihood to the given
         prompt texts. Each concrete subclass needs to define the concrete
         implementation of this function to enable text scoring.
+        This is not available for reasoning models.
 
         NOTE: Please make sure that the model you use supports logprobs. In
         Azure OpenAI, the API version 2024-06-01 is the earliest GA version that
@@ -218,8 +307,15 @@ class OpenAIEvalClient(EvalClient):
             output text and the list of tuples of the output tokens and the log
             probabilities. The responses can be None if the evaluation fails.
         """
-        config = {"model": "gpt-4o-mini", "logprobs": True}
+        if self._reasoning_summary is not None:
+            raise ValueError(
+                "Log likelihood is not supported with reasoning models."
+            )
+
+        config: dict[str, Any] = {"model": "gpt-4o-mini"}
+
         if top_logprobs:
+            config["logprobs"] = True
             config["top_logprobs"] = top_logprobs
         config.update(self._openai_args or {})
         tqdm_description = tqdm_description or "Getting log likelihoods"
@@ -425,6 +521,7 @@ class OpenAIExtractor(Extractor):
                 "OpenAI failed to return an assessment corresponding to "
                 f"{i}th prompt: {response}"
             )
+            traceback.print_exception(response)
             responses[i] = None
 
         assessments = [
@@ -454,6 +551,10 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         openai_args: dict[str, str] | None = None,
         *,
         use_async: bool = False,
+        use_reasoning_summary: bool = False,
+        reasoning_effort: ReasoningEffort = "medium",
+        reasoning_summary: Literal["auto", "concise", "detailed"]
+        | None = "auto",
         system_prompt: str | None = None,
         extractor: Extractor | None = None,
     ):
@@ -473,6 +574,15 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             openai_args (Optional): dict of additional args to pass in to the
                 `client.chat.completions.create` function.
             use_async (Optional): If True, the async client will be used.
+            use_reasoning_summary: Whether to use reasoning summary.
+                NOTE: Please make sure that the model and API version support
+                reasoning summary.
+                https://platform.openai.com/docs/models
+                https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
+            reasoning_effort: How many reasoning tokens to generate.
+                This is only used when `use_reasoning_summary` is True.
+            reasoning_summary: The level of detail of the summarizer.
+                This is only used when `use_reasoning_summary` is True.
             system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
             extractor (Optional): The extractor to use. If not provided, the
@@ -540,6 +650,13 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
         self._embedding_model_name = embedding_model_name
         self._openai_args = openai_args or {}
         self._system_prompt = system_prompt
+
+        self._reasoning_effort: ReasoningEffort = (
+            reasoning_effort if use_reasoning_summary else None
+        )
+        self._reasoning_summary: (
+            Literal["auto", "concise", "detailed"] | None
+        ) = reasoning_summary if use_reasoning_summary else None
 
         if self._text_model_name is not None:
             self._openai_args["model"] = self._text_model_name
