@@ -103,7 +103,6 @@ class OpenAIEvalClient(EvalClient):
         self,
         messages: list[dict[str, str]],
         seed: int | None = None,
-        top_logprobs: int | None = None,
         config: dict[str, str] | None = None,
     ) -> Any:
         """Dispatch the API call to the OpenAI API."""
@@ -111,8 +110,6 @@ class OpenAIEvalClient(EvalClient):
             return self._client.chat.completions.create(
                 messages=messages,  # type: ignore
                 seed=seed,
-                logprobs=(top_logprobs is not None),
-                top_logprobs=top_logprobs,
                 **config,
             )
         else:
@@ -121,8 +118,6 @@ class OpenAIEvalClient(EvalClient):
             # https://platform.openai.com/docs/guides/reasoning#reasoning-summaries
 
             include = []
-            if top_logprobs is not None:
-                include.append("message.output_text.logprobs")
 
             reasoning: Reasoning = {
                 "effort": self._reasoning_effort,
@@ -133,7 +128,6 @@ class OpenAIEvalClient(EvalClient):
             return self._client.responses.create(
                 input=messages,  # type: ignore
                 include=include,
-                top_logprobs=top_logprobs,
                 store=False,
                 reasoning=reasoning,
                 truncation="auto",
