@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import os
 import warnings
+from traceback import print_exc
 from typing import Any, Literal
 
 import torch
@@ -509,6 +510,7 @@ class OpenAIExtractor(Extractor):
                 "OpenAI failed to return an assessment corresponding to "
                 f"{i}th prompt: {response}"
             )
+            print_exc()
             responses[i] = None
 
         assessments = [

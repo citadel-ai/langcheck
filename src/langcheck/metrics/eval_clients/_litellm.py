@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from traceback import print_exc
 from typing import Any, Literal
 
 import instructor
@@ -530,6 +531,7 @@ class LiteLLMExtractor(Extractor):
                 f"Failed to return an assessment for the {i}th prompt: "
                 f"{response}"
             )
+            print_exc()
             responses[i] = None
 
         assessments = [
