@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import os
+import traceback
 import warnings
-from traceback import print_exc
 from typing import Any, Literal
 
 import torch
@@ -104,6 +104,7 @@ class OpenAIEvalClient(EvalClient):
         messages: list[dict[str, str]],
         seed: int | None = None,
         top_logprobs: int | None = None,
+        config: dict[str, str] | None = None,
     ) -> Any:
         """Dispatch the API call to litellm."""
         if self._reasoning_summary is None:
@@ -112,7 +113,7 @@ class OpenAIEvalClient(EvalClient):
                 seed=seed,
                 logprobs=(top_logprobs is not None),
                 top_logprobs=top_logprobs,
-                **self._openai_args,
+                **config,
             )
         else:
             # To use reasoning summary, we must use the Responses API
@@ -136,7 +137,7 @@ class OpenAIEvalClient(EvalClient):
                 store=False,
                 reasoning=reasoning,
                 truncation="auto",
-                **self._openai_args,
+                **config,
             )
 
     def _call_api(
@@ -156,6 +157,7 @@ class OpenAIEvalClient(EvalClient):
                 return self._dispatch(
                     model_input["messages"],
                     model_input["seed"],
+                    config=config,
                 )
             except Exception as e:
                 return e
@@ -170,7 +172,6 @@ class OpenAIEvalClient(EvalClient):
                 "messages": system_message
                 + [{"role": "user", "content": prompt}],
                 "seed": i,
-                **config,
             }
             for i, prompt in enumerate(prompts)
         ]
@@ -183,6 +184,7 @@ class OpenAIEvalClient(EvalClient):
                         lambda model_input: self._dispatch(
                             model_input["messages"],
                             model_input["seed"],
+                            config=config,
                         ),
                         model_inputs,
                     ),
@@ -203,6 +205,7 @@ class OpenAIEvalClient(EvalClient):
         for i, response in enumerate(responses):
             if not isinstance(response, Exception):
                 continue
+            traceback.print_exception(response)
             print(
                 "OpenAI failed to return an assessment corresponding to "
                 f"{i}th prompt: {response}"
@@ -510,7 +513,7 @@ class OpenAIExtractor(Extractor):
                 "OpenAI failed to return an assessment corresponding to "
                 f"{i}th prompt: {response}"
             )
-            print_exc()
+            traceback.print_exception(response)
             responses[i] = None
 
         assessments = [

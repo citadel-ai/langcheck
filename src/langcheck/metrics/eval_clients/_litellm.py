@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from traceback import print_exc
+import traceback
 from typing import Any, Literal
 
 import instructor
@@ -224,6 +224,7 @@ class LiteLLMEvalClient(EvalClient):
                 f"Failed to return an assessment corresponding to {i}th prompt: "
                 f"{response}"
             )
+            traceback.print_exception(response)
             responses[i] = None
         return responses
 
@@ -531,7 +532,7 @@ class LiteLLMExtractor(Extractor):
                 f"Failed to return an assessment for the {i}th prompt: "
                 f"{response}"
             )
-            print_exc()
+            traceback.print_exception(response)
             responses[i] = None
 
         assessments = [
