@@ -50,6 +50,15 @@ class OpenAIEvalClient(EvalClient):
             `client.chat.completions.create` function.
             use_async: If True, the async client will be used. Defaults to
                 False.
+            use_reasoning_summary: Whether to use reasoning summary.
+                NOTE: Please make sure that the model and API version support
+                reasoning summary.
+                https://platform.openai.com/docs/models
+                https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
+            reasoning_effort: How many reasoning tokens to generate.
+                This is only used when `use_reasoning_summary` is True.
+            reasoning_summary: The level of detail of the summarizer.
+                This is only used when `use_reasoning_summary` is True.
             system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
             extractor (Optional): The extractor to use. If not provided, the
@@ -560,6 +569,15 @@ class AzureOpenAIEvalClient(OpenAIEvalClient):
             openai_args (Optional): dict of additional args to pass in to the
                 `client.chat.completions.create` function.
             use_async (Optional): If True, the async client will be used.
+            use_reasoning_summary: Whether to use reasoning summary.
+                NOTE: Please make sure that the model and API version support
+                reasoning summary.
+                https://platform.openai.com/docs/models
+                https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning#api--feature-support
+            reasoning_effort: How many reasoning tokens to generate.
+                This is only used when `use_reasoning_summary` is True.
+            reasoning_summary: The level of detail of the summarizer.
+                This is only used when `use_reasoning_summary` is True.
             system_prompt (Optional): The system prompt to use. If not provided,
                 no system prompt will be used.
             extractor (Optional): The extractor to use. If not provided, the
