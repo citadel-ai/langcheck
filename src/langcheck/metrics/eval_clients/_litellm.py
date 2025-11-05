@@ -639,12 +639,29 @@ class LiteLLMSimilarityScorer(BaseSimilarityScorer):
 
 def _get_token_usage(responses: list[Any], model: str) -> MetricTokenUsage:
     """Get the token usage from the response."""
+
+    # For Responses API, the token usage is stored in the usage field
+    # with type ResponseAPIUsage, which has input_tokens and output_tokens.
+    # For Chat Completions API, the token usage is stored in the usage field
+    # with type Usage, which has prompt_tokens and completion_tokens.
     input_token_count = sum(
-        response.usage.prompt_tokens if response and response.usage else 0
+        getattr(
+            response.usage,
+            "prompt_tokens",
+            getattr(response.usage, "input_tokens", 0),
+        )
+        if response and response.usage
+        else 0
         for response in responses
     )
     output_token_count = sum(
-        response.usage.completion_tokens if response and response.usage else 0
+        getattr(
+            response.usage,
+            "completion_tokens",
+            getattr(response.usage, "output_tokens", 0),
+        )
+        if response and response.usage
+        else 0
         for response in responses
     )
     input_token_cost, output_token_cost = cost_per_token(

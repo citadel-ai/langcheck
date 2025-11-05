@@ -4,7 +4,7 @@ from typing import Literal
 from unittest.mock import Mock, patch
 
 import pytest
-from litellm.types.llms.openai import ResponsesAPIResponse
+from litellm.types.llms.openai import ResponseAPIUsage, ResponsesAPIResponse
 from litellm.types.utils import (
     Choices,
     EmbeddingResponse,
@@ -95,7 +95,7 @@ def test_get_text_response_with_reasoning_summary(system_prompt):
     )
 
     mock_response.usage = Mock(
-        spec=Usage, prompt_tokens=20, completion_tokens=30
+        spec=ResponseAPIUsage, input_tokens=20, output_tokens=30
     )
 
     # Calling litellm.responses requires a credentials, so we mock the return
